@@ -93,6 +93,8 @@ If you are developing `torch-lock` itself:
 - `npm run lock:check:weekly`
 - `npm run lock:list`
 - `npm run dashboard:serve`
+- `npm test` (run unit tests)
+- `npm run lint` (run linter)
 
 
 
