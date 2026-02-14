@@ -20,7 +20,8 @@
     "scheduler-update-agent",
     "style-agent",
     "test-audit-agent",
-    "todo-triage-agent"
+    "todo-triage-agent",
+    "torch-garbage-collection-agent"
   ],
   "weekly": [
     "bug-reproducer-agent",
