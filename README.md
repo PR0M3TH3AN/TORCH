@@ -41,7 +41,7 @@ npm run dashboard:serve
 - `src/nostr-lock.mjs` — Generic lock/check/list CLI
 - `src/docs/TORCH.md` — Protocol summary and usage
 - `src/prompts/` — Generic scheduler prompts and flow
-- `examples/bitvid/` — Bitvid-style scheduler overlay examples adapted for standalone TORCH paths
+- `examples/` — Optional scheduler overlay examples for adapting TORCH to downstream repositories
 - `dashboard/index.html` — Static lock dashboard
 
 ## CLI dependencies
@@ -89,5 +89,3 @@ NOSTR_LOCK_NAMESPACE=my-project \
 AGENT_PLATFORM=codex \
 node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
 ```
-
-[Tip Jar](https://tipjar.bitvid.network/?n=npub15jnttpymeytm80hatjqcvhhqhzrhx6gxp8pq0wn93rhnu8s9h9dsha32lx)
