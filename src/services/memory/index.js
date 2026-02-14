@@ -1,11 +1,8 @@
 import { createMemoryCache } from './cache.js';
-import { embedText } from './embedder.js';
-import { insertMemory, normalizeEvents } from './ingestor.js';
+import { ingestMemoryWindow } from './ingestor.js';
 import { listPruneCandidates, selectPrunableMemories } from './pruner.js';
 import { filterAndRankMemories, updateMemoryUsage } from './retriever.js';
 import { startScheduler } from './scheduler.js';
-import { createMemoryRecord, validateMemoryItem } from './schema.js';
-import { summarizeEvents } from './summarizer.js';
 
 const memoryStore = new Map();
 const cache = createMemoryCache();
@@ -49,44 +46,7 @@ const memoryRepository = {
  */
 export async function ingestEvents(events, options = {}) {
   const repository = options.repository ?? memoryRepository;
-  const normalizedEvents = normalizeEvents(events);
-  const records = [];
-
-  for (const event of normalizedEvents) {
-    const summary = summarizeEvents([event], options);
-    const embedding = await embedText(`${summary}\n${event.content}`, options);
-    const record = createMemoryRecord({
-      agent_id: event.agent_id,
-      session_id: typeof event.metadata?.session_id === 'string' ? event.metadata.session_id : 'unknown',
-      type: typeof event.metadata?.type === 'string' ? event.metadata.type : 'event',
-      content: event.content,
-      summary,
-      tags: event.tags,
-      importance: Number.isFinite(event.metadata?.importance) ? event.metadata.importance : 0.5,
-      embedding_id: Array.isArray(embedding) && embedding.length > 0 ? crypto.randomUUID() : null,
-      created_at: event.timestamp,
-      last_seen: event.timestamp,
-      source: typeof event.metadata?.source === 'string' ? event.metadata.source : 'ingest',
-      ttl_days: Number.isFinite(event.metadata?.ttl_days) ? event.metadata.ttl_days : null,
-      merged_into: typeof event.metadata?.merged_into === 'string' ? event.metadata.merged_into : null,
-      pinned: Boolean(event.metadata?.pinned),
-    });
-
-    const validation = validateMemoryItem(record);
-    if (!validation.valid) {
-      console.error('memory_validation_error', {
-        stage: 'ingest',
-        reason: 'record_failed_schema_validation',
-        fields: validation.errors,
-        item: record,
-      });
-      throw new TypeError('Memory ingest rejected: invalid durable record format');
-    }
-
-    await insertMemory(repository, record);
-    records.push(record);
-  }
-
+  const records = await ingestMemoryWindow({ events }, { ...options, repository });
   cache.clear();
   return records;
 }
