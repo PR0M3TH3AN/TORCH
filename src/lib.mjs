@@ -3,252 +3,27 @@
 // TORCH — Task Orchestration via Relay-Coordinated Handoff
 // Generic Nostr-based task locking for multi-agent development.
 
-import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
 import {
-  loadTorchConfig,
-  getRelays,
-  getNamespace,
-  getTtl,
-} from './torch-config.mjs';
-import {
   DEFAULT_DASHBOARD_PORT,
-  RACE_CHECK_DELAY_MS,
   VALID_CADENCES,
 } from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
-import { getRoster } from './roster.mjs';
-import { queryLocks, publishLock, parseLockEvent } from './lock-ops.mjs';
+import { publishLock, parseLockEvent, queryLocks } from './lock-ops.mjs';
 import { cmdDashboard } from './dashboard.mjs';
+import { cmdCheck } from './cmd-check.mjs';
+import { cmdLock } from './cmd-lock.mjs';
+import { cmdList } from './cmd-list.mjs';
+import { ExitError } from './errors.mjs';
 
 useWebSocketImplementation(WebSocket);
 
-// Custom Error class for controlled exits
-class ExitError extends Error {
-  constructor(code, message) {
-    super(message);
-    this.code = code;
-  }
-}
-
-function todayDateStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function nowUnix() {
-  return Math.floor(Date.now() / 1000);
-}
-
 // Re-export for backward compatibility/library usage
 export { parseLockEvent, queryLocks, publishLock, cmdDashboard };
-
-export async function cmdCheck(cadence) {
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const dateStr = todayDateStr();
-  const config = loadTorchConfig();
-  const pausedAgents = (cadence === 'daily' ? config.scheduler.paused.daily : config.scheduler.paused.weekly) || [];
-
-  console.error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
-  console.error(`Relays: ${relays.join(', ')}`);
-  if (pausedAgents.length > 0) {
-    console.error(`Paused agents: ${pausedAgents.join(', ')}`);
-  }
-
-  const locks = await queryLocks(relays, cadence, dateStr, namespace);
-  const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
-  const roster = getRoster(cadence);
-
-  const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
-  const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
-  const available = roster.filter((a) => !excludedAgents.includes(a));
-
-  const result = {
-    namespace,
-    cadence,
-    date: dateStr,
-    locked: lockedAgents.sort(),
-    paused: pausedAgents.sort(),
-    excluded: excludedAgents.sort(),
-    available: available.sort(),
-    lockCount: locks.length,
-    unknownLockedAgents: unknownLockedAgents.sort(),
-    locks: locks.map((l) => ({
-      agent: l.agent,
-      eventId: l.eventId,
-      createdAt: l.createdAtIso,
-      expiresAt: l.expiresAtIso,
-      platform: l.platform,
-    })),
-  };
-
-  console.log(JSON.stringify(result, null, 2));
-  return result;
-}
-
-export async function cmdLock(agent, cadence, dryRun = false) {
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const dateStr = todayDateStr();
-  const ttl = getTtl();
-  const now = nowUnix();
-  const expiresAt = now + ttl;
-
-  console.error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
-  console.error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
-  console.error(`Relays: ${relays.join(', ')}`);
-
-  const roster = getRoster(cadence);
-  if (!roster.includes(agent)) {
-    console.error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
-    console.error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
-    throw new ExitError(1, 'Agent not in roster');
-  }
-
-  console.error('Step 1: Checking for existing locks...');
-  const existingLocks = await queryLocks(relays, cadence, dateStr, namespace);
-  const conflicting = existingLocks.filter((l) => l.agent === agent);
-
-  if (conflicting.length > 0) {
-    const earliest = conflicting.sort((a, b) => a.createdAt - b.createdAt)[0];
-    console.error(
-      `LOCK DENIED: ${agent} already locked by event ${earliest.eventId} ` +
-        `(created ${earliest.createdAtIso}, platform: ${earliest.platform})`,
-    );
-    console.log('LOCK_STATUS=denied');
-    console.log('LOCK_REASON=already_locked');
-    console.log(`LOCK_EXISTING_EVENT=${earliest.eventId}`);
-    throw new ExitError(3, 'Lock denied');
-  }
-
-  console.error('Step 2: Generating ephemeral keypair...');
-  const sk = generateSecretKey();
-  const pk = getPublicKey(sk);
-  console.error(`  Ephemeral pubkey: ${pk.slice(0, 16)}...`);
-
-  console.error('Step 3: Building lock event...');
-  const event = finalizeEvent(
-    {
-      kind: 30078,
-      created_at: now,
-      tags: [
-        ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
-        ['t', `${namespace}-agent-lock`],
-        ['t', `${namespace}-lock-${cadence}`],
-        ['t', `${namespace}-lock-${cadence}-${dateStr}`],
-        ['expiration', String(expiresAt)],
-      ],
-      content: JSON.stringify({
-        agent,
-        cadence,
-        status: 'started',
-        namespace,
-        date: dateStr,
-        platform: process.env.AGENT_PLATFORM || 'unknown',
-        lockedAt: new Date(now * 1000).toISOString(),
-        expiresAt: new Date(expiresAt * 1000).toISOString(),
-      }),
-    },
-    sk,
-  );
-
-  console.error(`  Event ID: ${event.id}`);
-
-  if (dryRun) {
-    console.error('Step 4: [DRY RUN] Skipping publish — event built but not sent');
-    console.error('RACE CHECK: won (dry run — no real contention possible)');
-  } else {
-    console.error('Step 4: Publishing to relays...');
-    await publishLock(relays, event);
-
-    console.error('Step 5: Race check...');
-    await new Promise((resolve) => setTimeout(resolve, RACE_CHECK_DELAY_MS));
-
-    const postLocks = await queryLocks(relays, cadence, dateStr, namespace);
-    const racingLocks = postLocks
-      .filter((l) => l.agent === agent)
-      .sort((a, b) => a.createdAt - b.createdAt);
-
-    if (racingLocks.length > 1 && racingLocks[0].eventId !== event.id) {
-      const winner = racingLocks[0];
-      console.error(
-        `RACE CHECK: lost (earlier lock by event ${winner.eventId}, created ${winner.createdAtIso})`,
-      );
-      console.log('LOCK_STATUS=race_lost');
-      console.log('LOCK_REASON=earlier_claim_exists');
-      console.log(`LOCK_WINNER_EVENT=${winner.eventId}`);
-      throw new ExitError(3, 'Race check lost');
-    }
-
-    console.error('RACE CHECK: won');
-  }
-
-  console.log('LOCK_STATUS=ok');
-  console.log(`LOCK_EVENT_ID=${event.id}`);
-  console.log(`LOCK_PUBKEY=${pk}`);
-  console.log(`LOCK_AGENT=${agent}`);
-  console.log(`LOCK_CADENCE=${cadence}`);
-  console.log(`LOCK_DATE=${dateStr}`);
-  console.log(`LOCK_EXPIRES=${expiresAt}`);
-  console.log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * 1000).toISOString()}`);
-  return { status: 'ok', eventId: event.id };
-}
-
-export async function cmdList(cadence) {
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const dateStr = todayDateStr();
-  const cadences = cadence ? [cadence] : ['daily', 'weekly'];
-
-  console.error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
-
-  const results = await Promise.all(
-    cadences.map(async (c) => {
-      const locks = await queryLocks(relays, c, dateStr, namespace);
-      return { c, locks };
-    }),
-  );
-
-  for (const { c, locks } of results) {
-    console.log(`\n${'='.repeat(72)}`);
-    console.log(`Active ${namespace} ${c} locks (${dateStr})`);
-    console.log('='.repeat(72));
-
-    if (locks.length === 0) {
-      console.log('  (no active locks)');
-      continue;
-    }
-
-    const sorted = locks.sort((a, b) => a.createdAt - b.createdAt);
-    for (const lock of sorted) {
-      const age = nowUnix() - lock.createdAt;
-      const ageMin = Math.round(age / 60);
-      const remaining = lock.expiresAt ? lock.expiresAt - nowUnix() : null;
-      const remainMin = remaining ? Math.round(remaining / 60) : '?';
-
-      console.log(
-        `  ${(lock.agent ?? 'unknown').padEnd(30)} ` +
-          `age: ${String(ageMin).padStart(4)}m  ` +
-          `ttl: ${String(remainMin).padStart(4)}m  ` +
-          `platform: ${lock.platform ?? '?'}  ` +
-          `event: ${lock.eventId?.slice(0, 12)}...`,
-      );
-    }
-
-    const roster = getRoster(c);
-    const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
-    const unknownLockedAgents = [...lockedAgents].filter((agent) => !roster.includes(agent));
-    const available = roster.filter((a) => !lockedAgents.has(a));
-
-    if (unknownLockedAgents.length > 0) {
-      console.log(`  Warning: lock events found with non-roster agent names: ${unknownLockedAgents.join(', ')}`);
-    }
-
-    console.log(`\n  Locked: ${lockedAgents.size}/${roster.length}`);
-    console.log(`  Available: ${available.join(', ') || '(none)'}`);
-  }
-}
+export { cmdCheck } from './cmd-check.mjs';
+export { cmdLock } from './cmd-lock.mjs';
+export { cmdList } from './cmd-list.mjs';
 
 function parseArgs(argv) {
   const args = { command: null, agent: null, cadence: null, dryRun: false, force: false, port: DEFAULT_DASHBOARD_PORT };
