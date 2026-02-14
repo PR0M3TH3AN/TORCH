@@ -129,7 +129,7 @@ describe('Scheduler cycle ordering guarantees', () => {
 
     const order = [
       "const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);",
-      "const lockResult = await runCommand(",
+      "const lockAttempt = await acquireLockWithRetry({",
       "if (schedulerConfig.handoffCommand)",
       "const artifactCheck = await runCommand('node', [",
       "for (const validation of schedulerConfig.validationCommands)",
