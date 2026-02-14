@@ -226,7 +226,7 @@ export async function cmdCheck(cadence, deps = {}) {
   const namespace = getNamespace();
   const dateStr = getDateStr();
   const config = loadTorchConfig();
-  const pausedAgents = (cadence === 'daily' ? config.scheduler.paused.daily : config.scheduler.paused.weekly) || [];
+  const pausedAgents = config.scheduler.paused[cadence] || [];
 
   error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
   error(`Relays: ${relays.join(', ')}`);
@@ -404,8 +404,8 @@ export async function cmdList(cadence, deps = {}) {
 
   const relays = getRelays();
   const namespace = getNamespace();
-  const dateStr = getDateStr();
-  const cadences = cadence ? [cadence] : ['daily', 'weekly'];
+  const dateStr = todayDateStr();
+  const cadences = cadence ? [cadence] : [...VALID_CADENCES];
 
   error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
 
@@ -604,7 +604,7 @@ export async function main(argv) {
     switch (args.command) {
       case 'check': {
         if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-          console.error('ERROR: --cadence <daily|weekly> is required for check');
+          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for check`);
           throw new ExitError(1, 'Missing cadence');
         }
         await cmdCheck(args.cadence);
@@ -617,7 +617,7 @@ export async function main(argv) {
           throw new ExitError(1, 'Missing agent');
         }
         if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-          console.error('ERROR: --cadence <daily|weekly> is required for lock');
+          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for lock`);
           throw new ExitError(1, 'Missing cadence');
         }
         await cmdLock(args.agent, args.cadence, args.dryRun);
@@ -626,7 +626,7 @@ export async function main(argv) {
 
       case 'list': {
         if (args.cadence && !VALID_CADENCES.has(args.cadence)) {
-          console.error('ERROR: --cadence must be daily or weekly');
+          console.error(`ERROR: --cadence must be one of: ${[...VALID_CADENCES].join(', ')}`);
           throw new ExitError(1, 'Invalid cadence');
         }
         await cmdList(args.cadence || null);
