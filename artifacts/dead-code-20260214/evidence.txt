@@ -1,0 +1,4 @@
+src/nostr-lock.mjs: Entry point (package.json scripts)
+src/torch-config.mjs: Imported by src/nostr-lock.mjs
+build.mjs: Build script (package.json build)
+test/nostr-lock.test.mjs: Test file (package.json test)
