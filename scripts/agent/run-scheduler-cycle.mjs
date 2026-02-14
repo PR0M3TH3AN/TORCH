@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Source of truth: numbered MUST steps 2 and 4-14 in src/prompts/scheduler-flow.md are
+// implemented by this script; step 3 (policy-file read) is best-effort and non-fatal.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -236,6 +238,14 @@ async function main() {
   const isInteractive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
   const schedulerConfig = await getSchedulerConfig(cadence, { isInteractive });
   const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
+
+  const agentsPath = path.resolve(process.cwd(), 'AGENTS.md');
+  try {
+    const agentsContent = await fs.readFile(agentsPath, 'utf8');
+    process.stdout.write(`${agentsContent}\n`);
+  } catch {
+    console.log('No AGENTS.md found; continuing');
+  }
 
   while (true) {
     const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);
