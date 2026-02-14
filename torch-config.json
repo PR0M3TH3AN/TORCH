@@ -10,8 +10,8 @@
     "queryTimeoutMs": 15000
   },
   "dashboard": {
-    "defaultCadenceView": "daily",
-    "defaultStatusView": "active"
+    "defaultCadenceView": "all",
+    "defaultStatusView": "all"
   },
   "scheduler": {
     "firstPromptByCadence": {
