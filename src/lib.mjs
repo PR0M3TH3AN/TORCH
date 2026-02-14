@@ -193,14 +193,17 @@ function nowUnix() {
   return Math.floor(Date.now() / 1000);
 }
 
-function parseLockEvent(event) {
+export function parseLockEvent(event) {
   const dTag = event.tags.find((t) => t[0] === 'd')?.[1] ?? '';
   const expTag = event.tags.find((t) => t[0] === 'expiration')?.[1];
   const expiresAt = expTag ? parseInt(expTag, 10) : null;
 
   let content = {};
   try {
-    content = JSON.parse(event.content);
+    const parsed = JSON.parse(event.content);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      content = parsed;
+    }
   } catch {
     // Ignore malformed JSON content
   }
