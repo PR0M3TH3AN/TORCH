@@ -3,6 +3,7 @@ import { ingestMemoryWindow } from './ingestor.js';
 import { listPruneCandidates, selectPrunableMemories } from './pruner.js';
 import { filterAndRankMemories, updateMemoryUsage } from './retriever.js';
 import { startScheduler } from './scheduler.js';
+import { getMemoryPruneMode, isMemoryIngestEnabled } from './feature-flags.js';
 
 const memoryStore = new Map();
 const cache = createMemoryCache();
@@ -133,6 +134,10 @@ function recordThroughput(samples, now) {
 export async function ingestEvents(events, options = {}) {
   const repository = options.repository ?? memoryRepository;
   const telemetry = buildTelemetryEmitter(options);
+  if (!isMemoryIngestEnabled(options.agent_id, options.env)) {
+    telemetry('memory:ingest_skipped', { reason: 'flag_disabled', agent_id: options.agent_id ?? null });
+    return [];
+  }
   const records = await ingestMemoryWindow({ events }, {
     ...options,
     repository,
@@ -201,6 +206,7 @@ export async function runPruneCycle(options = {}) {
   const repository = options.repository ?? memoryRepository;
   const telemetry = buildTelemetryEmitter(options);
   const retentionMs = options.retentionMs ?? (1000 * 60 * 60 * 24 * 30);
+  const pruneMode = options.pruneMode ?? getMemoryPruneMode(options.env);
   const dbCandidates = await listPruneCandidates(repository, {
     retentionMs,
     now: options.now,
@@ -212,6 +218,21 @@ export async function runPruneCycle(options = {}) {
       retentionMs,
       now: options.now,
     });
+
+  if (pruneMode === 'off') {
+    telemetry('memory:prune_skipped', { reason: 'flag_disabled', retention_ms: retentionMs });
+    return { pruned: [], mode: 'off' };
+  }
+
+  if (pruneMode === 'dry-run') {
+    telemetry('memory:pruned', {
+      pruned_count: prunable.length,
+      retention_ms: retentionMs,
+      dry_run: true,
+    });
+    emitMetric(options, 'memory_pruned_total', { count: 0, retention_ms: retentionMs, dry_run: true });
+    return { pruned: [], candidates: prunable, mode: 'dry-run' };
+  }
 
   for (const memory of prunable) {
     memoryStore.delete(memory.id);
@@ -229,7 +250,7 @@ export async function runPruneCycle(options = {}) {
 
   const result = { pruned: prunable };
   if (Number.isFinite(options.scheduleEveryMs) && options.scheduleEveryMs > 0) {
-    result.scheduler = startScheduler(() => runPruneCycle({ retentionMs, repository }), {
+    result.scheduler = startScheduler(() => runPruneCycle({ retentionMs, repository, env: options.env, pruneMode: options.pruneMode }), {
       intervalMs: options.scheduleEveryMs,
     });
   }

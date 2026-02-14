@@ -1,3 +1,4 @@
+import { getMemoryPruneMode, isMemoryEnabled, isMemoryIngestEnabled } from './feature-flags.js';
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
@@ -182,6 +183,21 @@ async function runScheduledJob(options) {
   }
 }
 
+function shouldRunJob(jobName, options) {
+  const env = options.env ?? process.env;
+  if (!isMemoryEnabled(env)) return false;
+
+  if (jobName === 'ingestRecentRuntimeEvents') {
+    return isMemoryIngestEnabled(options.ingestAgentId, env);
+  }
+
+  if (jobName === 'pruningCycle') {
+    return getMemoryPruneMode(env) !== 'off';
+  }
+
+  return true;
+}
+
 /**
  * @param {{
  *   handlers: {
@@ -218,6 +234,17 @@ export function startMemoryMaintenanceScheduler(options) {
 
   const startFixedIntervalJob = (jobName, definition, handler) => {
     const run = () => {
+      if (!shouldRunJob(jobName, options)) {
+        options.emitMetric?.('memory_scheduler_job', {
+          job: jobName,
+          status: 'skipped_flag_disabled',
+          durationMs: 0,
+          itemCount: 0,
+          failures: 0,
+          retries: 0,
+        });
+        return;
+      }
       void runJob(jobName, definition, handler);
     };
 
@@ -232,6 +259,18 @@ export function startMemoryMaintenanceScheduler(options) {
       const delayMs = definition.minIntervalMs + Math.floor((definition.maxIntervalMs - definition.minIntervalMs) * jitterRatio);
       const timeout = setTimeout(async () => {
         timeouts.delete(timeout);
+        if (!shouldRunJob(jobName, options)) {
+          options.emitMetric?.('memory_scheduler_job', {
+            job: jobName,
+            status: 'skipped_flag_disabled',
+            durationMs: 0,
+            itemCount: 0,
+            failures: 0,
+            retries: 0,
+          });
+          scheduleNext();
+          return;
+        }
         await runJob(jobName, definition, handler);
         scheduleNext();
       }, delayMs);
@@ -239,6 +278,18 @@ export function startMemoryMaintenanceScheduler(options) {
     };
 
     if (options.runImmediately !== false) {
+      if (!shouldRunJob(jobName, options)) {
+        options.emitMetric?.('memory_scheduler_job', {
+          job: jobName,
+          status: 'skipped_flag_disabled',
+          durationMs: 0,
+          itemCount: 0,
+          failures: 0,
+          retries: 0,
+        });
+        scheduleNext();
+        return;
+      }
       void runJob(jobName, definition, handler).then(() => {
         scheduleNext();
       });

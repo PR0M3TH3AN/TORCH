@@ -1,3 +1,5 @@
+import { isMemoryRetrievalEnabled } from './feature-flags.js';
+export { isMemoryRetrievalEnabled } from './feature-flags.js';
 const DEFAULT_TOKEN_BUDGET = 1000;
 const DEFAULT_MAX_SUMMARY_CHARS = 240;
 const DEFAULT_MAX_CONTEXT_CHARS = 320;
@@ -128,32 +130,6 @@ function toContextString(agentContext) {
   }
 
   return String(agentContext).trim();
-}
-
-/**
- * Supports safe rollout and canarying with one env var:
- * - true/1/on/all => enabled for all agents
- * - false/0/off/no/empty => disabled
- * - comma-separated agent ids => enabled only for matching ids
- *
- * @param {string} agentId
- * @param {Record<string, string | undefined>} [env]
- */
-export function isMemoryRetrievalEnabled(agentId, env = process.env) {
-  const raw = String(env.TORCH_MEMORY_RETRIEVAL_ENABLED ?? '').trim();
-  if (!raw) return false;
-
-  const normalized = raw.toLowerCase();
-  if (['0', 'false', 'off', 'no', 'disabled'].includes(normalized)) return false;
-  if (['1', 'true', 'on', 'yes', 'enabled', 'all'].includes(normalized)) return true;
-
-  const allowList = raw
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
-
-  if (allowList.length === 0) return false;
-  return allowList.includes(agentId);
 }
 
 /**
