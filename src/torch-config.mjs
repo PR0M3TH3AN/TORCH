@@ -45,6 +45,7 @@ export function loadTorchConfig() {
   const dashboard = raw.dashboard || {};
   const scheduler = raw.scheduler || {};
   const firstPromptByCadence = scheduler.firstPromptByCadence || {};
+  const paused = scheduler.paused || {};
 
   cachedConfig = {
     configPath,
@@ -76,6 +77,10 @@ export function loadTorchConfig() {
       firstPromptByCadence: {
         daily: typeof firstPromptByCadence.daily === 'string' ? firstPromptByCadence.daily.trim() : null,
         weekly: typeof firstPromptByCadence.weekly === 'string' ? firstPromptByCadence.weekly.trim() : null,
+      },
+      paused: {
+        daily: parseRoster(paused.daily) || [],
+        weekly: parseRoster(paused.weekly) || [],
       },
     },
   };

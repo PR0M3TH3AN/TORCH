@@ -51,6 +51,7 @@ Common settings:
 - `dashboard.defaultCadenceView` — default dashboard view (`daily`, `weekly`, `all`).
 - `dashboard.defaultStatusView` — default dashboard status filter (`active`, `all`).
 - `scheduler.firstPromptByCadence.daily` / `.weekly` — first-run scheduler starting agent.
+- `scheduler.paused.daily` / `.weekly` — array of agent names to exclude from scheduler rotation.
 
 Default first-run daily scheduler prompt is `scheduler-update-agent`.
 

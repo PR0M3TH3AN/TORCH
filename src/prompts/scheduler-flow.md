@@ -37,7 +37,7 @@ Use this document for all scheduler runs.
    Selection algorithm (MUST be followed exactly):
 
    - Roster source: `src/prompts/roster.json` and the key matching `<cadence>`.
-   - Let `roster` be that ordered array and `excluded` be the locked set from step 2.
+   - Let `roster` be that ordered array and `excluded` be the `excluded` set (including paused and locked agents) from the JSON output of step 2.
    - Let `latest_file` be the lexicographically last filename in `<log_dir>`.
    - Determine `previous_agent` from `latest_file` using this precedence:
      1. Parse YAML frontmatter from `<log_dir>/<latest_file>` and use key `agent` when present and non-empty.

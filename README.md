@@ -26,6 +26,7 @@ Create a `torch-config.json` file in your project root (or set `TORCH_CONFIG_PAT
 - `dashboard.defaultCadenceView` (`daily`, `weekly`, or `all`)
 - `dashboard.defaultStatusView` (`active` or `all`)
 - `scheduler.firstPromptByCadence.daily` / `.weekly`
+- `scheduler.paused.daily` / `.weekly` (array of agent names to pause locally)
 
 Weekly alignment maintenance is available via `src/prompts/weekly/repo-fit-agent.md`, which is designed to keep TORCH defaults and docs tuned to the host repository over time.
 
