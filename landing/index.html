@@ -250,6 +250,89 @@
             text-decoration: underline;
         }
 
+        /* Meta Prompts Section */
+        .meta-prompts {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .meta-prompts h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-strong);
+        }
+
+        .prompts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .prompt-card {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prompt-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .prompt-title {
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .prompt-content {
+            padding: 0;
+            margin: 0;
+            background: #0d1117;
+            overflow: auto;
+            max-height: 400px;
+            flex: 1;
+        }
+
+        .prompt-content pre {
+            margin: 0;
+            padding: 1.5rem;
+        }
+
+        .prompt-content code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            color: #e6edf3;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
         footer {
             margin-top: auto;
             padding: 2rem;
@@ -305,6 +388,30 @@
                 <div class="feature-icon">🔒</div>
                 <div class="feature-title">Decentralized Locking</div>
                 <div class="feature-desc">Powered by Nostr for secure, distributed task orchestration.</div>
+            </div>
+        </section>
+
+        <section class="meta-prompts">
+            <h2>Scheduler Meta Prompts</h2>
+            <div class="prompts-grid">
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <span class="prompt-title">Daily Scheduler</span>
+                        <button class="copy-btn" onclick="copyToClipboard('daily-code', this)">Copy</button>
+                    </div>
+                    <div class="prompt-content">
+                        <pre><code id="daily-code">Loading...</code></pre>
+                    </div>
+                </div>
+                <div class="prompt-card">
+                    <div class="prompt-header">
+                        <span class="prompt-title">Weekly Scheduler</span>
+                        <button class="copy-btn" onclick="copyToClipboard('weekly-code', this)">Copy</button>
+                    </div>
+                    <div class="prompt-content">
+                        <pre><code id="weekly-code">Loading...</code></pre>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -369,6 +476,53 @@
                 contentDiv.innerHTML = `<p class="text-danger">Error loading documentation: ${error.message}</p>`;
             }
         }
+
+        // Meta Prompts Logic
+        async function fetchMetaPrompts() {
+            try {
+                const response = await fetch('src/prompts/META_PROMPTS.md');
+                if (!response.ok) throw new Error('Failed to load prompts');
+                const text = await response.text();
+
+                // Regex to capture content between ```text and ``` inside the headers
+                // strict on the header, loose on the code block language (text, markdown, or none)
+                const dailyMatch = text.match(/## Daily Scheduler Meta Prompt[\s\S]*?```\w*([\s\S]*?)```/);
+                const weeklyMatch = text.match(/## Weekly Scheduler Meta Prompt[\s\S]*?```\w*([\s\S]*?)```/);
+
+                if (dailyMatch && dailyMatch[1]) {
+                    document.getElementById('daily-code').textContent = dailyMatch[1].trim();
+                }
+
+                if (weeklyMatch && weeklyMatch[1]) {
+                    document.getElementById('weekly-code').textContent = weeklyMatch[1].trim();
+                }
+            } catch (error) {
+                console.error('Error fetching meta prompts:', error);
+                document.getElementById('daily-code').textContent = 'Error loading prompt.';
+                document.getElementById('weekly-code').textContent = 'Error loading prompt.';
+            }
+        }
+
+        function copyToClipboard(elementId, btn) {
+            const code = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.borderColor = 'var(--success)';
+                btn.style.color = 'var(--success)';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        // Initialize Meta Prompts
+        fetchMetaPrompts();
     </script>
 </body>
 </html>
