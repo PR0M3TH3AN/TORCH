@@ -37,7 +37,7 @@ Create/update these files/folders (commit them in the branch when PRing):
 - `test_logs/TEST_LOG_<timestamp>.md` — exact commands run and their outputs (timestamped).
 - Optionally: `torch/scripts/deps-audit.sh` for reproducible automation.
 
-Also read `AGENTS.md` and `docs/KNOWN_ISSUES.md` for project-specific caveats (e.g., the repo uses `integration-tools`, `webtorrent`, `Playwright`, `Tailwind`). Tag these libraries for special handling.
+Also read `AGENTS.md` and `KNOWN_ISSUES.md` for project-specific caveats (e.g., the repo uses `integration-tools`, `webtorrent`, `Playwright`, `Tailwind`). Tag these libraries for special handling.
 
 --------------------------------------------------------------------------------
 PACKAGE MANAGER DETECTION

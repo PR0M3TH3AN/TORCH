@@ -39,7 +39,7 @@ Create or update these files and folders in the repo before making changes:
   - `test-audit/coverage-summary.json`
   - `test-audit/mutation-summary.json`
 
-Always read `AGENTS.md` and `docs/KNOWN_ISSUES.md` for repo-specific caveats (login/relay/video schemas, integration libs, etc.) before editing tests.
+Always read `AGENTS.md` and `KNOWN_ISSUES.md` for repo-specific caveats (login/relay/video schemas, integration libs, etc.) before editing tests.
 
 ===============================================================================
 DAILY WORKFLOW (run every day or as scheduled)
