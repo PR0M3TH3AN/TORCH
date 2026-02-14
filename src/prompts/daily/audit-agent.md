@@ -40,8 +40,8 @@ PRIMARY WORKFLOW (end-to-end)
 
 2. **Run audit scripts (report mode)**
    - Run the three audit commands as stated:
-     - `node scripts/check-file-size.mjs --report 2>&1 | tee artifacts/audit/$(date +%F)/raw-check-file-size.log`
-     - `node scripts/check-innerhtml.mjs --report 2>&1 | tee artifacts/audit/$(date +%F)/raw-check-innerhtml.log`
+     - `node torch/scripts/check-file-size.mjs --report 2>&1 | tee artifacts/audit/$(date +%F)/raw-check-file-size.log`
+     - `node torch/scripts/check-innerhtml.mjs --report 2>&1 | tee artifacts/audit/$(date +%F)/raw-check-innerhtml.log`
      - `npm run lint 2>&1 | tee artifacts/audit/$(date +%F)/raw-lint.log`
    - If the repository uses `pnpm`/`yarn`, run lint with the repo’s recommended command from `package.json`.
    - Save raw outputs in `artifacts/audit/YYYY-MM-DD/`.
@@ -124,9 +124,9 @@ ADDITIONAL GUIDANCE & BEST PRACTICES
 ===============================================================================
 SEARCH / PARSING HELPER SCRIPTS (examples)
 - Parse file-size raw log into JSON:
-  - `node scripts/parse-file-size-report.js artifacts/audit/YYYY-MM-DD/raw-check-file-size.log > artifacts/audit/YYYY-MM-DD/file-size-report.json`
+  - `node torch/scripts/parse-file-size-report.js artifacts/audit/YYYY-MM-DD/raw-check-file-size.log > artifacts/audit/YYYY-MM-DD/file-size-report.json`
 - Parse innerHTML log similarly:
-  - `node scripts/parse-innerhtml-report.js ...`
+  - `node torch/scripts/parse-innerhtml-report.js ...`
 - If the repo’s scripts support `--json` or `--output`, prefer those flags.
 
 If such parsers do not exist, implement tiny Node scripts that reliably parse the scripts’ expected output.
@@ -212,8 +212,8 @@ FIRST-RUN CHECKLIST (do this now)
 2. Create artifacts directory:
    - `mkdir -p artifacts/audit/$(date +%F)`
 3. Run the 3 audit scripts in report mode:
-   - `node scripts/check-file-size.mjs --report`
-   - `node scripts/check-innerhtml.mjs --report`
+   - `node torch/scripts/check-file-size.mjs --report`
+   - `node torch/scripts/check-innerhtml.mjs --report`
    - `npm run lint`
    - Save raw outputs to `artifacts/audit/$(date +%F)/`
    - Record commands & outputs in `test_logs/TEST_LOG_<timestamp>.md`

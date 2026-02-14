@@ -80,9 +80,9 @@ WORKFLOW
 1) Preflight
   - Read `AGENTS.md` and `CLAUDE.md` for:
       - security constraints (crypto, key handling, relay policy)
-      - conventions for `scripts/agent/`, `examples/`, and artifacts
+      - conventions for `torch/scripts/agent/`, `examples/`, and artifacts
   - Confirm whether these directories exist and are used in repo:
-      - `scripts/agent/`
+      - `torch/scripts/agent/`
       - `examples/reproducers/`
       - `artifacts/`
     If not present, do not invent structure—open an issue proposing where fuzz
@@ -102,8 +102,8 @@ WORKFLOW
           - unhandled exception from invalid inputs
 
 3) Implement the fuzz harness
-  File naming (only if `scripts/agent/` is valid in repo):
-  - `scripts/agent/fuzz-<target>.mjs`
+  File naming (only if `torch/scripts/agent/` is valid in repo):
+  - `torch/scripts/agent/fuzz-<target>.mjs`
 
   Harness requirements:
   - Inputs: randomized cases covering:
@@ -205,7 +205,7 @@ Issue must include:
 ───────────────────────────────────────────────────────────────────────────────
 OUTPUTS PER RUN
 
-- `scripts/agent/fuzz-<target>.mjs` (if repo conventions allow)
+- `torch/scripts/agent/fuzz-<target>.mjs` (if repo conventions allow)
 - 0–N reproducers under `examples/reproducers/` (if allowed)
 - `artifacts/fuzz-report-<target>-YYYYMMDD.json` (committed only if allowed)
 - 0–1 PR (harness + repros, optionally small safe guards/tests)

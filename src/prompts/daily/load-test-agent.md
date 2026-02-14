@@ -17,7 +17,7 @@ policy and open an issue rather than improvising.
 SCOPE
 
 In scope:
-  - Creating/maintaining a load test script under `scripts/agent/` (only if that
+  - Creating/maintaining a load test script under `torch/scripts/agent/` (only if that
     directory exists in repo; verify first).
   - Simulating many clients connecting to a relay and publishing configurable
     mixes of events at configurable rates.
@@ -87,12 +87,12 @@ WORKFLOW
       - existing event schema builders (e.g., integration event schema utilities)
       - existing relay interaction clients/helpers
       - docs describing playback fallback and relay write safety
-  - Confirm whether `scripts/agent/` and `artifacts/` are established patterns.
+  - Confirm whether `torch/scripts/agent/` and `artifacts/` are established patterns.
     If not, do not invent directory conventions—open an issue proposing layout.
 
 2) Implement load harness (minimal, configurable)
   Target file (only if verified appropriate in repo):
-  - `scripts/agent/load-test.mjs`
+  - `torch/scripts/agent/load-test.mjs`
 
   The harness must support configuration via env vars and/or CLI flags:
   - `RELAY_URL` (required)
@@ -184,7 +184,7 @@ Open an issue instead of proceeding when:
 ───────────────────────────────────────────────────────────────────────────────
 OUTPUTS PER RUN
 
-- `scripts/agent/load-test.mjs` (or repo-approved equivalent)
+- `torch/scripts/agent/load-test.mjs` (or repo-approved equivalent)
 - A load report (JSON) produced locally (and committed only if repo allows)
 - A prioritized list of bottlenecks tied to measured evidence
 - 0–N issues for non-trivial bottlenecks, especially security-sensitive ones

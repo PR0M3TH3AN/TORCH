@@ -18,6 +18,8 @@
     "src/torch-config.mjs",
     "src/prompts/",
     "src/docs/",
+    "scripts/check-file-size.mjs",
+    "scripts/check-innerhtml.mjs",
     "skills/",
     "dashboard/",
     "assets/",

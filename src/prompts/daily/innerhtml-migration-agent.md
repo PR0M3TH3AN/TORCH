@@ -7,7 +7,7 @@ This document is your operating manual. Follow it exactly: do not attempt to mig
 ===============================================================================
 HARD CONSTRAINTS & SAFETY
 - Target branch: **<default-branch>**. Do not modify other branches.
-- Migrate **only ONE** file per PR. Choose a single file from `node scripts/check-innerhtml.mjs --report`.
+- Migrate **only ONE** file per PR. Choose a single file from `node torch/scripts/check-innerhtml.mjs --report`.
 - Do **not** change semantics. Preserve structure, event handlers, attributes, dataset values, and ordering.
 - **Never** output user-supplied data as raw HTML. All interpolated user content must be escaped with `escapeHtml()` from `js/utils/domUtils.js`.
 - Do **not** introduce new third-party libraries unless approved.
@@ -32,7 +32,7 @@ WORKFLOW — top-level steps (one file only)
    - `node -v` and `npm -v` recorded in `context/CONTEXT_<timestamp>.md`
    - Run the innerHTML report:
      ```
-     node scripts/check-innerhtml.mjs --report | tee perf/innerhtml/raw-report-$(date +%F).log
+     node torch/scripts/check-innerhtml.mjs --report | tee perf/innerhtml/raw-report-$(date +%F).log
      ```
    - Inspect the report and **choose exactly one file** to migrate. Prefer:
      - Files labeled `RISKY` in the audit (user data without escaping).
@@ -103,9 +103,9 @@ WORKFLOW — top-level steps (one file only)
 7. **Update baseline**
    - After verifying, update the baseline counts so the `check-innerhtml` script knows this file was addressed:
      ```
-     node scripts/check-innerhtml.mjs --update
+     node torch/scripts/check-innerhtml.mjs --update
      ```
-   - The script prints a new `BASELINE` object. **Copy** the updated `BASELINE` object into `scripts/check-innerhtml.mjs` (replace existing `BASELINE`).
+   - The script prints a new `BASELINE` object. **Copy** the updated `BASELINE` object into `torch/scripts/check-innerhtml.mjs` (replace existing `BASELINE`).
    - Commit the updated script with a note in `decisions/DECISIONS_<timestamp>.md` explaining the baseline change.
 
    NOTE: Only update the baseline after verifying replacements and ensuring the overall innerHTML count has decreased appropriately.
@@ -125,7 +125,7 @@ WORKFLOW — top-level steps (one file only)
      - files in `context/`, `todo/`, `decisions/`, `test_logs/`
      - A short summary of the file and changes:
        - List of assignments replaced and strategy for each.
-       - Before/after innerHTML counts (run `node scripts/check-innerhtml.mjs --report` before and after and paste results).
+       - Before/after innerHTML counts (run `node torch/scripts/check-innerhtml.mjs --report` before and after and paste results).
        - Lint and unit test results.
        - Manual QA steps and results.
      - Highlight any remaining `innerHTML` assignments intentionally left (with rationale).
@@ -229,8 +229,8 @@ ACCEPTANCE CRITERIA (before merging)
 
 * The chosen file’s `innerHTML` assignments are replaced or documented; user data is escaped or DOM-built.
 * Lint passes and unit tests pass locally and in CI.
-* `scripts/check-innerhtml.mjs --report` shows reduced count for the chosen file.
-* Updated `BASELINE` object copied into `scripts/check-innerhtml.mjs`.
+* `torch/scripts/check-innerhtml.mjs --report` shows reduced count for the chosen file.
+* Updated `BASELINE` object copied into `torch/scripts/check-innerhtml.mjs`.
 * PR contains files in `context/`, `todo/`, `decisions/`, `test_logs/`, summary of before/after, and QA steps.
 * Commit message prefix is `[security]`.
 
@@ -252,6 +252,6 @@ FINAL NOTES & Etiquette
 
 Begin now:
 
-1. Run `node scripts/check-innerhtml.mjs --report`
+1. Run `node torch/scripts/check-innerhtml.mjs --report`
 2. Pick **ONE** file (RISKY/high-count preferred).
 3. Follow the workflow above and open a `[security]` PR to `<default-branch>` when ready.
