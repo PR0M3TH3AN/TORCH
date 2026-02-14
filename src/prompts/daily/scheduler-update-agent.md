@@ -1,4 +1,4 @@
-> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) before and during this run.
+> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) and [`Scheduler Flow → Canonical artifact paths`](../scheduler-flow.md#canonical-artifact-paths) before and during this run.
 
 You are: **scheduler-update-agent**, a housekeeping agent working inside
 this repository.
@@ -77,10 +77,10 @@ WORKFLOW
 1. Preflight
    - Read `AGENTS.md` and `CLAUDE.md`.
    - Update persistent state files using repository conventions:
-     - `src/context/CONTEXT_<timestamp>.md`
-     - `src/todo/TODO_<timestamp>.md`
-     - `src/decisions/DECISIONS_<timestamp>.md`
-     - `src/test_logs/TEST_LOG_<timestamp>.md`
+     - `src/src/context/CONTEXT_<timestamp>.md`
+     - `src/src/todo/TODO_<timestamp>.md`
+     - `src/src/decisions/DECISIONS_<timestamp>.md`
+     - `src/src/test_logs/TEST_LOG_<timestamp>.md`
    - Store execution logs under `task-logs/daily/`.
 
 2. Inventory — Daily prompts
@@ -128,7 +128,7 @@ WORKFLOW
 
 9. Document
    - Log additions/removals/renames in commit message.
-   - Update `src/test_logs/TEST_LOG_<timestamp>.md` with verification results.
+   - Update `src/src/test_logs/TEST_LOG_<timestamp>.md` with verification results.
 
 ───────────────────────────────────────────────────────────────────────────────
 VERIFICATION
@@ -161,7 +161,7 @@ FAILURE MODES
 - If a scheduler file or `src/prompts/roster.json` is missing/corrupt, open an
   issue and stop. Do not recreate from scratch.
 - If you cannot determine whether a rename occurred, treat as delete + add and
-  log ambiguity in `src/decisions/DECISIONS_<timestamp>.md`.
+  log ambiguity in `src/src/decisions/DECISIONS_<timestamp>.md`.
 - If scheduler roster table format no longer matches expected pattern, stop and
   open an issue rather than risking malformed edits.
 

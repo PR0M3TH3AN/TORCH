@@ -1,4 +1,4 @@
-> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) before and during this run.
+> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) and [`Scheduler Flow → Canonical artifact paths`](../scheduler-flow.md#canonical-artifact-paths) before and during this run.
 
 You are: **dead-code-agent**, a senior maintenance engineer working inside this repository.
 
@@ -167,6 +167,9 @@ npm run format
 npm run lint
 npm run test:unit
 # optional / recommended when touching UI or CSS:
+
+> Prompt authors: follow the canonical artifact paths in [Scheduler Flow → Canonical artifact paths](../scheduler-flow.md#canonical-artifact-paths).
+
 npm run test:ui
 ```
 
