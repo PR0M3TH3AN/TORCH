@@ -182,9 +182,9 @@ export async function ingestMemoryWindow(input = {}, options = {}) {
 
     const chunks = chunkEvents(sorted, options);
     for (const chunk of chunks) {
-      const summary = summarizeEvents(chunk, options);
+      const summarization = await summarizeEvents(chunk, options);
       const contextText = chunk.map((event) => event.content).join('\n');
-      const embedding = await embedText(`${summary}\n${contextText}`, options);
+      const embedding = await embedText(`${summarization.summary}\n${contextText}`, options);
       const chunkStart = Math.min(...chunk.map((event) => event.timestamp));
       const chunkEnd = Math.max(...chunk.map((event) => event.timestamp));
 
@@ -193,9 +193,11 @@ export async function ingestMemoryWindow(input = {}, options = {}) {
         session_id: typeof chunk[0]?.metadata?.session_id === 'string' ? chunk[0].metadata.session_id : 'unknown',
         type: 'batch_window',
         content: contextText,
-        summary,
+        summary: summarization.summary,
         tags: [...new Set(chunk.flatMap((event) => event.tags))],
-        importance: Number.isFinite(chunk[0]?.metadata?.importance) ? Number(chunk[0].metadata.importance) : 0.5,
+        importance: Number.isFinite(chunk[0]?.metadata?.importance)
+          ? Number(chunk[0].metadata.importance)
+          : summarization.importance,
         embedding_id: Array.isArray(embedding) && embedding.length > 0 ? randomUUID() : null,
         created_at: chunkStart,
         last_seen: chunkEnd,
