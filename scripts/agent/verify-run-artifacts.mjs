@@ -37,13 +37,18 @@ const REQUIRED_ARTIFACTS = [
 ];
 
 const FAILURE_KEYWORD_RE = /\b(fail|failed|failure|error)\b/i;
-const UNRESOLVED_REFERENCE_RE = /\bunresolved\s+finding(s)?\b|\bunresolved\b/i;
+const STATUS_RESOLVED_RE = /\b(resolved|closed|fixed)\b/i;
+const IDENTIFIER_INLINE_PATTERN = String.raw`\[([A-Za-z0-9._-]{3,})\]`;
 
 function parseArgs(argv) {
   const args = {
     since: null,
     session: null,
     checkFailureNotes: false,
+    agent: null,
+    cadence: null,
+    promptPath: null,
+    runStart: null,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -60,6 +65,26 @@ function parseArgs(argv) {
     }
     if (value === '--check-failure-notes') {
       args.checkFailureNotes = true;
+      continue;
+    }
+    if (value === '--agent') {
+      args.agent = argv[i + 1] || null;
+      i += 1;
+      continue;
+    }
+    if (value === '--cadence') {
+      args.cadence = argv[i + 1] || null;
+      i += 1;
+      continue;
+    }
+    if (value === '--prompt-path') {
+      args.promptPath = argv[i + 1] || null;
+      i += 1;
+      continue;
+    }
+    if (value === '--run-start') {
+      args.runStart = argv[i + 1] || null;
+      i += 1;
     }
   }
 
@@ -118,57 +143,163 @@ async function hasValidArtifactStructure(files, artifact) {
   return false;
 }
 
+function readMetadataValue(content, keys) {
+  for (const key of keys) {
+    const re = new RegExp(`^\\s*(?:[-*]\\s*)?\\**${key}\\**\\s*:\\s*(.+)$`, 'im');
+    const match = content.match(re);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  return null;
+}
+
+function extractIdentifiers(content) {
+  const ids = new Set();
+  const lines = content.split(/\r?\n/);
+  for (const line of lines) {
+    if (/(issue|incident|failure)[-_\s]*id/i.test(line)) {
+      const match = line.match(/([A-Za-z0-9._-]{3,})\s*$/);
+      if (match) ids.add(match[1]);
+    }
+    for (const inline of line.matchAll(new RegExp(IDENTIFIER_INLINE_PATTERN, 'g'))) {
+      ids.add(inline[1]);
+    }
+  }
+  return ids;
+}
+
+function collectUnresolvedKnownIssueIds(content) {
+  const ids = new Set();
+  const sections = content.split(/^###\s+/m).slice(1);
+  for (const sectionRaw of sections) {
+    const section = sectionRaw.trim();
+    const statusMatch = section.match(/\*\*Status:\*\*\s*(.+)$/im);
+    const status = (statusMatch?.[1] || '').trim();
+    if (status && STATUS_RESOLVED_RE.test(status)) {
+      continue;
+    }
+    for (const id of extractIdentifiers(section)) {
+      ids.add(id);
+    }
+  }
+  return ids;
+}
+
+async function validateArtifactMetadata(files, { agent, cadence, promptPath, runStart }) {
+  const failures = [];
+  const promptPathResolved = promptPath ? path.resolve(process.cwd(), promptPath) : null;
+  const promptRelative = promptPathResolved ? path.relative(process.cwd(), promptPathResolved) : null;
+  const promptBase = promptPathResolved ? path.basename(promptPathResolved) : null;
+
+  for (const file of files) {
+    const content = await fs.readFile(file.filePath, 'utf8').catch(() => '');
+    const fileErrors = [];
+
+    const agentValue = readMetadataValue(content, ['agent']);
+    const cadenceValue = readMetadataValue(content, ['cadence']);
+    const sessionValue = readMetadataValue(content, ['session']);
+    const runStartValue = readMetadataValue(content, ['run-start', 'run_start', 'run start']);
+
+    if (!agentValue) fileErrors.push('missing `agent:` metadata');
+    if (!cadenceValue) fileErrors.push('missing `cadence:` metadata');
+    if (!sessionValue && !runStartValue) fileErrors.push('missing `session:` or `run-start:` metadata');
+
+    if (agent && agentValue && agentValue !== agent) {
+      fileErrors.push(`agent metadata "${agentValue}" does not match active SCHEDULER_AGENT "${agent}"`);
+    }
+    if (cadence && cadenceValue && cadenceValue !== cadence) {
+      fileErrors.push(`cadence metadata "${cadenceValue}" does not match active cadence "${cadence}"`);
+    }
+    if (runStart && runStartValue && runStartValue !== runStart) {
+      fileErrors.push(`run-start metadata "${runStartValue}" does not match active run-start "${runStart}"`);
+    }
+
+    if (agent && !content.includes(agent)) {
+      fileErrors.push(`content does not reference active SCHEDULER_AGENT "${agent}"`);
+    }
+
+    if (promptPathResolved) {
+      const referencesPrompt = [promptPathResolved, promptRelative, promptBase].filter(Boolean)
+        .some((candidate) => content.includes(candidate));
+      if (!referencesPrompt) {
+        fileErrors.push(`content does not reference active prompt file (${promptRelative || promptPathResolved})`);
+      }
+    }
+
+    if (fileErrors.length) {
+      failures.push(`${path.relative(process.cwd(), file.filePath)}: ${fileErrors.join('; ')}`);
+    }
+  }
+
+  return failures;
+}
+
 async function checkFailureTracking({ sinceMs }) {
   const recentTestLogs = await listRecentFiles(path.resolve(process.cwd(), 'src/test_logs'), sinceMs);
-  let sawFailure = false;
+  const failureIds = new Set();
+  const logsWithFailureNoIds = [];
 
   for (const file of recentTestLogs) {
     const content = await fs.readFile(file.filePath, 'utf8').catch(() => '');
     if (FAILURE_KEYWORD_RE.test(content)) {
-      sawFailure = true;
-      break;
+      const ids = extractIdentifiers(content);
+      if (!ids.size) {
+        logsWithFailureNoIds.push(path.relative(process.cwd(), file.filePath));
+      }
+      for (const id of ids) failureIds.add(id);
     }
   }
 
-  if (!sawFailure) {
+  if (!failureIds.size && !logsWithFailureNoIds.length) {
     return { ok: true, message: null };
   }
 
-  const knownIssuesPath = path.resolve(process.cwd(), 'KNOWN_ISSUES.md');
-  const knownIssuesStat = await fs.stat(knownIssuesPath).catch(() => null);
-  const knownIssuesContent = await fs.readFile(knownIssuesPath, 'utf8').catch(() => '');
-  const incidents = await listRecentFiles(path.resolve(process.cwd(), 'docs/agent-handoffs/incidents'), sinceMs);
-
-  const touchedKnownIssues = Boolean(knownIssuesStat && (sinceMs == null || knownIssuesStat.mtimeMs >= sinceMs));
-  const knownIssuesHasExplicitReference = touchedKnownIssues
-    && UNRESOLVED_REFERENCE_RE.test(knownIssuesContent)
-    && FAILURE_KEYWORD_RE.test(knownIssuesContent);
-
-  let incidentHasExplicitReference = false;
-  for (const incident of incidents) {
-    const incidentContent = await fs.readFile(incident.filePath, 'utf8').catch(() => '');
-    if (UNRESOLVED_REFERENCE_RE.test(incidentContent) && FAILURE_KEYWORD_RE.test(incidentContent)) {
-      incidentHasExplicitReference = true;
-      break;
-    }
+  if (logsWithFailureNoIds.length) {
+    return {
+      ok: false,
+      message: `Failure-related output detected in test logs without identifiers. Add Issue/Incident identifiers to: ${logsWithFailureNoIds.join(', ')}`,
+    };
   }
 
-  if (knownIssuesHasExplicitReference || incidentHasExplicitReference) {
+  const knownIssuesPath = path.resolve(process.cwd(), 'KNOWN_ISSUES.md');
+  const knownIssuesContent = await fs.readFile(knownIssuesPath, 'utf8').catch(() => '');
+  const unresolvedKnownIssueIds = collectUnresolvedKnownIssueIds(knownIssuesContent);
+  const incidents = await listRecentFiles(path.resolve(process.cwd(), 'docs/agent-handoffs/incidents'), sinceMs);
+
+  const incidentIds = new Set();
+  for (const incident of incidents) {
+    const incidentContent = await fs.readFile(incident.filePath, 'utf8').catch(() => '');
+    for (const id of extractIdentifiers(incidentContent)) incidentIds.add(id);
+  }
+
+  const unmatched = [...failureIds].filter((id) => !unresolvedKnownIssueIds.has(id) && !incidentIds.has(id));
+
+  if (!unmatched.length) {
     return { ok: true, message: null };
   }
 
   return {
     ok: false,
-    message: 'Failure-related output detected in src/test_logs; add an explicit unresolved-finding reference (with failure context) in updated KNOWN_ISSUES.md or a new incident note.',
+    message: `Failure identifiers found in src/test_logs are not cross-linked to unresolved KNOWN_ISSUES.md entries or new incident notes: ${unmatched.join(', ')}`,
   };
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const sinceMs = toMs(args.since);
+  const activeAgent = args.agent || process.env.SCHEDULER_AGENT || null;
+  const activeCadence = args.cadence || process.env.SCHEDULER_CADENCE || null;
+  const activePromptPath = args.promptPath || process.env.SCHEDULER_PROMPT_PATH || null;
+  const activeRunStart = args.runStart || null;
 
   if (args.since && sinceMs == null) {
     console.error(`Invalid --since value: ${args.since}`);
+    process.exit(2);
+  }
+
+  if (!activeAgent || !activePromptPath) {
+    console.error('Missing scheduler context: provide --agent and --prompt-path (or set SCHEDULER_AGENT/SCHEDULER_PROMPT_PATH).');
     process.exit(2);
   }
 
@@ -197,6 +328,14 @@ async function main() {
     if (!hasValidStructure) {
       missing.push(`${artifact.dir}: ${artifact.structureHint}`);
     }
+
+    const metadataFailures = await validateArtifactMetadata(matchingArtifacts, {
+      agent: activeAgent,
+      cadence: activeCadence,
+      promptPath: activePromptPath,
+      runStart: activeRunStart,
+    });
+    missing.push(...metadataFailures);
   }
 
   if (args.checkFailureNotes) {
