@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { cmdCheck, cmdLock, cmdList } from '../src/lib.mjs';
+import { cmdCheck, cmdLock, cmdList, cmdComplete } from '../src/lib.mjs';
 
 describe('src/lib.mjs', () => {
   // Common mocks
@@ -148,6 +148,23 @@ describe('src/lib.mjs', () => {
       assert.match(logs.join('\n'), /LOCK_STATUS=denied/);
     });
 
+    it('fails if agent is already completed', async () => {
+      const existingLocks = [
+        { agent: 'agent1', eventId: 'done-id', status: 'completed' }
+      ];
+      const deps = {
+        ...baseDeps,
+        queryLocks: async () => existingLocks,
+      };
+
+      await assert.rejects(
+        async () => await cmdLock('agent1', 'daily', false, deps),
+        (err) => err.code === 3 && err.message === 'Task already completed'
+      );
+      assert.match(logs.join('\n'), /LOCK_STATUS=denied/);
+      assert.match(logs.join('\n'), /LOCK_REASON=already_completed/);
+    });
+
     it('fails if race check is lost', async () => {
       let callCount = 0;
       const deps = {
@@ -165,12 +182,6 @@ describe('src/lib.mjs', () => {
             agent: 'agent1',
             eventId: 'mock-id',
             createdAt: 200, // our timestamp (mocked event)
-             // We need to ensure cmdLock sees this as later.
-             // In cmdLock, `now` is mocked via verify? No, `now` is `nowUnix()`.
-             // But we can't easily mock `nowUnix` inside `cmdLock` without injecting it too.
-             // However, `cmdLock` compares `createdAt`.
-             // The mocked event has `created_at: now`.
-             // If we return a lock with smaller `createdAt`, we lose.
           }];
         },
         publishLock: async () => {},
@@ -179,14 +190,6 @@ describe('src/lib.mjs', () => {
         finalizeEvent: mockFinalizeEvent,
         raceCheckDelayMs: 1,
       };
-
-      // We need to make sure the "winner" has explicit createdAt that is definitely before what cmdLock generates.
-      // cmdLock uses Math.floor(Date.now() / 1000).
-      // We can't mock Date.now easily unless we inject it.
-      // But we can inject `finalizeEvent` to control the created timestamp of our event?
-      // No, `finalizeEvent` receives the template.
-      // Let's rely on the fact that `cmdLock` uses `nowUnix()`.
-      // The "winner" in `queryLocks` return can have `createdAt: 0`.
 
       await assert.rejects(
         async () => await cmdLock('agent1', 'daily', false, deps),
@@ -257,6 +260,69 @@ describe('src/lib.mjs', () => {
 
       const output = logs.join('\n');
       assert.match(output, /\(no active locks\)/);
+    });
+  });
+
+  describe('cmdComplete', () => {
+    const mockPublishLock = async () => {};
+    const mockGenerateSecretKey = () => new Uint8Array(32);
+    const mockGetPublicKey = () => 'mock-pubkey';
+    const mockFinalizeEvent = (t) => ({ ...t, id: 'mock-id-complete' });
+
+    it('successfully completes an active lock', async () => {
+      let publishedEvent = null;
+      const locks = [
+        { agent: 'agent1', eventId: 'lock-id', createdAt: 100, createdAtIso: 'iso1', status: 'started' }
+      ];
+      const deps = {
+        ...baseDeps,
+        queryLocks: async () => locks,
+        publishLock: async (relays, evt) => { publishedEvent = evt; },
+        generateSecretKey: mockGenerateSecretKey,
+        getPublicKey: mockGetPublicKey,
+        finalizeEvent: mockFinalizeEvent,
+      };
+
+      const result = await cmdComplete('agent1', 'daily', false, deps);
+
+      assert.strictEqual(result.status, 'completed');
+      assert.strictEqual(result.eventId, 'mock-id-complete');
+      assert.ok(publishedEvent);
+      // Verify no expiration tag
+      const expTag = publishedEvent.tags.find(t => t[0] === 'expiration');
+      assert.strictEqual(expTag, undefined);
+      // Verify content
+      const content = JSON.parse(publishedEvent.content);
+      assert.strictEqual(content.status, 'completed');
+      assert.strictEqual(content.startedAt, 'iso1');
+      assert.match(logs.join('\n'), /LOCK_STATUS=completed/);
+    });
+
+    it('fails if no active lock found', async () => {
+      const deps = {
+        ...baseDeps,
+        queryLocks: async () => [], // No locks
+      };
+
+      await assert.rejects(
+        async () => await cmdComplete('agent1', 'daily', false, deps),
+        (err) => err.code === 1 && err.message === 'No active lock found'
+      );
+    });
+
+    it('detects already completed task', async () => {
+      const locks = [
+        { agent: 'agent1', eventId: 'done-id', status: 'completed' }
+      ];
+      const deps = {
+        ...baseDeps,
+        queryLocks: async () => locks,
+      };
+
+      const result = await cmdComplete('agent1', 'daily', false, deps);
+      assert.strictEqual(result.status, 'completed');
+      assert.strictEqual(result.eventId, 'done-id');
+      assert.match(logs.join('\n'), /LOCK_STATUS=completed/);
     });
   });
 });
