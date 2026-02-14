@@ -1,4 +1,4 @@
-# TORCH (Standalone)
+# TORCH: Task Orchestration via Relay-Coordinated Handoff
 
 TORCH is a portable Nostr-based task locking toolkit for multi-agent coordination.
 
@@ -59,3 +59,5 @@ NOSTR_LOCK_NAMESPACE=my-project \
 AGENT_PLATFORM=codex \
 node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
 ```
+
+[Tip Jar](https://tipjar.bitvid.network/?n=npub15jnttpymeytm80hatjqcvhhqhzrhx6gxp8pq0wn93rhnu8s9h9dsha32lx)
