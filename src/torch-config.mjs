@@ -37,7 +37,7 @@ export function loadTorchConfig() {
     try {
       raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     } catch (err) {
-      throw new Error(`Failed to parse ${configPath}: ${err.message}`);
+      throw new Error(`Failed to parse ${configPath}: ${err.message}`, { cause: err });
     }
   }
 
