@@ -256,6 +256,7 @@ async function main() {
     }
 
     const promptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
+    const runArtifactSince = new Date().toISOString();
     if (schedulerConfig.handoffCommand) {
       const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
         env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
@@ -270,6 +271,24 @@ async function main() {
         : 'No handoff callback configured. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.';
       await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail });
       process.exit(1);
+    }
+
+    const artifactCheck = await runCommand('node', [
+      'scripts/agent/verify-run-artifacts.mjs',
+      '--since',
+      runArtifactSince,
+      '--check-failure-notes',
+    ]);
+    if (artifactCheck.code !== 0) {
+      const detail = artifactCheck.stderr.trim() || artifactCheck.stdout.trim() || 'Artifact verification failed.';
+      await writeLog({
+        cadence,
+        agent: selectedAgent,
+        status: 'failed',
+        reason: 'Missing required run artifacts',
+        detail,
+      });
+      process.exit(artifactCheck.code);
     }
 
     for (const validation of schedulerConfig.validationCommands) {
