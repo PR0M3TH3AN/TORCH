@@ -630,7 +630,14 @@
         });
 
         ws.addEventListener('close', () => {
+          // Clean up socket from tracking array
+          const idx = sockets.indexOf(ws);
+          if (idx !== -1) {
+            sockets.splice(idx, 1);
+          }
+
           if (isTeardown) return;
+          if (ws.isManualClose) return;
 
           connectedCount = Math.max(0, connectedCount - 1);
           updateConnectionBadge();
@@ -668,6 +675,7 @@
         // Close existing connections and reconnect
         for (const ws of sockets) {
           try {
+            ws.isManualClose = true;
             ws.close();
           } catch {
             // ignore
@@ -686,9 +694,6 @@
       function init() {
         if (!isAlive()) return;
 
-        cadenceFilter.value = DASHBOARD_CONFIG.defaultCadenceView;
-        statusFilter.value = DASHBOARD_CONFIG.defaultStatusView;
-
         applyConfigToHelpText();
 
         for (const url of RELAYS) {
@@ -702,6 +707,10 @@
         RELAYS = DASHBOARD_CONFIG.relays;
         D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
         HASHTAG = DASHBOARD_CONFIG.hashtag;
+
+        cadenceFilter.value = DASHBOARD_CONFIG.defaultCadenceView;
+        statusFilter.value = DASHBOARD_CONFIG.defaultStatusView;
+
         init();
       }
 
