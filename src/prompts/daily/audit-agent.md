@@ -33,6 +33,7 @@ PRIMARY WORKFLOW (end-to-end)
 1. **Preflight**
    - Ensure you are on `<default-branch>`:
      - `git checkout <default-branch> && git pull --ff-only --ff-only`
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - Record environment:
      - `node -v`, `npm -v` (or `pnpm`/`yarn`), OS, current `git rev-parse HEAD`
    - Create the artifact directory: `artifacts/audit/$(date +%F)/`

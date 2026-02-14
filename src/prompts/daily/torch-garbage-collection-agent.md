@@ -37,6 +37,7 @@ Out of scope:
 
 1. Confirm repo root:
    - `pwd`
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - Must resolve to `/workspace/TORCH` (or a child directory).
 
 2. Generate candidate list:

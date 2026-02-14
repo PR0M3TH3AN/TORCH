@@ -22,6 +22,7 @@ Out of scope:
 ## Weekly workflow
 
 1. **Analyze** the repository context.
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - Read `README.md`, `dashboard/`, `landing/`, and `src/` to understand the project's purpose and structure.
    - Look for gaps in tooling, documentation, or user experience.
 2. **Brainstorm** a list of potential features.

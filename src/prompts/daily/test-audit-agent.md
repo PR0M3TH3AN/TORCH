@@ -43,6 +43,7 @@ Always read `AGENTS.md` and `docs/KNOWN_ISSUES.md` for repo-specific caveats (lo
 DAILY WORKFLOW (run every day or as scheduled)
 
 1) **Discover the test runner**
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - Inspect `package.json`:
      - `test` script (e.g., `jest`, `vitest`, `mocha`, `cypress`, `playwright`).
      - Test-related devDependencies.
