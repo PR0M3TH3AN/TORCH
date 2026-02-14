@@ -120,3 +120,29 @@ describe('Scheduler Ratchet Logic (Log Checking)', () => {
     assert.deepStrictEqual(result.available, ['agentA', 'agentB', 'agentC']);
   });
 });
+
+
+describe('Scheduler cycle ordering guarantees', () => {
+  it('keeps lock-check → lock-acquire → handoff → artifact-verify → validation → complete → completed-log order', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const source = await readFile(new URL('../scripts/agent/run-scheduler-cycle.mjs', import.meta.url), 'utf8');
+
+    const order = [
+      "const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);",
+      "const lockResult = await runCommand(",
+      "if (schedulerConfig.handoffCommand)",
+      "const artifactCheck = await runCommand('node', [",
+      "for (const validation of schedulerConfig.validationCommands)",
+      "const completeResult = await runCommand(",
+      "await writeLog({ cadence, agent: selectedAgent, status: 'completed'",
+    ];
+
+    let previousIndex = -1;
+    for (const token of order) {
+      const index = source.indexOf(token);
+      assert.ok(index >= 0, `Expected token not found: ${token}`);
+      assert.ok(index > previousIndex, `Token out of order: ${token}`);
+      previousIndex = index;
+    }
+  });
+});

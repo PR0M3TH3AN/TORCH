@@ -46,8 +46,9 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 1. Set cadence variables before any command:
    - `cadence` = `daily` or `weekly`
    - `log_dir` = `task-logs/<cadence>/`
-   - `branch_prefix` = `agents/<cadence>/`
    - `prompt_dir` = `src/prompts/<cadence>/`
+
+   Note: branch naming (for example `agents/<cadence>/`) is orchestration-level behavior and is not used by `run-scheduler-cycle.mjs`.
 
 2. Run preflight to build the exclusion set:
 
@@ -59,7 +60,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - Use `excluded` from the `npm run lock:check:<cadence>` JSON output.
    - If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed` from that same JSON payload.
 
-3. Read policy file(s). This step is conditional: if `AGENTS.md` is missing, continue without failing.
+3. Read policy file(s) once before the run loop. This step is conditional: if `AGENTS.md` is missing, continue without failing.
 
    ```bash
    test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing"
