@@ -1,19 +1,20 @@
 # KNOWN_ISSUES.md
 
-Track active, reproducible issues in a generic format.
+Track active, reproducible issues in a reusable format.
 
 ## How to use this file
 
-- Keep entries short and factual.
-- Remove resolved issues quickly.
-- Link to handoff/incident notes for deeper context.
+- Keep entries short, factual, and current.
+- List active issues only; remove resolved items promptly.
+- Link to related incident/handoff notes for deeper details.
+- Prefer one entry per distinct issue.
 
 ## Entry template
 
 ### [ISSUE-YYYYMMDD-brief-name]
 
 - **Status:** Open | Monitoring | Mitigated
-- **Area:** Scheduler | Locking | Dashboard | Docs | Other
+- **Area:** Build | Test | Tooling | Runtime | Docs | Other
 - **Symptom:**
 - **Trigger/Conditions:**
 - **Workaround:**

@@ -4,63 +4,83 @@ Execution playbook for agents working in this repository.
 
 ## Scope
 
-Applies to all tasks unless overridden by direct session instructions.
+Applies to all tasks unless direct session instructions override it.
 
-## Core operating principles
+## Operating principles
 
 - Be repository-agnostic by default.
-- Keep behavior deterministic and auditable.
+- Make deterministic, auditable decisions.
 - Prefer minimal, reversible changes.
-- Leave the workspace clearer for the next agent than you found it.
+- Leave clearer context for the next agent.
 
-## Recommended execution workflow
+## Standard execution workflow
 
-1. Load baseline context from `AGENTS.md`, `CONTRIBUTING.md`, `KNOWN_ISSUES.md`, and handoff notes.
-2. Restate the task internally as concrete outcomes.
-3. Make the smallest safe implementation change.
-4. Validate with the most relevant automated checks available.
-5. Summarize results with clear evidence (commands, outputs, and file references).
-6. Record durable learnings/incidents if new reusable knowledge was discovered.
+1. Load baseline context:
+   - `AGENTS.md`
+   - `CONTRIBUTING.md`
+   - `KNOWN_ISSUES.md`
+   - `docs/agent-handoffs/README.md`
+   - recent notes in `docs/agent-handoffs/learnings/` and `docs/agent-handoffs/incidents/`
+2. Translate the request into concrete outcomes.
+3. Implement the smallest safe change.
+4. Run relevant validation.
+5. Summarize evidence clearly (commands, outputs, and changed files).
+6. Record durable learnings/incidents when new reusable knowledge appears.
 
-## Change quality checklist
+## Quality checklist before finishing
 
-Before finishing, verify:
+- Scope matches the user request.
+- Language and guidance remain generic unless project-specific detail is required.
+- Existing workflows were not unintentionally broken.
+- Validation coverage is appropriate for risk/impact.
 
-- The change is scoped to the request.
-- Naming and docs remain generic unless project-specific behavior is explicitly required.
-- Existing workflows are not silently broken.
-- Validation matches the risk level of the change.
+## Knowledge-sharing and handoff protocol
 
-## Handoff and documentation expectations
+### 1) Search first
 
-When new reusable context appears:
+Before writing a new note, check for an existing related note and update it if applicable.
 
-1. Search for an existing related note in:
-   - `docs/agent-handoffs/learnings/`
-   - `docs/agent-handoffs/incidents/`
-2. Update existing notes if they already cover the issue.
-3. Otherwise add a new note using `YYYY-MM-DD-short-topic.md`.
-4. If the issue is still active/reproducible, add or update `KNOWN_ISSUES.md`.
+### 2) Write in the right place
 
-Keep notes concise, actionable, and safe to share.
+- `docs/agent-handoffs/learnings/` for successful patterns.
+- `docs/agent-handoffs/incidents/` for failures and mitigations.
+
+### 3) Use generic, consistent names
+
+- Format: `YYYY-MM-DD-short-topic.md`
+- Keep names descriptive and repository-agnostic.
+
+### 4) Use the required structure
+
+Each note should include:
+
+- Context
+- Observation
+- Action taken
+- Validation performed
+- Recommendation for next agents
+
+### 5) Promote active problems to `KNOWN_ISSUES.md`
+
+If the problem is still reproducible or unresolved, add/update a `KNOWN_ISSUES.md` entry with status, impact, workaround, and last verified date.
 
 ## What belongs where
 
-- `KNOWN_ISSUES.md`: active issues, impact, status, workaround, verification date.
-- `docs/agent-handoffs/learnings/`: successful implementation patterns.
-- `docs/agent-handoffs/incidents/`: failures and prevention guidance.
-- `CONTRIBUTING.md`: contribution, review, and quality standards.
+- `KNOWN_ISSUES.md`: currently active issues and workarounds.
+- `docs/agent-handoffs/learnings/`: reusable successes.
+- `docs/agent-handoffs/incidents/`: reusable failure analysis.
+- `CONTRIBUTING.md`: expectations for commits, PRs, and validation.
 
-## Writing style for handoff notes
+## Writing style for agent notes
 
-- Prefer bullets over long prose.
+- Prefer concise bullets over long prose.
 - Include exact commands when they improve reproducibility.
-- Explicitly separate facts from assumptions.
-- End with: `Recommendation for next agents:`
+- Clearly separate facts from assumptions.
+- End with a practical recommendation for the next agent.
 
-## Anti-patterns to avoid
+## Anti-patterns
 
-- Product/brand-specific assumptions in reusable docs.
-- Broad refactors not required for the current request.
-- Status updates without validation evidence.
-- Duplicated notes that fragment context.
+- Project/brand-specific assumptions in reusable docs.
+- Unnecessary broad refactors.
+- Claims of validation without executed checks.
+- Duplicate notes that fragment context across many files.
