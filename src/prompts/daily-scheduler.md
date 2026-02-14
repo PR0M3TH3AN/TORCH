@@ -36,3 +36,4 @@ Canonical roster source: `src/prompts/roster.json` (`daily` key).
 | 19 | style-agent | `style-agent.md` |
 | 20 | test-audit-agent | `test-audit-agent.md` |
 | 21 | todo-triage-agent | `todo-triage-agent.md` |
+| 22 | torch-garbage-collection-agent | `torch-garbage-collection-agent.md` |

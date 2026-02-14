@@ -27,8 +27,8 @@ Canonical roster source: `src/prompts/roster.json` (`weekly` key).
 | 10 | pr-review-agent | `pr-review-agent.md` |
 | 11 | race-condition-agent | `race-condition-agent.md` |
 | 12 | refactor-agent | `refactor-agent.md` |
-| 13 | smoke-agent | `smoke-agent.md` |
-| 14 | telemetry-agent | `telemetry-agent.md` |
-| 15 | test-coverage-agent | `test-coverage-agent.md` |
-| 16 | repo-fit-agent | `repo-fit-agent.md` |
+| 13 | repo-fit-agent | `repo-fit-agent.md` |
+| 14 | smoke-agent | `smoke-agent.md` |
+| 15 | telemetry-agent | `telemetry-agent.md` |
+| 16 | test-coverage-agent | `test-coverage-agent.md` |
 | 17 | weekly-synthesis-agent | `weekly-synthesis-agent.md` |
