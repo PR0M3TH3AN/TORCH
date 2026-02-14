@@ -1,5 +1,10 @@
 import { SimplePool } from 'nostr-tools/pool';
-import { getQueryTimeoutMs } from './torch-config.mjs';
+import {
+  getQueryTimeoutMs,
+  getPublishTimeoutMs,
+  getMinSuccessfulRelayPublishes,
+  getRelayFallbacks,
+} from './torch-config.mjs';
 import { KIND_APP_DATA } from './constants.mjs';
 
 function nowUnix() {
@@ -42,56 +47,141 @@ function filterActiveLocks(locks) {
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
 }
 
-export async function queryLocks(relays, cadence, dateStr, namespace) {
-  const pool = new SimplePool();
-  const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
-  const queryTimeoutMs = getQueryTimeoutMs();
-
+function withTimeout(promise, timeoutMs, timeoutMessage) {
   let timeoutHandle;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  });
+}
+
+function relayListLabel(relays) {
+  return relays.join(', ');
+}
+
+export async function queryLocks(relays, cadence, dateStr, namespace, deps = {}) {
+  const {
+    poolFactory = () => new SimplePool(),
+    getQueryTimeoutMsFn = getQueryTimeoutMs,
+    getRelayFallbacksFn = getRelayFallbacks,
+    errorLogger = console.error,
+  } = deps;
+
+  const pool = poolFactory();
+  const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
+  const queryTimeoutMs = getQueryTimeoutMsFn();
+  const fallbackRelays = getRelayFallbacksFn();
+
+  const runQuery = async (relaySet, phase) => {
+    try {
+      const events = await withTimeout(
+        pool.querySync(relaySet, {
+          kinds: [KIND_APP_DATA],
+          '#t': [tagFilter],
+        }),
+        queryTimeoutMs,
+        `[${phase}] Relay query timed out after ${queryTimeoutMs}ms (relays: ${relayListLabel(relaySet)})`,
+      );
+      return filterActiveLocks(events.map(parseLockEvent));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(
+        `[${phase}] Relay query failed (timeout=${queryTimeoutMs}ms, relays=${relayListLabel(relaySet)}): ${message}`,
+        { cause: err },
+      );
+    }
+  };
 
   try {
-    const events = await Promise.race([
-      pool.querySync(relays, {
-        kinds: [KIND_APP_DATA],
-        '#t': [tagFilter],
-      }),
-      new Promise((_, reject) => {
-        timeoutHandle = setTimeout(() => reject(new Error('Relay query timed out')), queryTimeoutMs);
-      }),
-    ]);
-
-    return filterActiveLocks(events.map(parseLockEvent));
-  } finally {
-    if (timeoutHandle) {
-      clearTimeout(timeoutHandle);
+    try {
+      return await runQuery(relays, 'query:primary');
+    } catch (primaryErr) {
+      if (!fallbackRelays.length) {
+        throw primaryErr;
+      }
+      errorLogger(`WARN: ${primaryErr.message}`);
+      errorLogger(`WARN: retrying query with fallback relays (${relayListLabel(fallbackRelays)})`);
+      return await runQuery(fallbackRelays, 'query:fallback');
     }
-    pool.close(relays);
+  } finally {
+    const allRelays = [...new Set([...relays, ...fallbackRelays])];
+    pool.close(allRelays);
   }
 }
 
-export async function publishLock(relays, event) {
-  const pool = new SimplePool();
+async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
+  const publishPromises = pool.publish(relays, event);
+  const settled = await Promise.allSettled(
+    publishPromises.map((publishPromise, index) => withTimeout(
+      publishPromise,
+      publishTimeoutMs,
+      `[${phase}] Publish timed out after ${publishTimeoutMs}ms (relay=${relays[index]})`,
+    )),
+  );
+
+  return settled.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return { relay: relays[index], success: true, phase };
+    }
+    const reason = result.reason;
+    const message = reason instanceof Error ? reason.message : String(reason ?? 'unknown');
+    return { relay: relays[index], success: false, phase, message };
+  });
+}
+
+export async function publishLock(relays, event, deps = {}) {
+  const {
+    poolFactory = () => new SimplePool(),
+    getPublishTimeoutMsFn = getPublishTimeoutMs,
+    getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
+    getRelayFallbacksFn = getRelayFallbacks,
+  } = deps;
+
+  const pool = poolFactory();
+  const publishTimeoutMs = getPublishTimeoutMsFn();
+  const minSuccesses = getMinSuccessfulRelayPublishesFn();
+  const fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
+
+  const attempted = new Set();
+  const publishResults = [];
+
+  const attemptPhase = async (phaseRelays, phaseName) => {
+    if (!phaseRelays.length) return;
+    for (const relay of phaseRelays) {
+      attempted.add(relay);
+    }
+    const phaseResults = await publishToRelays(pool, phaseRelays, event, publishTimeoutMs, phaseName);
+    publishResults.push(...phaseResults);
+  };
 
   try {
-    const publishPromises = pool.publish(relays, event);
-    const results = await Promise.allSettled(publishPromises);
-    const successes = results.filter((r) => r.status === 'fulfilled');
+    await attemptPhase(relays, 'publish:primary');
 
-    if (successes.length === 0) {
-      const errors = results.map((r, i) => {
-        if (r.status === 'rejected') {
-          const reason = r.reason;
-          const message = reason instanceof Error ? reason.message : String(reason ?? 'unknown');
-          return `${relays[i]}: ${message}`;
-        }
-        return `${relays[i]}: unknown`;
-      });
-      throw new Error(`Failed to publish to any relay:\n  ${errors.join('\n  ')}`);
+    let successCount = publishResults.filter((result) => result.success).length;
+    if (successCount < minSuccesses && fallbackRelays.length > 0) {
+      await attemptPhase(fallbackRelays, 'publish:fallback');
+      successCount = publishResults.filter((result) => result.success).length;
     }
 
-    console.error(`  Published to ${successes.length}/${relays.length} relays`);
+    if (successCount < minSuccesses) {
+      const failureLines = publishResults
+        .filter((result) => !result.success)
+        .map((result) => `${result.relay} (${result.phase}): ${result.message}`);
+
+      throw new Error(
+        `Failed relay publish quorum in publish phase: ${successCount}/${attempted.size} successful ` +
+        `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)\n  ${failureLines.join('\n  ')}`,
+      );
+    }
+
+    console.error(
+      `  Published to ${successCount}/${attempted.size} relays ` +
+      `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)`,
+    );
     return event;
   } finally {
-    pool.close(relays);
+    pool.close([...attempted]);
   }
 }
