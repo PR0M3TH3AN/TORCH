@@ -1,4 +1,4 @@
-# KNOWN ISSUES
+# KNOWN_ISSUES.md
 
 Track active, reproducible issues in a generic format.
 
@@ -6,7 +6,7 @@ Track active, reproducible issues in a generic format.
 
 - Keep entries short and factual.
 - Remove resolved issues quickly.
-- Link to handoff/incident notes for deep details.
+- Link to handoff/incident notes for deeper context.
 
 ## Entry template
 

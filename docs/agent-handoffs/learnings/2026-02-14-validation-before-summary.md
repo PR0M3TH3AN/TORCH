@@ -1,4 +1,4 @@
-# Example Learning: Validation Before Summary
+# Validation Before Summary
 
 - **Context:** Multi-file documentation update.
 - **Observation:** Running quick checks before writing summaries catches avoidable mistakes.
