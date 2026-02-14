@@ -439,6 +439,75 @@
         .copy-install-btn:active {
             transform: scale(0.98);
         }
+
+        /* Acknowledgement Modal Styles */
+        #ackModal .modal-content {
+            border-color: var(--danger);
+            max-width: 500px;
+            text-align: center;
+        }
+
+        #ackModal h2 {
+            color: var(--danger);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        #ackModal .modal-body {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin: 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        #ackModal .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        #ackModal .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        #ackModal .btn-cancel:hover {
+            background: var(--surface-alt);
+            color: var(--text-strong);
+        }
+
+        #ackModal .btn-confirm {
+            background: var(--danger);
+            border: 1px solid var(--danger);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(255, 50, 50, 0.3);
+        }
+
+        #ackModal .btn-confirm:hover {
+            background: #ff4d4d; /* lighter red */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 50, 50, 0.4);
+        }
+
+        /* Define danger color if not exists in dashboard/styles.css */
+        :root {
+            --danger: #ef4444;
+        }
     </style>
 </head>
 <body>
@@ -469,7 +538,7 @@
             <p class="install-label">Install via NPM</p>
             <div class="install-code-wrapper">
                 <code id="install-cmd">npm install torch-lock</code>
-                <button class="copy-install-btn" onclick="copyToClipboard('install-cmd', this)">
+                <button class="copy-install-btn" onclick="copyToClipboard('install-cmd', this, true)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -539,6 +608,27 @@
         </div>
     </div>
 
+    <!-- Acknowledgement Modal -->
+    <div id="ackModal" class="modal">
+        <div class="modal-content">
+            <h2>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                Warning: Vibecoded Project
+            </h2>
+            <div class="modal-body">
+                This is a freshly vibecoded project and that using this in a valuable production repo is reckless.
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="dismissAckModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmAck()">I Understand, Copy</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Modal Logic
         const modal = document.getElementById("docsModal");
@@ -561,6 +651,9 @@
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.classList.remove("show");
+            }
+            if (event.target == ackModal) {
+                dismissAckModal();
             }
         }
 
@@ -609,7 +702,36 @@
             }
         }
 
-        function copyToClipboard(elementId, btn) {
+        // Acknowledgement Logic
+        let hasAcknowledged = false;
+        let pendingCopy = null;
+        const ackModal = document.getElementById('ackModal');
+
+        function showAckModal(callback) {
+            pendingCopy = callback;
+            ackModal.classList.add('show');
+        }
+
+        function dismissAckModal() {
+            ackModal.classList.remove('show');
+            pendingCopy = null;
+        }
+
+        function confirmAck() {
+            hasAcknowledged = true;
+            ackModal.classList.remove('show');
+            if (pendingCopy) {
+                pendingCopy();
+                pendingCopy = null;
+            }
+        }
+
+        function copyToClipboard(elementId, btn, requiresAck = false) {
+            if (requiresAck && !hasAcknowledged) {
+                showAckModal(() => copyToClipboard(elementId, btn, false));
+                return;
+            }
+
             const code = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(code).then(() => {
                 const originalContent = btn.innerHTML;
