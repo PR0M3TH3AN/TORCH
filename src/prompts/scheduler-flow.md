@@ -16,6 +16,10 @@ Use this document for all scheduler runs.
    if daily: `npm run lock:check:daily`; if weekly: `npm run lock:check:weekly`
    ```
 
+   Canonical exclusion rule:
+   - Use `excluded` from the `npm run lock:check:<cadence>` JSON output.
+   - If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed` from that same JSON payload.
+
 3. Read policy file(s). This step is conditional: if `AGENTS.md` is missing, continue without failing.
 
    ```bash
@@ -37,7 +41,7 @@ Use this document for all scheduler runs.
    Selection algorithm (MUST be followed exactly):
 
    - Roster source: `src/prompts/roster.json` and the key matching `<cadence>`.
-   - Let `roster` be that ordered array and `excluded` be the `excluded` set (including paused and locked agents) from the JSON output of step 2.
+   - Let `roster` be that ordered array and `excluded` be the set from step 2's canonical exclusion rule.
    - Let `latest_file` be the lexicographically last filename in `<log_dir>`.
    - Determine `previous_agent` from `latest_file` using this precedence:
      1. Parse YAML frontmatter from `<log_dir>/<latest_file>` and use key `agent` when present and non-empty.
