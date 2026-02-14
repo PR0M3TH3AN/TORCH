@@ -32,7 +32,7 @@ async function runNode(scriptPath, args, { cwd, env }) {
   });
 }
 
-async function setupFixture({ memoryPolicy, lockShellBody = '' }) {
+async function setupFixture({ memoryPolicy, lockShellBody = '', roster = ['agent-a'] }) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-memory-policy-'));
   const scriptsDir = path.join(root, 'scripts', 'agent');
   const binDir = path.join(root, 'bin');
@@ -49,8 +49,10 @@ async function setupFixture({ memoryPolicy, lockShellBody = '' }) {
     'utf8',
   );
 
-  await fs.writeFile(path.join(root, 'src', 'prompts', 'roster.json'), JSON.stringify({ daily: ['agent-a'] }, null, 2));
-  await fs.writeFile(path.join(root, 'src', 'prompts', 'daily', 'agent-a.md'), '# agent-a\n', 'utf8');
+  await fs.writeFile(path.join(root, 'src', 'prompts', 'roster.json'), JSON.stringify({ daily: roster }, null, 2));
+  for (const agent of roster) {
+    await fs.writeFile(path.join(root, 'src', 'prompts', 'daily', `${agent}.md`), `# ${agent}\n`, 'utf8');
+  }
 
   await fs.writeFile(
     path.join(root, 'torch-config.json'),
@@ -178,4 +180,95 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
   assert.match(failedBody, /lock_stdout_excerpt: 'websocket: connection refused'/);
   assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
+});
+
+test('retries lock acquisition for backend error and succeeds on a later attempt', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    lockShellBody: `    count_file="$PWD/.lock-count"
+    count=0
+    if [[ -f "$count_file" ]]; then
+      count="$(cat "$count_file")"
+    fi
+    count=$((count + 1))
+    echo "$count" > "$count_file"
+    if [[ "$count" -lt 2 ]]; then
+      echo 'relay query timeout' >&2
+      exit 2
+    fi
+    :`,
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '2',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+
+  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  assert.match(result.stdout, /"event":"scheduler.lock.retry"/);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  assert.equal(logs.filter((name) => name.endsWith('__failed.md')).length, 0);
+});
+
+test('stops retrying after configured lock backend retries are exhausted', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    lockShellBody: `    echo 'publish failed to all relays' >&2
+    exit 2`,
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '1',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+
+  assert.equal(result.code, 2, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+
+  assert.match(failedBody, /lock_attempts_total: '2'/);
+  assert.match(failedBody, /lock_backoff_schedule_ms: '0'/);
+  assert.match(failedBody, /backend_category: 'publish failed to all relays'/);
+});
+
+test('does not use backend retry flow for exit code 3 lock conflicts', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    lockShellBody: `    count_file="$PWD/.lock-count"
+    count=0
+    if [[ -f "$count_file" ]]; then
+      count="$(cat "$count_file")"
+    fi
+    count=$((count + 1))
+    echo "$count" > "$count_file"
+    if [[ "$count" -eq 1 ]]; then
+      exit 3
+    fi
+    :`,
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '3',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+
+  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  assert.doesNotMatch(result.stdout, /"event":"scheduler.lock.retry"/);
 });

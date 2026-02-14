@@ -92,6 +92,14 @@ function normalizeStringList(value, fallback = []) {
   return value.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim());
 }
 
+function parseNonNegativeInt(value, fallback) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (Number.isFinite(parsed) && parsed >= 0) {
+    return parsed;
+  }
+  return fallback;
+}
+
 function redactSensitive(text) {
   if (!text) return '';
   return String(text)
@@ -279,6 +287,19 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
   const missingHandoffCommandForMode = !isInteractive && !handoffCommand;
   const memoryPolicyRaw = scheduler.memoryPolicyByCadence?.[cadence] || {};
   const mode = memoryPolicyRaw.mode === 'required' ? 'required' : 'optional';
+  const lockRetryRaw = scheduler.lockRetry || {};
+  const maxRetries = parseNonNegativeInt(
+    process.env.SCHEDULER_LOCK_MAX_RETRIES,
+    parseNonNegativeInt(lockRetryRaw.maxRetries, 2),
+  );
+  const backoffMs = parseNonNegativeInt(
+    process.env.SCHEDULER_LOCK_BACKOFF_MS,
+    parseNonNegativeInt(lockRetryRaw.backoffMs, 250),
+  );
+  const jitterMs = parseNonNegativeInt(
+    process.env.SCHEDULER_LOCK_JITTER_MS,
+    parseNonNegativeInt(lockRetryRaw.jitterMs, 75),
+  );
 
   return {
     firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
@@ -287,6 +308,11 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     validationCommands: Array.isArray(scheduler.validationCommandsByCadence?.[cadence])
       ? scheduler.validationCommandsByCadence[cadence].filter((cmd) => typeof cmd === 'string' && cmd.trim())
       : ['npm', 'run', 'lint'],
+    lockRetry: {
+      maxRetries,
+      backoffMs,
+      jitterMs,
+    },
     memoryPolicy: {
       mode,
       retrieveCommand: typeof memoryPolicyRaw.retrieveCommand === 'string' && memoryPolicyRaw.retrieveCommand.trim()
@@ -301,6 +327,54 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
       storeArtifacts: normalizeStringList(memoryPolicyRaw.storeArtifacts),
     },
   };
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetry }) {
+  const lockCommandArgs = ['run', 'lock:lock', '--', '--agent', selectedAgent, '--cadence', cadence];
+  const backoffScheduleMs = [];
+  let attempts = 0;
+
+  while (true) {
+    attempts += 1;
+    const result = await runCommand('npm', lockCommandArgs, { env: { AGENT_PLATFORM: platform } });
+
+    if (result.code !== 2) {
+      return { result, attempts, backoffScheduleMs };
+    }
+
+    if (attempts > lockRetry.maxRetries) {
+      return {
+        result,
+        attempts,
+        backoffScheduleMs,
+        finalBackendCategory: classifyLockBackendError(`${result.stderr}\n${result.stdout}`),
+      };
+    }
+
+    const exponentialBase = lockRetry.backoffMs * (2 ** (attempts - 1));
+    const jitter = lockRetry.jitterMs > 0
+      ? Math.floor(Math.random() * (lockRetry.jitterMs + 1))
+      : 0;
+    const delayMs = exponentialBase + jitter;
+    backoffScheduleMs.push(delayMs);
+
+    console.log(JSON.stringify({
+      event: 'scheduler.lock.retry',
+      attempt: attempts,
+      max_retries: lockRetry.maxRetries,
+      delay_ms: delayMs,
+      selected_agent: selectedAgent,
+      cadence,
+    }));
+
+    if (delayMs > 0) {
+      await sleep(delayMs);
+    }
+  }
 }
 
 function toYamlScalar(value) {
@@ -403,11 +477,13 @@ async function main() {
       process.exit(1);
     }
 
-    const lockResult = await runCommand(
-      'npm',
-      ['run', 'lock:lock', '--', '--agent', selectedAgent, '--cadence', cadence],
-      { env: { AGENT_PLATFORM: platform } },
-    );
+    const lockAttempt = await acquireLockWithRetry({
+      selectedAgent,
+      cadence,
+      platform,
+      lockRetry: schedulerConfig.lockRetry,
+    });
+    const lockResult = lockAttempt.result;
 
     if (lockResult.code === 3) {
       continue;
@@ -415,17 +491,20 @@ async function main() {
 
     if (lockResult.code === 2) {
       const combinedLockOutput = `${lockResult.stderr}\n${lockResult.stdout}`;
-      const backendCategory = classifyLockBackendError(combinedLockOutput);
+      const backendCategory = lockAttempt.finalBackendCategory || classifyLockBackendError(combinedLockOutput);
       const lockCommand = `AGENT_PLATFORM=${platform} npm run lock:lock -- --agent ${selectedAgent} --cadence ${cadence}`;
       const stderrExcerpt = excerptText(lockResult.stderr);
       const stdoutExcerpt = excerptText(lockResult.stdout);
+      const backoffSchedule = lockAttempt.backoffScheduleMs.join(', ');
       await writeLog({
         cadence,
         agent: selectedAgent,
         status: 'failed',
         reason: 'Lock backend error',
-        detail: `Lock backend error (${backendCategory}). Retry ${lockCommand} after verifying relay connectivity, relay URLs, and DNS/network status.`,
+        detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). Retry ${lockCommand} after verifying relay connectivity, relay URLs, and DNS/network status.`,
         metadata: {
+          lock_attempts_total: lockAttempt.attempts,
+          lock_backoff_schedule_ms: backoffSchedule || '(none)',
           backend_category: backendCategory,
           lock_command: lockCommand,
           lock_stderr_excerpt: stderrExcerpt || '(empty)',
