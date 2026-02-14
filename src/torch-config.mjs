@@ -84,15 +84,15 @@ export function _resetTorchConfigCache() {
   cachedConfig = null;
 }
 
-export function loadTorchConfig() {
+export function loadTorchConfig(fileSystem = fs) {
   if (cachedConfig) return cachedConfig;
 
   const configPath = getTorchConfigPath();
   let raw = {};
 
-  if (fs.existsSync(configPath)) {
+  if (fileSystem.existsSync(configPath)) {
     try {
-      raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      raw = JSON.parse(fileSystem.readFileSync(configPath, 'utf8'));
     } catch (err) {
       throw new Error(`Failed to parse ${configPath}: ${err.message}`, { cause: err });
     }
