@@ -19,8 +19,8 @@
       "weekly": "bug-reproducer-agent"
     },
     "handoffCommandByCadence": {
-      "daily": "test -n \"$SCHEDULER_AGENT\" && test -n \"$SCHEDULER_CADENCE\" && test -n \"$SCHEDULER_PROMPT_PATH\" && test -f \"$SCHEDULER_PROMPT_PATH\" && echo \"HANDOFF_OK cadence=$SCHEDULER_CADENCE agent=$SCHEDULER_AGENT prompt=$SCHEDULER_PROMPT_PATH\"",
-      "weekly": "test -n \"$SCHEDULER_AGENT\" && test -n \"$SCHEDULER_CADENCE\" && test -n \"$SCHEDULER_PROMPT_PATH\" && test -f \"$SCHEDULER_PROMPT_PATH\" && echo \"HANDOFF_OK cadence=$SCHEDULER_CADENCE agent=$SCHEDULER_AGENT prompt=$SCHEDULER_PROMPT_PATH\""
+      "daily": "node scripts/agent/run-selected-prompt.mjs",
+      "weekly": "node scripts/agent/run-selected-prompt.mjs"
     },
     "memoryPolicyByCadence": {
       "daily": {
