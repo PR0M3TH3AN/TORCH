@@ -299,10 +299,12 @@ export async function cmdCheck(cadence) {
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = getRoster(cadence);
+  const rosterSet = new Set(roster);
 
-  const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
-  const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
-  const available = roster.filter((a) => !excludedAgents.includes(a));
+  const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents]);
+  const excludedAgents = [...excludedAgentsSet];
+  const unknownLockedAgents = lockedAgents.filter((agent) => !rosterSet.has(agent));
+  const available = roster.filter((a) => !excludedAgentsSet.has(a));
 
   const result = {
     namespace,
@@ -472,8 +474,9 @@ export async function cmdList(cadence) {
     }
 
     const roster = getRoster(c);
+    const rosterSet = new Set(roster);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
-    const unknownLockedAgents = [...lockedAgents].filter((agent) => !roster.includes(agent));
+    const unknownLockedAgents = [...lockedAgents].filter((agent) => !rosterSet.has(agent));
     const available = roster.filter((a) => !lockedAgents.has(a));
 
     if (unknownLockedAgents.length > 0) {
