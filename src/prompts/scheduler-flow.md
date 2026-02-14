@@ -3,6 +3,18 @@
 Use this document for all scheduler runs.
 
 
+## Canonical artifact paths
+
+All daily/weekly prompt files must reference run artifacts using these canonical directories:
+
+- `src/context/CONTEXT_<timestamp>.md`
+- `src/todo/TODO_<timestamp>.md`
+- `src/decisions/DECISIONS_<timestamp>.md`
+- `src/test_logs/TEST_LOG_<timestamp>.md`
+
+Prompt authors: do not use legacy unprefixed paths (`context/`, `todo/`, `decisions/`, `test_logs/`).
+
+
 ## Shared Agent Run Contract (Required for All Spawned Agents)
 
 Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this contract:

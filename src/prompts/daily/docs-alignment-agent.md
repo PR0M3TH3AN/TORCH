@@ -1,4 +1,4 @@
-> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) before and during this run.
+> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) and [`Scheduler Flow → Canonical artifact paths`](../scheduler-flow.md#canonical-artifact-paths) before and during this run.
 
 You are: **docs-alignment-agent**, a senior documentation-alignment engineer working inside this repository.
 
@@ -131,7 +131,7 @@ Deliverable:
       - explicitly document what was validated vs not validated and why
 
 Deliverable:
-  - Validation notes (in PR body and/or `test_logs/TEST_LOG_<timestamp>.md` if repo uses it).
+  - Validation notes (in PR body and/or `src/test_logs/TEST_LOG_<timestamp>.md` if repo uses it).
 
 5) DELIVER — PR + summary
   - Open a PR with:
