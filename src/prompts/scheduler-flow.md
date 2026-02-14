@@ -129,7 +129,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - Exit `3`: race lost/already locked, return to step 2.
    - Exit `2`: lock backend error, write `_failed.md` with reason `Lock backend error`, stop.
 
-8. Execute `<prompt_dir>/<prompt-file>` end-to-end.
+8. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
+
+   - Scheduler automation runs `scheduler.handoffCommandByCadence.<cadence>` with environment variables for cadence/agent/prompt path.
+   - If no handoff command is configured for the cadence, write `_failed.md` and stop.
 
 9. Confirm memory contract completion:
 
@@ -138,12 +141,17 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - If `scheduler.memoryPolicyByCadence.<cadence>.mode = required`, missing evidence is a hard failure.
    - If mode is `optional`, log warning context and continue.
 
-10. Run repository checks (for example: `npm run lint`).
+10. Verify required run artifacts for the current run window.
 
-   - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
-   - When step 10 fails, step 11 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
+    - Scheduler runs `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes`.
+    - If artifact verification exits non-zero: write `_failed.md` and stop.
 
-11. Publish completion before writing final success log:
+11. Run repository checks (for example: `npm run lint`).
+
+    - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
+    - When step 11 fails, step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
+
+12. Publish completion before writing final success log:
 
     ```bash
     AGENT_PLATFORM=<platform> \
@@ -152,27 +160,32 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
     (Equivalent invocation is allowed: `torch-lock complete --agent <agent-name> --cadence <cadence>`.)
 
-    - Exit `0`: completion published successfully; continue to step 12.
+    - Exit `0`: completion published successfully; continue to step 13.
     - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry npm run lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
 
-12. Create final task log only after step 11 succeeds:
+13. Create final task log only after step 12 succeeds:
 
     - `_completed.md` MUST be created only after completion publish succeeds.
     - `_failed.md` is required when step 10 or step 11 fails, and should include the failure reason and next retry action.
 
-13. Commit and push.
+14. Commit/push behavior is delegated outside this scheduler script.
+
+    - `scripts/agent/run-scheduler-cycle.mjs` does **not** run `git commit` or `git push`.
+    - If commit/push is required for your workflow, perform it in the configured handoff agent command or a separate orchestration step.
 
 Worked post-task example (MUST order):
 
 1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
 2. Execute `src/prompts/daily/content-audit-agent.md`
-3. `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
-4. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
+3. `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes`
+4. `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
+5. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
 
 Worked validation-failure example (MUST behavior):
 
 1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
 2. Execute `src/prompts/daily/content-audit-agent.md`
-3. `npm run lint` exits non-zero (or `npm test` exits non-zero)
-4. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__failed.md` with the failing command and reason
-5. Stop the run **without** calling `npm run lock:complete -- --agent content-audit-agent --cadence daily`
+3. `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes` passes
+4. `npm run lint` exits non-zero (or `npm test` exits non-zero)
+5. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__failed.md` with the failing command and reason
+6. Stop the run **without** calling `npm run lock:complete -- --agent content-audit-agent --cadence daily`
