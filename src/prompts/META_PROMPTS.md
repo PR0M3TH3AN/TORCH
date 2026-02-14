@@ -21,7 +21,8 @@ MUST 2: Run preflight to get the exclusion set:
 
 npm run lock:check:daily
 
-Use the `locked` array from the JSON output as the exclusion set.
+Use `excluded` from the JSON output as the canonical exclusion set.
+If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed`.
 
 MUST 3: Run these commands in this order:
 1) test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing" (missing AGENTS.md is non-fatal)
@@ -83,7 +84,8 @@ MUST 2: Run preflight to get the exclusion set:
 
 npm run lock:check:weekly
 
-Use the `locked` array from the JSON output as the exclusion set.
+Use `excluded` from the JSON output as the canonical exclusion set.
+If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed`.
 
 MUST 3: Run these commands in this order:
 1) test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing" (missing AGENTS.md is non-fatal)
