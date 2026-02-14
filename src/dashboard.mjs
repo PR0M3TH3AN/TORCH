@@ -38,6 +38,8 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         fs.createReadStream(userConfigPath).pipe(res);
         return;
+      } catch {
+        // Fall through
       }
       // If not found in CWD, fall through to serve from packageRoot (if it exists there)
       // or return empty object if missing?
