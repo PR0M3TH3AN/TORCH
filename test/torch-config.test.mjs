@@ -2,7 +2,8 @@ import { test, describe, it, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getTorchConfigPath, parseTorchConfig, loadTorchConfig, _resetTorchConfigCache } from '../src/torch-config.mjs';
+import { getTorchConfigPath, parseTorchConfig, loadTorchConfig, _resetTorchConfigCache, getRelays } from '../src/torch-config.mjs';
+import { DEFAULT_RELAYS } from '../src/constants.mjs';
 
 describe('torch-config', () => {
   describe('getTorchConfigPath', () => {
@@ -179,6 +180,35 @@ describe('torch-config', () => {
       const config2 = loadTorchConfig();
       assert.strictEqual(config2.nostrLock.namespace, 'first', 'Should return cached value');
       assert.strictEqual(config1, config2, 'Should be the same object');
+    });
+  });
+
+  describe('getRelays', () => {
+    const originalEnv = process.env.NOSTR_LOCK_RELAYS;
+
+    beforeEach(() => {
+      _resetTorchConfigCache();
+      delete process.env.NOSTR_LOCK_RELAYS;
+    });
+
+    after(() => {
+      if (originalEnv === undefined) {
+        delete process.env.NOSTR_LOCK_RELAYS;
+      } else {
+        process.env.NOSTR_LOCK_RELAYS = originalEnv;
+      }
+      _resetTorchConfigCache();
+    });
+
+    it('returns default relays when no config or env var is set', () => {
+      const relays = getRelays();
+      assert.deepStrictEqual(relays, DEFAULT_RELAYS);
+    });
+
+    it('returns relays from env var if set', () => {
+      process.env.NOSTR_LOCK_RELAYS = 'wss://env.relay,wss://env.relay2';
+      const relays = getRelays();
+      assert.deepStrictEqual(relays, ['wss://env.relay', 'wss://env.relay2']);
     });
   });
 });

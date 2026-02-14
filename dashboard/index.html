@@ -152,6 +152,8 @@
     </div>
 
     <script type="module">
+      import { KIND_APP_DATA } from '../src/constants.mjs';
+
       // -----------------------------------------------------------------------
       // Configuration — matches src/nostr-lock.mjs defaults
       // Optional URL params:
@@ -235,7 +237,7 @@
       let RELAYS = DASHBOARD_CONFIG.relays;
       let D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
 
-      const LOCK_EVENT_KIND = 30078;
+      const LOCK_EVENT_KIND = KIND_APP_DATA;
       let HASHTAG = DASHBOARD_CONFIG.hashtag;
 
       function applyConfigToHelpText() {

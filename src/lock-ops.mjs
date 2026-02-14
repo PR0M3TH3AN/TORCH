@@ -1,5 +1,6 @@
 import { SimplePool } from 'nostr-tools/pool';
 import { getQueryTimeoutMs } from './torch-config.mjs';
+import { KIND_APP_DATA } from './constants.mjs';
 
 function nowUnix() {
   return Math.floor(Date.now() / 1000);
@@ -46,19 +47,24 @@ export async function queryLocks(relays, cadence, dateStr, namespace) {
   const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
   const queryTimeoutMs = getQueryTimeoutMs();
 
+  let timeoutHandle;
+
   try {
     const events = await Promise.race([
       pool.querySync(relays, {
-        kinds: [30078],
+        kinds: [KIND_APP_DATA],
         '#t': [tagFilter],
       }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Relay query timed out')), queryTimeoutMs),
-      ),
+      new Promise((_, reject) => {
+        timeoutHandle = setTimeout(() => reject(new Error('Relay query timed out')), queryTimeoutMs);
+      }),
     ]);
 
     return filterActiveLocks(events.map(parseLockEvent));
   } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
     pool.close(relays);
   }
 }
