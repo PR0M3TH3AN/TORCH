@@ -1,16 +1,30 @@
 {
   "name": "torch-lock",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
-  "description": "TORCH standalone lock CLI and optional dashboard",
+  "description": "TORCH standalone lock CLI and dashboard",
+  "main": "src/lib.mjs",
+  "bin": {
+    "torch-lock": "./bin/torch-lock.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/lib.mjs",
+    "src/torch-config.mjs",
+    "src/prompts/",
+    "src/docs/",
+    "skills/",
+    "dashboard/",
+    "torch-config.example.json",
+    "README.md"
+  ],
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "lock:check:daily": "node src/nostr-lock.mjs check --cadence daily",
-    "lock:check:weekly": "node src/nostr-lock.mjs check --cadence weekly",
-    "lock:list": "node src/nostr-lock.mjs list",
-    "lock:lock": "node src/nostr-lock.mjs lock",
-    "dashboard:serve": "python3 -m http.server 4173",
+    "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
+    "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
+    "lock:list": "node bin/torch-lock.mjs list",
+    "lock:lock": "node bin/torch-lock.mjs lock",
+    "dashboard:serve": "node bin/torch-lock.mjs dashboard",
     "build": "node build.mjs",
     "lint": "eslint ."
   },

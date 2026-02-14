@@ -5,6 +5,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
 import { SimplePool } from 'nostr-tools/pool';
@@ -25,6 +26,7 @@ const DEFAULT_NAMESPACE = 'torch';
 const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 
+// If installed as a package, prompts/roster.json is relative to this file
 const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
 const FALLBACK_ROSTER = {
   daily: [
@@ -71,6 +73,14 @@ const FALLBACK_ROSTER = {
 };
 
 let cachedCanonicalRoster = null;
+
+// Custom Error class for controlled exits
+class ExitError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+}
 
 function getRelays() {
   const config = loadTorchConfig();
@@ -131,7 +141,8 @@ function loadCanonicalRoster() {
 
     console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${ROSTER_FILE}`);
   } catch (err) {
-    console.error(`WARNING: Failed to read roster file (${ROSTER_FILE}): ${err.message}`);
+    // It's okay if roster file is missing when used as a library/CLI without the file present
+    // console.error(`WARNING: Failed to read roster file (${ROSTER_FILE}): ${err.message}`);
   }
 
   cachedCanonicalRoster = FALLBACK_ROSTER;
@@ -206,7 +217,7 @@ function filterActiveLocks(locks) {
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
 }
 
-async function queryLocks(relays, cadence, dateStr, namespace) {
+export async function queryLocks(relays, cadence, dateStr, namespace) {
   const pool = new SimplePool();
   const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
   const queryTimeoutMs = getQueryTimeoutMs();
@@ -228,7 +239,7 @@ async function queryLocks(relays, cadence, dateStr, namespace) {
   }
 }
 
-async function publishLock(relays, event) {
+export async function publishLock(relays, event) {
   const pool = new SimplePool();
 
   try {
@@ -255,7 +266,7 @@ async function publishLock(relays, event) {
   }
 }
 
-async function cmdCheck(cadence) {
+export async function cmdCheck(cadence) {
   const relays = getRelays();
   const namespace = getNamespace();
   const dateStr = todayDateStr();
@@ -276,33 +287,30 @@ async function cmdCheck(cadence) {
   const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
   const available = roster.filter((a) => !excludedAgents.includes(a));
 
-  console.log(
-    JSON.stringify(
-      {
-        namespace,
-        cadence,
-        date: dateStr,
-        locked: lockedAgents.sort(),
-        paused: pausedAgents.sort(),
-        excluded: excludedAgents.sort(),
-        available: available.sort(),
-        lockCount: locks.length,
-        unknownLockedAgents: unknownLockedAgents.sort(),
-        locks: locks.map((l) => ({
-          agent: l.agent,
-          eventId: l.eventId,
-          createdAt: l.createdAtIso,
-          expiresAt: l.expiresAtIso,
-          platform: l.platform,
-        })),
-      },
-      null,
-      2,
-    ),
-  );
+  const result = {
+    namespace,
+    cadence,
+    date: dateStr,
+    locked: lockedAgents.sort(),
+    paused: pausedAgents.sort(),
+    excluded: excludedAgents.sort(),
+    available: available.sort(),
+    lockCount: locks.length,
+    unknownLockedAgents: unknownLockedAgents.sort(),
+    locks: locks.map((l) => ({
+      agent: l.agent,
+      eventId: l.eventId,
+      createdAt: l.createdAtIso,
+      expiresAt: l.expiresAtIso,
+      platform: l.platform,
+    })),
+  };
+
+  console.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
-async function cmdLock(agent, cadence, dryRun = false) {
+export async function cmdLock(agent, cadence, dryRun = false) {
   const relays = getRelays();
   const namespace = getNamespace();
   const dateStr = todayDateStr();
@@ -318,7 +326,7 @@ async function cmdLock(agent, cadence, dryRun = false) {
   if (!roster.includes(agent)) {
     console.error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
     console.error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
-    process.exit(1);
+    throw new ExitError(1, 'Agent not in roster');
   }
 
   console.error('Step 1: Checking for existing locks...');
@@ -334,7 +342,7 @@ async function cmdLock(agent, cadence, dryRun = false) {
     console.log('LOCK_STATUS=denied');
     console.log('LOCK_REASON=already_locked');
     console.log(`LOCK_EXISTING_EVENT=${earliest.eventId}`);
-    process.exit(3);
+    throw new ExitError(3, 'Lock denied');
   }
 
   console.error('Step 2: Generating ephemeral keypair...');
@@ -393,7 +401,7 @@ async function cmdLock(agent, cadence, dryRun = false) {
       console.log('LOCK_STATUS=race_lost');
       console.log('LOCK_REASON=earlier_claim_exists');
       console.log(`LOCK_WINNER_EVENT=${winner.eventId}`);
-      process.exit(3);
+      throw new ExitError(3, 'Race check lost');
     }
 
     console.error('RACE CHECK: won');
@@ -407,9 +415,10 @@ async function cmdLock(agent, cadence, dryRun = false) {
   console.log(`LOCK_DATE=${dateStr}`);
   console.log(`LOCK_EXPIRES=${expiresAt}`);
   console.log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * 1000).toISOString()}`);
+  return { status: 'ok', eventId: event.id };
 }
 
-async function cmdList(cadence) {
+export async function cmdList(cadence) {
   const relays = getRelays();
   const namespace = getNamespace();
   const dateStr = todayDateStr();
@@ -459,8 +468,84 @@ async function cmdList(cadence) {
   }
 }
 
+export async function cmdDashboard(port = 4173) {
+  // Resolve package root relative to this file (src/lib.mjs)
+  // this file is in <root>/src/lib.mjs, so '..' goes to <root>
+  const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+  const server = http.createServer((req, res) => {
+    // URL parsing
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    let pathname = url.pathname;
+
+    // Redirect / to /dashboard/
+    if (pathname === '/' || pathname === '/dashboard') {
+      res.writeHead(302, { 'Location': '/dashboard/' });
+      res.end();
+      return;
+    }
+
+    // Special case: /torch-config.json
+    // Priority: User's CWD > Package default
+    if (pathname === '/torch-config.json') {
+      const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
+      if (fs.existsSync(userConfigPath)) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        fs.createReadStream(userConfigPath).pipe(res);
+        return;
+      }
+      // If not found in CWD, fall through to serve from packageRoot (if it exists there)
+      // or return empty object if missing?
+      // Falling through means it looks for packageRoot/torch-config.json
+    }
+
+    // Security check: prevent directory traversal
+    const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
+    let filePath = path.join(packageRoot, safePath);
+
+    // If directory, try index.html
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+       filePath = path.join(filePath, 'index.html');
+    }
+
+    // Check if file exists and is a file
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      res.writeHead(404);
+      res.end('Not Found');
+      return;
+    }
+
+    // MIME types
+    const extname = path.extname(filePath);
+    let contentType = 'text/plain';
+    switch (extname) {
+      case '.html': contentType = 'text/html'; break;
+      case '.js': contentType = 'text/javascript'; break;
+      case '.css': contentType = 'text/css'; break;
+      case '.json': contentType = 'application/json'; break;
+      case '.png': contentType = 'image/png'; break;
+      case '.jpg': contentType = 'image/jpeg'; break;
+      case '.svg': contentType = 'image/svg+xml'; break;
+      case '.ico': contentType = 'image/x-icon'; break;
+      case '.md': contentType = 'text/markdown'; break;
+    }
+
+    res.writeHead(200, { 'Content-Type': contentType });
+    fs.createReadStream(filePath).pipe(res);
+  });
+
+  server.listen(port, () => {
+    console.log(`Dashboard running at http://localhost:${port}/dashboard/`);
+    console.log(`Serving files from ${packageRoot}`);
+    console.log(`Using configuration from ${process.cwd()}`);
+  });
+
+  // Keep process alive
+  return new Promise(() => {});
+}
+
 function parseArgs(argv) {
-  const args = { command: null, agent: null, cadence: null, dryRun: false };
+  const args = { command: null, agent: null, cadence: null, dryRun: false, port: 4173 };
   let i = 0;
 
   if (argv.length > 0 && !argv[0].startsWith('-')) {
@@ -480,6 +565,8 @@ function parseArgs(argv) {
       args.cadence = arg.split('=')[1];
     } else if (arg === '--dry-run') {
       args.dryRun = true;
+    } else if (arg === '--port') {
+      args.port = parseInt(argv[++i], 10) || 4173;
     }
   }
 
@@ -487,12 +574,13 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  console.error(`Usage: node src/nostr-lock.mjs <command> [options]
+  console.error(`Usage: torch-lock <command> [options]
 
 Commands:
   check  --cadence <daily|weekly>                  Check locked agents (JSON)
   lock   --agent <name> --cadence <daily|weekly>   Claim a lock
   list   [--cadence <daily|weekly>]                Print active lock table
+  dashboard [--port <port>]                        Serve the dashboard (default: 4173)
 
 Options:
   --dry-run   Build and sign the event but do not publish
@@ -514,54 +602,63 @@ Exit codes:
   3  Lock denied (already locked or race lost)`);
 }
 
-async function main() {
-  const args = parseArgs(process.argv.slice(2));
+export async function main(argv) {
+  try {
+    const args = parseArgs(argv);
 
-  if (!args.command) {
-    usage();
-    process.exit(1);
-  }
-
-  switch (args.command) {
-    case 'check': {
-      if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-        console.error('ERROR: --cadence <daily|weekly> is required for check');
-        process.exit(1);
-      }
-      await cmdCheck(args.cadence);
-      break;
-    }
-
-    case 'lock': {
-      if (!args.agent) {
-        console.error('ERROR: --agent <name> is required for lock');
-        process.exit(1);
-      }
-      if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-        console.error('ERROR: --cadence <daily|weekly> is required for lock');
-        process.exit(1);
-      }
-      await cmdLock(args.agent, args.cadence, args.dryRun);
-      break;
-    }
-
-    case 'list': {
-      if (args.cadence && !VALID_CADENCES.has(args.cadence)) {
-        console.error('ERROR: --cadence must be daily or weekly');
-        process.exit(1);
-      }
-      await cmdList(args.cadence || null);
-      break;
-    }
-
-    default:
-      console.error(`ERROR: Unknown command: ${args.command}`);
+    if (!args.command) {
       usage();
-      process.exit(1);
+      throw new ExitError(1, 'No command specified');
+    }
+
+    switch (args.command) {
+      case 'check': {
+        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+          console.error('ERROR: --cadence <daily|weekly> is required for check');
+          throw new ExitError(1, 'Missing cadence');
+        }
+        await cmdCheck(args.cadence);
+        break;
+      }
+
+      case 'lock': {
+        if (!args.agent) {
+          console.error('ERROR: --agent <name> is required for lock');
+          throw new ExitError(1, 'Missing agent');
+        }
+        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+          console.error('ERROR: --cadence <daily|weekly> is required for lock');
+          throw new ExitError(1, 'Missing cadence');
+        }
+        await cmdLock(args.agent, args.cadence, args.dryRun);
+        break;
+      }
+
+      case 'list': {
+        if (args.cadence && !VALID_CADENCES.has(args.cadence)) {
+          console.error('ERROR: --cadence must be daily or weekly');
+          throw new ExitError(1, 'Invalid cadence');
+        }
+        await cmdList(args.cadence || null);
+        break;
+      }
+
+      case 'dashboard': {
+        await cmdDashboard(args.port);
+        break;
+      }
+
+      default:
+        console.error(`ERROR: Unknown command: ${args.command}`);
+        usage();
+        throw new ExitError(1, 'Unknown command');
+    }
+  } catch (err) {
+    if (err instanceof ExitError) {
+      process.exit(err.code);
+    } else {
+      console.error(`torch-lock failed: ${err.message}`);
+      process.exit(2);
+    }
   }
 }
-
-main().catch((err) => {
-  console.error(`nostr-lock failed: ${err.message}`);
-  process.exit(2);
-});
