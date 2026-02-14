@@ -25,6 +25,7 @@ describe('src/lib.mjs', () => {
     getDateStr: () => mockDateStr,
     log: mockLog,
     error: mockError,
+    readdir: async () => [],
   };
 
   beforeEach(() => {
