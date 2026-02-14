@@ -35,7 +35,93 @@ const memoryRepository = {
     memoryStore.set(id, updated);
     return updated;
   },
+  async getMemoryById(id) {
+    return memoryStore.get(id) ?? null;
+  },
+  async listMemories() {
+    return [...memoryStore.values()];
+  },
 };
+
+const memoryStatsState = {
+  ingested: [],
+  retrieved: [],
+  pruned: [],
+  archived: 0,
+  deleted: 0,
+};
+
+const ESTIMATED_INDEX_BYTES_PER_RECORD = 512;
+
+function toSafeTelemetryPayload(payload = {}) {
+  const blockedFields = new Set(['content', 'summary', 'query', 'raw']);
+  return Object.entries(payload).reduce((safe, [key, value]) => {
+    if (blockedFields.has(key)) return safe;
+    if (typeof value === 'string' && value.length > 300) {
+      safe[key] = `${value.slice(0, 300)}…`;
+      return safe;
+    }
+    safe[key] = value;
+    return safe;
+  }, {});
+}
+
+function buildTelemetryEmitter(options = {}) {
+  if (typeof options.emitTelemetry === 'function') {
+    return (event, payload) => options.emitTelemetry(event, toSafeTelemetryPayload(payload));
+  }
+
+  if (typeof options.telemetry?.emit === 'function') {
+    return (event, payload) => options.telemetry.emit(event, toSafeTelemetryPayload(payload));
+  }
+
+  return (event, payload) => {
+    console.log('memory_telemetry', {
+      event,
+      payload: toSafeTelemetryPayload(payload),
+      ts: Date.now(),
+    });
+  };
+}
+
+function emitMetric(options = {}, metric, payload) {
+  if (typeof options.emitMetric === 'function') {
+    options.emitMetric(metric, payload);
+    return;
+  }
+
+  if (typeof options.metrics?.emit === 'function') {
+    options.metrics.emit(metric, payload);
+    return;
+  }
+
+  console.log('memory_metric', { metric, payload, ts: Date.now() });
+}
+
+function applyMemoryFilters(memories, filters = {}) {
+  const tags = Array.isArray(filters.tags)
+    ? filters.tags.map((tag) => String(tag).trim()).filter(Boolean)
+    : [];
+
+  return memories.filter((memory) => {
+    if (filters.agent_id && memory.agent_id !== filters.agent_id) return false;
+    if (filters.type && memory.type !== filters.type) return false;
+    if (typeof filters.pinned === 'boolean' && memory.pinned !== filters.pinned) return false;
+    if (typeof filters.includeMerged === 'boolean' && !filters.includeMerged && memory.merged_into) return false;
+    if (tags.length > 0) {
+      const memoryTags = new Set(memory.tags);
+      if (!tags.every((tag) => memoryTags.has(tag))) return false;
+    }
+    return true;
+  });
+}
+
+function recordThroughput(samples, now) {
+  samples.push(now);
+  if (samples.length > 10_000) {
+    samples.splice(0, samples.length - 10_000);
+  }
+}
 
 /**
  * Ingests agent events and stores them as memory records.
@@ -46,7 +132,18 @@ const memoryRepository = {
  */
 export async function ingestEvents(events, options = {}) {
   const repository = options.repository ?? memoryRepository;
-  const records = await ingestMemoryWindow({ events }, { ...options, repository });
+  const telemetry = buildTelemetryEmitter(options);
+  const records = await ingestMemoryWindow({ events }, {
+    ...options,
+    repository,
+    emitTelemetry: (event, payload) => {
+      telemetry(event, payload);
+      if (event === 'memory:ingested') {
+        recordThroughput(memoryStatsState.ingested, Date.now());
+        emitMetric(options, 'memory_ingested_total', { count: 1 });
+      }
+    },
+  });
   cache.clear();
   return records;
 }
@@ -59,15 +156,38 @@ export async function ingestEvents(events, options = {}) {
  */
 export async function getRelevantMemories(params) {
   const { repository = memoryRepository, ...queryParams } = params;
+  const telemetry = buildTelemetryEmitter(params);
   const cacheKey = JSON.stringify(queryParams);
   const cached = cache.get(cacheKey);
   if (cached) {
+    telemetry('memory:retrieved', {
+      agent_id: queryParams.agent_id,
+      result_count: cached.length,
+      cache_hit: true,
+      query_present: Boolean(queryParams.query),
+      query_length: typeof queryParams.query === 'string' ? queryParams.query.length : 0,
+      tags_count: Array.isArray(queryParams.tags) ? queryParams.tags.length : 0,
+    });
+    emitMetric(params, 'memory_retrieved_total', { count: cached.length, cache_hit: true });
+    recordThroughput(memoryStatsState.retrieved, Date.now());
     return cached;
   }
 
   const ranked = await filterAndRankMemories([...memoryStore.values()], queryParams);
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
   cache.set(cacheKey, ranked);
+
+  telemetry('memory:retrieved', {
+    agent_id: queryParams.agent_id,
+    result_count: ranked.length,
+    cache_hit: false,
+    query_present: Boolean(queryParams.query),
+    query_length: typeof queryParams.query === 'string' ? queryParams.query.length : 0,
+    tags_count: Array.isArray(queryParams.tags) ? queryParams.tags.length : 0,
+  });
+  emitMetric(params, 'memory_retrieved_total', { count: ranked.length, cache_hit: false });
+  recordThroughput(memoryStatsState.retrieved, Date.now());
+
   return ranked;
 }
 
@@ -79,6 +199,7 @@ export async function getRelevantMemories(params) {
  */
 export async function runPruneCycle(options = {}) {
   const repository = options.repository ?? memoryRepository;
+  const telemetry = buildTelemetryEmitter(options);
   const retentionMs = options.retentionMs ?? (1000 * 60 * 60 * 24 * 30);
   const dbCandidates = await listPruneCandidates(repository, {
     retentionMs,
@@ -95,6 +216,14 @@ export async function runPruneCycle(options = {}) {
   for (const memory of prunable) {
     memoryStore.delete(memory.id);
   }
+
+  memoryStatsState.deleted += prunable.length;
+  recordThroughput(memoryStatsState.pruned, Date.now());
+  telemetry('memory:pruned', {
+    pruned_count: prunable.length,
+    retention_ms: retentionMs,
+  });
+  emitMetric(options, 'memory_pruned_total', { count: prunable.length, retention_ms: retentionMs });
 
   cache.clear();
 
@@ -114,8 +243,9 @@ export async function runPruneCycle(options = {}) {
  * @param {string} id - Memory record identifier.
  * @returns {Promise<import('./schema.js').MemoryRecord | null>} Updated memory record or null when not found.
  */
-export async function pinMemory(id) {
-  const updated = await memoryRepository.setPinned(id, true);
+export async function pinMemory(id, options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const updated = await repository.setPinned(id, true);
   cache.clear();
   return updated;
 }
@@ -126,8 +256,9 @@ export async function pinMemory(id) {
  * @param {string} id - Memory record identifier.
  * @returns {Promise<import('./schema.js').MemoryRecord | null>} Updated memory record or null when not found.
  */
-export async function unpinMemory(id) {
-  const updated = await memoryRepository.setPinned(id, false);
+export async function unpinMemory(id, options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const updated = await repository.setPinned(id, false);
   cache.clear();
   return updated;
 }
@@ -142,4 +273,94 @@ export async function markMemoryMerged(id, mergedInto) {
   const merged = await memoryRepository.markMerged(id, mergedInto);
   cache.clear();
   return merged;
+}
+
+export async function listMemories(filters = {}, options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const source = typeof repository.listMemories === 'function'
+    ? await repository.listMemories(filters)
+    : [...memoryStore.values()];
+
+  const filtered = applyMemoryFilters(source, filters)
+    .sort((left, right) => right.last_seen - left.last_seen);
+
+  const offset = Number.isFinite(filters.offset) ? Math.max(0, Number(filters.offset)) : 0;
+  const limit = Number.isFinite(filters.limit)
+    ? Math.max(1, Math.floor(Number(filters.limit)))
+    : filtered.length;
+
+  return filtered.slice(offset, offset + limit);
+}
+
+export async function inspectMemory(id, options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  if (typeof repository.getMemoryById === 'function') {
+    return repository.getMemoryById(id);
+  }
+  return memoryStore.get(id) ?? null;
+}
+
+export async function triggerPruneDryRun(options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const retentionMs = options.retentionMs ?? (1000 * 60 * 60 * 24 * 30);
+  const dbCandidates = await listPruneCandidates(repository, {
+    retentionMs,
+    now: options.now,
+  });
+
+  const candidates = dbCandidates.length > 0
+    ? dbCandidates
+    : selectPrunableMemories(await listMemories({}, { repository }), {
+      retentionMs,
+      now: options.now,
+    });
+
+  return {
+    dryRun: true,
+    retentionMs,
+    candidateCount: candidates.length,
+    candidates: candidates.map((memory) => ({
+      id: memory.id,
+      agent_id: memory.agent_id,
+      type: memory.type,
+      pinned: memory.pinned,
+      last_seen: memory.last_seen,
+      merged_into: memory.merged_into,
+    })),
+  };
+}
+
+export async function memoryStats(options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const now = options.now ?? Date.now();
+  const windowMs = Number.isFinite(options.windowMs) ? Math.max(1, Number(options.windowMs)) : (60 * 60 * 1000);
+  const memories = await listMemories({}, { repository });
+
+  const countsByType = memories.reduce((acc, memory) => {
+    acc[memory.type] = (acc[memory.type] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const archivedCount = memories.filter((memory) => Boolean(memory.merged_into)).length;
+  const deletedRate = memoryStatsState.deleted / Math.max(1, memoryStatsState.ingested.length);
+  const archivedRate = archivedCount / Math.max(1, memories.length);
+
+  const ingestedInWindow = memoryStatsState.ingested.filter((timestamp) => timestamp >= (now - windowMs)).length;
+  const ingestThroughputPerMinute = ingestedInWindow / Math.max(1, (windowMs / 60_000));
+
+  return {
+    countsByType,
+    totals: {
+      total: memories.length,
+      pinned: memories.filter((memory) => memory.pinned).length,
+      archived: archivedCount,
+      deletedObserved: memoryStatsState.deleted,
+    },
+    rates: {
+      archivedRate,
+      deletedRate,
+    },
+    indexSizeEstimateBytes: memories.length * ESTIMATED_INDEX_BYTES_PER_RECORD,
+    ingestThroughputPerMinute,
+  };
 }
