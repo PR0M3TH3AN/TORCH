@@ -8,6 +8,7 @@ import {
   listMemories,
   memoryStats,
   pinMemory,
+  runPruneCycle,
   triggerPruneDryRun,
   unpinMemory,
 } from '../src/services/memory/index.js';
@@ -103,4 +104,32 @@ test('memoryStats reports counts/rates and retrieval telemetry remains redaction
   assert.ok(Number.isFinite(stats.rates.deletedRate));
   assert.ok(stats.indexSizeEstimateBytes >= 0);
   assert.ok(Number.isFinite(stats.ingestThroughputPerMinute));
+});
+
+
+test('runPruneCycle respects prune feature-flag modes', async () => {
+  const repository = {
+    async listPruneCandidates() {
+      return [
+        { id: 'old-1', agent_id: 'agent-z', type: 'event', pinned: false, last_seen: 1, merged_into: null },
+      ];
+    },
+  };
+
+  const dryRunResult = await runPruneCycle({
+    repository,
+    env: { TORCH_MEMORY_PRUNE_ENABLED: 'dry-run' },
+    retentionMs: 1000,
+  });
+  assert.equal(dryRunResult.mode, 'dry-run');
+  assert.equal(dryRunResult.pruned.length, 0);
+  assert.equal(dryRunResult.candidates.length, 1);
+
+  const offResult = await runPruneCycle({
+    repository,
+    env: { TORCH_MEMORY_PRUNE_ENABLED: 'false' },
+    retentionMs: 1000,
+  });
+  assert.equal(offResult.mode, 'off');
+  assert.equal(offResult.pruned.length, 0);
 });

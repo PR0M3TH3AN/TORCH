@@ -90,3 +90,37 @@ test('startMemoryMaintenanceScheduler runs all jobs and emits metrics including 
   assert.equal(byJob.pruningCycle[0].payload.status, 'success');
   assert.equal(byJob.deepMergeArchivalMaintenance[0].payload.status, 'success');
 });
+
+
+test('startMemoryMaintenanceScheduler skips jobs when feature flags disable memory', async () => {
+  const metrics = [];
+  const called = [];
+
+  const scheduler = startMemoryMaintenanceScheduler({
+    runImmediately: true,
+    env: { TORCH_MEMORY_ENABLED: 'false' },
+    emitMetric(name, payload) {
+      metrics.push({ name, payload });
+    },
+    handlers: {
+      async ingestRecentRuntimeEvents() {
+        called.push('ingest');
+      },
+      async consolidateObservations() {
+        called.push('consolidate');
+      },
+      async pruningCycle() {
+        called.push('prune');
+      },
+      async deepMergeArchivalMaintenance() {
+        called.push('merge');
+      },
+    },
+  });
+
+  await wait(10);
+  scheduler.stop();
+
+  assert.deepEqual(called, []);
+  assert.ok(metrics.some((entry) => entry.payload.status === 'skipped_flag_disabled'));
+});

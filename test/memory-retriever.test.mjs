@@ -143,6 +143,13 @@ test('isMemoryRetrievalEnabled supports global toggle and agent canary list', ()
     isMemoryRetrievalEnabled('agent-c', { TORCH_MEMORY_RETRIEVAL_ENABLED: 'agent-a,agent-b' }),
     false,
   );
+  assert.equal(
+    isMemoryRetrievalEnabled('agent-a', {
+      TORCH_MEMORY_ENABLED: 'false',
+      TORCH_MEMORY_RETRIEVAL_ENABLED: 'true',
+    }),
+    false,
+  );
 });
 
 test('renderPromptWithMemoryContext injects bounded memory block before base prompt', async () => {

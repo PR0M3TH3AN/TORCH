@@ -36,6 +36,10 @@ node src/nostr-lock.mjs list
 - `NOSTR_LOCK_WEEKLY_ROSTER`
 - `TORCH_CONFIG_PATH`
 - `AGENT_PLATFORM`
+- `TORCH_MEMORY_ENABLED` (`true`/`false`; global memory kill switch, defaults to enabled)
+- `TORCH_MEMORY_INGEST_ENABLED` (`true`/`false` or comma-separated canary `agent_id` allow list)
+- `TORCH_MEMORY_RETRIEVAL_ENABLED` (`true`/`false` or comma-separated canary `agent_id` allow list)
+- `TORCH_MEMORY_PRUNE_ENABLED` (`true`, `false`, or `dry-run`)
 
 ## torch-config.json
 
@@ -75,3 +79,19 @@ The lock CLI resolves roster names in this order:
 - `1`: usage error
 - `2`: relay/network error
 - `3`: lock denied (already locked or race lost)
+
+
+## Memory rollout plan
+
+1. Deploy memory schema changes with scheduler jobs disabled (`TORCH_MEMORY_ENABLED=false` or subsystem flags set to `false`).
+2. Enable ingest for one canary `agent_id` via `TORCH_MEMORY_INGEST_ENABLED=<agent_id>`.
+3. Validate retrieval quality and storage growth metrics before expanding scope.
+4. Enable broader retrieval (`TORCH_MEMORY_RETRIEVAL_ENABLED=<allow-list>` then `true`).
+5. Enable pruning in `dry-run` mode first, then switch to active pruning after revalidation.
+
+## Memory rollback plan
+
+1. Disable memory flags (`TORCH_MEMORY_ENABLED=false` and/or set ingest/retrieval/prune flags to `false`).
+2. Stop memory maintenance scheduler processes.
+3. Preserve database state for post-incident analysis; do not drop or rewrite memory tables during rollback.
+4. Keep prune actions in `dry-run` (or disabled) until lifecycle policy and data integrity are revalidated.
