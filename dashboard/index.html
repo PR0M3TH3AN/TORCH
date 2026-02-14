@@ -153,6 +153,7 @@
 
     <script type="module">
       import { KIND_APP_DATA } from '../src/constants.mjs';
+      import { createElement, escapeHtml } from './domUtils.js';
 
       // -----------------------------------------------------------------------
       // Configuration — matches bin/torch-lock.mjs defaults
@@ -462,15 +463,81 @@
           },
         ];
 
-        summaryBar.innerHTML = cards
-          .map(
-            (c) => `
-          <div class="rounded-lg bg-surface-alt p-4">
-            <div class="text-xs text-muted mb-1">${c.label}</div>
-            <div class="text-lg font-semibold ${c.color} mono">${c.value}</div>
-          </div>`,
-          )
-          .join('');
+        summaryBar.replaceChildren();
+        for (const c of cards) {
+          const card = createElement('div', 'rounded-lg bg-surface-alt p-4');
+          const label = createElement('div', 'text-xs text-muted mb-1', c.label);
+          const value = createElement('div', `text-lg font-semibold ${c.color} mono`, String(c.value));
+          card.appendChild(label);
+          card.appendChild(value);
+          summaryBar.appendChild(card);
+        }
+      }
+
+      function createLockCard(lock, now) {
+        const expired = isExpired(lock);
+        const isCompleted = lock.status === 'completed';
+        const ps = platformStyle(lock.platform);
+        const age = now - lock.createdAt;
+        const remaining = lock.expiresAt ? lock.expiresAt - now : 0;
+        const ttlTotal = lock.expiresAt
+          ? lock.expiresAt - lock.createdAt
+          : 7200;
+        const ttlPct = expired
+          ? 0
+          : Math.max(0, Math.min(100, (remaining / ttlTotal) * 100));
+
+        let cardBg = 'bg-surface-alt';
+        let cardBorder = expired ? 'border-border/50 opacity-60' : 'border-border';
+
+        if (isCompleted) {
+          cardBg = 'bg-success/5';
+          cardBorder = 'border-success/30';
+        }
+
+        const card = createElement('div', `rounded-lg border ${cardBorder} ${cardBg} p-4 flex flex-col gap-3`);
+
+        // Header
+        const header = createElement('div', 'flex items-start justify-between');
+        const left = createElement('div', 'flex items-center gap-2');
+        if (!expired && !isCompleted) {
+          left.appendChild(createElement('span', 'pulse-dot bg-success mt-1 shrink-0'));
+        }
+        const meta = createElement('div');
+        meta.appendChild(createElement('div', 'font-medium text-text-strong text-sm', lock.agent));
+        meta.appendChild(createElement('div', 'text-xs text-muted', `${lock.cadence} \u00B7 ${lock.date}`));
+        left.appendChild(meta);
+        header.appendChild(left);
+
+        const badge = createElement('span', `inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ps.bg} ${ps.text}`, ps.label);
+        header.appendChild(badge);
+        card.appendChild(header);
+
+        // Grid
+        const grid = createElement('div', 'grid grid-cols-2 gap-x-4 gap-y-1 text-xs');
+        grid.appendChild(createElement('div', 'text-muted', 'Started'));
+        grid.appendChild(createElement('div', 'mono text-text', fmtTime(lock.createdAt)));
+        grid.appendChild(createElement('div', 'text-muted', 'Age'));
+        grid.appendChild(createElement('div', 'mono text-text', fmtDuration(age)));
+        grid.appendChild(createElement('div', 'text-muted', 'TTL remaining'));
+        grid.appendChild(createElement('div', `mono ${expired ? 'text-danger' : 'text-text'}`, fmtDuration(remaining)));
+        grid.appendChild(createElement('div', 'text-muted', 'Status'));
+        grid.appendChild(createElement('div', `mono ${expired ? 'text-danger' : 'text-success'}`, expired ? 'expired' : lock.status));
+        card.appendChild(grid);
+
+        // Progress Bar
+        const barContainer = createElement('div', 'w-full bg-border/30 rounded-full overflow-hidden');
+        const bar = createElement('div', `ttl-bar ${expired ? 'bg-danger' : 'bg-success'}`);
+        bar.style.width = `${ttlPct}%`;
+        barContainer.appendChild(bar);
+        card.appendChild(barContainer);
+
+        // Footer (Event ID)
+        const footer = createElement('div', 'text-xs text-muted mono truncate', lock.eventId ? lock.eventId.slice(0, 16) + '\u2026' : 'no id');
+        footer.title = lock.eventId || '';
+        card.appendChild(footer);
+
+        return card;
       }
 
       function renderLocks() {
@@ -484,8 +551,7 @@
         renderSummary(locks);
 
         if (locks.length === 0) {
-          lockGrid.innerHTML = '';
-          lockGrid.appendChild(emptyState);
+          lockGrid.replaceChildren(emptyState);
           emptyState.textContent =
             lockStore.size === 0
               ? 'Waiting for lock events from relays\u2026'
@@ -493,67 +559,8 @@
           return;
         }
 
-        lockGrid.innerHTML = locks
-          .map((lock) => {
-            const expired = isExpired(lock);
-            const isCompleted = lock.status === 'completed';
-            const ps = platformStyle(lock.platform);
-            const age = now - lock.createdAt;
-            const remaining = lock.expiresAt ? lock.expiresAt - now : 0;
-            const ttlTotal = lock.expiresAt
-              ? lock.expiresAt - lock.createdAt
-              : 7200;
-            const ttlPct = expired
-              ? 0
-              : Math.max(0, Math.min(100, (remaining / ttlTotal) * 100));
-
-            let cardBg = 'bg-surface-alt';
-            let cardBorder = expired ? 'border-border/50 opacity-60' : 'border-border';
-
-            if (isCompleted) {
-              cardBg = 'bg-success/5';
-              cardBorder = 'border-success/30';
-            }
-
-            return `
-            <div class="rounded-lg border ${cardBorder} ${cardBg} p-4 flex flex-col gap-3">
-              <div class="flex items-start justify-between">
-                <div class="flex items-center gap-2">
-                  ${expired || isCompleted ? '' : '<span class="pulse-dot bg-success mt-1 shrink-0"></span>'}
-                  <div>
-                    <div class="font-medium text-text-strong text-sm">${lock.agent}</div>
-                    <div class="text-xs text-muted">${lock.cadence} &middot; ${lock.date}</div>
-                  </div>
-                </div>
-                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ps.bg} ${ps.text}">
-                  ${ps.label}
-                </span>
-              </div>
-
-              <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                <div class="text-muted">Started</div>
-                <div class="mono text-text">${fmtTime(lock.createdAt)}</div>
-                <div class="text-muted">Age</div>
-                <div class="mono text-text">${fmtDuration(age)}</div>
-                <div class="text-muted">TTL remaining</div>
-                <div class="mono ${expired ? 'text-danger' : 'text-text'}">${fmtDuration(remaining)}</div>
-                <div class="text-muted">Status</div>
-                <div class="mono ${expired ? 'text-danger' : 'text-success'}">${expired ? 'expired' : lock.status}</div>
-              </div>
-
-              <div class="w-full bg-border/30 rounded-full overflow-hidden">
-                <div
-                  class="ttl-bar ${expired ? 'bg-danger' : 'bg-success'}"
-                  style="width: ${ttlPct}%"
-                ></div>
-              </div>
-
-              <div class="text-xs text-muted mono truncate" title="${lock.eventId}">
-                ${lock.eventId ? lock.eventId.slice(0, 16) + '\u2026' : 'no id'}
-              </div>
-            </div>`;
-          })
-          .join('');
+        const cards = locks.map((lock) => createLockCard(lock, now));
+        lockGrid.replaceChildren(...cards);
       }
 
       // -----------------------------------------------------------------------
@@ -564,13 +571,12 @@
         if (!isAlive()) return;
 
         if (!rawLogInitialized) {
-          rawLog.innerHTML = '';
+          rawLog.replaceChildren();
           rawLogInitialized = true;
         }
-        const line = document.createElement('div');
-        line.className = 'mb-2 pb-2 border-b border-border/30';
         const ts = new Date(event.created_at * 1000).toISOString();
-        line.textContent = `[${ts}] ${JSON.stringify(event).slice(0, 300)}`;
+        const text = `[${ts}] ${JSON.stringify(event).slice(0, 300)}`;
+        const line = createElement('div', 'mb-2 pb-2 border-b border-border/30', text);
         rawLog.prepend(line);
 
         // Keep log bounded
