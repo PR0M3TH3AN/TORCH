@@ -13,7 +13,7 @@ Use this document for all scheduler runs.
 2. Run preflight to build the exclusion set:
 
    ```bash
-   node src/nostr-lock.mjs check --cadence <cadence>
+   if daily: `npm run lock:check:daily`; if weekly: `npm run lock:check:weekly`
    ```
 
 3. Read policy file(s):
@@ -35,12 +35,12 @@ Use this document for all scheduler runs.
 
    ```bash
    AGENT_PLATFORM=<platform> \
-   node src/nostr-lock.mjs lock --agent <agent-name> --cadence <cadence>
+   npm run lock:lock -- --agent <agent-name> --cadence <cadence>
    ```
 
    - Exit `0`: lock acquired, continue.
    - Exit `3`: race lost/already locked, return to step 2.
-   - Exit `2`: relay error, write `_failed.md` with reason `Nostr relay error`, stop.
+   - Exit `2`: lock backend error, write `_failed.md` with reason `Lock backend error`, stop.
 
 7. Execute `<prompt_dir>/<prompt-file>` end-to-end.
 
