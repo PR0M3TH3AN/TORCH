@@ -2,77 +2,69 @@
 
 TORCH is a portable Nostr-based task locking toolkit for multi-agent coordination.
 
-## First-run quickstart
-
-From the repository root:
+## Installation
 
 ```bash
-npm install
-cp torch-config.json /path/to/your-project/torch-config.json # optional template step when vendoring TORCH
-npm run lock:check:daily
-AGENT_PLATFORM=codex npm run lock:lock -- --agent docs-agent --cadence daily
-npm run lock:list
+npm install torch-lock
 ```
 
-### Project configuration (`torch-config.json`)
+## Usage
 
-Create a `torch-config.json` file in your project root (or set `TORCH_CONFIG_PATH`) to override defaults per repo:
+### CLI
+
+The `torch-lock` CLI allows you to check, lock, and list tasks.
+
+```bash
+# Check locks for a specific cadence
+npx torch-lock check --cadence daily
+
+# Lock a task for an agent
+AGENT_PLATFORM=codex npx torch-lock lock --agent docs-agent --cadence daily
+
+# List all active locks
+npx torch-lock list
+
+# Run the Dashboard
+npx torch-lock dashboard
+```
+
+### Configuration (`torch-config.json`)
+
+Create a `torch-config.json` file in your project root to configure TORCH for your repository. You can use the included `torch-config.example.json` as a template.
+
+Configuration options:
 
 - `nostrLock.namespace` (d-tag/tag namespace)
-- `nostrLock.relays`
-- `nostrLock.ttlSeconds`
-- `nostrLock.queryTimeoutMs`
-- `nostrLock.dailyRoster` / `nostrLock.weeklyRoster`
+- `nostrLock.relays` (array of relay URLs)
+- `nostrLock.ttlSeconds` (lock duration in seconds)
+- `nostrLock.queryTimeoutMs` (timeout for relay queries)
+- `nostrLock.dailyRoster` / `nostrLock.weeklyRoster` (explicit rosters)
 - `dashboard.defaultCadenceView` (`daily`, `weekly`, or `all`)
 - `dashboard.defaultStatusView` (`active` or `all`)
-- `scheduler.firstPromptByCadence.daily` / `.weekly`
+- `scheduler.firstPromptByCadence.daily` / `.weekly` (first prompt to run)
 - `scheduler.paused.daily` / `.weekly` (array of agent names to pause locally)
 
-Weekly alignment maintenance is available via `src/prompts/weekly/repo-fit-agent.md`, which is designed to keep TORCH defaults and docs tuned to the host repository over time.
+### Dashboard
 
-Default first-run behavior is configured so daily scheduling starts with `scheduler-update-agent`.
-
-Optional dashboard:
+The dashboard provides a live view of lock events.
 
 ```bash
-npm run dashboard:serve
-# then open http://localhost:4173/dashboard/
+npx torch-lock dashboard --port 4173
+# Open http://localhost:4173/dashboard/
 ```
-
-## Included
-
-- `src/nostr-lock.mjs` — Generic lock/check/list CLI
-- `src/docs/TORCH.md` — Protocol summary and usage
-- `src/prompts/` — Generic scheduler prompts and flow
-- `skills/` — Repository-local skill guides for agent onboarding and repeatable workflows
-- `examples/` — Optional scheduler overlay examples for adapting TORCH to downstream repositories
-- `dashboard/index.html` — Static lock dashboard
-
-## CLI dependencies
-
-Declared in `package.json` and pinned:
-
-- `nostr-tools@2.19.4`
-- `ws@8.19.0`
-
-## NPM script helpers
-
-- `npm run lock:check:daily`
-- `npm run lock:check:weekly`
-- `npm run lock:list`
-- `npm run lock:lock -- --agent <agent-name> --cadence <daily|weekly>`
-- `npm run dashboard:serve`
 
 ## Environment variables
 
+You can override configuration using environment variables:
+
 - `NOSTR_LOCK_NAMESPACE`
-- `NOSTR_LOCK_RELAYS`
+- `NOSTR_LOCK_RELAYS` (comma-separated)
 - `NOSTR_LOCK_TTL`
 - `NOSTR_LOCK_QUERY_TIMEOUT_MS`
-- `NOSTR_LOCK_DAILY_ROSTER`
-- `NOSTR_LOCK_WEEKLY_ROSTER`
-- `TORCH_CONFIG_PATH`
-- `AGENT_PLATFORM`
+- `NOSTR_LOCK_DAILY_ROSTER` (comma-separated list of agents)
+- `NOSTR_LOCK_WEEKLY_ROSTER` (comma-separated list of agents)
+- `TORCH_CONFIG_PATH` (path to config file)
+- `AGENT_PLATFORM` (platform identifier, e.g. `codex`)
 
 ## Roster precedence
 
@@ -80,16 +72,22 @@ The lock CLI resolves roster names in this order:
 
 1. `NOSTR_LOCK_DAILY_ROSTER` / `NOSTR_LOCK_WEEKLY_ROSTER` (comma-separated env overrides).
 2. `torch-config.json` (`nostrLock.dailyRoster` / `nostrLock.weeklyRoster`).
-3. `src/prompts/roster.json` (`daily` / `weekly` canonical scheduler roster).
-4. Built-in fallback roster (used only if `src/prompts/roster.json` is unreadable).
+3. `src/prompts/roster.json` (canonical scheduler roster included in the package).
+4. Built-in fallback roster.
 
-`lock --agent` validates names against the resolved cadence roster, and `check`/`list` report lock events whose agent names do not match scheduler roster entries exactly.
+## Included Resources
 
+- `src/lib.mjs` — Core library logic (can be imported in scripts)
+- `src/docs/TORCH.md` — Protocol summary and usage
+- `src/prompts/` — Generic scheduler prompts and flow
+- `skills/` — Repository-local skill guides for agent onboarding and repeatable workflows
+- `dashboard/` — Static lock dashboard assets
 
-## Example
+## NPM Scripts (for development)
 
-```bash
-NOSTR_LOCK_NAMESPACE=my-project \
-AGENT_PLATFORM=codex \
-node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
-```
+If you are developing `torch-lock` itself:
+
+- `npm run lock:check:daily`
+- `npm run lock:check:weekly`
+- `npm run lock:list`
+- `npm run dashboard:serve`

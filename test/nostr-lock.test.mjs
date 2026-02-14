@@ -5,13 +5,13 @@ import fs from 'node:fs';
 
 describe('CLI Smoke Test', () => {
   it('should print usage when no args provided', () => {
-    const result = spawnSync('node', ['src/nostr-lock.mjs']);
+    const result = spawnSync('node', ['bin/torch-lock.mjs']);
     assert.strictEqual(result.status, 1);
     assert.match(result.stderr.toString(), /Usage:/);
   });
 
   it('should fail when checking without cadence', () => {
-    const result = spawnSync('node', ['src/nostr-lock.mjs', 'check']);
+    const result = spawnSync('node', ['bin/torch-lock.mjs', 'check']);
     assert.strictEqual(result.status, 1);
     assert.match(result.stderr.toString(), /--cadence <daily|weekly> is required/);
   });
@@ -23,7 +23,7 @@ describe('CLI Smoke Test', () => {
     }));
 
     try {
-      const result = spawnSync('node', ['src/nostr-lock.mjs', 'check', '--cadence', 'daily'], {
+      const result = spawnSync('node', ['bin/torch-lock.mjs', 'check', '--cadence', 'daily'], {
         env: { ...process.env, TORCH_CONFIG_PATH: configPath }
       });
       const output = JSON.parse(result.stdout.toString());
