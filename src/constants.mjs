@@ -9,3 +9,4 @@ export const DEFAULT_TTL = 7200;
 export const DEFAULT_NAMESPACE = 'torch';
 export const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
 export const VALID_CADENCES = new Set(['daily', 'weekly']);
+export const KIND_APP_DATA = 30078;
