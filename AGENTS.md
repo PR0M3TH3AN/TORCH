@@ -4,69 +4,88 @@ Repository-wide operating instructions for autonomous and semi-autonomous coding
 
 ## Goal
 
-Keep this repository reusable across many downstream projects. Favor generic defaults, portable workflows, and minimal assumptions so the same guidance works in different stacks and environments.
+Make this repository portable across many downstream projects. Default to generic guidance, minimal assumptions, and workflows that work in different languages, runtimes, and deployment environments.
 
-## Session startup checklist
-
-Run this checklist at the beginning of every session:
+## Session startup checklist (run every session)
 
 1. Read `AGENTS.md` (this file).
-2. Read `CLAUDE.md` for execution workflow and handoff rules.
-3. Read `CONTRIBUTING.md` for commit and pull request expectations.
+2. Read `CLAUDE.md` for execution workflow and handoff protocol details.
+3. Read `CONTRIBUTING.md` for commit/PR expectations.
 4. Read `KNOWN_ISSUES.md` for active blockers and workarounds.
-5. Review `docs/agent-handoffs/README.md` and recent notes in:
+5. Read `docs/agent-handoffs/README.md`.
+6. Review recent notes in:
    - `docs/agent-handoffs/learnings/`
    - `docs/agent-handoffs/incidents/`
 
 ## Repo-agnostic defaults
 
-- Do not hardcode company, product, customer, environment, or team-specific details.
-- Prefer neutral terms such as `project`, `service`, `consumer`, `provider`, `integration`, and `environment`.
-- Avoid assumptions about deployment target (local, cloud, CI, container) unless explicitly configured.
-- Add project-specific details only when required by the current repository and clearly label them as such.
+- Do not hardcode company, product, team, customer, or environment-specific assumptions.
+- Prefer neutral terms such as `project`, `service`, `integration`, `consumer`, `provider`, and `environment`.
+- Do not assume a specific infrastructure model (local machine, container, CI, cloud VM, etc.) unless explicitly configured in repo files.
+- Add project-specific details only when required by the current repository and clearly label them as repository-specific.
 
 ## Decision and implementation policy
 
-- Start with the smallest safe change that solves the user request.
-- Prefer explicit commands over implied behavior.
+- Start with the smallest safe change that satisfies the request.
 - Keep edits focused; avoid unrelated refactors.
-- Preserve backward compatibility unless the task explicitly allows breaking changes.
-- If uncertainty remains, document assumptions in the final summary.
+- Prefer explicit commands and documented behavior over implicit assumptions.
+- Preserve backward compatibility unless the task explicitly permits a breaking change.
+- If assumptions are necessary, record them in the final summary.
 
 ## Validation baseline
 
 - Run the most relevant checks for changed files (tests, lint, typecheck, build, or targeted scripts).
-- If a check cannot run due to environment limits, record:
-  - what was attempted,
-  - why it could not run,
-  - what fallback validation was done.
-- Never claim a check passed if it was not executed.
+- If a check cannot run, record:
+  - command attempted,
+  - reason it could not complete,
+  - fallback validation performed.
+- Never claim a check passed unless it was actually executed.
 
-## Agent handoff protocol
+## Agent knowledge-sharing protocol
 
 Capture reusable context so future agents can continue without rediscovery.
 
-### Where to record information
+### What belongs where
 
-- `KNOWN_ISSUES.md`: active/reproducible issues, current status, impact, and workarounds.
-- `docs/agent-handoffs/learnings/`: successful patterns or repeatable fixes.
-- `docs/agent-handoffs/incidents/`: failures, root causes, and mitigations.
+- `KNOWN_ISSUES.md`
+  - Active and reproducible issues only.
+  - Include status, impact, workaround, and last verification date.
+- `docs/agent-handoffs/learnings/`
+  - Proven patterns, repeatable fixes, and successful implementation guidance.
+- `docs/agent-handoffs/incidents/`
+  - Failures, root causes, mitigations, and prevention guidance.
 
-### Note naming
+### File naming standard (generic)
 
-Use generic, descriptive filenames:
+Use descriptive, repository-agnostic note names:
 
 - `YYYY-MM-DD-short-topic.md`
 
+Good examples:
+
+- `2026-02-14-validation-before-summary.md`
+- `2026-02-14-missing-baseline-context.md`
+
+Avoid tool, product, customer, or team names in filenames unless absolutely required for clarity.
+
 ### Required note sections
 
-Every new learning/incident note should include:
+Every learning or incident note should include these headings:
 
-- Context
-- Observation
-- Action taken
-- Validation performed
-- Recommendation for next agents
+1. Context
+2. Observation
+3. Action taken
+4. Validation performed
+5. Recommendation for next agents
+
+### Update decision tree
+
+When you discover new reusable context:
+
+1. Check if an existing note already covers it.
+2. If yes, update the existing note.
+3. If no, add a new note in `learnings/` or `incidents/` using the naming standard above.
+4. If the issue is still active/reproducible, add or update an entry in `KNOWN_ISSUES.md`.
 
 ## Priority order for conflicting instructions
 
@@ -74,4 +93,4 @@ Every new learning/incident note should include:
 2. `AGENTS.md`
 3. `CLAUDE.md`
 4. `CONTRIBUTING.md`
-5. Inline comments and prompt templates
+5. Inline code comments and prompt templates
