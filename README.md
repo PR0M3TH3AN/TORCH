@@ -27,6 +27,8 @@ Create a `torch-config.json` file in your project root (or set `TORCH_CONFIG_PAT
 - `dashboard.defaultStatusView` (`active` or `all`)
 - `scheduler.firstPromptByCadence.daily` / `.weekly`
 
+Weekly alignment maintenance is available via `src/prompts/weekly/repo-fit-agent.md`, which is designed to keep TORCH defaults and docs tuned to the host repository over time.
+
 Default first-run behavior is configured so daily scheduling starts with `scheduler-update-agent`.
 
 Optional dashboard:
@@ -41,6 +43,7 @@ npm run dashboard:serve
 - `src/nostr-lock.mjs` — Generic lock/check/list CLI
 - `src/docs/TORCH.md` — Protocol summary and usage
 - `src/prompts/` — Generic scheduler prompts and flow
+- `skills/` — Repository-local skill guides for agent onboarding and repeatable workflows
 - `examples/` — Optional scheduler overlay examples for adapting TORCH to downstream repositories
 - `dashboard/index.html` — Static lock dashboard
 

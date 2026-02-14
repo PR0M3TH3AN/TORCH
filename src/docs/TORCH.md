@@ -54,6 +54,8 @@ Common settings:
 
 Default first-run daily scheduler prompt is `scheduler-update-agent`.
 
+For weekly repository-fit maintenance, TORCH also includes `src/prompts/weekly/repo-fit-agent.md` to periodically adjust defaults and docs to the host repository.
+
 ## Roster precedence
 
 The lock CLI resolves roster names in this order:
