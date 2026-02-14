@@ -398,6 +398,14 @@ async function main() {
       'scripts/agent/verify-run-artifacts.mjs',
       '--since',
       runArtifactSince,
+      '--agent',
+      selectedAgent,
+      '--cadence',
+      cadence,
+      '--prompt-path',
+      promptPath,
+      '--run-start',
+      runArtifactSince,
       '--check-failure-notes',
     ]);
     if (artifactCheck.code !== 0) {
