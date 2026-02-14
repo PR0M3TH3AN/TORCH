@@ -5,6 +5,7 @@
   "type": "module",
   "description": "TORCH standalone lock CLI and optional dashboard",
   "scripts": {
+    "test": "node --test test/*.test.mjs",
     "lock:check:daily": "node src/nostr-lock.mjs check --cadence daily",
     "lock:check:weekly": "node src/nostr-lock.mjs check --cadence weekly",
     "lock:list": "node src/nostr-lock.mjs list",
