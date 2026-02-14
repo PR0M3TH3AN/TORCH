@@ -1,49 +1,66 @@
 # AGENTS.md
 
-Repository-wide instructions for any autonomous or semi-autonomous coding agent.
+Repository-wide operating instructions for autonomous and semi-autonomous coding agents.
 
-## Purpose
+## Goal
 
-This repository is designed to be reused across many downstream projects. Keep behavior, docs, and naming generic by default unless you are actively working inside a specific downstream repo that requires explicit customization.
+Keep this repository reusable across many downstream projects. Favor generic defaults, portable workflows, and minimal assumptions so the same guidance works in different stacks and environments.
 
-## Startup checklist (run every session)
+## Session startup checklist
 
-1. Read this file (`AGENTS.md`).
-2. Read `CLAUDE.md` for execution conventions.
-3. Read `CONTRIBUTING.md` for commit/PR expectations.
-4. Check `KNOWN_ISSUES.md` for active blockers or workarounds.
+Run this checklist at the beginning of every session:
+
+1. Read `AGENTS.md` (this file).
+2. Read `CLAUDE.md` for execution workflow and handoff rules.
+3. Read `CONTRIBUTING.md` for commit and pull request expectations.
+4. Read `KNOWN_ISSUES.md` for active blockers and workarounds.
 5. Review `docs/agent-handoffs/README.md` and recent notes in:
    - `docs/agent-handoffs/learnings/`
    - `docs/agent-handoffs/incidents/`
 
-## Generic-first policy
+## Repo-agnostic defaults
 
-- Do not hardcode organization, product, customer, or brand-specific details.
-- Do not assume a single deployment environment unless explicitly configured.
-- Prefer neutral names such as `project`, `service`, `integration`, `consumer`, `provider`.
-- Add project-specific notes only when working in that project’s own repository, and label them clearly.
+- Do not hardcode company, product, customer, environment, or team-specific details.
+- Prefer neutral terms such as `project`, `service`, `consumer`, `provider`, `integration`, and `environment`.
+- Avoid assumptions about deployment target (local, cloud, CI, container) unless explicitly configured.
+- Add project-specific details only when required by the current repository and clearly label them as such.
 
-## Agent learning + handoff protocol
+## Decision and implementation policy
 
-Agents are expected to leave concise, reusable notes so future agents do not need to rediscover the same context.
+- Start with the smallest safe change that solves the user request.
+- Prefer explicit commands over implied behavior.
+- Keep edits focused; avoid unrelated refactors.
+- Preserve backward compatibility unless the task explicitly allows breaking changes.
+- If uncertainty remains, document assumptions in the final summary.
 
-### Which file should be updated?
+## Validation baseline
 
-- Update `KNOWN_ISSUES.md` when an issue is active/reproducible and others may hit it.
-- Add a file in `docs/agent-handoffs/learnings/` for reusable successful patterns.
-- Add a file in `docs/agent-handoffs/incidents/` for failures, root cause, and mitigations.
+- Run the most relevant checks for changed files (tests, lint, typecheck, build, or targeted scripts).
+- If a check cannot run due to environment limits, record:
+  - what was attempted,
+  - why it could not run,
+  - what fallback validation was done.
+- Never claim a check passed if it was not executed.
 
-### Naming convention
+## Agent handoff protocol
+
+Capture reusable context so future agents can continue without rediscovery.
+
+### Where to record information
+
+- `KNOWN_ISSUES.md`: active/reproducible issues, current status, impact, and workarounds.
+- `docs/agent-handoffs/learnings/`: successful patterns or repeatable fixes.
+- `docs/agent-handoffs/incidents/`: failures, root causes, and mitigations.
+
+### Note naming
 
 Use generic, descriptive filenames:
 
-- `YYYY-MM-DD-short-topic.md` (example: `2026-02-14-lock-timeout-tuning.md`)
+- `YYYY-MM-DD-short-topic.md`
 
-Avoid product, team, or person-specific prefixes.
+### Required note sections
 
-### Required note structure
-
-Each learning/incident note should include:
+Every new learning/incident note should include:
 
 - Context
 - Observation
@@ -51,29 +68,10 @@ Each learning/incident note should include:
 - Validation performed
 - Recommendation for next agents
 
-Keep each note short, actionable, and safe to share (no secrets).
+## Priority order for conflicting instructions
 
-### When to write a note
-
-Write or update a handoff note when you discover:
-
-- A non-obvious fix or command sequence that works reliably.
-- A recurring failure mode and how to prevent it.
-- A validation step that catches common mistakes early.
-
-## Safety and quality baseline
-
-- Make the smallest safe change first.
-- Prefer explicit commands over assumptions.
-- Validate with relevant tests/checks.
-- If blocked by environment limits, record the blocker and fallback.
-
-## Priority order
-
-When instructions conflict, follow this order:
-
-1. System/developer/user instructions in-session
+1. System/developer/user instructions in the active session
 2. `AGENTS.md`
 3. `CLAUDE.md`
 4. `CONTRIBUTING.md`
-5. Inline comments and prompt files
+5. Inline comments and prompt templates
