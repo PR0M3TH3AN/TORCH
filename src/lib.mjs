@@ -12,6 +12,7 @@ import { SimplePool } from 'nostr-tools/pool';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
 import { loadTorchConfig } from './torch-config.mjs';
+import { cmdInit, cmdUpdate } from './ops.mjs';
 
 useWebSocketImplementation(WebSocket);
 
@@ -28,6 +29,8 @@ const VALID_CADENCES = new Set(['daily', 'weekly']);
 
 // If installed as a package, prompts/roster.json is relative to this file
 const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
+const USER_ROSTER_FILE = path.resolve(process.cwd(), 'torch/roster.json');
+
 const FALLBACK_ROSTER = {
   daily: [
     'audit-agent',
@@ -127,8 +130,15 @@ function getQueryTimeoutMs() {
 function loadCanonicalRoster() {
   if (cachedCanonicalRoster) return cachedCanonicalRoster;
 
+  let rosterPath = ROSTER_FILE;
+
+  // Prefer user-managed roster if present
+  if (fs.existsSync(USER_ROSTER_FILE)) {
+    rosterPath = USER_ROSTER_FILE;
+  }
+
   try {
-    const parsed = JSON.parse(fs.readFileSync(ROSTER_FILE, 'utf8'));
+    const parsed = JSON.parse(fs.readFileSync(rosterPath, 'utf8'));
     const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
     const weekly = Array.isArray(parsed.weekly)
       ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
@@ -139,10 +149,9 @@ function loadCanonicalRoster() {
       return cachedCanonicalRoster;
     }
 
-    console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${ROSTER_FILE}`);
-  } catch (err) {
+    console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${rosterPath}`);
+  } catch {
     // It's okay if roster file is missing when used as a library/CLI without the file present
-    // console.error(`WARNING: Failed to read roster file (${ROSTER_FILE}): ${err.message}`);
   }
 
   cachedCanonicalRoster = FALLBACK_ROSTER;
@@ -500,7 +509,7 @@ export async function cmdDashboard(port = 4173) {
     }
 
     // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
+    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
     let filePath = path.join(packageRoot, safePath);
 
     // If directory, try index.html
@@ -545,7 +554,7 @@ export async function cmdDashboard(port = 4173) {
 }
 
 function parseArgs(argv) {
-  const args = { command: null, agent: null, cadence: null, dryRun: false, port: 4173 };
+  const args = { command: null, agent: null, cadence: null, dryRun: false, force: false, port: 4173 };
   let i = 0;
 
   if (argv.length > 0 && !argv[0].startsWith('-')) {
@@ -565,6 +574,8 @@ function parseArgs(argv) {
       args.cadence = arg.split('=')[1];
     } else if (arg === '--dry-run') {
       args.dryRun = true;
+    } else if (arg === '--force') {
+      args.force = true;
     } else if (arg === '--port') {
       args.port = parseInt(argv[++i], 10) || 4173;
     }
@@ -581,9 +592,12 @@ Commands:
   lock   --agent <name> --cadence <daily|weekly>   Claim a lock
   list   [--cadence <daily|weekly>]                Print active lock table
   dashboard [--port <port>]                        Serve the dashboard (default: 4173)
+  init   [--force]                                 Initialize torch/ directory in current project
+  update [--force]                                 Update torch/ configuration (backups, merges)
 
 Options:
   --dry-run   Build and sign the event but do not publish
+  --force     Overwrite existing files (for init) or all files (for update)
 
 Environment:
   NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
@@ -645,6 +659,16 @@ export async function main(argv) {
 
       case 'dashboard': {
         await cmdDashboard(args.port);
+        break;
+      }
+
+      case 'init': {
+        await cmdInit(args.force);
+        break;
+      }
+
+      case 'update': {
+        await cmdUpdate(args.force);
         break;
       }
 
