@@ -40,6 +40,15 @@ useWebSocketImplementation(WebSocket);
 // Re-export for backward compatibility/library usage
 export { parseLockEvent, cmdDashboard, _queryLocks as queryLocks, _publishLock as publishLock };
 
+/**
+ * Scans the local log directory to identify agents that have already completed their task
+ * for the current period (daily or weekly).
+ *
+ * @param {string} cadence - 'daily' or 'weekly'
+ * @param {string} logDir - Path to the log directory (e.g., 'task-logs')
+ * @param {Object} deps - Dependency injection for testing
+ * @returns {Promise<Set<string>>} - Set of agent names that have completed their task
+ */
 async function getCompletedAgents(cadence, logDir, deps) {
   const { readdir = fs.readdir, getDateStr = todayDateStr, getIsoWeek = getIsoWeekStr } = deps;
   const completed = new Set();
@@ -77,6 +86,20 @@ async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
+/**
+ * Checks the status of the repository locks for a given cadence.
+ *
+ * It aggregates data from three sources:
+ * 1. Configuration (paused agents)
+ * 2. Local logs (completed agents)
+ * 3. Nostr relays (current active locks)
+ *
+ * It outputs a JSON object describing the state (locked, available, excluded agents).
+ *
+ * @param {string} cadence - 'daily' or 'weekly'
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<Object>} - The check result object
+ */
 export async function cmdCheck(cadence, deps = {}) {
   const {
     getRelays = _getRelays,
@@ -145,6 +168,23 @@ export async function cmdCheck(cadence, deps = {}) {
   return result;
 }
 
+/**
+ * Attempts to acquire an exclusive lock for an agent on the specified cadence.
+ *
+ * Algorithm:
+ * 1. Validate agent against the roster.
+ * 2. Query relays for existing valid locks (checking for conflicts).
+ * 3. Generate a new ephemeral keypair and build a lock event (kind 30078).
+ * 4. Publish the lock event to relays.
+ * 5. Wait for propagation (raceCheckDelayMs) and re-query to confirm no earlier lock won the race.
+ *
+ * @param {string} agent - Agent name
+ * @param {string} cadence - 'daily' or 'weekly'
+ * @param {boolean} [dryRun=false] - If true, skips publishing
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<{status: string, eventId: string}>}
+ * @throws {ExitError} If lock is denied (already locked, completed, or race lost)
+ */
 export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
   const {
     getRelays = _getRelays,
@@ -278,6 +318,14 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
   return { status: 'ok', eventId: event.id };
 }
 
+/**
+ * Lists all active locks for the specified cadence (or all cadences if null).
+ * It prints a formatted table to stdout with lock age, TTL, and event ID.
+ *
+ * @param {string|null} cadence - Filter by cadence ('daily', 'weekly') or null for all
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<void>}
+ */
 export async function cmdList(cadence, deps = {}) {
   const {
     getRelays = _getRelays,
@@ -350,6 +398,21 @@ export async function cmdList(cadence, deps = {}) {
   }
 }
 
+/**
+ * Marks a task as permanently completed by publishing a new lock event with
+ * `status: 'completed'` and no expiration.
+ *
+ * This function:
+ * 1. Verifies that the agent currently holds a valid lock.
+ * 2. Publishes a replacement event that preserves the original `startedAt` time.
+ *
+ * @param {string} agent - Agent name
+ * @param {string} cadence - 'daily' or 'weekly'
+ * @param {boolean} [dryRun=false] - If true, skips publishing
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<{status: string, eventId: string}>}
+ * @throws {ExitError} If no active lock exists for the agent
+ */
 export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
   const {
     getRelays = _getRelays,
@@ -440,6 +503,12 @@ export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
   return { status: 'completed', eventId: event.id };
 }
 
+/**
+ * Parses command-line arguments into a structured object.
+ *
+ * @param {string[]} argv - Arguments from process.argv.slice(2)
+ * @returns {Object} - Parsed arguments (command, flags, values)
+ */
 function parseArgs(argv) {
   const args = {
     command: null,
@@ -568,6 +637,12 @@ Exit codes:
   3  Lock denied (already locked or race lost)`);
 }
 
+/**
+ * Main entry point for the torch-lock CLI.
+ * Dispatches to specific commands (check, lock, complete, etc.) based on argv.
+ *
+ * @param {string[]} argv - Arguments from process.argv.slice(2)
+ */
 export async function main(argv) {
   try {
     const args = parseArgs(argv);
