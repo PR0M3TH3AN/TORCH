@@ -10,6 +10,7 @@ import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure
 import { SimplePool } from 'nostr-tools/pool';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
+import { loadTorchConfig } from './torch-config.mjs';
 
 useWebSocketImplementation(WebSocket);
 
@@ -21,7 +22,7 @@ const DEFAULT_RELAYS = [
 
 const DEFAULT_TTL = 7200;
 const DEFAULT_NAMESPACE = 'torch';
-const QUERY_TIMEOUT_MS = 15_000;
+const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 
 const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
@@ -72,25 +73,44 @@ const FALLBACK_ROSTER = {
 let cachedCanonicalRoster = null;
 
 function getRelays() {
+  const config = loadTorchConfig();
   const envRelays = process.env.NOSTR_LOCK_RELAYS;
   if (envRelays) {
     return envRelays.split(',').map((r) => r.trim()).filter(Boolean);
+  }
+  if (config.nostrLock.relays?.length) {
+    return config.nostrLock.relays;
   }
   return DEFAULT_RELAYS;
 }
 
 function getNamespace() {
-  const namespace = (process.env.NOSTR_LOCK_NAMESPACE || DEFAULT_NAMESPACE).trim();
+  const config = loadTorchConfig();
+  const namespace = (process.env.NOSTR_LOCK_NAMESPACE || config.nostrLock.namespace || DEFAULT_NAMESPACE).trim();
   return namespace || DEFAULT_NAMESPACE;
 }
 
 function getTtl() {
+  const config = loadTorchConfig();
   const envTtl = process.env.NOSTR_LOCK_TTL;
   if (envTtl) {
     const parsed = parseInt(envTtl, 10);
     if (!Number.isNaN(parsed) && parsed > 0) return parsed;
   }
+  if (config.nostrLock.ttlSeconds) {
+    return config.nostrLock.ttlSeconds;
+  }
   return DEFAULT_TTL;
+}
+
+function getQueryTimeoutMs() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS;
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
 }
 
 
@@ -127,15 +147,22 @@ function parseEnvRoster(value) {
 }
 
 function getRoster(cadence) {
+  const config = loadTorchConfig();
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
   const canonical = loadCanonicalRoster();
+  const dailyFromConfig = config.nostrLock.dailyRoster;
+  const weeklyFromConfig = config.nostrLock.weeklyRoster;
 
   if (cadence === 'daily') {
-    return dailyFromEnv && dailyFromEnv.length ? dailyFromEnv : canonical.daily;
+    if (dailyFromEnv && dailyFromEnv.length) return dailyFromEnv;
+    if (dailyFromConfig && dailyFromConfig.length) return dailyFromConfig;
+    return canonical.daily;
   }
 
-  return weeklyFromEnv && weeklyFromEnv.length ? weeklyFromEnv : canonical.weekly;
+  if (weeklyFromEnv && weeklyFromEnv.length) return weeklyFromEnv;
+  if (weeklyFromConfig && weeklyFromConfig.length) return weeklyFromConfig;
+  return canonical.weekly;
 }
 
 function todayDateStr() {
@@ -182,6 +209,7 @@ function filterActiveLocks(locks) {
 async function queryLocks(relays, cadence, dateStr, namespace) {
   const pool = new SimplePool();
   const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
+  const queryTimeoutMs = getQueryTimeoutMs();
 
   try {
     const events = await Promise.race([
@@ -190,7 +218,7 @@ async function queryLocks(relays, cadence, dateStr, namespace) {
         '#t': [tagFilter],
       }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Relay query timed out')), QUERY_TIMEOUT_MS),
+        setTimeout(() => reject(new Error('Relay query timed out')), queryTimeoutMs),
       ),
     ]);
 
@@ -464,8 +492,10 @@ Environment:
   NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
   NOSTR_LOCK_RELAYS         Comma-separated relay WSS URLs
   NOSTR_LOCK_TTL            Lock TTL in seconds (default: 7200)
+  NOSTR_LOCK_QUERY_TIMEOUT_MS   Relay query timeout in milliseconds (default: 15000)
   NOSTR_LOCK_DAILY_ROSTER   Comma-separated daily roster (optional)
   NOSTR_LOCK_WEEKLY_ROSTER  Comma-separated weekly roster (optional)
+  TORCH_CONFIG_PATH         Optional path to torch-config.json (default: ./torch-config.json)
   AGENT_PLATFORM            Platform identifier (e.g., codex)
 
 Exit codes:

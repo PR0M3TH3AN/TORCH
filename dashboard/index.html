@@ -157,6 +157,8 @@
       const DASHBOARD_DEFAULTS = {
         namespace: 'torch',
         hashtag: '',
+        defaultCadenceView: 'daily',
+        defaultStatusView: 'active',
         relays: [
           'wss://relay.damus.io',
           'wss://nos.lol',
@@ -164,13 +166,47 @@
         ],
       };
 
-      function parseDashboardConfig() {
+      function normalizeCadence(value) {
+        const normalized = String(value || '').trim().toLowerCase();
+        return normalized === 'daily' || normalized === 'weekly' || normalized === 'all'
+          ? normalized
+          : DASHBOARD_DEFAULTS.defaultCadenceView;
+      }
+
+      function normalizeStatus(value) {
+        const normalized = String(value || '').trim().toLowerCase();
+        return normalized === 'active' || normalized === 'all'
+          ? normalized
+          : DASHBOARD_DEFAULTS.defaultStatusView;
+      }
+
+      async function loadTorchConfigFile() {
+        const configCandidates = ['../torch-config.json', './torch-config.json'];
+
+        for (const path of configCandidates) {
+          try {
+            const response = await fetch(path, { cache: 'no-store' });
+            if (!response.ok) continue;
+            return await response.json();
+          } catch {
+            // optional config, ignore
+          }
+        }
+
+        return {};
+      }
+
+      function parseDashboardConfig(torchConfig = {}) {
         const params = new URLSearchParams(window.location.search);
+        const dashboardConfig = torchConfig.dashboard || {};
+        const lockConfig = torchConfig.nostrLock || {};
+
+        const configuredNamespace =
+          (dashboardConfig.namespace || lockConfig.namespace || DASHBOARD_DEFAULTS.namespace);
         const namespace =
-          (params.get('namespace') || DASHBOARD_DEFAULTS.namespace).trim() ||
-          DASHBOARD_DEFAULTS.namespace;
+          (params.get('namespace') || configuredNamespace).trim() || DASHBOARD_DEFAULTS.namespace;
         const hashtag =
-          (params.get('hashtag') || DASHBOARD_DEFAULTS.hashtag).trim() ||
+          (params.get('hashtag') || dashboardConfig.hashtag || DASHBOARD_DEFAULTS.hashtag).trim() ||
           `${namespace}-agent-lock`;
         const relaysParam = (params.get('relays') || '').trim();
         const relays = relaysParam
@@ -178,22 +214,26 @@
               .split(',')
               .map((relay) => relay.trim())
               .filter(Boolean)
-          : [...DASHBOARD_DEFAULTS.relays];
+          : [...(dashboardConfig.relays || lockConfig.relays || DASHBOARD_DEFAULTS.relays)];
+        const defaultCadenceView = normalizeCadence(dashboardConfig.defaultCadenceView);
+        const defaultStatusView = normalizeStatus(dashboardConfig.defaultStatusView);
 
         return {
           namespace,
           hashtag,
           relays,
+          defaultCadenceView,
+          defaultStatusView,
         };
       }
 
-      const DASHBOARD_CONFIG = parseDashboardConfig();
+      let DASHBOARD_CONFIG = parseDashboardConfig({});
 
-      const RELAYS = DASHBOARD_CONFIG.relays;
-      const D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
+      let RELAYS = DASHBOARD_CONFIG.relays;
+      let D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
 
       const LOCK_EVENT_KIND = 30078;
-      const HASHTAG = DASHBOARD_CONFIG.hashtag;
+      let HASHTAG = DASHBOARD_CONFIG.hashtag;
 
       function applyConfigToHelpText() {
         const byId = (id) => document.getElementById(id);
@@ -646,6 +686,9 @@
       function init() {
         if (!isAlive()) return;
 
+        cadenceFilter.value = DASHBOARD_CONFIG.defaultCadenceView;
+        statusFilter.value = DASHBOARD_CONFIG.defaultStatusView;
+
         applyConfigToHelpText();
 
         for (const url of RELAYS) {
@@ -653,7 +696,16 @@
         }
       }
 
-      init();
+      async function bootstrap() {
+        const torchConfig = await loadTorchConfigFile();
+        DASHBOARD_CONFIG = parseDashboardConfig(torchConfig);
+        RELAYS = DASHBOARD_CONFIG.relays;
+        D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
+        HASHTAG = DASHBOARD_CONFIG.hashtag;
+        init();
+      }
+
+      bootstrap();
     </script>
   </body>
 </html>
