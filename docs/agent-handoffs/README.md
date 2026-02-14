@@ -9,17 +9,17 @@ This directory stores reusable context so future agents can work faster without 
 
 ## When to write a note
 
-Create or update a note when your work reveals knowledge that is likely useful in future sessions.
+Create or update a note when your work reveals knowledge likely useful in future sessions.
 
 Examples:
 
-- A reliable fix pattern that could be reused.
+- A reliable fix pattern that can be reused.
 - A recurring failure mode and its mitigation.
-- A non-obvious validation approach that prevented regressions.
+- A validation approach that prevented regressions.
 
 If the issue is still active/reproducible, also update `KNOWN_ISSUES.md`.
 
-## Naming convention (generic)
+## Naming convention
 
 Use:
 
@@ -30,15 +30,9 @@ Examples:
 - `2026-02-14-validation-before-summary.md`
 - `2026-02-14-missing-baseline-context.md`
 
-Naming tips:
-
-- Keep names descriptive and concise.
-- Avoid product, team, customer, and environment names unless essential.
-- Prefer neutral technical terms.
-
 ## Required note structure
 
-Every learning/incident note should include the following headings:
+Each learning/incident note should include:
 
 1. Context
 2. Observation
@@ -51,7 +45,7 @@ Every learning/incident note should include the following headings:
 - Keep entries short and actionable.
 - Prefer bullets over long narrative.
 - Include exact commands when useful for reproduction.
-- Avoid secrets, credentials, and user-identifying details.
+- Avoid secrets, credentials, and identifying data.
 - Distinguish facts from assumptions.
 
 ## Maintenance workflow
