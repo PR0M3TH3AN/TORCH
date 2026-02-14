@@ -14,15 +14,79 @@ import {
 } from './torch-config.mjs';
 import {
   DEFAULT_DASHBOARD_PORT,
-  RACE_CHECK_DELAY_MS,
   VALID_CADENCES,
 } from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
 import { getRoster as _getRoster } from './roster.mjs';
 import { queryLocks as _queryLocks, publishLock as _publishLock, parseLockEvent } from './lock-ops.mjs';
 import { cmdDashboard } from './dashboard.mjs';
+import { cmdCheck } from './cmd-check.mjs';
+import { cmdLock } from './cmd-lock.mjs';
+import { cmdList } from './cmd-list.mjs';
+import { ExitError } from './errors.mjs';
 
 useWebSocketImplementation(WebSocket);
+
+const DEFAULT_RELAYS = [
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.primal.net',
+];
+
+const DEFAULT_TTL = 7200;
+const DEFAULT_NAMESPACE = 'torch';
+const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
+const VALID_CADENCES = new Set(['daily', 'weekly']);
+
+// If installed as a package, prompts/roster.json is relative to this file
+const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
+const USER_ROSTER_FILE = path.resolve(process.cwd(), 'torch/roster.json');
+
+const FALLBACK_ROSTER = {
+  daily: [
+    'audit-agent',
+    'ci-health-agent',
+    'const-refactor-agent',
+    'content-audit-agent',
+    'decompose-agent',
+    'deps-security-agent',
+    'design-system-audit-agent',
+    'docs-agent',
+    'docs-alignment-agent',
+    'docs-code-investigator',
+    'innerhtml-migration-agent',
+    'known-issues-agent',
+    'load-test-agent',
+    'onboarding-audit-agent',
+    'perf-agent',
+    'prompt-curator-agent',
+    'protocol-research-agent',
+    'scheduler-update-agent',
+    'style-agent',
+    'test-audit-agent',
+    'todo-triage-agent',
+  ],
+  weekly: [
+    'bug-reproducer-agent',
+    'changelog-agent',
+    'dead-code-agent',
+    'event-schema-agent',
+    'frontend-console-debug-agent',
+    'fuzz-agent',
+    'interop-agent',
+    'perf-deepdive-agent',
+    'perf-optimization-agent',
+    'pr-review-agent',
+    'race-condition-agent',
+    'refactor-agent',
+    'smoke-agent',
+    'telemetry-agent',
+    'test-coverage-agent',
+    'weekly-synthesis-agent',
+  ],
+};
+
+let cachedCanonicalRoster = null;
 
 // Custom Error class for controlled exits
 class ExitError extends Error {
@@ -30,6 +94,107 @@ class ExitError extends Error {
     super(message);
     this.code = code;
   }
+}
+
+function getRelays() {
+  const config = loadTorchConfig();
+  const envRelays = process.env.NOSTR_LOCK_RELAYS;
+  if (envRelays) {
+    return envRelays.split(',').map((r) => r.trim()).filter(Boolean);
+  }
+  if (config.nostrLock.relays?.length) {
+    return config.nostrLock.relays;
+  }
+  return DEFAULT_RELAYS;
+}
+
+function getNamespace() {
+  const config = loadTorchConfig();
+  const namespace = (process.env.NOSTR_LOCK_NAMESPACE || config.nostrLock.namespace || DEFAULT_NAMESPACE).trim();
+  return namespace || DEFAULT_NAMESPACE;
+}
+
+function getTtl() {
+  const config = loadTorchConfig();
+  const envTtl = process.env.NOSTR_LOCK_TTL;
+  if (envTtl) {
+    const parsed = parseInt(envTtl, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  }
+  if (config.nostrLock.ttlSeconds) {
+    return config.nostrLock.ttlSeconds;
+  }
+  return DEFAULT_TTL;
+}
+
+function getQueryTimeoutMs() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS;
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
+}
+
+
+function loadCanonicalRoster() {
+  if (cachedCanonicalRoster) return cachedCanonicalRoster;
+
+  let rosterPath = ROSTER_FILE;
+
+  // Prefer user-managed roster if present
+  if (fs.existsSync(USER_ROSTER_FILE)) {
+    rosterPath = USER_ROSTER_FILE;
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(rosterPath, 'utf8'));
+    const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
+    const weekly = Array.isArray(parsed.weekly)
+      ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
+      : [];
+
+    if (daily.length > 0 && weekly.length > 0) {
+      cachedCanonicalRoster = { daily, weekly };
+      return cachedCanonicalRoster;
+    }
+
+    console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${rosterPath}`);
+  } catch (err) {
+    console.debug(`Note: Could not load roster from ${rosterPath}: ${err.message}`);
+    // It's okay if roster file is missing when used as a library/CLI without the file present
+  }
+
+  cachedCanonicalRoster = FALLBACK_ROSTER;
+  return cachedCanonicalRoster;
+}
+
+function parseEnvRoster(value) {
+  if (!value) return null;
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getRoster(cadence) {
+  const config = loadTorchConfig();
+  const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
+  const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
+  const canonical = loadCanonicalRoster();
+  const dailyFromConfig = config.nostrLock.dailyRoster;
+  const weeklyFromConfig = config.nostrLock.weeklyRoster;
+
+  if (cadence === 'daily') {
+    if (dailyFromEnv && dailyFromEnv.length) return dailyFromEnv;
+    if (dailyFromConfig && dailyFromConfig.length) return dailyFromConfig;
+    return canonical.daily;
+  }
+
+  if (weeklyFromEnv && weeklyFromEnv.length) return weeklyFromEnv;
+  if (weeklyFromConfig && weeklyFromConfig.length) return weeklyFromConfig;
+  return canonical.weekly;
 }
 
 function todayDateStr() {
@@ -71,10 +236,12 @@ export async function cmdCheck(cadence, deps = {}) {
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = getRoster(cadence);
+  const rosterSet = new Set(roster);
 
-  const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
-  const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
-  const available = roster.filter((a) => !excludedAgents.includes(a));
+  const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents]);
+  const excludedAgents = [...excludedAgentsSet];
+  const unknownLockedAgents = lockedAgents.filter((agent) => !rosterSet.has(agent));
+  const available = roster.filter((a) => !excludedAgentsSet.has(a));
 
   const result = {
     namespace,
@@ -241,12 +408,8 @@ export async function cmdList(cadence, deps = {}) {
 
   error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
 
-  const results = await Promise.all(
-    cadences.map(async (c) => {
-      const locks = await queryLocks(relays, c, dateStr, namespace);
-      return { c, locks };
-    }),
-  );
+  for (const c of cadences) {
+    const locks = await queryLocks(relays, c, dateStr, namespace);
 
   for (const { c, locks } of results) {
     log(`\n${'='.repeat(72)}`);
@@ -275,8 +438,9 @@ export async function cmdList(cadence, deps = {}) {
     }
 
     const roster = getRoster(c);
+    const rosterSet = new Set(roster);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
-    const unknownLockedAgents = [...lockedAgents].filter((agent) => !roster.includes(agent));
+    const unknownLockedAgents = [...lockedAgents].filter((agent) => !rosterSet.has(agent));
     const available = roster.filter((a) => !lockedAgents.has(a));
 
     if (unknownLockedAgents.length > 0) {
@@ -286,6 +450,82 @@ export async function cmdList(cadence, deps = {}) {
     log(`\n  Locked: ${lockedAgents.size}/${roster.length}`);
     log(`  Available: ${available.join(', ') || '(none)'}`);
   }
+}
+
+export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
+  // Resolve package root relative to this file (src/lib.mjs)
+  // this file is in <root>/src/lib.mjs, so '..' goes to <root>
+  const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+  const server = http.createServer((req, res) => {
+    // URL parsing
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    let pathname = url.pathname;
+
+    // Redirect / to /dashboard/
+    if (pathname === '/' || pathname === '/dashboard') {
+      res.writeHead(302, { 'Location': '/dashboard/' });
+      res.end();
+      return;
+    }
+
+    // Special case: /torch-config.json
+    // Priority: User's CWD > Package default
+    if (pathname === '/torch-config.json') {
+      const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
+      if (fs.existsSync(userConfigPath)) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        fs.createReadStream(userConfigPath).pipe(res);
+        return;
+      }
+      // If not found in CWD, fall through to serve from packageRoot (if it exists there)
+      // or return empty object if missing?
+      // Falling through means it looks for packageRoot/torch-config.json
+    }
+
+    // Security check: prevent directory traversal
+    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
+    let filePath = path.join(packageRoot, safePath);
+
+    // If directory, try index.html
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+       filePath = path.join(filePath, 'index.html');
+    }
+
+    // Check if file exists and is a file
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      res.writeHead(404);
+      res.end('Not Found');
+      return;
+    }
+
+    // MIME types
+    const extname = path.extname(filePath);
+    let contentType = 'text/plain';
+    switch (extname) {
+      case '.html': contentType = 'text/html'; break;
+      case '.js': contentType = 'text/javascript'; break;
+      case '.css': contentType = 'text/css'; break;
+      case '.json': contentType = 'application/json'; break;
+      case '.png': contentType = 'image/png'; break;
+      case '.jpg': contentType = 'image/jpeg'; break;
+      case '.svg': contentType = 'image/svg+xml'; break;
+      case '.ico': contentType = 'image/x-icon'; break;
+      case '.md': contentType = 'text/markdown'; break;
+    }
+
+    res.writeHead(200, { 'Content-Type': contentType });
+    fs.createReadStream(filePath).pipe(res);
+  });
+
+  server.listen(port, '127.0.0.1', () => {
+    console.log(`Dashboard running at http://localhost:${port}/dashboard/`);
+    console.log(`Serving files from ${packageRoot}`);
+    console.log(`Using configuration from ${process.cwd()}`);
+  });
+
+  // Keep process alive
+  return new Promise(() => {});
 }
 
 function parseArgs(argv) {

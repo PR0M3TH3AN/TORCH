@@ -29,9 +29,7 @@ function getPaths(userRoot) {
 }
 
 function ensureDir(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  fs.mkdirSync(dir, { recursive: true });
 }
 
 function transformContent(content) {
@@ -54,7 +52,7 @@ function copyFile(src, dest, transform = false, overwrite = true) {
   return true; // Copied/Overwritten
 }
 
-export async function cmdInit(force = false, cwd = process.cwd()) {
+export function cmdInit(force = false, cwd = process.cwd()) {
   const paths = getPaths(cwd);
   console.log(`Initializing torch configuration in ${paths.torchDir}...`);
 
@@ -103,7 +101,7 @@ export async function cmdInit(force = false, cwd = process.cwd()) {
   console.log('You can now customize the files in torch/ and torch/prompts/.');
 }
 
-export async function cmdUpdate(force = false, cwd = process.cwd()) {
+export function cmdUpdate(force = false, cwd = process.cwd()) {
   const paths = getPaths(cwd);
   console.log(`Updating torch configuration in ${paths.torchDir}...`);
 
