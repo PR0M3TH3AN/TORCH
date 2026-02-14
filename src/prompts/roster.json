@@ -36,6 +36,7 @@
     "perf-deepdive-agent",
     "perf-optimization-agent",
     "pr-review-agent",
+    "prompt-safety-agent",
     "race-condition-agent",
     "refactor-agent",
     "repo-fit-agent",
