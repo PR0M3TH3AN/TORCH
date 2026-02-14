@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
@@ -21,12 +22,19 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
       return;
     }
 
+    async function statSafe(p) {
+      try {
+        return await fsp.stat(p);
+      } catch {
+        return null;
+      }
+    }
+
     // Special case: /torch-config.json
     // Priority: User's CWD > Package default
     if (pathname === '/torch-config.json') {
       const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
-      try {
-        await fs.promises.access(userConfigPath, fs.constants.F_OK);
+      if (await statSafe(userConfigPath)) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         fs.createReadStream(userConfigPath).pipe(res);
         return;
@@ -42,27 +50,15 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
     const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
     let filePath = path.join(packageRoot, safePath);
 
-    try {
-      let stats = await fs.promises.stat(filePath);
-      if (stats.isDirectory()) {
-        const indexPath = path.join(filePath, 'index.html');
-        try {
-          const indexStats = await fs.promises.stat(indexPath);
-          if (indexStats.isFile()) {
-            filePath = indexPath;
-            stats = indexStats;
-          } else {
-            // Found directory but index.html is not a file
-            throw new Error('Not found');
-          }
-        } catch {
-          // Found directory but index.html does not exist
-          throw new Error('Not found');
-        }
-      } else if (!stats.isFile()) {
-        throw new Error('Not a file');
-      }
-    } catch {
+    // If directory, try index.html
+    let fileStat = await statSafe(filePath);
+    if (fileStat && fileStat.isDirectory()) {
+       filePath = path.join(filePath, 'index.html');
+       fileStat = await statSafe(filePath);
+    }
+
+    // Check if file exists and is a file
+    if (!fileStat || !fileStat.isFile()) {
       res.writeHead(404);
       res.end('Not Found');
       return;

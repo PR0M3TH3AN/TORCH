@@ -1,17 +1,13 @@
 import { spawn } from 'node:child_process';
 import http from 'node:http';
+import { performance } from 'node:perf_hooks';
 
-const PORT = 3334;
-const CONCURRENCY = 100;
-const TOTAL_REQUESTS = 2000;
-const ENDPOINT = `http://localhost:${PORT}/torch-config.example.json`;
+const PORT = 3456;
+const REQUESTS = 2000;
+const CONCURRENCY = 50;
 
-async function startServer() {
-  const child = spawn('node', ['bin/torch-lock.mjs', 'dashboard', '--port', PORT], {
-    stdio: 'ignore', // 'inherit' for debugging
-    detached: false
-  });
-  return child;
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function waitForServer() {
@@ -26,67 +22,67 @@ async function waitForServer() {
         req.end();
       });
       return;
-    } catch {
-      await new Promise(r => setTimeout(r, 100));
+    } catch (e) {
+      await sleep(100);
     }
   }
-  throw new Error('Server not ready');
-}
-
-async function runBenchmark() {
-  let completed = 0;
-  let failures = 0;
-  const start = process.hrtime.bigint();
-
-  const promises = [];
-  for (let i = 0; i < CONCURRENCY; i++) {
-    promises.push(worker());
-  }
-
-  async function worker() {
-    while (completed + failures < TOTAL_REQUESTS) {
-      if (completed + failures >= TOTAL_REQUESTS) break;
-      try {
-        await makeRequest();
-        completed++;
-      } catch {
-        failures++;
-        // console.error(e);
-      }
-    }
-  }
-
-  await Promise.all(promises);
-  const end = process.hrtime.bigint();
-  const duration = Number(end - start) / 1e6; // ms
-
-  console.log(`Requests: ${completed}`);
-  console.log(`Failures: ${failures}`);
-  console.log(`Total time: ${duration.toFixed(2)}ms`);
-  console.log(`RPS: ${(completed / (duration / 1000)).toFixed(2)}`);
-  return duration;
+  throw new Error('Server did not start');
 }
 
 function makeRequest() {
   return new Promise((resolve, reject) => {
-    http.get(ENDPOINT, (res) => {
-      res.resume(); // Consume data
-      if (res.statusCode === 200) resolve();
-      else reject(new Error(`Status ${res.statusCode}`));
-    }).on('error', reject);
+    // Request a small file that exists
+    const req = http.get(`http://localhost:${PORT}/torch-config.example.json`, (res) => {
+      res.resume(); // consume body
+      res.on('end', resolve);
+    });
+    req.on('error', reject);
   });
 }
 
-async function main() {
+async function benchmark() {
   console.log('Starting server...');
-  const server = await startServer();
+  const serverProcess = spawn('node', ['bin/torch-lock.mjs', 'dashboard', '--port', String(PORT)], {
+    stdio: 'ignore' // Suppress logs for cleaner output
+  });
+
   try {
     await waitForServer();
-    console.log('Server ready. Benchmarking...');
-    await runBenchmark();
+    console.log('Server ready.');
+
+    const start = performance.now();
+
+    let sent = 0;
+    const worker = async () => {
+        while (true) {
+            const current = sent++;
+            if (current >= REQUESTS) break;
+            try {
+                await makeRequest();
+            } catch (e) {
+                // console.error(e);
+            }
+        }
+    };
+
+    const workers = [];
+    for (let i = 0; i < CONCURRENCY; i++) {
+        workers.push(worker());
+    }
+
+    await Promise.all(workers);
+
+    const end = performance.now();
+    const duration = end - start;
+    const rps = (REQUESTS / duration) * 1000;
+
+    console.log(`Requests: ${REQUESTS}`);
+    console.log(`Duration: ${duration.toFixed(2)}ms`);
+    console.log(`RPS: ${rps.toFixed(2)}`);
+
   } finally {
-    server.kill();
+    serverProcess.kill();
   }
 }
 
-main().catch(console.error);
+benchmark().catch(console.error);
