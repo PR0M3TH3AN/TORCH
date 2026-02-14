@@ -242,7 +242,7 @@
       // -----------------------------------------------------------------------
       // State
       // -----------------------------------------------------------------------
-      /** @type {Map<string, object>} eventId -> parsed lock */
+      /** @type {Map<string, object>} dTag -> latest parsed lock */
       const lockStore = new Map();
       /** @type {WebSocket[]} */
       const sockets = [];
@@ -350,6 +350,16 @@
 
       function isExpired(lock) {
         return lock.expiresAt != null && lock.expiresAt <= nowUnix();
+      }
+
+      function shouldReplaceLock(existingLock, incomingLock) {
+        if (!existingLock) return true;
+        if (incomingLock.createdAt !== existingLock.createdAt) {
+          return incomingLock.createdAt > existingLock.createdAt;
+        }
+
+        // Deterministic tie-break: prefer lexicographically higher event id.
+        return (incomingLock.eventId || '') > (existingLock.eventId || '');
       }
 
       // -----------------------------------------------------------------------
@@ -592,9 +602,10 @@
             const event = data[2];
             const lock = parseLockEvent(event);
 
-            // De-duplicate: keep the event with earliest created_at per d-tag
+            // De-duplicate by dTag: keep one lock per d-tag, preferring the
+            // most recent created_at; if equal, replace deterministically by event id.
             const existing = lockStore.get(lock.dTag);
-            if (!existing || existing.createdAt > lock.createdAt) {
+            if (shouldReplaceLock(existing, lock)) {
               lockStore.set(lock.dTag, lock);
             }
 
