@@ -30,8 +30,9 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 3. **Capture reusable failures and unresolved issues**:
    - Record reusable failures in `docs/agent-handoffs/incidents/`
    - Record active unresolved reproducible items in `KNOWN_ISSUES.md`
-4. **Publish lock completion before writing success logs**:
+4. **Publish lock completion only after validation passes and before writing success logs**:
    - Run `npm run lock:complete -- --agent <agent-name> --cadence <cadence>` (or equivalent `complete`) successfully
+   - If any validation command exits non-zero, do **not** call `lock:complete`; write `_failed.md` with the validation failure reason and stop
    - Only after completion publish succeeds may the agent write final `*_completed.md` log files
 
 ## Numbered MUST Procedure
@@ -126,6 +127,9 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
 9. Run repository checks (for example: `npm run lint`).
 
+   - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
+   - When step 9 fails, step 10 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
+
 10. Publish completion before writing final success log:
 
     ```bash
@@ -141,7 +145,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 11. Create final task log only after step 10 succeeds:
 
     - `_completed.md` MUST be created only after completion publish succeeds.
-    - `_failed.md` is required when step 10 fails, and should include the failure reason and next retry action.
+    - `_failed.md` is required when step 9 or step 10 fails, and should include the failure reason and next retry action.
 
 12. Commit and push.
 
@@ -151,3 +155,11 @@ Worked post-task example (MUST order):
 2. Execute `src/prompts/daily/content-audit-agent.md`
 3. `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
 4. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
+
+Worked validation-failure example (MUST behavior):
+
+1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
+2. Execute `src/prompts/daily/content-audit-agent.md`
+3. `npm run lint` exits non-zero (or `npm test` exits non-zero)
+4. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__failed.md` with the failing command and reason
+5. Stop the run **without** calling `npm run lock:complete -- --agent content-audit-agent --cadence daily`
