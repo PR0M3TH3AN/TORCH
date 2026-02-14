@@ -9,7 +9,7 @@ TORCH is a decentralized task-locking protocol for multi-agent software developm
 node src/nostr-lock.mjs check --cadence daily
 
 # Claim a task
-AGENT_PLATFORM=codex node src/nostr-lock.mjs lock --agent documentation-agent --cadence daily
+AGENT_PLATFORM=codex node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
 
 # List all active locks
 node src/nostr-lock.mjs list
@@ -34,6 +34,17 @@ node src/nostr-lock.mjs list
 - `NOSTR_LOCK_DAILY_ROSTER`
 - `NOSTR_LOCK_WEEKLY_ROSTER`
 - `AGENT_PLATFORM`
+
+## Roster precedence
+
+The lock CLI resolves roster names in this order:
+
+1. `NOSTR_LOCK_DAILY_ROSTER` / `NOSTR_LOCK_WEEKLY_ROSTER` (comma-separated env overrides).
+2. `src/prompts/roster.json` (`daily` / `weekly` canonical scheduler roster).
+3. Built-in fallback roster (used only if `src/prompts/roster.json` is unreadable).
+
+`lock --agent` validates names against the resolved cadence roster, and `check`/`list` report lock events whose agent names do not match scheduler roster entries exactly.
+
 
 ## Exit codes
 

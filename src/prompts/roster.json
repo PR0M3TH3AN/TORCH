@@ -1,0 +1,43 @@
+{
+  "daily": [
+    "audit-agent",
+    "ci-health-agent",
+    "const-refactor-agent",
+    "content-audit-agent",
+    "decompose-agent",
+    "deps-security-agent",
+    "design-system-audit-agent",
+    "docs-agent",
+    "docs-alignment-agent",
+    "docs-code-investigator",
+    "innerhtml-migration-agent",
+    "known-issues-agent",
+    "load-test-agent",
+    "onboarding-audit-agent",
+    "perf-agent",
+    "prompt-curator-agent",
+    "protocol-research-agent",
+    "scheduler-update-agent",
+    "style-agent",
+    "test-audit-agent",
+    "todo-triage-agent"
+  ],
+  "weekly": [
+    "bug-reproducer-agent",
+    "changelog-agent",
+    "dead-code-agent",
+    "event-schema-agent",
+    "frontend-console-debug-agent",
+    "fuzz-agent",
+    "interop-agent",
+    "perf-deepdive-agent",
+    "perf-optimization-agent",
+    "pr-review-agent",
+    "race-condition-agent",
+    "refactor-agent",
+    "smoke-agent",
+    "telemetry-agent",
+    "test-coverage-agent",
+    "weekly-synthesis-agent"
+  ]
+}
