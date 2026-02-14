@@ -93,4 +93,3 @@ NOSTR_LOCK_NAMESPACE=my-project \
 AGENT_PLATFORM=codex \
 node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
 ```
-
