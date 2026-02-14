@@ -121,3 +121,17 @@ test('torch-lock check respects local roster', async () => {
   const result = JSON.parse(output);
   assert.ok(result.available.includes('custom-agent-007'), 'Custom agent found in roster');
 });
+
+test('cmdInit creates torch-config.json with random namespace', async () => {
+  const projectRoot = path.join(tempBase, 'project_config_init');
+  fs.mkdirSync(projectRoot, { recursive: true });
+
+  await cmdInit(false, projectRoot);
+
+  const configPath = path.join(projectRoot, 'torch-config.json');
+  assert.ok(fs.existsSync(configPath), 'torch-config.json created');
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  assert.match(config.nostrLock.namespace, /^torch-[a-f0-9]{8}$/, 'Namespace should match torch-<hex>');
+  assert.notStrictEqual(config.nostrLock.namespace, 'torch-example', 'Namespace should not be default');
+});
