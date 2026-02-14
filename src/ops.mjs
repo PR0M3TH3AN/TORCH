@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 
 const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -110,6 +111,36 @@ export function cmdInit(force = false, cwd = process.cwd()) {
       }
       console.log(`Created ${files.length} files in ${path.relative(paths.root, destDir)}/`);
     }
+  }
+
+  // 5. Create torch-config.json with random namespace if missing
+  const configPath = path.join(cwd, 'torch-config.json');
+  if (!fs.existsSync(configPath)) {
+    try {
+      const exampleConfigPath = path.join(PKG_ROOT, 'torch-config.example.json');
+      if (fs.existsSync(exampleConfigPath)) {
+        const exampleConfig = JSON.parse(fs.readFileSync(exampleConfigPath, 'utf8'));
+
+        // Generate random namespace
+        const randomSuffix = crypto.randomBytes(4).toString('hex');
+        const newNamespace = `torch-${randomSuffix}`;
+
+        if (exampleConfig.nostrLock) {
+            exampleConfig.nostrLock.namespace = newNamespace;
+        } else {
+            exampleConfig.nostrLock = { namespace: newNamespace };
+        }
+
+        fs.writeFileSync(configPath, JSON.stringify(exampleConfig, null, 2), 'utf8');
+        console.log(`Created ${path.relative(cwd, configPath)} with namespace "${newNamespace}"`);
+      } else {
+         console.warn(`Warning: Could not find ${exampleConfigPath} to generate torch-config.json`);
+      }
+    } catch (err) {
+      console.error(`Failed to create torch-config.json: ${err.message}`);
+    }
+  } else {
+      console.log(`Skipped ${path.relative(cwd, configPath)} (exists)`);
   }
 
   console.log('\nInitialization complete.');
