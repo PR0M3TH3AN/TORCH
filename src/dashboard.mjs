@@ -9,7 +9,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
   // this file is in <root>/src/dashboard.mjs, so '..' goes to <root>
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
     // URL parsing
     const url = new URL(req.url, `http://${req.headers.host}`);
     let pathname = url.pathname;
@@ -25,10 +25,13 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
     // Priority: User's CWD > Package default
     if (pathname === '/torch-config.json') {
       const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
-      if (fs.existsSync(userConfigPath)) {
+      try {
+        await fs.promises.access(userConfigPath, fs.constants.F_OK);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         fs.createReadStream(userConfigPath).pipe(res);
         return;
+      } catch {
+        // Fall through
       }
       // If not found in CWD, fall through to serve from packageRoot (if it exists there)
       // or return empty object if missing?
@@ -39,13 +42,27 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
     const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
     let filePath = path.join(packageRoot, safePath);
 
-    // If directory, try index.html
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-       filePath = path.join(filePath, 'index.html');
-    }
-
-    // Check if file exists and is a file
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    try {
+      let stats = await fs.promises.stat(filePath);
+      if (stats.isDirectory()) {
+        const indexPath = path.join(filePath, 'index.html');
+        try {
+          const indexStats = await fs.promises.stat(indexPath);
+          if (indexStats.isFile()) {
+            filePath = indexPath;
+            stats = indexStats;
+          } else {
+            // Found directory but index.html is not a file
+            throw new Error('Not found');
+          }
+        } catch {
+          // Found directory but index.html does not exist
+          throw new Error('Not found');
+        }
+      } else if (!stats.isFile()) {
+        throw new Error('Not a file');
+      }
+    } catch {
       res.writeHead(404);
       res.end('Not Found');
       return;
