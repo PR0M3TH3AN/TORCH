@@ -1,0 +1,2 @@
+export const DEFAULT_DASHBOARD_PORT = 4173;
+export const RACE_CHECK_DELAY_MS = 1500;
