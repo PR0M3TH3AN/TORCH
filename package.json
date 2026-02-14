@@ -11,10 +11,16 @@
     "lock:list": "node src/nostr-lock.mjs list",
     "lock:lock": "node src/nostr-lock.mjs lock",
     "dashboard:serve": "python3 -m http.server 4173",
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "lint": "eslint ."
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
     "ws": "8.19.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.0",
+    "globals": "^17.3.0"
   }
 }
