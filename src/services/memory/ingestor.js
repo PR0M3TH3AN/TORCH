@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { createMemoryRecord, normalizeEvent, validateMemoryItem } from './schema.js';
-import { embedText } from './embedder.js';
+import { embedText, getDefaultEmbedderAdapter } from './embedder.js';
 import { summarizeEvents } from './summarizer.js';
 
 const WINDOW_BUCKET_MS = 60_000;
@@ -88,6 +88,14 @@ async function rememberWindowFingerprint(repository, dedupeKey, payload) {
   }
 }
 
+
+function compactContextExcerpt(text, maxChars = 280) {
+  if (typeof text !== 'string' || text.length === 0) return '';
+  const compact = text.replace(/\s+/g, ' ').trim();
+  if (compact.length <= maxChars) return compact;
+  return `${compact.slice(0, maxChars - 1)}…`;
+}
+
 function buildTelemetryEmitter(options = {}) {
   if (typeof options.emitTelemetry === 'function') return options.emitTelemetry;
   if (typeof options.telemetry?.emit === 'function') {
@@ -120,6 +128,9 @@ export function normalizeEvents(events) {
  *  maxChunkChars?: number,
  *  maxChunkTokens?: number,
  *  embedText?: (value: string) => Promise<number[]> | number[],
+ *  adapter?: import('./embedder.js').EmbedderAdapter,
+ *  embedderAdapter?: import('./embedder.js').EmbedderAdapter,
+ *  contextExcerptChars?: number,
  *  emitTelemetry?: (event: string, payload: Record<string, unknown>) => void,
  *  telemetry?: { emit: (event: string, payload: Record<string, unknown>) => void },
  *  now?: number,
@@ -184,7 +195,8 @@ export async function ingestMemoryWindow(input = {}, options = {}) {
     for (const chunk of chunks) {
       const summarization = await summarizeEvents(chunk, options);
       const contextText = chunk.map((event) => event.content).join('\n');
-      const embedding = await embedText(`${summarization.summary}\n${contextText}`, options);
+      const summaryEmbedding = await embedText(summarization.summary, options);
+      const contextExcerpt = compactContextExcerpt(contextText, options.contextExcerptChars);
       const chunkStart = Math.min(...chunk.map((event) => event.timestamp));
       const chunkEnd = Math.max(...chunk.map((event) => event.timestamp));
 
@@ -198,7 +210,7 @@ export async function ingestMemoryWindow(input = {}, options = {}) {
         importance: Number.isFinite(chunk[0]?.metadata?.importance)
           ? Number(chunk[0].metadata.importance)
           : summarization.importance,
-        embedding_id: Array.isArray(embedding) && embedding.length > 0 ? randomUUID() : null,
+        embedding_id: Array.isArray(summaryEmbedding) && summaryEmbedding.length > 0 ? randomUUID() : null,
         created_at: chunkStart,
         last_seen: chunkEnd,
         source: typeof chunk[0]?.metadata?.source === 'string' ? chunk[0].metadata.source : 'ingest',
@@ -221,11 +233,33 @@ export async function ingestMemoryWindow(input = {}, options = {}) {
       await insertMemory(repository, record);
       insertedRecords.push(record);
 
-      if (record.embedding_id && typeof repository.linkEmbedding === 'function') {
-        await repository.linkEmbedding(record.id, {
-          id: record.embedding_id,
-          vector: embedding,
-        });
+      if (record.embedding_id) {
+        const vectorMetadata = {
+          memory_id: record.id,
+          agent_id: record.agent_id,
+          summary: record.summary,
+          context_excerpt: contextExcerpt,
+          source: record.source,
+          created_at: record.created_at,
+          last_seen: record.last_seen,
+        };
+
+        if (typeof repository.linkEmbedding === 'function') {
+          await repository.linkEmbedding(record.id, {
+            id: record.embedding_id,
+            vector: summaryEmbedding,
+            metadata: vectorMetadata,
+          });
+        }
+
+        const adapter = options.embedderAdapter ?? options.adapter ?? getDefaultEmbedderAdapter();
+        if (typeof adapter?.upsertVector === 'function') {
+          await adapter.upsertVector({
+            id: record.embedding_id,
+            vector: summaryEmbedding,
+            metadata: vectorMetadata,
+          });
+        }
       }
 
       emitTelemetry('memory:ingested', {
