@@ -9,6 +9,13 @@ This repository is designed for human and AI contributors. Keep contributions sm
 - Preserve existing behavior unless a change is explicitly requested.
 - Document assumptions and tradeoffs.
 
+## Development Commands
+
+- **Install**: `npm install`
+- **Test**: `npm test`
+- **Lint**: `npm run lint`
+- **Build**: `npm run build`
+
 ## Standard contribution flow
 
 1. Sync your branch with the target base branch.
