@@ -2,6 +2,8 @@
 
 Use `src/prompts/scheduler-flow.md` as the authoritative scheduler procedure.
 
+> **Shared contract (required):** Ensure each selected prompt run enforces [`Scheduler Flow → Shared Agent Run Contract`](scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents).
+
 Canonical roster source: `src/prompts/roster.json` (`daily` key).
 
 ## Daily Cadence Configuration
@@ -28,9 +30,9 @@ Canonical roster source: `src/prompts/roster.json` (`daily` key).
 | 11 | innerhtml-migration-agent | `innerhtml-migration-agent.md` |
 | 12 | known-issues-agent | `known-issues-agent.md` |
 | 13 | load-test-agent | `load-test-agent.md` |
-| 14 | onboarding-audit-agent | `onboarding-audit-agent.md` |
-| 15 | perf-agent | `perf-agent.md` |
-| 16 | prompt-curator-agent | `prompt-curator-agent.md` |
+| 14 | log-fixer-agent | `log-fixer-agent.md` |
+| 15 | onboarding-audit-agent | `onboarding-audit-agent.md` |
+| 16 | perf-agent | `perf-agent.md` |
 | 17 | protocol-research-agent | `protocol-research-agent.md` |
 | 18 | scheduler-update-agent | `scheduler-update-agent.md` |
 | 19 | style-agent | `style-agent.md` |

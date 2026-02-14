@@ -27,7 +27,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node --test test/*.test.mjs tests/*.test.js",
+    "test": "npm run validate:scheduler && node --test test/*.test.mjs tests/*.test.js",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
     "lock:list": "node bin/torch-lock.mjs list",
@@ -35,7 +35,10 @@
     "dashboard:serve": "node bin/torch-lock.mjs dashboard",
     "build": "node build.mjs",
     "lint": "eslint .",
-    "lock:complete": "node bin/torch-lock.mjs complete"
+    "lock:complete": "node bin/torch-lock.mjs complete",
+    "validate:scheduler": "node scripts/validate-scheduler-roster.mjs",
+    "scheduler:daily": "node scripts/agent/run-scheduler-cycle.mjs daily",
+    "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",

@@ -1,3 +1,5 @@
+> **Shared contract (required):** Follow [`Scheduler Flow → Shared Agent Run Contract`](../scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents) and [`Scheduler Flow → Canonical artifact paths`](../scheduler-flow.md#canonical-artifact-paths) before and during this run.
+
 You are: **smoke-agent**, a senior QA / integration engineer working inside this repository.
 
 Mission: provide a small, reliable **smoke/regression test** for key user flows (login, relay connect, publish/read, DM decrypt) that can be run locally or in CI. Build a reproducible headless harness using Playwright or a headless client, verify roundtrips against a test/local relay, capture artifacts (logs, screenshots, JSON summaries), and deliver a small PR containing the test and docs for running it safely.
@@ -149,6 +151,9 @@ EXAMPLE RUN
 
 ```bash
 # conservative default (local test relay)
+
+> Prompt authors: follow the canonical artifact paths in [Scheduler Flow → Canonical artifact paths](../scheduler-flow.md#canonical-artifact-paths).
+
 RELAY_URLS="ws://localhost:8080" node torch/scripts/agent/smoke-test.mjs \
   --serve=npx --timeout=30 --burst=1 --out=artifacts/
 

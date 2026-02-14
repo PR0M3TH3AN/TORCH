@@ -51,18 +51,27 @@ MUST 3: Run these commands in this order:
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
 6) Execute selected prompt from src/prompts/daily/
 7) Run repository checks (for example: npm run lint)
-8) Publish completion before writing `_completed.md`:
+   - If any validation command exits non-zero, do not call `lock:complete`.
+   - Instead, write `_failed.md` with the failing command and reason, then stop.
+8) Publish completion before writing `_completed.md` (only after step 7 passes):
    AGENT_PLATFORM=<platform> npm run lock:complete -- --agent <agent-name> --cadence daily
    (Equivalent command allowed: torch-lock complete --agent <agent-name> --cadence daily)
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
-9) Only after step 8 succeeds, write final task log (`_completed.md` for success, `_failed.md` for failure), commit, push
+9) Only after step 8 succeeds, write final task log (`_completed.md` for success). For any failure in step 7 or step 8, write `_failed.md`, then stop.
 
    Worked example (required order):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
    - execute selected prompt work
    - `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
    - write `task-logs/daily/<timestamp>__content-audit-agent__completed.md`
+
+   Worked example (failed validation, no completion publish):
+   - `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
+   - execute selected prompt work
+   - `npm run lint` exits non-zero (or `npm test` exits non-zero)
+   - write `task-logs/daily/<timestamp>__content-audit-agent__failed.md` with failure reason
+   - stop without running `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily`
 
 MUST 4: If all daily agents are excluded, stop and write `_failed.md` with this exact reason: `All roster tasks currently claimed by other agents`.
 ```
@@ -114,18 +123,27 @@ MUST 3: Run these commands in this order:
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
 6) Execute selected prompt from src/prompts/weekly/
 7) Run repository checks (for example: npm run lint)
-8) Publish completion before writing `_completed.md`:
+   - If any validation command exits non-zero, do not call `lock:complete`.
+   - Instead, write `_failed.md` with the failing command and reason, then stop.
+8) Publish completion before writing `_completed.md` (only after step 7 passes):
    AGENT_PLATFORM=<platform> npm run lock:complete -- --agent <agent-name> --cadence weekly
    (Equivalent command allowed: torch-lock complete --agent <agent-name> --cadence weekly)
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
-9) Only after step 8 succeeds, write final task log (`_completed.md` for success, `_failed.md` for failure), commit, push
+9) Only after step 8 succeeds, write final task log (`_completed.md` for success). For any failure in step 7 or step 8, write `_failed.md`, then stop.
 
    Worked example (required order):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent bug-reproducer-agent --cadence weekly`
    - execute selected prompt work
    - `AGENT_PLATFORM=codex npm run lock:complete -- --agent bug-reproducer-agent --cadence weekly` (complete, permanent)
    - write `task-logs/weekly/<timestamp>__bug-reproducer-agent__completed.md`
+
+   Worked example (failed validation, no completion publish):
+   - `AGENT_PLATFORM=codex npm run lock:lock -- --agent bug-reproducer-agent --cadence weekly`
+   - execute selected prompt work
+   - `npm run lint` exits non-zero (or `npm test` exits non-zero)
+   - write `task-logs/weekly/<timestamp>__bug-reproducer-agent__failed.md` with failure reason
+   - stop without running `AGENT_PLATFORM=codex npm run lock:complete -- --agent bug-reproducer-agent --cadence weekly`
 
 MUST 4: If all weekly agents are excluded, stop and write `_failed.md` with this exact reason: `All roster tasks currently claimed by other agents`.
 ```
