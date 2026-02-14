@@ -27,27 +27,14 @@ export function getTorchConfigPath() {
   return path.resolve(process.cwd(), DEFAULT_CONFIG_PATH);
 }
 
-export function loadTorchConfig() {
-  if (cachedConfig) return cachedConfig;
-
-  const configPath = getTorchConfigPath();
-  let raw = {};
-
-  if (fs.existsSync(configPath)) {
-    try {
-      raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    } catch (err) {
-      throw new Error(`Failed to parse ${configPath}: ${err.message}`, { cause: err });
-    }
-  }
-
+export function parseTorchConfig(raw, configPath = null) {
   const nostrLock = raw.nostrLock || {};
   const dashboard = raw.dashboard || {};
   const scheduler = raw.scheduler || {};
   const firstPromptByCadence = scheduler.firstPromptByCadence || {};
   const paused = scheduler.paused || {};
 
-  cachedConfig = {
+  return {
     configPath,
     raw,
     nostrLock: {
@@ -84,6 +71,27 @@ export function loadTorchConfig() {
       },
     },
   };
+}
 
+/** @internal */
+export function _resetTorchConfigCache() {
+  cachedConfig = null;
+}
+
+export function loadTorchConfig() {
+  if (cachedConfig) return cachedConfig;
+
+  const configPath = getTorchConfigPath();
+  let raw = {};
+
+  if (fs.existsSync(configPath)) {
+    try {
+      raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    } catch (err) {
+      throw new Error(`Failed to parse ${configPath}: ${err.message}`, { cause: err });
+    }
+  }
+
+  cachedConfig = parseTorchConfig(raw, configPath);
   return cachedConfig;
 }
