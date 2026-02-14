@@ -151,7 +151,8 @@ function loadCanonicalRoster() {
     }
 
     console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${rosterPath}`);
-  } catch {
+  } catch (err) {
+    console.debug(`Note: Could not load roster from ${rosterPath}: ${err.message}`);
     // It's okay if roster file is missing when used as a library/CLI without the file present
   }
 
@@ -205,7 +206,8 @@ export function parseLockEvent(event) {
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       content = parsed;
     }
-  } catch {
+  } catch (err) {
+    console.debug(`Note: Failed to parse event content as JSON: ${err.message}`);
     // Ignore malformed JSON content
   }
 
