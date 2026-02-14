@@ -32,10 +32,16 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - Record active unresolved reproducible items in `KNOWN_ISSUES.md`
 4. **Execute memory retrieval before implementation begins**:
    - Run configured memory retrieval workflow before prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.retrieveCommand`)
-   - For current scheduler enforcement, retrieval command MUST emit `MEMORY_RETRIEVED` and/or create the configured artifact (`.scheduler-memory/retrieve-daily.ok` or `.scheduler-memory/retrieve-weekly.ok`)
+   - Retrieval command MUST call real memory services (`src/services/memory/index.js#getRelevantMemories` with `ingestEvents` seeding) and MUST emit deterministic marker `MEMORY_RETRIEVED`.
+   - Retrieval command MUST write cadence-scoped evidence artifacts:
+     - `.scheduler-memory/retrieve-<cadence>.ok`
+     - `.scheduler-memory/retrieve-<cadence>.json` containing operation inputs/outputs (`agentId`, `query`, seeded event count, ingested count, retrieved count).
 5. **Store memory after implementation and before completion publish**:
    - Run configured memory storage workflow after prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.storeCommand`)
-   - For current scheduler enforcement, storage command MUST emit `MEMORY_STORED` and/or create the configured artifact (`.scheduler-memory/store-daily.ok` or `.scheduler-memory/store-weekly.ok`)
+   - Storage command MUST call real memory services (`src/services/memory/index.js#ingestEvents`, which uses ingestor/summarizer pipeline) and MUST emit deterministic marker `MEMORY_STORED`.
+   - Storage command MUST write cadence-scoped evidence artifacts:
+     - `.scheduler-memory/store-<cadence>.ok`
+     - `.scheduler-memory/store-<cadence>.json` containing operation inputs/outputs (`agentId`, input event count, stored count, generated summaries).
 6. **Publish lock completion only after validation passes and before writing success logs**:
    - Run `npm run lock:complete -- --agent <agent-name> --cadence <cadence>` (or equivalent `complete`) successfully
    - If any validation command exits non-zero, do **not** call `lock:complete`; write `_failed.md` with the validation failure reason and stop
@@ -139,12 +145,20 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
    - Memory retrieval evidence must exist for this run (output marker and/or artifact file).
    - Memory storage evidence must exist for this run (output marker and/or artifact file).
-   - Enforced daily commands in `torch-config.json` currently run:
-     - `echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok`
-     - `echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok`
-   - Enforced weekly commands in `torch-config.json` currently run:
-     - `echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-weekly.ok`
-     - `echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-weekly.ok`
+   - Enforced daily/weekly commands in `torch-config.json` run `node --input-type=module` snippets that call `src/services/memory/index.js` APIs directly:
+     - Retrieval path: `ingestEvents(...)` seed + `getRelevantMemories(...)` retrieval.
+     - Storage path: `ingestEvents(...)` (ingestor + summarizer path).
+   - Input contract for retrieval evidence JSON:
+     - Required keys: `cadence`, `operation: "retrieve"`, `servicePath`, `inputs`, `outputs`, `status: "ok"`.
+     - `inputs` must include `agentId`, `query`, and seeded `events` count.
+     - `outputs` must include `ingestedCount` and `retrievedCount`.
+   - Input contract for storage evidence JSON:
+     - Required keys: `cadence`, `operation: "store"`, `servicePath`, `inputs`, `outputs`, `status: "ok"`.
+     - `inputs` must include `agentId` and input `events` count.
+     - `outputs` must include `storedCount` and generated `summaries`.
+   - Failure semantics for required mode:
+     - If retrieval/store command exits non-zero, scheduler writes `_failed.md` and stops.
+     - If command succeeds but markers/artifacts are missing, scheduler treats this as missing memory evidence.
    - Prompt authors MUST keep any command changes aligned with configured markers/artifacts so scheduler evidence checks remain satisfiable.
    - If `scheduler.memoryPolicyByCadence.<cadence>.mode = required`, missing evidence is a hard failure.
    - If mode is `optional`, log warning context and continue.

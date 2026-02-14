@@ -25,8 +25,8 @@
     "memoryPolicyByCadence": {
       "daily": {
         "mode": "required",
-        "retrieveCommand": "echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok",
-        "storeCommand": "echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok",
+        "retrieveCommand": "set -euo pipefail; mkdir -p .scheduler-memory; node --input-type=module -e \"import { ingestEvents, getRelevantMemories } from './src/services/memory/index.js'; import { writeFileSync } from 'node:fs'; const cadence='daily'; const agentId='scheduler-memory-daily'; const query='scheduler daily memory retrieval'; const timestamp=1700000000000; const events=[{ agent_id: agentId, content: 'Memory retrieval seed for ' + cadence, timestamp, tags:['scheduler', cadence], metadata:{ session_id:'scheduler-' + cadence, source:'scheduler-retrieve', importance:0.4 } }]; const ingested=await ingestEvents(events,{ agent_id: agentId }); const retrieved=await getRelevantMemories({ agent_id: agentId, query, k: 5 }); const artifact={ cadence, operation:'retrieve', servicePath:'src/services/memory/index.js#getRelevantMemories', inputs:{ agentId, query, events:events.length }, outputs:{ ingestedCount:ingested.length, retrievedCount:retrieved.length }, status:'ok' }; writeFileSync('.scheduler-memory/retrieve-daily.json', JSON.stringify(artifact, null, 2)); writeFileSync('.scheduler-memory/retrieve-daily.ok', 'MEMORY_RETRIEVED\\n');\"; echo MEMORY_RETRIEVED",
+        "storeCommand": "set -euo pipefail; mkdir -p .scheduler-memory; node --input-type=module -e \"import { ingestEvents } from './src/services/memory/index.js'; import { writeFileSync } from 'node:fs'; const cadence='daily'; const agentId='scheduler-memory-daily'; const baseTs=1700000100000; const events=[{ agent_id: agentId, content: 'Store memory event A for ' + cadence, timestamp: baseTs, tags:['scheduler', cadence, 'store'], metadata:{ session_id:'scheduler-' + cadence + '-store', source:'scheduler-store', importance:0.55 } },{ agent_id: agentId, content: 'Store memory event B for ' + cadence, timestamp: baseTs + 1, tags:['scheduler', cadence, 'store'], metadata:{ session_id:'scheduler-' + cadence + '-store', source:'scheduler-store', importance:0.55 } }]; const stored=await ingestEvents(events,{ agent_id: agentId }); const artifact={ cadence, operation:'store', servicePath:'src/services/memory/index.js#ingestEvents', inputs:{ agentId, events:events.length }, outputs:{ storedCount:stored.length, summaries:stored.map((m)=>m.summary) }, status:'ok' }; writeFileSync('.scheduler-memory/store-daily.json', JSON.stringify(artifact, null, 2)); writeFileSync('.scheduler-memory/store-daily.ok', 'MEMORY_STORED\\n');\"; echo MEMORY_STORED",
         "retrieveSuccessMarkers": [
           "MEMORY_RETRIEVED"
         ],
@@ -34,16 +34,18 @@
           "MEMORY_STORED"
         ],
         "retrieveArtifacts": [
-          ".scheduler-memory/retrieve-daily.ok"
+          ".scheduler-memory/retrieve-daily.ok",
+          ".scheduler-memory/retrieve-daily.json"
         ],
         "storeArtifacts": [
-          ".scheduler-memory/store-daily.ok"
+          ".scheduler-memory/store-daily.ok",
+          ".scheduler-memory/store-daily.json"
         ]
       },
       "weekly": {
         "mode": "required",
-        "retrieveCommand": "echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-weekly.ok",
-        "storeCommand": "echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-weekly.ok",
+        "retrieveCommand": "set -euo pipefail; mkdir -p .scheduler-memory; node --input-type=module -e \"import { ingestEvents, getRelevantMemories } from './src/services/memory/index.js'; import { writeFileSync } from 'node:fs'; const cadence='weekly'; const agentId='scheduler-memory-weekly'; const query='scheduler weekly memory retrieval'; const timestamp=1700000000000; const events=[{ agent_id: agentId, content: 'Memory retrieval seed for ' + cadence, timestamp, tags:['scheduler', cadence], metadata:{ session_id:'scheduler-' + cadence, source:'scheduler-retrieve', importance:0.4 } }]; const ingested=await ingestEvents(events,{ agent_id: agentId }); const retrieved=await getRelevantMemories({ agent_id: agentId, query, k: 5 }); const artifact={ cadence, operation:'retrieve', servicePath:'src/services/memory/index.js#getRelevantMemories', inputs:{ agentId, query, events:events.length }, outputs:{ ingestedCount:ingested.length, retrievedCount:retrieved.length }, status:'ok' }; writeFileSync('.scheduler-memory/retrieve-weekly.json', JSON.stringify(artifact, null, 2)); writeFileSync('.scheduler-memory/retrieve-weekly.ok', 'MEMORY_RETRIEVED\\n');\"; echo MEMORY_RETRIEVED",
+        "storeCommand": "set -euo pipefail; mkdir -p .scheduler-memory; node --input-type=module -e \"import { ingestEvents } from './src/services/memory/index.js'; import { writeFileSync } from 'node:fs'; const cadence='weekly'; const agentId='scheduler-memory-weekly'; const baseTs=1700000100000; const events=[{ agent_id: agentId, content: 'Store memory event A for ' + cadence, timestamp: baseTs, tags:['scheduler', cadence, 'store'], metadata:{ session_id:'scheduler-' + cadence + '-store', source:'scheduler-store', importance:0.55 } },{ agent_id: agentId, content: 'Store memory event B for ' + cadence, timestamp: baseTs + 1, tags:['scheduler', cadence, 'store'], metadata:{ session_id:'scheduler-' + cadence + '-store', source:'scheduler-store', importance:0.55 } }]; const stored=await ingestEvents(events,{ agent_id: agentId }); const artifact={ cadence, operation:'store', servicePath:'src/services/memory/index.js#ingestEvents', inputs:{ agentId, events:events.length }, outputs:{ storedCount:stored.length, summaries:stored.map((m)=>m.summary) }, status:'ok' }; writeFileSync('.scheduler-memory/store-weekly.json', JSON.stringify(artifact, null, 2)); writeFileSync('.scheduler-memory/store-weekly.ok', 'MEMORY_STORED\\n');\"; echo MEMORY_STORED",
         "retrieveSuccessMarkers": [
           "MEMORY_RETRIEVED"
         ],
@@ -51,10 +53,12 @@
           "MEMORY_STORED"
         ],
         "retrieveArtifacts": [
-          ".scheduler-memory/retrieve-weekly.ok"
+          ".scheduler-memory/retrieve-weekly.ok",
+          ".scheduler-memory/retrieve-weekly.json"
         ],
         "storeArtifacts": [
-          ".scheduler-memory/store-weekly.ok"
+          ".scheduler-memory/store-weekly.ok",
+          ".scheduler-memory/store-weekly.json"
         ]
       }
     }
