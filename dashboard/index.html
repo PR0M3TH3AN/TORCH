@@ -5,40 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TORCH Agent Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="bg-surface text-text min-h-screen">
-      <style>
-        /*
-         * Minimal overrides that cannot be expressed via Tailwind utilities.
-         * Everything else uses design-token classes from tokens.css.
-         */
-        .lock-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 1rem;
-        }
-        .pulse-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          animation: pulse-ring 2s ease-in-out infinite;
-        }
-        @keyframes pulse-ring {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-        .ttl-bar {
-          height: 4px;
-          border-radius: 2px;
-          transition: width 1s linear;
-        }
-        .mono {
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-            "Liberation Mono", "Courier New", monospace;
-        }
-      </style>
-
       <div role="main" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <!-- Header -->
         <header class="mb-8">
