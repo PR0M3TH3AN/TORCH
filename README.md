@@ -9,7 +9,7 @@ From the repository root:
 ```bash
 npm install
 npm run lock:check:daily
-AGENT_PLATFORM=codex npm run lock:lock -- --agent docs-agent --cadence daily
+AGENT_PLATFORM=codex npm run lock:lock -- --agent documentation-agent --cadence daily
 npm run lock:list
 ```
 
@@ -57,7 +57,7 @@ Declared in `package.json` and pinned:
 ```bash
 NOSTR_LOCK_NAMESPACE=my-project \
 AGENT_PLATFORM=codex \
-node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
+node src/nostr-lock.mjs lock --agent documentation-agent --cadence daily
 ```
 
 [Tip Jar](https://tipjar.bitvid.network/?n=npub15jnttpymeytm80hatjqcvhhqhzrhx6gxp8pq0wn93rhnu8s9h9dsha32lx)
