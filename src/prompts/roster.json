@@ -13,6 +13,7 @@
     "innerhtml-migration-agent",
     "known-issues-agent",
     "load-test-agent",
+    "log-fixer-agent",
     "onboarding-audit-agent",
     "perf-agent",
     "prompt-curator-agent",
