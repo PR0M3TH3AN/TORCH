@@ -9,7 +9,8 @@
     "lock:check:weekly": "node src/nostr-lock.mjs check --cadence weekly",
     "lock:list": "node src/nostr-lock.mjs list",
     "lock:lock": "node src/nostr-lock.mjs lock",
-    "dashboard:serve": "python3 -m http.server 4173"
+    "dashboard:serve": "python3 -m http.server 4173",
+    "build": "node build.mjs"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
