@@ -1,2 +1,11 @@
 export const DEFAULT_DASHBOARD_PORT = 4173;
 export const RACE_CHECK_DELAY_MS = 1500;
+export const DEFAULT_RELAYS = [
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.primal.net',
+];
+export const DEFAULT_TTL = 7200;
+export const DEFAULT_NAMESPACE = 'torch';
+export const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
+export const VALID_CADENCES = new Set(['daily', 'weekly']);

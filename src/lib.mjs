@@ -3,80 +3,26 @@
 // TORCH — Task Orchestration via Relay-Coordinated Handoff
 // Generic Nostr-based task locking for multi-agent development.
 
-import fs from 'node:fs';
-import path from 'node:path';
-import http from 'node:http';
-import { fileURLToPath } from 'node:url';
 import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
-import { SimplePool } from 'nostr-tools/pool';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
-import { loadTorchConfig } from './torch-config.mjs';
+import {
+  loadTorchConfig,
+  getRelays,
+  getNamespace,
+  getTtl,
+} from './torch-config.mjs';
+import {
+  DEFAULT_DASHBOARD_PORT,
+  RACE_CHECK_DELAY_MS,
+  VALID_CADENCES,
+} from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
-import { DEFAULT_DASHBOARD_PORT, RACE_CHECK_DELAY_MS } from './constants.mjs';
+import { getRoster } from './roster.mjs';
+import { queryLocks, publishLock, parseLockEvent } from './lock-ops.mjs';
+import { cmdDashboard } from './dashboard.mjs';
 
 useWebSocketImplementation(WebSocket);
-
-const DEFAULT_RELAYS = [
-  'wss://relay.damus.io',
-  'wss://nos.lol',
-  'wss://relay.primal.net',
-];
-
-const DEFAULT_TTL = 7200;
-const DEFAULT_NAMESPACE = 'torch';
-const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
-const VALID_CADENCES = new Set(['daily', 'weekly']);
-
-// If installed as a package, prompts/roster.json is relative to this file
-const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
-const USER_ROSTER_FILE = path.resolve(process.cwd(), 'torch/roster.json');
-
-const FALLBACK_ROSTER = {
-  daily: [
-    'audit-agent',
-    'ci-health-agent',
-    'const-refactor-agent',
-    'content-audit-agent',
-    'decompose-agent',
-    'deps-security-agent',
-    'design-system-audit-agent',
-    'docs-agent',
-    'docs-alignment-agent',
-    'docs-code-investigator',
-    'innerhtml-migration-agent',
-    'known-issues-agent',
-    'load-test-agent',
-    'onboarding-audit-agent',
-    'perf-agent',
-    'prompt-curator-agent',
-    'protocol-research-agent',
-    'scheduler-update-agent',
-    'style-agent',
-    'test-audit-agent',
-    'todo-triage-agent',
-  ],
-  weekly: [
-    'bug-reproducer-agent',
-    'changelog-agent',
-    'dead-code-agent',
-    'event-schema-agent',
-    'frontend-console-debug-agent',
-    'fuzz-agent',
-    'interop-agent',
-    'perf-deepdive-agent',
-    'perf-optimization-agent',
-    'pr-review-agent',
-    'race-condition-agent',
-    'refactor-agent',
-    'smoke-agent',
-    'telemetry-agent',
-    'test-coverage-agent',
-    'weekly-synthesis-agent',
-  ],
-};
-
-let cachedCanonicalRoster = null;
 
 // Custom Error class for controlled exits
 class ExitError extends Error {
@@ -84,106 +30,6 @@ class ExitError extends Error {
     super(message);
     this.code = code;
   }
-}
-
-function getRelays() {
-  const config = loadTorchConfig();
-  const envRelays = process.env.NOSTR_LOCK_RELAYS;
-  if (envRelays) {
-    return envRelays.split(',').map((r) => r.trim()).filter(Boolean);
-  }
-  if (config.nostrLock.relays?.length) {
-    return config.nostrLock.relays;
-  }
-  return DEFAULT_RELAYS;
-}
-
-function getNamespace() {
-  const config = loadTorchConfig();
-  const namespace = (process.env.NOSTR_LOCK_NAMESPACE || config.nostrLock.namespace || DEFAULT_NAMESPACE).trim();
-  return namespace || DEFAULT_NAMESPACE;
-}
-
-function getTtl() {
-  const config = loadTorchConfig();
-  const envTtl = process.env.NOSTR_LOCK_TTL;
-  if (envTtl) {
-    const parsed = parseInt(envTtl, 10);
-    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
-  }
-  if (config.nostrLock.ttlSeconds) {
-    return config.nostrLock.ttlSeconds;
-  }
-  return DEFAULT_TTL;
-}
-
-function getQueryTimeoutMs() {
-  const config = loadTorchConfig();
-  const envValue = process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS;
-  if (envValue) {
-    const parsed = parseInt(envValue, 10);
-    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
-  }
-  return config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
-}
-
-
-function loadCanonicalRoster() {
-  if (cachedCanonicalRoster) return cachedCanonicalRoster;
-
-  let rosterPath = ROSTER_FILE;
-
-  // Prefer user-managed roster if present
-  if (fs.existsSync(USER_ROSTER_FILE)) {
-    rosterPath = USER_ROSTER_FILE;
-  }
-
-  try {
-    const parsed = JSON.parse(fs.readFileSync(rosterPath, 'utf8'));
-    const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
-    const weekly = Array.isArray(parsed.weekly)
-      ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
-      : [];
-
-    if (daily.length > 0 && weekly.length > 0) {
-      cachedCanonicalRoster = { daily, weekly };
-      return cachedCanonicalRoster;
-    }
-
-    console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${rosterPath}`);
-  } catch {
-    // It's okay if roster file is missing when used as a library/CLI without the file present
-  }
-
-  cachedCanonicalRoster = FALLBACK_ROSTER;
-  return cachedCanonicalRoster;
-}
-
-function parseEnvRoster(value) {
-  if (!value) return null;
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function getRoster(cadence) {
-  const config = loadTorchConfig();
-  const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
-  const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
-  const canonical = loadCanonicalRoster();
-  const dailyFromConfig = config.nostrLock.dailyRoster;
-  const weeklyFromConfig = config.nostrLock.weeklyRoster;
-
-  if (cadence === 'daily') {
-    if (dailyFromEnv && dailyFromEnv.length) return dailyFromEnv;
-    if (dailyFromConfig && dailyFromConfig.length) return dailyFromConfig;
-    return canonical.daily;
-  }
-
-  if (weeklyFromEnv && weeklyFromEnv.length) return weeklyFromEnv;
-  if (weeklyFromConfig && weeklyFromConfig.length) return weeklyFromConfig;
-  return canonical.weekly;
 }
 
 function todayDateStr() {
@@ -194,90 +40,8 @@ function nowUnix() {
   return Math.floor(Date.now() / 1000);
 }
 
-export function parseLockEvent(event) {
-  const dTag = event.tags.find((t) => t[0] === 'd')?.[1] ?? '';
-  const expTag = event.tags.find((t) => t[0] === 'expiration')?.[1];
-  const expiresAt = expTag ? parseInt(expTag, 10) : null;
-
-  let content = {};
-  try {
-    const parsed = JSON.parse(event.content);
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      content = parsed;
-    }
-  } catch {
-    // Ignore malformed JSON content
-  }
-
-  return {
-    eventId: event.id,
-    pubkey: event.pubkey,
-    createdAt: event.created_at,
-    createdAtIso: new Date(event.created_at * 1000).toISOString(),
-    expiresAt,
-    expiresAtIso: expiresAt ? new Date(expiresAt * 1000).toISOString() : null,
-    dTag,
-    agent: content.agent ?? null,
-    cadence: content.cadence ?? null,
-    status: content.status ?? null,
-    date: content.date ?? null,
-    platform: content.platform ?? null,
-  };
-}
-
-function filterActiveLocks(locks) {
-  const now = nowUnix();
-  return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
-}
-
-export async function queryLocks(relays, cadence, dateStr, namespace) {
-  const pool = new SimplePool();
-  const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
-  const queryTimeoutMs = getQueryTimeoutMs();
-
-  try {
-    const events = await Promise.race([
-      pool.querySync(relays, {
-        kinds: [30078],
-        '#t': [tagFilter],
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Relay query timed out')), queryTimeoutMs),
-      ),
-    ]);
-
-    return filterActiveLocks(events.map(parseLockEvent));
-  } finally {
-    pool.close(relays);
-  }
-}
-
-export async function publishLock(relays, event) {
-  const pool = new SimplePool();
-
-  try {
-    const publishPromises = pool.publish(relays, event);
-    const results = await Promise.allSettled(publishPromises);
-    const successes = results.filter((r) => r.status === 'fulfilled');
-
-    if (successes.length === 0) {
-      const errors = results.map((r, i) => {
-        if (r.status === 'rejected') {
-          const reason = r.reason;
-          const message = reason instanceof Error ? reason.message : String(reason ?? 'unknown');
-          return `${relays[i]}: ${message}`;
-        }
-        return `${relays[i]}: unknown`;
-      });
-      throw new Error(`Failed to publish to any relay:\n  ${errors.join('\n  ')}`);
-    }
-
-    console.error(`  Published to ${successes.length}/${relays.length} relays`);
-    return event;
-  } finally {
-    pool.close(relays);
-  }
-}
+// Re-export for backward compatibility/library usage
+export { parseLockEvent, queryLocks, publishLock, cmdDashboard };
 
 export async function cmdCheck(cadence) {
   const relays = getRelays();
@@ -479,82 +243,6 @@ export async function cmdList(cadence) {
     console.log(`\n  Locked: ${lockedAgents.size}/${roster.length}`);
     console.log(`  Available: ${available.join(', ') || '(none)'}`);
   }
-}
-
-export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
-  // Resolve package root relative to this file (src/lib.mjs)
-  // this file is in <root>/src/lib.mjs, so '..' goes to <root>
-  const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
-  const server = http.createServer((req, res) => {
-    // URL parsing
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    let pathname = url.pathname;
-
-    // Redirect / to /dashboard/
-    if (pathname === '/' || pathname === '/dashboard') {
-      res.writeHead(302, { 'Location': '/dashboard/' });
-      res.end();
-      return;
-    }
-
-    // Special case: /torch-config.json
-    // Priority: User's CWD > Package default
-    if (pathname === '/torch-config.json') {
-      const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
-      if (fs.existsSync(userConfigPath)) {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        fs.createReadStream(userConfigPath).pipe(res);
-        return;
-      }
-      // If not found in CWD, fall through to serve from packageRoot (if it exists there)
-      // or return empty object if missing?
-      // Falling through means it looks for packageRoot/torch-config.json
-    }
-
-    // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
-    let filePath = path.join(packageRoot, safePath);
-
-    // If directory, try index.html
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-       filePath = path.join(filePath, 'index.html');
-    }
-
-    // Check if file exists and is a file
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-      res.writeHead(404);
-      res.end('Not Found');
-      return;
-    }
-
-    // MIME types
-    const extname = path.extname(filePath);
-    let contentType = 'text/plain';
-    switch (extname) {
-      case '.html': contentType = 'text/html'; break;
-      case '.js': contentType = 'text/javascript'; break;
-      case '.css': contentType = 'text/css'; break;
-      case '.json': contentType = 'application/json'; break;
-      case '.png': contentType = 'image/png'; break;
-      case '.jpg': contentType = 'image/jpeg'; break;
-      case '.svg': contentType = 'image/svg+xml'; break;
-      case '.ico': contentType = 'image/x-icon'; break;
-      case '.md': contentType = 'text/markdown'; break;
-    }
-
-    res.writeHead(200, { 'Content-Type': contentType });
-    fs.createReadStream(filePath).pipe(res);
-  });
-
-  server.listen(port, () => {
-    console.log(`Dashboard running at http://localhost:${port}/dashboard/`);
-    console.log(`Serving files from ${packageRoot}`);
-    console.log(`Using configuration from ${process.cwd()}`);
-  });
-
-  // Keep process alive
-  return new Promise(() => {});
 }
 
 function parseArgs(argv) {

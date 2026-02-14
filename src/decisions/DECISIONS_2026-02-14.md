@@ -1,12 +1,14 @@
-# Decisions: 2026-02-14 Constants Refactor
+# Decisions
 
-- **Extracted `DEFAULT_DASHBOARD_PORT` (4173)**
-  - **Reason**: Magic number used in multiple places (`cmdDashboard`, `parseArgs`).
-  - **Location**: `src/constants.mjs`.
+## Module Boundaries
+- `src/roster.mjs`: Handles loading roster from file or environment. Used by `cmdCheck`, `cmdLock`.
+- `src/lock-ops.mjs`: Handles low-level Nostr operations (`queryLocks`, `publishLock`) and parsing.
+- `src/dashboard.mjs`: Handles the HTTP server for the dashboard.
+- `src/torch-config.mjs`: Now includes "effective config" getters (`getRelays`, etc.) to centralize config logic.
 
-- **Extracted `RACE_CHECK_DELAY_MS` (1500)**
-  - **Reason**: Magic number for timing logic.
-  - **Location**: `src/constants.mjs`.
+## Naming
+- Used `lock-ops.mjs` instead of `lock.mjs` to avoid confusion with the action "lock".
+- Preserved existing function names to minimize refactor impact.
 
-- **Created `src/constants.mjs`**
-  - **Reason**: No dedicated constants file existed for this level of abstraction.
+## Exports
+- `src/lib.mjs` will re-export `cmdDashboard` etc. if they were previously exported, to maintain library interface.
