@@ -15,6 +15,7 @@
     "src/docs/",
     "skills/",
     "dashboard/",
+    "assets/",
     "torch-config.example.json",
     "README.md"
   ],
