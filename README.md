@@ -8,10 +8,26 @@ From the repository root:
 
 ```bash
 npm install
+cp torch-config.json /path/to/your-project/torch-config.json # optional template step when vendoring TORCH
 npm run lock:check:daily
 AGENT_PLATFORM=codex npm run lock:lock -- --agent docs-agent --cadence daily
 npm run lock:list
 ```
+
+### Project configuration (`torch-config.json`)
+
+Create a `torch-config.json` file in your project root (or set `TORCH_CONFIG_PATH`) to override defaults per repo:
+
+- `nostrLock.namespace` (d-tag/tag namespace)
+- `nostrLock.relays`
+- `nostrLock.ttlSeconds`
+- `nostrLock.queryTimeoutMs`
+- `nostrLock.dailyRoster` / `nostrLock.weeklyRoster`
+- `dashboard.defaultCadenceView` (`daily`, `weekly`, or `all`)
+- `dashboard.defaultStatusView` (`active` or `all`)
+- `scheduler.firstPromptByCadence.daily` / `.weekly`
+
+Default first-run behavior is configured so daily scheduling starts with `scheduler-update-agent`.
 
 Optional dashboard:
 
@@ -48,8 +64,10 @@ Declared in `package.json` and pinned:
 - `NOSTR_LOCK_NAMESPACE`
 - `NOSTR_LOCK_RELAYS`
 - `NOSTR_LOCK_TTL`
+- `NOSTR_LOCK_QUERY_TIMEOUT_MS`
 - `NOSTR_LOCK_DAILY_ROSTER`
 - `NOSTR_LOCK_WEEKLY_ROSTER`
+- `TORCH_CONFIG_PATH`
 - `AGENT_PLATFORM`
 
 ## Roster precedence
@@ -57,8 +75,9 @@ Declared in `package.json` and pinned:
 The lock CLI resolves roster names in this order:
 
 1. `NOSTR_LOCK_DAILY_ROSTER` / `NOSTR_LOCK_WEEKLY_ROSTER` (comma-separated env overrides).
-2. `src/prompts/roster.json` (`daily` / `weekly` canonical scheduler roster).
-3. Built-in fallback roster (used only if `src/prompts/roster.json` is unreadable).
+2. `torch-config.json` (`nostrLock.dailyRoster` / `nostrLock.weeklyRoster`).
+3. `src/prompts/roster.json` (`daily` / `weekly` canonical scheduler roster).
+4. Built-in fallback roster (used only if `src/prompts/roster.json` is unreadable).
 
 `lock --agent` validates names against the resolved cadence roster, and `check`/`list` report lock events whose agent names do not match scheduler roster entries exactly.
 

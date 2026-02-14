@@ -33,7 +33,10 @@ MUST 3: Run these commands in this order:
    - Derive `previous_agent` from that file with precedence:
      a) YAML frontmatter key `agent`.
      b) Filename format `<timestamp>__<agent-name>__<status>.md`.
-   - If no valid previous log exists (missing file, parse failure, or agent not in roster), set `start_index = 0`.
+   - If no valid previous log exists (missing file, parse failure, or agent not in roster):
+     - Read `scheduler.firstPromptByCadence.daily` from `torch-config.json` if present.
+     - If that agent is in roster, start there.
+     - Otherwise set `start_index = 0`.
    - Else set `start_index = (index(previous_agent)+1) mod roster_length`.
    - Round-robin from `start_index`, skipping excluded agents and wrapping with modulo until one eligible agent is found.
    - If none are eligible, write `_failed.md` with reason `All roster tasks currently claimed by other agents` and stop.
@@ -81,7 +84,10 @@ MUST 3: Run these commands in this order:
    - Derive `previous_agent` from that file with precedence:
      a) YAML frontmatter key `agent`.
      b) Filename format `<timestamp>__<agent-name>__<status>.md`.
-   - If no valid previous log exists (missing file, parse failure, or agent not in roster), set `start_index = 0`.
+   - If no valid previous log exists (missing file, parse failure, or agent not in roster):
+     - Read `scheduler.firstPromptByCadence.weekly` from `torch-config.json` if present.
+     - If that agent is in roster, start there.
+     - Otherwise set `start_index = 0`.
    - Else set `start_index = (index(previous_agent)+1) mod roster_length`.
    - Round-robin from `start_index`, skipping excluded agents and wrapping with modulo until one eligible agent is found.
    - If none are eligible, write `_failed.md` with reason `All roster tasks currently claimed by other agents` and stop.

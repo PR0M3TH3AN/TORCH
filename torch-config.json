@@ -1,0 +1,22 @@
+{
+  "nostrLock": {
+    "namespace": "torch",
+    "relays": [
+      "wss://relay.damus.io",
+      "wss://nos.lol",
+      "wss://relay.primal.net"
+    ],
+    "ttlSeconds": 7200,
+    "queryTimeoutMs": 15000
+  },
+  "dashboard": {
+    "defaultCadenceView": "daily",
+    "defaultStatusView": "active"
+  },
+  "scheduler": {
+    "firstPromptByCadence": {
+      "daily": "scheduler-update-agent",
+      "weekly": "bug-reproducer-agent"
+    }
+  }
+}

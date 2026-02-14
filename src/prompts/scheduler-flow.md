@@ -43,7 +43,10 @@ Use this document for all scheduler runs.
      1. Parse YAML frontmatter from `<log_dir>/<latest_file>` and use key `agent` when present and non-empty.
      2. Otherwise parse filename convention `<timestamp>__<agent-name>__<status>.md` and take `<agent-name>`.
    - If no valid `latest_file` exists, or parsing fails, or `previous_agent` is not in `roster`, treat as first run fallback.
-   - First run fallback: `start_index = 0`.
+   - First run fallback:
+     - Read `scheduler.firstPromptByCadence.<cadence>` from `torch-config.json` if present.
+     - If that agent exists in `roster`, set `start_index = index(configured_agent)`.
+     - Otherwise set `start_index = 0`.
    - Otherwise: `start_index = (index(previous_agent in roster) + 1) mod len(roster)`.
    - Round-robin scan:
      - Iterate offsets `0..len(roster)-1`.
