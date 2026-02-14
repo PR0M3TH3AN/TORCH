@@ -138,6 +138,37 @@ function parseFrontmatterAgent(markdown) {
   return null;
 }
 
+function parseFrontmatterCreatedAt(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  if (lines[0]?.trim() !== '---') return null;
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (line.trim() === '---') break;
+    const match = line.match(/^created_at\s*:\s*(.+)$/i);
+    if (match?.[1]) {
+      return match[1].trim().replace(/^['"]|['"]$/g, '');
+    }
+  }
+  return null;
+}
+
+function parseDateValue(value) {
+  if (!value || typeof value !== 'string') return null;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function parseTimestampFromFilename(filename) {
+  const match = String(filename).match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)__[^_]+__(completed|failed)\.md$/);
+  if (!match?.[1]) return null;
+  const iso = match[1].replace(/T(\d{2})-(\d{2})-(\d{2})Z$/, 'T$1:$2:$3Z');
+  return parseDateValue(iso);
+}
+
+function isStrictSchedulerLogFilename(filename) {
+  return /^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)__[^_]+__(completed|failed)\.md$/.test(String(filename));
+}
+
 function parseAgentFromFilename(filename) {
   const match = String(filename).match(/^.+__([^_]+?)__(completed|failed)\.md$/);
   return match?.[1] || null;
@@ -149,8 +180,29 @@ async function getLatestFile(logDir) {
   const files = entries
     .filter((entry) => entry.isFile())
     .map((entry) => entry.name)
-    .sort();
-  return files.length ? files[files.length - 1] : null;
+    .filter((filename) => isStrictSchedulerLogFilename(filename))
+    .sort((a, b) => b.localeCompare(a));
+
+  let latest = null;
+
+  for (const filename of files) {
+    const filePath = path.join(logDir, filename);
+    const content = await fs.readFile(filePath, 'utf8').catch(() => '');
+    const createdAtMs = parseDateValue(parseFrontmatterCreatedAt(content));
+    const fileTimestampMs = parseTimestampFromFilename(filename);
+    const effectiveMs = createdAtMs ?? fileTimestampMs;
+
+    if (!effectiveMs) {
+      console.warn(`[scheduler] Ignoring invalid log timestamp in ${filename}; checking next candidate.`);
+      continue;
+    }
+
+    if (!latest || effectiveMs > latest.effectiveMs) {
+      latest = { filename, effectiveMs };
+    }
+  }
+
+  return latest?.filename || null;
 }
 
 function selectNextAgent({ roster, excludedSet, previousAgent, firstPrompt }) {
@@ -209,6 +261,7 @@ async function writeLog({ cadence, agent, status, reason, detail }) {
     `cadence: ${cadence}`,
     `agent: ${agent}`,
     `status: ${status}`,
+    `created_at: ${new Date().toISOString()}`,
     `timestamp: ${new Date().toISOString()}`,
     '---',
     '',
