@@ -1,4 +1,5 @@
 import { readdir, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 const CONFIG = {
   daily: {
@@ -97,6 +98,44 @@ function validateScheduler(cadence, roster, rows, promptFiles) {
   return errors;
 }
 
+async function listMarkdownFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listMarkdownFiles(fullPath)));
+      continue;
+    }
+
+    if (entry.isFile() && entry.name.endsWith('.md')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+async function validateCanonicalPromptPaths() {
+  const errors = [];
+  const markdownFiles = await listMarkdownFiles('src/prompts');
+  const invalidPathPattern = /src\/src\/(context|todo|decisions|test_logs)\b/;
+
+  for (const file of markdownFiles) {
+    const content = await readFile(file, 'utf8');
+    if (!invalidPathPattern.test(content)) {
+      continue;
+    }
+
+    errors.push(
+      `[prompt-paths] ${file} contains invalid canonical path references using "src/src/..."; expected "src/..."`,
+    );
+  }
+
+  return errors;
+}
+
 const roster = JSON.parse(await readFile('src/prompts/roster.json', 'utf8'));
 
 const allErrors = [];
@@ -110,6 +149,8 @@ for (const [cadence, cfg] of Object.entries(CONFIG)) {
 
   allErrors.push(...validateScheduler(cadence, roster[cadence] ?? [], rows, promptFiles));
 }
+
+allErrors.push(...(await validateCanonicalPromptPaths()));
 
 if (allErrors.length > 0) {
   console.error('Scheduler/roster drift detected:');
