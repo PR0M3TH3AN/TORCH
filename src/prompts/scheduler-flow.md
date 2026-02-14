@@ -16,10 +16,10 @@ Use this document for all scheduler runs.
    if daily: `npm run lock:check:daily`; if weekly: `npm run lock:check:weekly`
    ```
 
-3. Read policy file(s):
+3. Read policy file(s). This step is conditional: if `AGENTS.md` is missing, continue without failing.
 
    ```bash
-   cat AGENTS.md
+   test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing"
    ```
 
 4. Find latest cadence log file, then choose next roster agent not in exclusion set:
