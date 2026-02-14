@@ -4,7 +4,7 @@ import { normalizeEvents } from './ingestor.js';
 import { selectPrunableMemories } from './pruner.js';
 import { filterAndRankMemories } from './retriever.js';
 import { startScheduler } from './scheduler.js';
-import { createMemoryRecord } from './schema.js';
+import { createMemoryRecord, validateMemoryItem } from './schema.js';
 import { summarizeEvents } from './summarizer.js';
 
 const memoryStore = new Map();
@@ -15,7 +15,7 @@ const cache = createMemoryCache();
  *
  * @param {import('./schema.js').MemoryEvent[]} events - Ordered list of raw events to persist.
  * @param {{ maxSummaryLength?: number, embedText?: (value: string) => Promise<number[]> | number[] }} [options] - Optional ingest tuning.
- * @returns {Promise<import('./schema.js').MemoryRecord[]>} Stored memory records with generated IDs/embeddings.
+ * @returns {Promise<import('./schema.js').MemoryRecord[]>} Stored memory records.
  */
 export async function ingestEvents(events, options = {}) {
   const normalizedEvents = normalizeEvents(events);
@@ -26,14 +26,31 @@ export async function ingestEvents(events, options = {}) {
     const embedding = await embedText(`${summary}\n${event.content}`, options);
     const record = createMemoryRecord({
       agent_id: event.agent_id,
+      session_id: typeof event.metadata?.session_id === 'string' ? event.metadata.session_id : 'unknown',
+      type: typeof event.metadata?.type === 'string' ? event.metadata.type : 'event',
       content: event.content,
       summary,
       tags: event.tags,
-      metadata: event.metadata,
-      embedding,
+      importance: Number.isFinite(event.metadata?.importance) ? event.metadata.importance : 0.5,
+      embedding_id: Array.isArray(embedding) && embedding.length > 0 ? crypto.randomUUID() : null,
       created_at: event.timestamp,
-      updated_at: event.timestamp,
+      last_seen: event.timestamp,
+      source: typeof event.metadata?.source === 'string' ? event.metadata.source : 'ingest',
+      ttl_days: Number.isFinite(event.metadata?.ttl_days) ? event.metadata.ttl_days : null,
+      merged_into: typeof event.metadata?.merged_into === 'string' ? event.metadata.merged_into : null,
+      pinned: Boolean(event.metadata?.pinned),
     });
+
+    const validation = validateMemoryItem(record);
+    if (!validation.valid) {
+      console.error('memory_validation_error', {
+        stage: 'ingest',
+        reason: 'record_failed_schema_validation',
+        fields: validation.errors,
+        item: record,
+      });
+      throw new TypeError('Memory ingest rejected: invalid durable record format');
+    }
 
     memoryStore.set(record.id, record);
     records.push(record);
@@ -100,7 +117,7 @@ export function pinMemory(id) {
   const memory = memoryStore.get(id);
   if (!memory) return null;
 
-  const updated = { ...memory, pinned: true, updated_at: Date.now() };
+  const updated = { ...memory, pinned: true, last_seen: Date.now() };
   memoryStore.set(id, updated);
   cache.clear();
   return updated;
@@ -116,7 +133,7 @@ export function unpinMemory(id) {
   const memory = memoryStore.get(id);
   if (!memory) return null;
 
-  const updated = { ...memory, pinned: false, updated_at: Date.now() };
+  const updated = { ...memory, pinned: false, last_seen: Date.now() };
   memoryStore.set(id, updated);
   cache.clear();
   return updated;

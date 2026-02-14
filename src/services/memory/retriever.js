@@ -30,7 +30,7 @@ export function filterAndRankMemories(memories, params) {
       const haystack = `${memory.summary} ${memory.content}`.toLowerCase();
       const queryScore = loweredQuery && haystack.includes(loweredQuery) ? 1 : 0;
       const pinBoost = memory.pinned ? 1 : 0;
-      const recencyScore = memory.updated_at;
+      const recencyScore = Number.isFinite(memory.last_seen) ? memory.last_seen : memory.created_at;
 
       return {
         memory,
