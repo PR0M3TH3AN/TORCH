@@ -547,7 +547,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
     fs.createReadStream(filePath).pipe(res);
   });
 
-  server.listen(port, () => {
+  server.listen(port, '127.0.0.1', () => {
     console.log(`Dashboard running at http://localhost:${port}/dashboard/`);
     console.log(`Serving files from ${packageRoot}`);
     console.log(`Using configuration from ${process.cwd()}`);
