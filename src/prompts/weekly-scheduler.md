@@ -2,6 +2,8 @@
 
 Use `src/prompts/scheduler-flow.md` as the authoritative scheduler procedure.
 
+Canonical roster source: `src/prompts/roster.json` (`weekly` key).
+
 ## Weekly Cadence Configuration
 
 - `cadence`: `weekly`

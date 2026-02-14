@@ -3,6 +3,9 @@
 // TORCH — Task Orchestration via Relay-Coordinated Handoff
 // Generic Nostr-based task locking for multi-agent development.
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
 import { SimplePool } from 'nostr-tools/pool';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
@@ -21,21 +24,52 @@ const DEFAULT_NAMESPACE = 'torch';
 const QUERY_TIMEOUT_MS = 15_000;
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 
-const DEFAULT_DAILY_ROSTER = [
-  'documentation-agent',
-  'quality-agent',
-  'security-agent',
-  'performance-agent',
-  'refactor-agent',
-];
+const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
+const FALLBACK_ROSTER = {
+  daily: [
+    'audit-agent',
+    'ci-health-agent',
+    'const-refactor-agent',
+    'content-audit-agent',
+    'decompose-agent',
+    'deps-security-agent',
+    'design-system-audit-agent',
+    'docs-agent',
+    'docs-alignment-agent',
+    'docs-code-investigator',
+    'innerhtml-migration-agent',
+    'known-issues-agent',
+    'load-test-agent',
+    'onboarding-audit-agent',
+    'perf-agent',
+    'prompt-curator-agent',
+    'protocol-research-agent',
+    'scheduler-update-agent',
+    'style-agent',
+    'test-audit-agent',
+    'todo-triage-agent',
+  ],
+  weekly: [
+    'bug-reproducer-agent',
+    'changelog-agent',
+    'dead-code-agent',
+    'event-schema-agent',
+    'frontend-console-debug-agent',
+    'fuzz-agent',
+    'interop-agent',
+    'perf-deepdive-agent',
+    'perf-optimization-agent',
+    'pr-review-agent',
+    'race-condition-agent',
+    'refactor-agent',
+    'smoke-agent',
+    'telemetry-agent',
+    'test-coverage-agent',
+    'weekly-synthesis-agent',
+  ],
+};
 
-const DEFAULT_WEEKLY_ROSTER = [
-  'bug-reproducer-agent',
-  'integration-agent',
-  'release-agent',
-  'test-coverage-agent',
-  'weekly-synthesis-agent',
-];
+let cachedCanonicalRoster = null;
 
 function getRelays() {
   const envRelays = process.env.NOSTR_LOCK_RELAYS;
@@ -59,6 +93,31 @@ function getTtl() {
   return DEFAULT_TTL;
 }
 
+
+function loadCanonicalRoster() {
+  if (cachedCanonicalRoster) return cachedCanonicalRoster;
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(ROSTER_FILE, 'utf8'));
+    const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
+    const weekly = Array.isArray(parsed.weekly)
+      ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
+      : [];
+
+    if (daily.length > 0 && weekly.length > 0) {
+      cachedCanonicalRoster = { daily, weekly };
+      return cachedCanonicalRoster;
+    }
+
+    console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${ROSTER_FILE}`);
+  } catch (err) {
+    console.error(`WARNING: Failed to read roster file (${ROSTER_FILE}): ${err.message}`);
+  }
+
+  cachedCanonicalRoster = FALLBACK_ROSTER;
+  return cachedCanonicalRoster;
+}
+
 function parseEnvRoster(value) {
   if (!value) return null;
   return value
@@ -70,12 +129,13 @@ function parseEnvRoster(value) {
 function getRoster(cadence) {
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
+  const canonical = loadCanonicalRoster();
 
   if (cadence === 'daily') {
-    return dailyFromEnv && dailyFromEnv.length ? dailyFromEnv : DEFAULT_DAILY_ROSTER;
+    return dailyFromEnv && dailyFromEnv.length ? dailyFromEnv : canonical.daily;
   }
 
-  return weeklyFromEnv && weeklyFromEnv.length ? weeklyFromEnv : DEFAULT_WEEKLY_ROSTER;
+  return weeklyFromEnv && weeklyFromEnv.length ? weeklyFromEnv : canonical.weekly;
 }
 
 function todayDateStr() {
@@ -178,6 +238,7 @@ async function cmdCheck(cadence) {
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = getRoster(cadence);
+  const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
   const available = roster.filter((a) => !lockedAgents.includes(a));
 
   console.log(
@@ -189,6 +250,7 @@ async function cmdCheck(cadence) {
         locked: lockedAgents.sort(),
         available: available.sort(),
         lockCount: locks.length,
+        unknownLockedAgents: unknownLockedAgents.sort(),
         locks: locks.map((l) => ({
           agent: l.agent,
           eventId: l.eventId,
@@ -214,6 +276,13 @@ async function cmdLock(agent, cadence, dryRun = false) {
   console.error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
   console.error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
   console.error(`Relays: ${relays.join(', ')}`);
+
+  const roster = getRoster(cadence);
+  if (!roster.includes(agent)) {
+    console.error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
+    console.error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
+    process.exit(1);
+  }
 
   console.error('Step 1: Checking for existing locks...');
   const existingLocks = await queryLocks(relays, cadence, dateStr, namespace);
@@ -341,7 +410,12 @@ async function cmdList(cadence) {
 
     const roster = getRoster(c);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
+    const unknownLockedAgents = [...lockedAgents].filter((agent) => !roster.includes(agent));
     const available = roster.filter((a) => !lockedAgents.has(a));
+
+    if (unknownLockedAgents.length > 0) {
+      console.log(`  Warning: lock events found with non-roster agent names: ${unknownLockedAgents.join(', ')}`);
+    }
 
     console.log(`\n  Locked: ${lockedAgents.size}/${roster.length}`);
     console.log(`  Available: ${available.join(', ') || '(none)'}`);
