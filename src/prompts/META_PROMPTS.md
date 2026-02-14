@@ -24,7 +24,7 @@ npm run lock:check:daily
 Use the `locked` array from the JSON output as the exclusion set.
 
 MUST 3: Run these commands in this order:
-1) cat AGENTS.md
+1) test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing" (missing AGENTS.md is non-fatal)
 2) ls -1 task-logs/daily/ | sort | tail -n 1
 3) Select next roster agent not in exclusion set
 4) Claim via repository lock:
@@ -57,7 +57,7 @@ npm run lock:check:weekly
 Use the `locked` array from the JSON output as the exclusion set.
 
 MUST 3: Run these commands in this order:
-1) cat AGENTS.md
+1) test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing" (missing AGENTS.md is non-fatal)
 2) ls -1 task-logs/weekly/ | sort | tail -n 1
 3) Select next roster agent not in exclusion set
 4) Claim via repository lock:
