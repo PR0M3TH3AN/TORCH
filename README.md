@@ -26,8 +26,36 @@ AGENT_PLATFORM=codex npx --no-install torch-lock lock --agent docs-agent --caden
 # List all active locks
 npx --no-install torch-lock list
 
+# Mark a task as completed (permanent)
+AGENT_PLATFORM=codex npx --no-install torch-lock complete --agent docs-agent --cadence daily
+
+# Initialize TORCH in a new repository
+npx --no-install torch-lock init
+
+# Update TORCH configuration and scripts
+npx --no-install torch-lock update
+
 # Run the Dashboard
 npx --no-install torch-lock dashboard
+```
+
+### Memory CLI
+
+The `torch-lock` CLI also supports memory operations:
+
+```bash
+# List memories (optional filters: --agent, --type, --tags, --pinned)
+npx --no-install torch-lock list-memories --limit 5
+
+# Inspect a specific memory
+npx --no-install torch-lock inspect-memory --id <memory-id>
+
+# Pin/Unpin a memory
+npx --no-install torch-lock pin-memory --id <memory-id>
+npx --no-install torch-lock unpin-memory --id <memory-id>
+
+# Check memory stats
+npx --no-install torch-lock memory-stats
 ```
 
 ### Configuration (`torch-config.json`)

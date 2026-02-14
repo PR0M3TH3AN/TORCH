@@ -6,13 +6,13 @@ TORCH is a decentralized task-locking protocol for multi-agent software developm
 
 ```bash
 # Check active locks
-node src/nostr-lock.mjs check --cadence daily
+npx torch-lock check --cadence daily
 
 # Claim a task
-AGENT_PLATFORM=codex node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
+AGENT_PLATFORM=codex npx torch-lock lock --agent docs-agent --cadence daily
 
 # List all active locks
-node src/nostr-lock.mjs list
+npx torch-lock list
 ```
 
 ## Defaults
