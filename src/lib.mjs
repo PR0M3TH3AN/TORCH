@@ -13,6 +13,7 @@ import { useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
 import { loadTorchConfig } from './torch-config.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
+import { DEFAULT_DASHBOARD_PORT, RACE_CHECK_DELAY_MS } from './constants.mjs';
 
 useWebSocketImplementation(WebSocket);
 
@@ -395,7 +396,7 @@ export async function cmdLock(agent, cadence, dryRun = false) {
     await publishLock(relays, event);
 
     console.error('Step 5: Race check...');
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, RACE_CHECK_DELAY_MS));
 
     const postLocks = await queryLocks(relays, cadence, dateStr, namespace);
     const racingLocks = postLocks
@@ -477,7 +478,7 @@ export async function cmdList(cadence) {
   }
 }
 
-export async function cmdDashboard(port = 4173) {
+export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
   // Resolve package root relative to this file (src/lib.mjs)
   // this file is in <root>/src/lib.mjs, so '..' goes to <root>
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -554,7 +555,7 @@ export async function cmdDashboard(port = 4173) {
 }
 
 function parseArgs(argv) {
-  const args = { command: null, agent: null, cadence: null, dryRun: false, force: false, port: 4173 };
+  const args = { command: null, agent: null, cadence: null, dryRun: false, force: false, port: DEFAULT_DASHBOARD_PORT };
   let i = 0;
 
   if (argv.length > 0 && !argv[0].startsWith('-')) {
@@ -577,7 +578,7 @@ function parseArgs(argv) {
     } else if (arg === '--force') {
       args.force = true;
     } else if (arg === '--port') {
-      args.port = parseInt(argv[++i], 10) || 4173;
+      args.port = parseInt(argv[++i], 10) || DEFAULT_DASHBOARD_PORT;
     }
   }
 
@@ -591,7 +592,7 @@ Commands:
   check  --cadence <daily|weekly>                  Check locked agents (JSON)
   lock   --agent <name> --cadence <daily|weekly>   Claim a lock
   list   [--cadence <daily|weekly>]                Print active lock table
-  dashboard [--port <port>]                        Serve the dashboard (default: 4173)
+  dashboard [--port <port>]                        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
   init   [--force]                                 Initialize torch/ directory in current project
   update [--force]                                 Update torch/ configuration (backups, merges)
 
