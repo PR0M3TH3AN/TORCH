@@ -85,6 +85,43 @@ async function readJson(filePath, fallback) {
   }
 }
 
+function normalizeStringList(value, fallback = []) {
+  if (!Array.isArray(value)) return fallback;
+  return value.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim());
+}
+
+async function artifactExistsSince(filePath, sinceMs) {
+  if (!filePath) return false;
+  const resolved = path.isAbsolute(filePath)
+    ? filePath
+    : path.resolve(process.cwd(), filePath);
+  try {
+    const stat = await fs.stat(resolved);
+    return stat.isFile() && stat.mtimeMs >= sinceMs;
+  } catch {
+    return false;
+  }
+}
+
+async function verifyMemoryStep({ name, markers, artifacts, outputText, sinceMs }) {
+  const markerMatched = markers.some((marker) => outputText.includes(marker));
+  let artifactMatched = false;
+
+  for (const artifact of artifacts) {
+    if (await artifactExistsSince(artifact, sinceMs)) {
+      artifactMatched = true;
+      break;
+    }
+  }
+
+  return {
+    name,
+    markerMatched,
+    artifactMatched,
+    complete: markerMatched || artifactMatched,
+  };
+}
+
 function parseFrontmatterAgent(markdown) {
   const lines = markdown.split(/\r?\n/);
   if (lines[0]?.trim() !== '---') return null;
@@ -135,6 +172,9 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
   const scheduler = cfg.scheduler || {};
   const handoffCommand = scheduler.handoffCommandByCadence?.[cadence] || null;
   const missingHandoffCommandForMode = !isInteractive && !handoffCommand;
+  const memoryPolicyRaw = scheduler.memoryPolicyByCadence?.[cadence] || {};
+  const mode = memoryPolicyRaw.mode === 'required' ? 'required' : 'optional';
+
   return {
     firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
     handoffCommand,
@@ -142,6 +182,19 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     validationCommands: Array.isArray(scheduler.validationCommandsByCadence?.[cadence])
       ? scheduler.validationCommandsByCadence[cadence].filter((cmd) => typeof cmd === 'string' && cmd.trim())
       : ['npm', 'run', 'lint'],
+    memoryPolicy: {
+      mode,
+      retrieveCommand: typeof memoryPolicyRaw.retrieveCommand === 'string' && memoryPolicyRaw.retrieveCommand.trim()
+        ? memoryPolicyRaw.retrieveCommand.trim()
+        : null,
+      storeCommand: typeof memoryPolicyRaw.storeCommand === 'string' && memoryPolicyRaw.storeCommand.trim()
+        ? memoryPolicyRaw.storeCommand.trim()
+        : null,
+      retrieveSuccessMarkers: normalizeStringList(memoryPolicyRaw.retrieveSuccessMarkers, ['MEMORY_RETRIEVED']),
+      storeSuccessMarkers: normalizeStringList(memoryPolicyRaw.storeSuccessMarkers, ['MEMORY_STORED']),
+      retrieveArtifacts: normalizeStringList(memoryPolicyRaw.retrieveArtifacts),
+      storeArtifacts: normalizeStringList(memoryPolicyRaw.storeArtifacts),
+    },
   };
 }
 
@@ -257,10 +310,25 @@ async function main() {
 
     const promptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
     const runArtifactSince = new Date().toISOString();
+    const runStartMs = Date.parse(runArtifactSince);
+    const outputChunks = [];
+
+    if (schedulerConfig.memoryPolicy.retrieveCommand) {
+      const retrieveResult = await runCommand('bash', ['-lc', schedulerConfig.memoryPolicy.retrieveCommand], {
+        env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+      });
+      outputChunks.push(retrieveResult.stdout, retrieveResult.stderr);
+      if (retrieveResult.code !== 0) {
+        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Memory retrieval command failed', detail: schedulerConfig.memoryPolicy.retrieveCommand });
+        process.exit(retrieveResult.code);
+      }
+    }
+
     if (schedulerConfig.handoffCommand) {
       const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
         env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
       });
+      outputChunks.push(handoff.stdout, handoff.stderr);
       if (handoff.code !== 0) {
         await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail: 'Handoff callback failed.' });
         process.exit(handoff.code);
@@ -271,6 +339,49 @@ async function main() {
         : 'No handoff callback configured. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.';
       await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail });
       process.exit(1);
+    }
+
+    if (schedulerConfig.memoryPolicy.storeCommand) {
+      const storeResult = await runCommand('bash', ['-lc', schedulerConfig.memoryPolicy.storeCommand], {
+        env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+      });
+      outputChunks.push(storeResult.stdout, storeResult.stderr);
+      if (storeResult.code !== 0) {
+        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Memory storage command failed', detail: schedulerConfig.memoryPolicy.storeCommand });
+        process.exit(storeResult.code);
+      }
+    }
+
+    const memoryOutput = outputChunks.join('\n');
+    const retrieveCheck = await verifyMemoryStep({
+      name: 'retrieve',
+      markers: schedulerConfig.memoryPolicy.retrieveSuccessMarkers,
+      artifacts: schedulerConfig.memoryPolicy.retrieveArtifacts,
+      outputText: memoryOutput,
+      sinceMs: runStartMs,
+    });
+    const storeCheck = await verifyMemoryStep({
+      name: 'store',
+      markers: schedulerConfig.memoryPolicy.storeSuccessMarkers,
+      artifacts: schedulerConfig.memoryPolicy.storeArtifacts,
+      outputText: memoryOutput,
+      sinceMs: runStartMs,
+    });
+
+    const missingSteps = [retrieveCheck, storeCheck].filter((step) => !step.complete).map((step) => step.name);
+    if (missingSteps.length && schedulerConfig.memoryPolicy.mode === 'required') {
+      await writeLog({
+        cadence,
+        agent: selectedAgent,
+        status: 'failed',
+        reason: 'Required memory steps not verified',
+        detail: `Missing evidence for: ${missingSteps.join(', ')}`,
+      });
+      process.exit(1);
+    }
+
+    if (missingSteps.length) {
+      console.warn(`[scheduler] Optional memory evidence missing for ${missingSteps.join(', ')}.`);
     }
 
     const artifactCheck = await runCommand('node', [

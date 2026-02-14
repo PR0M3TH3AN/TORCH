@@ -30,7 +30,13 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 3. **Capture reusable failures and unresolved issues**:
    - Record reusable failures in `docs/agent-handoffs/incidents/`
    - Record active unresolved reproducible items in `KNOWN_ISSUES.md`
-4. **Publish lock completion only after validation passes and before writing success logs**:
+4. **Execute memory retrieval before implementation begins**:
+   - Run configured memory retrieval workflow before prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.retrieveCommand`)
+   - Capture explicit evidence of retrieval with output markers and/or created artifact files
+5. **Store memory after implementation and before completion publish**:
+   - Run configured memory storage workflow after prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.storeCommand`)
+   - Persist summary/decision memory and emit verifiable markers/artifacts
+6. **Publish lock completion only after validation passes and before writing success logs**:
    - Run `npm run lock:complete -- --agent <agent-name> --cadence <cadence>` (or equivalent `complete`) successfully
    - If any validation command exits non-zero, do **not** call `lock:complete`; write `_failed.md` with the validation failure reason and stop
    - Only after completion publish succeeds may the agent write final `*_completed.md` log files
@@ -125,12 +131,19 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
 8. Execute `<prompt_dir>/<prompt-file>` end-to-end.
 
-9. Run repository checks (for example: `npm run lint`).
+9. Confirm memory contract completion:
+
+   - Memory retrieval evidence must exist for this run (output marker and/or artifact file).
+   - Memory storage evidence must exist for this run (output marker and/or artifact file).
+   - If `scheduler.memoryPolicyByCadence.<cadence>.mode = required`, missing evidence is a hard failure.
+   - If mode is `optional`, log warning context and continue.
+
+10. Run repository checks (for example: `npm run lint`).
 
    - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
-   - When step 9 fails, step 10 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
+   - When step 10 fails, step 11 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
 
-10. Publish completion before writing final success log:
+11. Publish completion before writing final success log:
 
     ```bash
     AGENT_PLATFORM=<platform> \
@@ -139,15 +152,15 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
     (Equivalent invocation is allowed: `torch-lock complete --agent <agent-name> --cadence <cadence>`.)
 
-    - Exit `0`: completion published successfully; continue to step 11.
+    - Exit `0`: completion published successfully; continue to step 12.
     - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry npm run lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
 
-11. Create final task log only after step 10 succeeds:
+12. Create final task log only after step 11 succeeds:
 
     - `_completed.md` MUST be created only after completion publish succeeds.
-    - `_failed.md` is required when step 9 or step 10 fails, and should include the failure reason and next retry action.
+    - `_failed.md` is required when step 10 or step 11 fails, and should include the failure reason and next retry action.
 
-12. Commit and push.
+13. Commit and push.
 
 Worked post-task example (MUST order):
 
