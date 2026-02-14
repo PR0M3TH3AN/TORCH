@@ -2,6 +2,25 @@
 
 Use this document for all scheduler runs.
 
+
+## Shared Agent Run Contract (Required for All Spawned Agents)
+
+Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this contract:
+
+1. **Read baseline policy files before implementation**:
+   - `AGENTS.md`
+   - `CLAUDE.md`
+   - `KNOWN_ISSUES.md`
+   - `docs/agent-handoffs/README.md`
+   - Recent notes in `docs/agent-handoffs/learnings/` and `docs/agent-handoffs/incidents/`
+2. **Update run artifacts** in `src/context/`, `src/todo/`, `src/decisions/`, and `src/test_logs/` during the run, or explicitly document why each artifact update is not needed for that run.
+3. **Capture reusable failures and unresolved issues**:
+   - Record reusable failures in `docs/agent-handoffs/incidents/`
+   - Record active unresolved reproducible items in `KNOWN_ISSUES.md`
+4. **Publish lock completion before writing success logs**:
+   - Run `npm run lock:complete -- --agent <agent-name> --cadence <cadence>` (or equivalent `complete`) successfully
+   - Only after completion publish succeeds may the agent write final `*_completed.md` log files
+
 ## Numbered MUST Procedure
 
 1. Set cadence variables before any command:

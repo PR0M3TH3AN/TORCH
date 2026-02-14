@@ -2,6 +2,8 @@
 
 Use `src/prompts/scheduler-flow.md` as the authoritative scheduler procedure.
 
+> **Shared contract (required):** Ensure each selected prompt run enforces [`Scheduler Flow → Shared Agent Run Contract`](scheduler-flow.md#shared-agent-run-contract-required-for-all-spawned-agents).
+
 Canonical roster source: `src/prompts/roster.json` (`weekly` key).
 
 ## Weekly Cadence Configuration
