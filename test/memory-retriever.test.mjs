@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { filterAndRankMemories } from '../src/services/memory/retriever.js';
-import { formatMemoriesForPrompt } from '../src/services/memory/formatter.js';
+import {
+  formatMemoriesForPrompt,
+  isMemoryRetrievalEnabled,
+  renderPromptWithMemoryContext,
+} from '../src/services/memory/formatter.js';
 
 function createMemory(overrides = {}) {
   return {
@@ -126,4 +130,69 @@ test('formatMemoriesForPrompt returns prompt blocks and enforces token budget tr
   if (result.blocks.length === 1) {
     assert.equal(result.truncated, true);
   }
+});
+
+test('isMemoryRetrievalEnabled supports global toggle and agent canary list', () => {
+  assert.equal(isMemoryRetrievalEnabled('agent-a', { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }), true);
+  assert.equal(isMemoryRetrievalEnabled('agent-a', { TORCH_MEMORY_RETRIEVAL_ENABLED: 'false' }), false);
+  assert.equal(
+    isMemoryRetrievalEnabled('agent-a', { TORCH_MEMORY_RETRIEVAL_ENABLED: 'agent-a,agent-b' }),
+    true,
+  );
+  assert.equal(
+    isMemoryRetrievalEnabled('agent-c', { TORCH_MEMORY_RETRIEVAL_ENABLED: 'agent-a,agent-b' }),
+    false,
+  );
+});
+
+test('renderPromptWithMemoryContext injects bounded memory block before base prompt', async () => {
+  const memories = [
+    createMemory({
+      id: 'm-ctx',
+      summary: 'Known issue in deploy pipeline',
+      content: 'Retry build after rotating temporary token',
+      created_at: 1_700_000_000_000,
+      importance: 0.91,
+      tags: ['deploy', 'incident'],
+    }),
+  ];
+
+  const calls = [];
+  const usageUpdates = [];
+  const memoryService = {
+    async getRelevantMemories(params) {
+      calls.push(params);
+      return memories;
+    },
+    async updateMemoryUsage(id, lastSeen) {
+      usageUpdates.push({ id, lastSeen });
+    },
+  };
+
+  const output = await renderPromptWithMemoryContext({
+    basePrompt: 'Base final prompt body',
+    userRequest: 'Please debug deployment failure',
+    agentContext: { branch: 'main', tool: 'torch' },
+    agent_id: 'agent-a',
+    memoryService,
+    retrievalK: 1,
+    tokenBudget: 60,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'agent-a,agent-b' },
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].agent_id, 'agent-a');
+  assert.equal(calls[0].k, 1);
+  assert.match(calls[0].query, /Please debug deployment failure/);
+  assert.match(calls[0].query, /"branch":"main"/);
+
+  const headerIndex = output.indexOf('[CONTEXT — Relevant memories]');
+  const baseIndex = output.indexOf('Base final prompt body');
+  assert.ok(headerIndex >= 0);
+  assert.ok(baseIndex > headerIndex);
+  assert.ok(output.includes('[m-ctx,'));
+
+  assert.equal(usageUpdates.length, 1);
+  assert.equal(usageUpdates[0].id, 'm-ctx');
+  assert.equal(typeof usageUpdates[0].lastSeen, 'number');
 });

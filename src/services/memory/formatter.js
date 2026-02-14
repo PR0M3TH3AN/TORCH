@@ -1,6 +1,7 @@
 const DEFAULT_TOKEN_BUDGET = 1000;
 const DEFAULT_MAX_SUMMARY_CHARS = 240;
 const DEFAULT_MAX_CONTEXT_CHARS = 320;
+const MEMORY_CONTEXT_HEADER = '[CONTEXT — Relevant memories]';
 
 function clampString(value, maxChars) {
   if (typeof value !== 'string') return '';
@@ -103,4 +104,115 @@ export function formatMemoriesForPrompt(memories, options = {}) {
     usedTokens,
     truncated: blocks.length < Math.min(k, memories.length),
   };
+}
+
+function toContextString(agentContext) {
+  if (typeof agentContext === 'string') {
+    return agentContext.trim();
+  }
+
+  if (agentContext == null) {
+    return '';
+  }
+
+  if (Array.isArray(agentContext)) {
+    return agentContext.map((value) => String(value)).join('\n').trim();
+  }
+
+  if (typeof agentContext === 'object') {
+    try {
+      return JSON.stringify(agentContext);
+    } catch {
+      return String(agentContext).trim();
+    }
+  }
+
+  return String(agentContext).trim();
+}
+
+/**
+ * Supports safe rollout and canarying with one env var:
+ * - true/1/on/all => enabled for all agents
+ * - false/0/off/no/empty => disabled
+ * - comma-separated agent ids => enabled only for matching ids
+ *
+ * @param {string} agentId
+ * @param {Record<string, string | undefined>} [env]
+ */
+export function isMemoryRetrievalEnabled(agentId, env = process.env) {
+  const raw = String(env.TORCH_MEMORY_RETRIEVAL_ENABLED ?? '').trim();
+  if (!raw) return false;
+
+  const normalized = raw.toLowerCase();
+  if (['0', 'false', 'off', 'no', 'disabled'].includes(normalized)) return false;
+  if (['1', 'true', 'on', 'yes', 'enabled', 'all'].includes(normalized)) return true;
+
+  const allowList = raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (allowList.length === 0) return false;
+  return allowList.includes(agentId);
+}
+
+/**
+ * Builds a final prompt with retrieved memory context inserted ahead of the base prompt.
+ *
+ * @param {{
+ *  basePrompt: string,
+ *  userRequest: string,
+ *  agentContext?: unknown,
+ *  agent_id: string,
+ *  memoryService: { getRelevantMemories: (params: { agent_id: string, query: string, k?: number }) => Promise<import('./schema.js').MemoryRecord[]> | import('./schema.js').MemoryRecord[] },
+ *  retrievalK?: number,
+ *  tokenBudget?: number,
+ *  env?: Record<string, string | undefined>
+ * }} params
+ */
+export async function renderPromptWithMemoryContext(params) {
+  const {
+    basePrompt,
+    userRequest,
+    agentContext,
+    agent_id,
+    memoryService,
+    retrievalK = 5,
+    tokenBudget = 320,
+    env = process.env,
+  } = params;
+
+  if (!isMemoryRetrievalEnabled(agent_id, env)) {
+    return String(basePrompt ?? '');
+  }
+
+  const requestText = String(userRequest ?? '').trim();
+  const contextText = toContextString(agentContext);
+  const query = [requestText, contextText].filter(Boolean).join('\n\n');
+
+  if (!query || !memoryService?.getRelevantMemories) {
+    return String(basePrompt ?? '');
+  }
+
+  const memories = await memoryService.getRelevantMemories({
+    agent_id,
+    query,
+    k: retrievalK,
+  });
+
+  if (memoryService?.updateMemoryUsage) {
+    const now = Date.now();
+    await Promise.all((memories ?? []).map((memory) => memoryService.updateMemoryUsage(memory.id, now)));
+  }
+
+  const rendered = formatMemoriesForPrompt(memories ?? [], {
+    k: retrievalK,
+    tokenBudget,
+  });
+
+  if (!rendered.text) {
+    return String(basePrompt ?? '');
+  }
+
+  return `${MEMORY_CONTEXT_HEADER}\n${rendered.text}\n\n${String(basePrompt ?? '')}`;
 }
