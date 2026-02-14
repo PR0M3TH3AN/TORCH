@@ -50,6 +50,7 @@ DAILY WORKFLOW (run each day)
 1. **Preflight**
    - Ensure default branch.
    - Pull latest and confirm artifacts exist.
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - Record environment: Node, package manager, OS, browser versions if relevant.
 
 2. **Search & Inventory**

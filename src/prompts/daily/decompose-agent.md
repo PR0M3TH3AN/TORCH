@@ -244,6 +244,7 @@ FIRST-RUN CHECKLIST (execute now)
 
 1. Checkout <default-branch> & record baseline:
 
+   - Read `AGENTS.md` and `CLAUDE.md`.
    ```
    git checkout <default-branch>
    git pull --ff-only

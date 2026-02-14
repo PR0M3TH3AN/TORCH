@@ -43,6 +43,7 @@ DETAILED WORKFLOW (step-by-step)
      git checkout <default-branch>
      git pull --ff-only
      ```
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - Record baseline:
      - `git rev-parse HEAD` (commit SHA)
      - `node -v`, `npm -v`

@@ -21,8 +21,9 @@ Mission: identify external protocol/spec dependencies used by this codebase, map
 
 ## Runbook
 
-1. Scan the repo for protocol/spec references and external formats.
-2. Update `PROTOCOL_INVENTORY.md` with concrete code pointers.
+1. Read `AGENTS.md` and `CLAUDE.md`.
+2. Scan the repo for protocol/spec references and external formats.
+3. Update `PROTOCOL_INVENTORY.md` with concrete code pointers.
 3. Validate behavior with targeted unit/integration tests.
 4. Classify gaps and propose minimal remediations.
 5. Publish a dated report: `protocol-report-YYYY-MM-DD.md`.

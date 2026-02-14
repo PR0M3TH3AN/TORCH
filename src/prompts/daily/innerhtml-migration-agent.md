@@ -28,6 +28,7 @@ Commit these artifacts in the PR branch so reviewers can reproduce.
 WORKFLOW — top-level steps (one file only)
 1. **Preflight**
    - `git checkout <default-branch> && git pull --ff-only --ff-only`
+   - Read `AGENTS.md` and `CLAUDE.md`.
    - `node -v` and `npm -v` recorded in `context/CONTEXT_<timestamp>.md`
    - Run the innerHTML report:
      ```

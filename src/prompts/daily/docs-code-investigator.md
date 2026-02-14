@@ -202,7 +202,8 @@ EXAMPLE OUTPUT (minimal)
 ===============================================================================
 FIRST-RUN CHECKLIST
 1. `git checkout <default-branch> && git pull --ff-only --ff-only`
-2. Produce candidate list:
+2. Read `AGENTS.md` and `CLAUDE.md`.
+3. Produce candidate list:
 ```
 
 git ls-files 'js/**/*.js' | xargs -n1 wc -l | sort -rn | head -n 20

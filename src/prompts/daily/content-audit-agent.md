@@ -242,8 +242,9 @@ QUALITY BAR & BEHAVIOR
 
 ===============================================================================
 FIRST-RUN CHECKLIST (practical)
-1. Create files in `context/`, `todo/`, `decisions/`, `test_logs/`.
-2. Produce inventory: `artifacts/docs-audit/YYYY-MM-DD/inventory.md`.
+1. Read `AGENTS.md` and `CLAUDE.md`.
+2. Create files in `context/`, `todo/`, `decisions/`, `test_logs/`.
+3. Produce inventory: `artifacts/docs-audit/YYYY-MM-DD/inventory.md`.
 3. Run verification for highest-priority pages (upload/contribute).
 4. Update `/content` pages and prepare diff.
 5. Validate end-to-end for changed pages and capture artifacts.

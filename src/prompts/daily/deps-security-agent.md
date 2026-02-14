@@ -48,8 +48,9 @@ Record chosen manager and versions (`node -v`, `npm -v` / `pnpm -v` / `yarn -v`)
 DAILY WORKFLOW (run every day / scheduled)
 A. Bootstrap & baseline
   1. `git checkout <default-branch> && git pull --ff-only`
-  2. Record environment: `node -v` and package-manager version(s).
-  3. Ensure a clean workspace and no local changes.
+  2. Read `AGENTS.md` and `CLAUDE.md`.
+  3. Record environment: `node -v` and package-manager version(s).
+  4. Ensure a clean workspace and no local changes.
 
 B. Clean install
   - npm: `npm ci`
