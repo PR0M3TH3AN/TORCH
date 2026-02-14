@@ -178,6 +178,15 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
 
   if (conflicting.length > 0) {
     const earliest = conflicting.sort((a, b) => a.createdAt - b.createdAt)[0];
+
+    // Check if it is a completed task
+    if (earliest.status === 'completed') {
+       error(`LOCK DENIED: Task already completed by event ${earliest.eventId}`);
+       log('LOCK_STATUS=denied');
+       log('LOCK_REASON=already_completed');
+       throw new ExitError(3, 'Task already completed');
+    }
+
     error(
       `LOCK DENIED: ${agent} already locked by event ${earliest.eventId} ` +
         `(created ${earliest.createdAtIso}, platform: ${earliest.platform})`,
@@ -300,13 +309,19 @@ export async function cmdList(cadence, deps = {}) {
     for (const lock of sorted) {
       const age = nowUnix() - lock.createdAt;
       const ageMin = Math.round(age / 60);
-      const remaining = lock.expiresAt ? lock.expiresAt - nowUnix() : null;
-      const remainMin = remaining ? Math.round(remaining / 60) : '?';
+
+      let remainMin = '?';
+      if (lock.status === 'completed') {
+          remainMin = 'done';
+      } else if (lock.expiresAt) {
+          const remaining = lock.expiresAt - nowUnix();
+          remainMin = Math.round(remaining / 60);
+      }
 
       log(
         `  ${(lock.agent ?? 'unknown').padEnd(30)} ` +
           `age: ${String(ageMin).padStart(4)}m  ` +
-          `ttl: ${String(remainMin).padStart(4)}m  ` +
+          `ttl: ${String(remainMin).padStart(4)}  ` +
           `platform: ${lock.platform ?? '?'}  ` +
           `event: ${lock.eventId?.slice(0, 12)}...`,
       );
@@ -327,6 +342,95 @@ export async function cmdList(cadence, deps = {}) {
   }
 }
 
+export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
+  const {
+    getRelays = _getRelays,
+    getNamespace = _getNamespace,
+    queryLocks = _queryLocks,
+    publishLock = _publishLock,
+    generateSecretKey = _generateSecretKey,
+    getPublicKey = _getPublicKey,
+    finalizeEvent = _finalizeEvent,
+    getDateStr = todayDateStr,
+    log = console.log,
+    error = console.error
+  } = deps;
+
+  const relays = getRelays();
+  const namespace = getNamespace();
+  const dateStr = getDateStr();
+  const now = nowUnix();
+
+  error(`Completing task: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
+  error(`Relays: ${relays.join(', ')}`);
+
+  // 1. Find existing lock
+  const locks = await queryLocks(relays, cadence, dateStr, namespace);
+  const myLock = locks.find((l) => l.agent === agent);
+
+  if (!myLock) {
+    error(`ERROR: No active lock found for agent "${agent}" on ${dateStr}.`);
+    error(`Cannot complete a task that is not locked or has already expired.`);
+    throw new ExitError(1, 'No active lock found');
+  }
+
+  if (myLock.status === 'completed') {
+    error(`Task is already marked as completed (event ${myLock.eventId}).`);
+    log('LOCK_STATUS=completed');
+    return { status: 'completed', eventId: myLock.eventId };
+  }
+
+  // 2. Build completion event
+  const startedAtIso = myLock.createdAtIso;
+
+  error('Step 1: Generating completion event...');
+  const sk = generateSecretKey();
+  const pk = getPublicKey(sk);
+
+  const event = finalizeEvent(
+    {
+      kind: KIND_APP_DATA,
+      created_at: now,
+      tags: [
+        ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
+        ['t', `${namespace}-agent-lock`],
+        ['t', `${namespace}-lock-${cadence}`],
+        ['t', `${namespace}-lock-${cadence}-${dateStr}`],
+        // No expiration tag -> permanent
+      ],
+      content: JSON.stringify({
+        agent,
+        cadence,
+        status: 'completed',
+        namespace,
+        date: dateStr,
+        platform: process.env.AGENT_PLATFORM || 'unknown',
+        startedAt: startedAtIso,
+        completedAt: new Date(now * 1000).toISOString(),
+      }),
+    },
+    sk,
+  );
+
+  error(`  Event ID: ${event.id}`);
+
+  if (dryRun) {
+    error('Step 2: [DRY RUN] Skipping publish — event built but not sent');
+  } else {
+    error('Step 2: Publishing completion event...');
+    await publishLock(relays, event);
+    error('  Published successfully.');
+  }
+
+  log('LOCK_STATUS=completed');
+  log(`LOCK_EVENT_ID=${event.id}`);
+  log(`LOCK_PUBKEY=${pk}`);
+  log(`LOCK_AGENT=${agent}`);
+  log(`LOCK_CADENCE=${cadence}`);
+  log(`LOCK_DATE=${dateStr}`);
+
+  return { status: 'completed', eventId: event.id };
+}
 
 function parseArgs(argv) {
   const args = {
@@ -376,12 +480,13 @@ function usage() {
   console.error(`Usage: torch-lock <command> [options]
 
 Commands:
-  check  --cadence <daily|weekly>                  Check locked agents (JSON)
-  lock   --agent <name> --cadence <daily|weekly>   Claim a lock
-  list   [--cadence <daily|weekly>]                Print active lock table
+  check     --cadence <daily|weekly>               Check locked agents (JSON)
+  lock      --agent <name> --cadence <daily|weekly> Claim a lock
+  complete  --agent <name> --cadence <daily|weekly> Mark task as completed (permanent)
+  list      [--cadence <daily|weekly>]             Print active lock table
   dashboard [--port <port>]                        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
-  init   [--force]                                 Initialize torch/ directory in current project
-  update [--force]                                 Update torch/ configuration (backups, merges)
+  init      [--force]                              Initialize torch/ directory in current project
+  update    [--force]                              Update torch/ configuration (backups, merges)
 
 Options:
   --dry-run       Build and sign the event but do not publish
@@ -435,6 +540,19 @@ export async function main(argv) {
           throw new ExitError(1, 'Missing cadence');
         }
         await cmdLock(args.agent, args.cadence, args.dryRun);
+        break;
+      }
+
+      case 'complete': {
+        if (!args.agent) {
+          console.error('ERROR: --agent <name> is required for complete');
+          throw new ExitError(1, 'Missing agent');
+        }
+        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for complete`);
+          throw new ExitError(1, 'Missing cadence');
+        }
+        await cmdComplete(args.agent, args.cadence, args.dryRun);
         break;
       }
 
