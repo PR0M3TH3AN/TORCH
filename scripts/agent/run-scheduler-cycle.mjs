@@ -421,10 +421,15 @@ function toYamlScalar(value) {
   return `'${str.replace(/'/g, "''")}'`;
 }
 
-async function writeLog({ cadence, agent, status, reason, detail, metadata = {} }) {
+async function writeLog({ cadence, agent, status, reason, detail, platform, metadata = {} }) {
   const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
   await fs.mkdir(logDir, { recursive: true });
   const file = `${ts()}__${agent}__${status}.md`;
+  const mergedMetadata = {
+    platform: platform || process.env.AGENT_PLATFORM || 'unknown',
+    ...metadata,
+  };
+
   const body = [
     '---',
     `cadence: ${cadence}`,
@@ -432,7 +437,7 @@ async function writeLog({ cadence, agent, status, reason, detail, metadata = {} 
     `status: ${status}`,
     `created_at: ${new Date().toISOString()}`,
     `timestamp: ${new Date().toISOString()}`,
-    ...Object.entries(metadata)
+    ...Object.entries(mergedMetadata)
       .filter(([, value]) => value !== undefined && value !== null && value !== '')
       .map(([key, value]) => `${key}: ${toYamlScalar(value)}`),
     '---',
@@ -441,7 +446,7 @@ async function writeLog({ cadence, agent, status, reason, detail, metadata = {} 
     '',
     `- reason: ${reason}`,
     detail ? `- detail: ${detail}` : null,
-    ...Object.entries(metadata)
+    ...Object.entries(mergedMetadata)
       .filter(([, value]) => value !== undefined && value !== null && value !== '')
       .map(([key, value]) => `- ${key}: ${value}`),
     '',
@@ -483,6 +488,7 @@ async function main() {
           cadence,
           agent: 'scheduler',
           status: 'failed',
+          platform,
           reason: 'Lock backend unavailable preflight',
           detail: `Preflight failed (${preflight.failureCategory}). Retry scheduler after verifying relay connectivity, relay URLs, and DNS/network status.`,
           metadata: {
@@ -531,6 +537,7 @@ async function main() {
         cadence,
         agent: 'scheduler',
         status: 'failed',
+        platform,
         reason: ALL_EXCLUDED_REASON,
       });
       process.exit(1);
@@ -559,6 +566,7 @@ async function main() {
         cadence,
         agent: selectedAgent,
         status: 'failed',
+        platform,
         reason: 'Lock backend error',
         detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). Retry ${lockCommand} after verifying relay connectivity, relay URLs, and DNS/network status.`,
         metadata: {
@@ -578,6 +586,7 @@ async function main() {
         cadence,
         agent: selectedAgent,
         status: 'failed',
+        platform,
         reason: 'Failed to acquire lock',
       });
       process.exit(lockResult.code);
@@ -594,7 +603,7 @@ async function main() {
       });
       outputChunks.push(retrieveResult.stdout, retrieveResult.stderr);
       if (retrieveResult.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Memory retrieval command failed', detail: schedulerConfig.memoryPolicy.retrieveCommand });
+        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Memory retrieval command failed', detail: schedulerConfig.memoryPolicy.retrieveCommand });
         process.exit(retrieveResult.code);
       }
     }
@@ -605,14 +614,14 @@ async function main() {
       });
       outputChunks.push(handoff.stdout, handoff.stderr);
       if (handoff.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail: 'Handoff callback failed.' });
+        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Prompt/handoff execution failed', detail: 'Handoff callback failed.' });
         process.exit(handoff.code);
       }
     } else {
       const detail = schedulerConfig.missingHandoffCommandForMode
         ? 'Missing scheduler handoff command for non-interactive run. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.'
         : 'No handoff callback configured. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.';
-      await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail });
+      await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Prompt/handoff execution failed', detail });
       process.exit(1);
     }
 
@@ -622,7 +631,7 @@ async function main() {
       });
       outputChunks.push(storeResult.stdout, storeResult.stderr);
       if (storeResult.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Memory storage command failed', detail: schedulerConfig.memoryPolicy.storeCommand });
+        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Memory storage command failed', detail: schedulerConfig.memoryPolicy.storeCommand });
         process.exit(storeResult.code);
       }
     }
@@ -649,6 +658,7 @@ async function main() {
         cadence,
         agent: selectedAgent,
         status: 'failed',
+        platform,
         reason: 'Required memory steps not verified',
         detail: `Missing evidence for: ${missingSteps.join(', ')}`,
       });
@@ -679,6 +689,7 @@ async function main() {
         cadence,
         agent: selectedAgent,
         status: 'failed',
+        platform,
         reason: 'Missing required run artifacts',
         detail,
       });
@@ -690,7 +701,7 @@ async function main() {
       if (!parts.length) continue;
       const result = await runCommand(parts[0], parts.slice(1));
       if (result.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Validation failed', detail: validation });
+        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Validation failed', detail: validation });
         process.exit(result.code);
       }
     }
@@ -706,12 +717,13 @@ async function main() {
         cadence,
         agent: selectedAgent,
         status: 'failed',
+        platform,
         reason: `Completion publish failed. Retry npm run lock:complete -- --agent ${selectedAgent} --cadence ${cadence} after verifying relay connectivity`,
       });
       process.exit(completeResult.code);
     }
 
-    await writeLog({ cadence, agent: selectedAgent, status: 'completed', reason: 'Scheduler cycle completed successfully' });
+    await writeLog({ cadence, agent: selectedAgent, status: 'completed', platform, reason: 'Scheduler cycle completed successfully' });
     process.exit(0);
   }
 }

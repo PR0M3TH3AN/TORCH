@@ -24,3 +24,13 @@ Track only **active, reproducible, unresolved** issues.
 - **Workaround:** Run `npm run validate:scheduler` separately and inspect output, or ignore errors for now.
 - **Impact:** CI/local testing blocked.
 - **Last verified:** 2026-02-14
+
+### Recurring scheduler lock backend failures in recent task logs
+- **Status:** Monitoring
+- **Area:** Runtime
+- **Symptom:** Multiple scheduler runs fail with `Lock backend error` before prompt handoff/validation.
+- **Trigger/Conditions:** Running scheduler cycles when relay connectivity is unstable or lock backend operations time out; observed in both `daily` and `weekly` task logs.
+- **Workaround:** Retry with explicit platform and inspect reliability report output (`npm run report:lock-reliability`), then validate relay health (`node scripts/agent/check-relay-health.mjs --cadence <daily|weekly>`) before rerunning scheduler.
+- **Impact:** Scheduled agent execution is skipped for affected cycles until lock acquisition succeeds.
+- **Last verified:** 2026-02-14
+
