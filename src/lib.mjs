@@ -3,17 +3,19 @@
 // TORCH — Task Orchestration via Relay-Coordinated Handoff
 // Generic Nostr-based task locking for multi-agent development.
 
-import fs from 'node:fs';
-import path from 'node:path';
-import http from 'node:http';
-import { fileURLToPath } from 'node:url';
-import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
-import { SimplePool } from 'nostr-tools/pool';
 import { useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
-import { loadTorchConfig } from './torch-config.mjs';
+import {
+  DEFAULT_DASHBOARD_PORT,
+  VALID_CADENCES,
+} from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
-import { DEFAULT_DASHBOARD_PORT, RACE_CHECK_DELAY_MS } from './constants.mjs';
+import { publishLock, parseLockEvent, queryLocks } from './lock-ops.mjs';
+import { cmdDashboard } from './dashboard.mjs';
+import { cmdCheck } from './cmd-check.mjs';
+import { cmdLock } from './cmd-lock.mjs';
+import { cmdList } from './cmd-list.mjs';
+import { ExitError } from './errors.mjs';
 
 useWebSocketImplementation(WebSocket);
 

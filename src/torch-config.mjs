@@ -1,5 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  DEFAULT_RELAYS,
+  DEFAULT_TTL,
+  DEFAULT_NAMESPACE,
+  DEFAULT_QUERY_TIMEOUT_MS,
+} from './constants.mjs';
 
 const DEFAULT_CONFIG_PATH = 'torch-config.json';
 
@@ -27,27 +33,14 @@ export function getTorchConfigPath() {
   return path.resolve(process.cwd(), DEFAULT_CONFIG_PATH);
 }
 
-export function loadTorchConfig() {
-  if (cachedConfig) return cachedConfig;
-
-  const configPath = getTorchConfigPath();
-  let raw = {};
-
-  if (fs.existsSync(configPath)) {
-    try {
-      raw = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    } catch (err) {
-      throw new Error(`Failed to parse ${configPath}: ${err.message}`, { cause: err });
-    }
-  }
-
+export function parseTorchConfig(raw, configPath = null) {
   const nostrLock = raw.nostrLock || {};
   const dashboard = raw.dashboard || {};
   const scheduler = raw.scheduler || {};
   const firstPromptByCadence = scheduler.firstPromptByCadence || {};
   const paused = scheduler.paused || {};
 
-  cachedConfig = {
+  return {
     configPath,
     raw,
     nostrLock: {
@@ -84,6 +77,68 @@ export function loadTorchConfig() {
       },
     },
   };
+}
 
+/** @internal */
+export function _resetTorchConfigCache() {
+  cachedConfig = null;
+}
+
+export function loadTorchConfig(fileSystem = fs) {
+  if (cachedConfig) return cachedConfig;
+
+  const configPath = getTorchConfigPath();
+  let raw = {};
+
+  if (fileSystem.existsSync(configPath)) {
+    try {
+      raw = JSON.parse(fileSystem.readFileSync(configPath, 'utf8'));
+    } catch (err) {
+      throw new Error(`Failed to parse ${configPath}: ${err.message}`, { cause: err });
+    }
+  }
+
+  cachedConfig = parseTorchConfig(raw, configPath);
   return cachedConfig;
+}
+
+export function getRelays() {
+  const config = loadTorchConfig();
+  const envRelays = process.env.NOSTR_LOCK_RELAYS;
+  if (envRelays) {
+    return envRelays.split(',').map((r) => r.trim()).filter(Boolean);
+  }
+  if (config.nostrLock.relays?.length) {
+    return config.nostrLock.relays;
+  }
+  return DEFAULT_RELAYS;
+}
+
+export function getNamespace() {
+  const config = loadTorchConfig();
+  const namespace = (process.env.NOSTR_LOCK_NAMESPACE || config.nostrLock.namespace || DEFAULT_NAMESPACE).trim();
+  return namespace || DEFAULT_NAMESPACE;
+}
+
+export function getTtl() {
+  const config = loadTorchConfig();
+  const envTtl = process.env.NOSTR_LOCK_TTL;
+  if (envTtl) {
+    const parsed = parseInt(envTtl, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  }
+  if (config.nostrLock.ttlSeconds) {
+    return config.nostrLock.ttlSeconds;
+  }
+  return DEFAULT_TTL;
+}
+
+export function getQueryTimeoutMs() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS;
+  if (envValue) {
+    const parsed = parseInt(envValue, 10);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
 }
