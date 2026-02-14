@@ -63,6 +63,7 @@ a { color: inherit; }
 .bg-accent-strong { background-color: var(--accent-strong); }
 .bg-success { background-color: var(--success); }
 .bg-success\/10 { background-color: rgb(53 196 124 / 0.1); }
+.bg-success\/5 { background-color: rgb(53 196 124 / 0.05); }
 .bg-warning { background-color: var(--warning); }
 .bg-warning\/10 { background-color: rgb(245 184 75 / 0.1); }
 .bg-danger { background-color: var(--danger); }
@@ -87,6 +88,8 @@ a { color: inherit; }
 .border-border { border-color: var(--border); }
 .border-border\/50 { border-color: rgb(42 52 86 / 0.5); }
 .border-border\/30 { border-color: rgb(42 52 86 / 0.3); }
+.border-success { border-color: var(--success); }
+.border-success\/30 { border-color: rgb(53 196 124 / 0.3); }
 
 .rounded-md { border-radius: 0.375rem; }
 .rounded-lg { border-radius: 0.5rem; }
