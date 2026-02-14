@@ -117,7 +117,7 @@ WEEKLY WORKFLOW (mandatory)
       - branch/commit/PR conventions
       - any concurrency-related guidance or known issues
       - security constraints
-  - Read `docs/KNOWN_ISSUES.md` for pre-existing race-related failures.
+  - Read `KNOWN_ISSUES.md` for pre-existing race-related failures.
   - Confirm base branch per policy (often `<default-branch>`).
   - Record environment:
       - OS, Node version, browser version (if relevant).

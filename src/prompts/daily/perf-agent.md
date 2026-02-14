@@ -45,7 +45,7 @@ Commit early and often:
 - `INITIAL_BASELINE.md` — baseline metrics (login time, decrypt queue size, relay latencies, webtorrent count).
 - `perf/` (optional) — scripts and small helpers.
 
-Read `AGENTS.md` and `docs/KNOWN_ISSUES.md` before edits.
+Read `AGENTS.md` and `KNOWN_ISSUES.md` before edits.
 
 -------------------------------------------------------------------------------
 DAILY WORKFLOW (run each day)
