@@ -10,6 +10,11 @@
   "files": [
     "bin/",
     "src/lib.mjs",
+    "src/constants.mjs",
+    "src/lock-ops.mjs",
+    "src/ops.mjs",
+    "src/dashboard.mjs",
+    "src/roster.mjs",
     "src/torch-config.mjs",
     "src/prompts/",
     "src/docs/",

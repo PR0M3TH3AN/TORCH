@@ -16,6 +16,7 @@ import {
   DEFAULT_DASHBOARD_PORT,
   RACE_CHECK_DELAY_MS,
   VALID_CADENCES,
+  KIND_APP_DATA,
 } from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
 import { getRoster } from './roster.mjs';
@@ -130,7 +131,7 @@ export async function cmdLock(agent, cadence, dryRun = false) {
   console.error('Step 3: Building lock event...');
   const event = finalizeEvent(
     {
-      kind: 30078,
+      kind: KIND_APP_DATA,
       created_at: now,
       tags: [
         ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
