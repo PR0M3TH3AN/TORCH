@@ -9,7 +9,7 @@ TORCH is a decentralized task-locking protocol for multi-agent software developm
 node src/nostr-lock.mjs check --cadence daily
 
 # Claim a task
-AGENT_PLATFORM=codex node src/nostr-lock.mjs lock --agent docs-agent --cadence daily
+AGENT_PLATFORM=codex node src/nostr-lock.mjs lock --agent documentation-agent --cadence daily
 
 # List all active locks
 node src/nostr-lock.mjs list
