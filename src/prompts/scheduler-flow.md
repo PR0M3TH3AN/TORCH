@@ -78,7 +78,21 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    mkdir -p <log_dir>
    ```
 
-5. Find latest cadence log file, derive the previous agent, then choose the next roster agent not in exclusion set:
+5. When lock health preflight is enabled (`scheduler.lockHealthPreflight: true` or env `SCHEDULER_LOCK_HEALTH_PREFLIGHT=1`), verify relay/query health before selecting an agent or calling `lock:lock`:
+
+   ```bash
+   node scripts/agent/check-relay-health.mjs --cadence <cadence>
+   ```
+
+   - Escape hatch: set `SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT=1` to skip this check for local/offline workflows.
+   - If preflight exits non-zero, write `_failed.md` with reason `Lock backend unavailable preflight` and include:
+     - `relay_list`
+     - `preflight_failure_category`
+     - `preflight_stderr_excerpt`
+     - `preflight_stdout_excerpt`
+   - Stop the run immediately when preflight fails.
+
+6. Find latest cadence log file, derive the previous agent, then choose the next roster agent not in exclusion set:
 
    ```bash
    ls -1 <log_dir> | sort | tail -n 1
@@ -102,7 +116,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      - Iterate offsets `0..len(roster)-1`.
      - Candidate index: `(start_index + offset) mod len(roster)` (wrap-around required).
      - Choose the first candidate whose agent is **not** in `excluded`.
-   - If no candidate is eligible, execute step 6.
+   - If no candidate is eligible, execute step 7.
 
    Worked examples:
 
@@ -122,10 +136,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      - First candidate is `bug-reproducer-agent` and is eligible.
      - **Selection result: `bug-reproducer-agent`.**
 
-6. If every roster agent is excluded, write a `_failed.md` log with:
+7. If every roster agent is excluded, write a `_failed.md` log with:
    `All roster tasks currently claimed by other agents` and stop.
 
-7. Claim selected agent:
+8. Claim selected agent:
 
    ```bash
    AGENT_PLATFORM=<platform> \
@@ -141,12 +155,12 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      - `lock_stdout_excerpt` (redacted stdout snippet)
    - Keep generic reason text for compatibility, but append actionable retry guidance in `detail` using the command from `lock_command`.
 
-8. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
+9. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
 
    - Scheduler automation runs `scheduler.handoffCommandByCadence.<cadence>` with environment variables for cadence/agent/prompt path.
    - If no handoff command is configured for the cadence, write `_failed.md` and stop.
 
-9. Confirm memory contract completion:
+10. Confirm memory contract completion:
 
    - Memory retrieval evidence must exist for this run (output marker and/or artifact file).
    - Memory storage evidence must exist for this run (output marker and/or artifact file).
@@ -168,17 +182,18 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - If `scheduler.memoryPolicyByCadence.<cadence>.mode = required`, missing evidence is a hard failure.
    - If mode is `optional`, log warning context and continue.
 
-10. Verify required run artifacts for the current run window.
+11. Verify required run artifacts for the current run window.
 
     - Scheduler runs `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes`.
     - If artifact verification exits non-zero: write `_failed.md` and stop.
 
-11. Run repository checks (for example: `npm run lint`).
+12. Run repository checks (for example: `npm run lint`).
 
     - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
-    - When step 11 fails, step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
+    - step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
+    - In current numbering: when step 12 fails, step 13 MUST NOT run.
 
-12. Publish completion before writing final success log:
+13. Publish completion before writing final success log:
 
     ```bash
     AGENT_PLATFORM=<platform> \
@@ -187,15 +202,15 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
     (Equivalent invocation is allowed: `torch-lock complete --agent <agent-name> --cadence <cadence>`.)
 
-    - Exit `0`: completion published successfully; continue to step 13.
+    - Exit `0`: completion published successfully; continue to step 14.
     - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry npm run lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
 
-13. Create final task log only after step 12 succeeds (scheduler-owned):
+14. Create final task log only after step 13 succeeds (scheduler-owned):
 
     - `_completed.md` MUST be created only after completion publish succeeds.
-    - `_failed.md` is required when step 10, step 11, or step 12 fails, and should include the failure reason and next retry action.
+    - `_failed.md` is required when step 11, step 12, or step 13 fails, and should include the failure reason and next retry action.
 
-14. Commit/push behavior is delegated outside this scheduler script.
+15. Commit/push behavior is delegated outside this scheduler script.
 
     - `scripts/agent/run-scheduler-cycle.mjs` does **not** run `git commit` or `git push`.
     - If commit/push is required for your workflow, perform it in the configured handoff agent command or a separate orchestration step.

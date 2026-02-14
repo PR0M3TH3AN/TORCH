@@ -100,6 +100,14 @@ function parseNonNegativeInt(value, fallback) {
   return fallback;
 }
 
+function parseBooleanFlag(value, fallback = false) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
+}
+
 function redactSensitive(text) {
   if (!text) return '';
   return String(text)
@@ -300,6 +308,12 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     process.env.SCHEDULER_LOCK_JITTER_MS,
     parseNonNegativeInt(lockRetryRaw.jitterMs, 75),
   );
+  const lockHealthPreflightFromConfig = parseBooleanFlag(scheduler.lockHealthPreflight, false);
+  const lockHealthPreflightEnabled = parseBooleanFlag(
+    process.env.SCHEDULER_LOCK_HEALTH_PREFLIGHT,
+    lockHealthPreflightFromConfig,
+  );
+  const lockHealthPreflightSkip = parseBooleanFlag(process.env.SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT, false);
 
   return {
     firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
@@ -312,6 +326,10 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
       maxRetries,
       backoffMs,
       jitterMs,
+    },
+    lockHealthPreflight: {
+      enabled: lockHealthPreflightEnabled,
+      skip: lockHealthPreflightSkip,
     },
     memoryPolicy: {
       mode,
@@ -326,6 +344,27 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
       retrieveArtifacts: normalizeStringList(memoryPolicyRaw.retrieveArtifacts),
       storeArtifacts: normalizeStringList(memoryPolicyRaw.storeArtifacts),
     },
+  };
+}
+
+async function runLockHealthPreflight({ cadence, platform }) {
+  const preflight = await runCommand('node', ['scripts/agent/check-relay-health.mjs', '--cadence', cadence], {
+    env: { AGENT_PLATFORM: platform },
+  });
+  const payload = parseJsonFromOutput(`${preflight.stdout}\n${preflight.stderr}`) || {};
+  const relayList = Array.isArray(payload.relays)
+    ? payload.relays.filter((relay) => typeof relay === 'string' && relay.trim()).map((relay) => relay.trim())
+    : [];
+  const combinedOutput = `${preflight.stderr}\n${preflight.stdout}`;
+  const failureCategory = payload.failureCategory || classifyLockBackendError(combinedOutput);
+
+  return {
+    code: preflight.code,
+    payload,
+    relayList,
+    failureCategory,
+    stderrExcerpt: excerptText(preflight.stderr),
+    stdoutExcerpt: excerptText(preflight.stdout),
   };
 }
 
@@ -437,6 +476,26 @@ async function main() {
   }
 
   while (true) {
+    if (schedulerConfig.lockHealthPreflight.enabled && !schedulerConfig.lockHealthPreflight.skip) {
+      const preflight = await runLockHealthPreflight({ cadence, platform });
+      if (preflight.code !== 0) {
+        await writeLog({
+          cadence,
+          agent: 'scheduler',
+          status: 'failed',
+          reason: 'Lock backend unavailable preflight',
+          detail: `Preflight failed (${preflight.failureCategory}). Retry scheduler after verifying relay connectivity, relay URLs, and DNS/network status.`,
+          metadata: {
+            preflight_failure_category: preflight.failureCategory,
+            relay_list: preflight.relayList.join(', ') || '(none)',
+            preflight_stderr_excerpt: preflight.stderrExcerpt || '(empty)',
+            preflight_stdout_excerpt: preflight.stdoutExcerpt || '(empty)',
+          },
+        });
+        process.exit(preflight.code || 1);
+      }
+    }
+
     const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);
     const checkPayload = parseJsonFromOutput(`${checkResult.stdout}\n${checkResult.stderr}`) || {};
     const excluded = Array.isArray(checkPayload.excluded)

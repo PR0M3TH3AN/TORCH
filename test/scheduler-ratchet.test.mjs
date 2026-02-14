@@ -123,11 +123,12 @@ describe('Scheduler Ratchet Logic (Log Checking)', () => {
 
 
 describe('Scheduler cycle ordering guarantees', () => {
-  it('keeps lock-check → lock-acquire → handoff → artifact-verify → validation → complete → completed-log order', async () => {
+  it('keeps optional preflight before lock-acquire and preserves handoff/artifact/validation/complete ordering', async () => {
     const { readFile } = await import('node:fs/promises');
     const source = await readFile(new URL('../scripts/agent/run-scheduler-cycle.mjs', import.meta.url), 'utf8');
 
     const order = [
+      "const preflight = await runLockHealthPreflight({ cadence, platform });",
       "const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);",
       "const lockAttempt = await acquireLockWithRetry({",
       "if (schedulerConfig.handoffCommand)",
