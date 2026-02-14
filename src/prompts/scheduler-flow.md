@@ -28,14 +28,46 @@ Use this document for all scheduler runs.
    mkdir -p <log_dir>
    ```
 
-5. Find latest cadence log file, then choose next roster agent not in exclusion set:
+5. Find latest cadence log file, derive the previous agent, then choose the next roster agent not in exclusion set:
 
    ```bash
    ls -1 <log_dir> | sort | tail -n 1
    ```
 
-   - An empty `<log_dir>` is valid and means there are no prior cadence logs yet (first run).
-   - On first run, select the first eligible roster entry that is not in the exclusion set.
+   Selection algorithm (MUST be followed exactly):
+
+   - Roster source: `src/prompts/roster.json` and the key matching `<cadence>`.
+   - Let `roster` be that ordered array and `excluded` be the locked set from step 2.
+   - Let `latest_file` be the lexicographically last filename in `<log_dir>`.
+   - Determine `previous_agent` from `latest_file` using this precedence:
+     1. Parse YAML frontmatter from `<log_dir>/<latest_file>` and use key `agent` when present and non-empty.
+     2. Otherwise parse filename convention `<timestamp>__<agent-name>__<status>.md` and take `<agent-name>`.
+   - If no valid `latest_file` exists, or parsing fails, or `previous_agent` is not in `roster`, treat as first run fallback.
+   - First run fallback: `start_index = 0`.
+   - Otherwise: `start_index = (index(previous_agent in roster) + 1) mod len(roster)`.
+   - Round-robin scan:
+     - Iterate offsets `0..len(roster)-1`.
+     - Candidate index: `(start_index + offset) mod len(roster)` (wrap-around required).
+     - Choose the first candidate whose agent is **not** in `excluded`.
+   - If no candidate is eligible, execute step 6.
+
+   Worked examples:
+
+   - **Daily example**
+     - `roster.daily = [audit-agent, ci-health-agent, const-refactor-agent, ...]`
+     - `latest_file = 2026-02-13T00-10-00Z__ci-health-agent__completed.md`
+     - `excluded = {const-refactor-agent, docs-agent}`
+     - `previous_agent = ci-health-agent`, so `start_index` points to `const-refactor-agent`.
+     - `const-refactor-agent` is excluded; skip to `content-audit-agent`.
+     - **Selection result: `content-audit-agent`.**
+
+   - **Weekly example**
+     - `roster.weekly = [bug-reproducer-agent, changelog-agent, ..., weekly-synthesis-agent]`
+     - `latest_file = 2026-02-09T00-00-00Z__weekly-synthesis-agent__completed.md`
+     - `excluded = {}`
+     - `previous_agent = weekly-synthesis-agent` (last roster entry), so `start_index = 0` by wrap-around.
+     - First candidate is `bug-reproducer-agent` and is eligible.
+     - **Selection result: `bug-reproducer-agent`.**
 
 6. If every roster agent is excluded, write a `_failed.md` log with:
    `All roster tasks currently claimed by other agents` and stop.
