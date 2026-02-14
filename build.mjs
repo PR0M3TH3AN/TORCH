@@ -9,6 +9,7 @@ const DIST_DIR = path.join(__dirname, 'dist');
 const LANDING_SRC = path.join(__dirname, 'landing');
 const DASHBOARD_SRC = path.join(__dirname, 'dashboard');
 const DOCS_SRC = path.join(__dirname, 'src', 'docs');
+const PROMPTS_SRC = path.join(__dirname, 'src', 'prompts', 'META_PROMPTS.md');
 const CONFIG_SRC = path.join(__dirname, 'torch-config.json');
 
 // Ensure clean slate
@@ -39,7 +40,14 @@ const distDocs = path.join(DIST_DIR, 'src', 'docs');
 fs.mkdirSync(distDocs, { recursive: true });
 fs.cpSync(DOCS_SRC, distDocs, { recursive: true });
 
-// 4. Copy torch-config.json -> dist/torch-config.json (optional config)
+// 4. Copy src/prompts/META_PROMPTS.md -> dist/src/prompts/META_PROMPTS.md
+const distPromptsDir = path.join(DIST_DIR, 'src', 'prompts');
+fs.mkdirSync(distPromptsDir, { recursive: true });
+if (fs.existsSync(PROMPTS_SRC)) {
+  fs.copyFileSync(PROMPTS_SRC, path.join(distPromptsDir, 'META_PROMPTS.md'));
+}
+
+// 5. Copy torch-config.json -> dist/torch-config.json (optional config)
 if (fs.existsSync(CONFIG_SRC)) {
   fs.copyFileSync(CONFIG_SRC, path.join(DIST_DIR, 'torch-config.json'));
 }
