@@ -88,4 +88,30 @@ Use this document for all scheduler runs.
 
 8. Execute `<prompt_dir>/<prompt-file>` end-to-end.
 
-9. Create exactly one final status file (`_completed.md` or `_failed.md`), run repo checks, commit, and push.
+9. Run repository checks (for example: `npm run lint`).
+
+10. Publish completion before writing final success log:
+
+    ```bash
+    AGENT_PLATFORM=<platform> \
+    npm run lock:complete -- --agent <agent-name> --cadence <cadence>
+    ```
+
+    (Equivalent invocation is allowed: `torch-lock complete --agent <agent-name> --cadence <cadence>`.)
+
+    - Exit `0`: completion published successfully; continue to step 11.
+    - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry npm run lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
+
+11. Create final task log only after step 10 succeeds:
+
+    - `_completed.md` MUST be created only after completion publish succeeds.
+    - `_failed.md` is required when step 10 fails, and should include the failure reason and next retry action.
+
+12. Commit and push.
+
+Worked post-task example (MUST order):
+
+1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
+2. Execute `src/prompts/daily/content-audit-agent.md`
+3. `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
+4. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
