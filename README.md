@@ -5,7 +5,7 @@ TORCH is a portable Nostr-based task locking toolkit for multi-agent coordinatio
 ## Installation
 
 ```bash
-npm install torch-lock
+npm install git+https://github.com/PR0M3TH3AN/TORCH.git
 ```
 
 ## Usage
@@ -91,7 +91,6 @@ If you are developing `torch-lock` itself:
 - `npm run lock:check:weekly`
 - `npm run lock:list`
 - `npm run dashboard:serve`
-
 
 
 
