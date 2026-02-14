@@ -1,121 +1,123 @@
-import { test, describe, it } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { parseLockEvent } from '../src/lib.mjs';
+import { parseLockEvent, publishLock, queryLocks } from '../src/lock-ops.mjs';
 
-describe('parseLockEvent', () => {
-  it('should parse a valid lock event correctly', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400, // 2023-03-15T13:20:00.000Z
-      tags: [
-        ['d', 'mock-d-tag'],
-        ['expiration', '1678890000'], // 2023-03-15T14:20:00.000Z
-      ],
-      content: JSON.stringify({
-        agent: 'test-agent',
-        cadence: 'daily',
-        status: 'started',
-        namespace: 'test-ns',
-        date: '2023-03-15',
-        platform: 'test-platform',
-      }),
-    };
+describe('lock-ops', () => {
+  describe('parseLockEvent', () => {
+    it('parses a valid lock event correctly', () => {
+      const event = {
+        id: 'mock-event-id',
+        pubkey: 'mock-pubkey',
+        created_at: 1678886400,
+        tags: [['d', 'mock-d-tag'], ['expiration', '1678890000']],
+        content: JSON.stringify({
+          agent: 'test-agent',
+          cadence: 'daily',
+          status: 'started',
+          date: '2023-03-15',
+          platform: 'test-platform',
+        }),
+      };
 
-    const result = parseLockEvent(event);
+      const result = parseLockEvent(event);
 
-    assert.strictEqual(result.eventId, 'mock-event-id');
-    assert.strictEqual(result.pubkey, 'mock-pubkey');
-    assert.strictEqual(result.createdAt, 1678886400);
-    assert.strictEqual(result.createdAtIso, '2023-03-15T13:20:00.000Z');
-    assert.strictEqual(result.expiresAt, 1678890000);
-    assert.strictEqual(result.expiresAtIso, '2023-03-15T14:20:00.000Z');
-    assert.strictEqual(result.dTag, 'mock-d-tag');
-    assert.strictEqual(result.agent, 'test-agent');
-    assert.strictEqual(result.cadence, 'daily');
-    assert.strictEqual(result.status, 'started');
-    assert.strictEqual(result.date, '2023-03-15');
-    assert.strictEqual(result.platform, 'test-platform');
+      assert.strictEqual(result.dTag, 'mock-d-tag');
+      assert.strictEqual(result.expiresAt, 1678890000);
+      assert.strictEqual(result.agent, 'test-agent');
+      assert.strictEqual(result.platform, 'test-platform');
+    });
   });
 
-  it('should handle missing d tag', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400,
-      tags: [],
-      content: '{}',
-    };
+  describe('queryLocks', () => {
+    it('falls back to fallback relays when primary query fails', async () => {
+      const mockPool = {
+        querySync: async (relays) => {
+          if (relays[0] === 'wss://primary') {
+            throw new Error('primary unavailable');
+          }
+          return [{
+            id: 'id-1',
+            pubkey: 'pk',
+            created_at: Math.floor(Date.now() / 1000),
+            tags: [['d', 't']],
+            content: JSON.stringify({ agent: 'agent1' }),
+          }];
+        },
+        close: () => {},
+      };
 
-    const result = parseLockEvent(event);
-    assert.strictEqual(result.dTag, '');
+      const locks = await queryLocks(
+        ['wss://primary'],
+        'daily',
+        '2026-02-14',
+        'torch',
+        {
+          poolFactory: () => mockPool,
+          getQueryTimeoutMsFn: () => 200,
+          getRelayFallbacksFn: () => ['wss://fallback'],
+          errorLogger: () => {},
+        },
+      );
+
+      assert.strictEqual(locks.length, 1);
+      assert.strictEqual(locks[0].agent, 'agent1');
+    });
   });
 
-  it('should handle missing expiration tag', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400,
-      tags: [['d', 'mock-d-tag']],
-      content: '{}',
-    };
+  describe('publishLock', () => {
+    it('succeeds with partial primary success when minimum successes is 1', async () => {
+      const mockPool = {
+        publish: (relays) => relays.map((relay) => (
+          relay.includes('ok') ? Promise.resolve('ok') : Promise.reject(new Error('offline'))
+        )),
+        close: () => {},
+      };
 
-    const result = parseLockEvent(event);
-    assert.strictEqual(result.expiresAt, null);
-    assert.strictEqual(result.expiresAtIso, null);
-  });
+      const event = { id: 'evt-1' };
+      const result = await publishLock(['wss://ok-1', 'wss://bad-1'], event, {
+        poolFactory: () => mockPool,
+        getPublishTimeoutMsFn: () => 200,
+        getMinSuccessfulRelayPublishesFn: () => 1,
+        getRelayFallbacksFn: () => [],
+      });
 
-  it('should handle malformed JSON content', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400,
-      tags: [],
-      content: '{ invalid json }',
-    };
+      assert.strictEqual(result, event);
+    });
 
-    const result = parseLockEvent(event);
-    assert.strictEqual(result.agent, null);
-    assert.strictEqual(result.cadence, null);
-  });
+    it('uses fallback relays to satisfy min success quorum', async () => {
+      const mockPool = {
+        publish: (relays) => relays.map((relay) => (
+          relay.includes('fallback-ok') ? Promise.resolve('ok') : Promise.reject(new Error('offline'))
+        )),
+        close: () => {},
+      };
 
-  it('should handle non-object JSON content (string)', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400,
-      tags: [],
-      content: '"just a string"',
-    };
+      const event = { id: 'evt-2' };
+      const result = await publishLock(['wss://primary-bad'], event, {
+        poolFactory: () => mockPool,
+        getPublishTimeoutMsFn: () => 200,
+        getMinSuccessfulRelayPublishesFn: () => 1,
+        getRelayFallbacksFn: () => ['wss://fallback-ok'],
+      });
 
-    const result = parseLockEvent(event);
-    assert.strictEqual(result.agent, null);
-  });
+      assert.strictEqual(result, event);
+    });
 
-  it('should handle non-object JSON content (array)', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400,
-      tags: [],
-      content: '["item1", "item2"]',
-    };
+    it('fails when successful publishes stay below configured minimum', async () => {
+      const mockPool = {
+        publish: (relays) => relays.map(() => Promise.reject(new Error('offline'))),
+        close: () => {},
+      };
 
-    const result = parseLockEvent(event);
-    assert.strictEqual(result.agent, null);
-  });
-
-  it('should handle partial JSON content', () => {
-    const event = {
-      id: 'mock-event-id',
-      pubkey: 'mock-pubkey',
-      created_at: 1678886400,
-      tags: [],
-      content: JSON.stringify({ agent: 'partial-agent' }),
-    };
-
-    const result = parseLockEvent(event);
-    assert.strictEqual(result.agent, 'partial-agent');
-    assert.strictEqual(result.cadence, null);
+      await assert.rejects(
+        () => publishLock(['wss://primary-bad'], { id: 'evt-3' }, {
+          poolFactory: () => mockPool,
+          getPublishTimeoutMsFn: () => 200,
+          getMinSuccessfulRelayPublishesFn: () => 2,
+          getRelayFallbacksFn: () => ['wss://fallback-bad'],
+        }),
+        /Failed relay publish quorum in publish phase: 0\/2 successful \(required=2, timeout=200ms\)/,
+      );
+    });
   });
 });

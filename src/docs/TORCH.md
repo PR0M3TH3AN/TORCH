@@ -32,6 +32,9 @@ node bin/torch-lock.mjs list
 - `NOSTR_LOCK_RELAYS`
 - `NOSTR_LOCK_TTL`
 - `NOSTR_LOCK_QUERY_TIMEOUT_MS`
+- `NOSTR_LOCK_PUBLISH_TIMEOUT_MS`
+- `NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES`
+- `NOSTR_LOCK_RELAY_FALLBACKS`
 - `NOSTR_LOCK_DAILY_ROSTER`
 - `NOSTR_LOCK_WEEKLY_ROSTER`
 - `TORCH_CONFIG_PATH`
@@ -50,7 +53,10 @@ Common settings:
 - `nostrLock.namespace` — namespace prefix used in d-tags and hashtags.
 - `nostrLock.relays` — relay list for check/lock/list operations.
 - `nostrLock.ttlSeconds` — default lock TTL.
-- `nostrLock.queryTimeoutMs` — relay query timeout.
+- `nostrLock.queryTimeoutMs` — relay query timeout (ms, valid range: 100..120000).
+- `nostrLock.publishTimeoutMs` — per-relay publish timeout (ms, valid range: 100..120000).
+- `nostrLock.minSuccessfulRelayPublishes` — minimum successful publishes required before lock acquisition continues (default: `1`).
+- `nostrLock.relayFallbacks` — optional fallback relay URLs used when primary query/publish attempts fail quorum.
 - `nostrLock.dailyRoster` / `nostrLock.weeklyRoster` — optional per-project roster overrides.
 - `dashboard.defaultCadenceView` — default dashboard view (`daily`, `weekly`, `all`).
 - `dashboard.defaultStatusView` — default dashboard status filter (`active`, `all`).
@@ -63,6 +69,23 @@ Default first-run daily scheduler prompt is `scheduler-update-agent`.
 For weekly repository-fit maintenance, TORCH also includes `src/prompts/weekly/repo-fit-agent.md` to periodically adjust defaults and docs to the host repository.
 
 Operational note: scheduler handoff commands are treated as required execution steps. A non-zero exit code (or missing command) is a hard failure: the scheduler writes a `_failed.md` task log, exits immediately, and does not publish `lock:complete` for that run.
+
+
+## Lock backend production defaults
+
+Recommended baseline for production scheduler runs:
+
+- `nostrLock.relays`: 3+ geographically-diverse primary relays.
+- `nostrLock.relayFallbacks`: 2 additional relays not present in primary list.
+- `nostrLock.queryTimeoutMs`: `10000`
+- `nostrLock.publishTimeoutMs`: `8000`
+- `nostrLock.minSuccessfulRelayPublishes`: `2`
+
+Validation behavior:
+
+- Relay URLs must be absolute `ws://` or `wss://` URLs.
+- Invalid relay URLs or invalid timeout/count ranges are fatal startup errors.
+- Lock backend errors include phase (`query:primary`, `query:fallback`, `publish:primary`, `publish:fallback`), relay endpoint, and timeout value used.
 
 ## Scheduler lock reliability reporting
 

@@ -5,11 +5,52 @@ import {
   DEFAULT_TTL,
   DEFAULT_NAMESPACE,
   DEFAULT_QUERY_TIMEOUT_MS,
+  DEFAULT_PUBLISH_TIMEOUT_MS,
+  DEFAULT_MIN_SUCCESSFUL_PUBLISHES,
 } from './constants.mjs';
 
 const DEFAULT_CONFIG_PATH = 'torch-config.json';
 
 let cachedConfig = null;
+const MIN_TIMEOUT_MS = 100;
+const MAX_TIMEOUT_MS = 120_000;
+
+function parsePositiveInteger(value) {
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return Math.floor(value);
+}
+
+function parseRelayList(value) {
+  if (!Array.isArray(value)) return null;
+  const parsed = value.map((relay) => String(relay).trim()).filter(Boolean);
+  return parsed.length > 0 ? parsed : null;
+}
+
+function assertValidRelayUrl(relay, sourceLabel) {
+  let parsed;
+  try {
+    parsed = new URL(relay);
+  } catch {
+    throw new Error(`Invalid relay URL in ${sourceLabel}: "${relay}" (must be an absolute ws:// or wss:// URL)`);
+  }
+  if (parsed.protocol !== 'ws:' && parsed.protocol !== 'wss:') {
+    throw new Error(`Invalid relay URL in ${sourceLabel}: "${relay}" (protocol must be ws:// or wss://)`);
+  }
+}
+
+function assertTimeoutInRange(value, sourceLabel) {
+  if (!Number.isInteger(value) || value < MIN_TIMEOUT_MS || value > MAX_TIMEOUT_MS) {
+    throw new Error(
+      `Invalid ${sourceLabel}: ${value} (must be an integer between ${MIN_TIMEOUT_MS} and ${MAX_TIMEOUT_MS} ms)`,
+    );
+  }
+}
+
+function assertPositiveCount(value, sourceLabel) {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`Invalid ${sourceLabel}: ${value} (must be a positive integer)`);
+  }
+}
 
 function normalizeCadence(value, fallback) {
   const normalized = String(value || '').trim().toLowerCase();
@@ -48,12 +89,13 @@ export function parseTorchConfig(raw, configPath = null) {
       relays: Array.isArray(nostrLock.relays)
         ? nostrLock.relays.map((relay) => String(relay).trim()).filter(Boolean)
         : null,
+      relayFallbacks: parseRelayList(nostrLock.relayFallbacks),
       ttlSeconds: Number.isFinite(nostrLock.ttlSeconds) && nostrLock.ttlSeconds > 0
         ? Math.floor(nostrLock.ttlSeconds)
         : null,
-      queryTimeoutMs: Number.isFinite(nostrLock.queryTimeoutMs) && nostrLock.queryTimeoutMs > 0
-        ? Math.floor(nostrLock.queryTimeoutMs)
-        : null,
+      queryTimeoutMs: parsePositiveInteger(nostrLock.queryTimeoutMs),
+      publishTimeoutMs: parsePositiveInteger(nostrLock.publishTimeoutMs),
+      minSuccessfulRelayPublishes: parsePositiveInteger(nostrLock.minSuccessfulRelayPublishes),
       dailyRoster: parseRoster(nostrLock.dailyRoster),
       weeklyRoster: parseRoster(nostrLock.weeklyRoster),
     },
@@ -99,19 +141,70 @@ export function loadTorchConfig(fileSystem = fs) {
   }
 
   cachedConfig = parseTorchConfig(raw, configPath);
+  validateLockBackendConfig(cachedConfig);
   return cachedConfig;
+}
+
+function validateLockBackendConfig(config) {
+  const relays = config.nostrLock.relays || [];
+  const relayFallbacks = config.nostrLock.relayFallbacks || [];
+
+  for (const relay of relays) {
+    assertValidRelayUrl(relay, 'nostrLock.relays');
+  }
+  for (const relay of relayFallbacks) {
+    assertValidRelayUrl(relay, 'nostrLock.relayFallbacks');
+  }
+
+  if (config.nostrLock.queryTimeoutMs !== null) {
+    assertTimeoutInRange(config.nostrLock.queryTimeoutMs, 'nostrLock.queryTimeoutMs');
+  }
+  if (config.nostrLock.publishTimeoutMs !== null) {
+    assertTimeoutInRange(config.nostrLock.publishTimeoutMs, 'nostrLock.publishTimeoutMs');
+  }
+  if (config.nostrLock.minSuccessfulRelayPublishes !== null) {
+    assertPositiveCount(config.nostrLock.minSuccessfulRelayPublishes, 'nostrLock.minSuccessfulRelayPublishes');
+  }
+}
+
+function parseEnvRelayList(envValue, envName) {
+  const relays = envValue.split(',').map((r) => r.trim()).filter(Boolean);
+  for (const relay of relays) {
+    assertValidRelayUrl(relay, envName);
+  }
+  return relays;
+}
+
+function parseEnvInteger(envValue, envName) {
+  const parsed = parseInt(envValue, 10);
+  if (Number.isNaN(parsed)) {
+    throw new Error(`Invalid ${envName}: "${envValue}" (must be an integer)`);
+  }
+  return parsed;
 }
 
 export function getRelays() {
   const config = loadTorchConfig();
   const envRelays = process.env.NOSTR_LOCK_RELAYS;
   if (envRelays) {
-    return envRelays.split(',').map((r) => r.trim()).filter(Boolean);
+    return parseEnvRelayList(envRelays, 'NOSTR_LOCK_RELAYS');
   }
   if (config.nostrLock.relays?.length) {
     return config.nostrLock.relays;
   }
+  for (const relay of DEFAULT_RELAYS) {
+    assertValidRelayUrl(relay, 'DEFAULT_RELAYS');
+  }
   return DEFAULT_RELAYS;
+}
+
+export function getRelayFallbacks() {
+  const config = loadTorchConfig();
+  const envRelays = process.env.NOSTR_LOCK_RELAY_FALLBACKS;
+  if (envRelays) {
+    return parseEnvRelayList(envRelays, 'NOSTR_LOCK_RELAY_FALLBACKS');
+  }
+  return config.nostrLock.relayFallbacks || [];
 }
 
 export function getNamespace() {
@@ -137,8 +230,37 @@ export function getQueryTimeoutMs() {
   const config = loadTorchConfig();
   const envValue = process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS;
   if (envValue) {
-    const parsed = parseInt(envValue, 10);
-    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_QUERY_TIMEOUT_MS');
+    assertTimeoutInRange(parsed, 'NOSTR_LOCK_QUERY_TIMEOUT_MS');
+    return parsed;
   }
-  return config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
+  const value = config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
+  assertTimeoutInRange(value, 'effective query timeout');
+  return value;
+}
+
+export function getPublishTimeoutMs() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_PUBLISH_TIMEOUT_MS;
+  if (envValue) {
+    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_PUBLISH_TIMEOUT_MS');
+    assertTimeoutInRange(parsed, 'NOSTR_LOCK_PUBLISH_TIMEOUT_MS');
+    return parsed;
+  }
+  const value = config.nostrLock.publishTimeoutMs || DEFAULT_PUBLISH_TIMEOUT_MS;
+  assertTimeoutInRange(value, 'effective publish timeout');
+  return value;
+}
+
+export function getMinSuccessfulRelayPublishes() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES;
+  if (envValue) {
+    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES');
+    assertPositiveCount(parsed, 'NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES');
+    return parsed;
+  }
+  const value = config.nostrLock.minSuccessfulRelayPublishes || DEFAULT_MIN_SUCCESSFUL_PUBLISHES;
+  assertPositiveCount(value, 'effective min successful relay publishes');
+  return value;
 }
