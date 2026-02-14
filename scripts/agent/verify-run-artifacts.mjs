@@ -3,11 +3,41 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 const REQUIRED_ARTIFACTS = [
-  { dir: 'src/context', expectedPrefix: 'CONTEXT_' },
-  { dir: 'src/todo', expectedPrefix: 'TODO_' },
-  { dir: 'src/decisions', expectedPrefix: 'DECISIONS_' },
-  { dir: 'src/test_logs', expectedPrefix: 'TEST_LOG_' },
+  {
+    dir: 'src/context',
+    expectedPrefix: 'CONTEXT_',
+    structureCheck: (content) =>
+      /\bgoal\b/i.test(content) && /\bscope\b/i.test(content) && /\bconstraints\b/i.test(content),
+    structureHint: 'must include goal/scope/constraints',
+  },
+  {
+    dir: 'src/todo',
+    expectedPrefix: 'TODO_',
+    structureCheck: (content) =>
+      /\bpending(?:\s+tasks?)?\b[\s\S]{0,400}^\s*[-*]\s+/im.test(content)
+      || /\bcompleted(?:\s+tasks?)?\b[\s\S]{0,400}^\s*[-*]\s+/im.test(content),
+    structureHint: 'must include at least one pending or completed item',
+  },
+  {
+    dir: 'src/decisions',
+    expectedPrefix: 'DECISIONS_',
+    structureCheck: (content) => /\bdecision\b/i.test(content) && /\brationale\b/i.test(content),
+    structureHint: 'must include decision + rationale',
+  },
+  {
+    dir: 'src/test_logs',
+    expectedPrefix: 'TEST_LOG_',
+    structureCheck: (content) => {
+      const hasCommand = /(^|\n)\s*[-*]?\s*\**command\**\s*:/im.test(content);
+      const hasResult = /(^|\n)\s*[-*]?\s*\**result\**\s*:/im.test(content);
+      return hasCommand && hasResult;
+    },
+    structureHint: 'must include command/result pairs',
+  },
 ];
+
+const FAILURE_KEYWORD_RE = /\b(fail|failed|failure|error)\b/i;
+const UNRESOLVED_REFERENCE_RE = /\bunresolved\s+finding(s)?\b|\bunresolved\b/i;
 
 function parseArgs(argv) {
   const args = {
@@ -71,12 +101,21 @@ async function hasExplicitNotNeeded(files) {
   return false;
 }
 
-function hasExpectedArtifact(files, { expectedPrefix, session }) {
-  if (!files.length) return false;
+function getMatchingArtifacts(files, { expectedPrefix, session }) {
   if (session) {
-    return files.some((file) => file.name.includes(session));
+    return files.filter((file) => file.name.includes(session));
   }
-  return files.some((file) => file.name.startsWith(expectedPrefix));
+  return files.filter((file) => file.name.startsWith(expectedPrefix));
+}
+
+async function hasValidArtifactStructure(files, artifact) {
+  for (const file of files) {
+    const content = await fs.readFile(file.filePath, 'utf8').catch(() => '');
+    if (artifact.structureCheck(content)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 async function checkFailureTracking({ sinceMs }) {
@@ -85,7 +124,7 @@ async function checkFailureTracking({ sinceMs }) {
 
   for (const file of recentTestLogs) {
     const content = await fs.readFile(file.filePath, 'utf8').catch(() => '');
-    if (/\b(fail|failed|failure|error)\b/i.test(content)) {
+    if (FAILURE_KEYWORD_RE.test(content)) {
       sawFailure = true;
       break;
     }
@@ -95,19 +134,32 @@ async function checkFailureTracking({ sinceMs }) {
     return { ok: true, message: null };
   }
 
-  const knownIssuesStat = await fs.stat(path.resolve(process.cwd(), 'KNOWN_ISSUES.md')).catch(() => null);
+  const knownIssuesPath = path.resolve(process.cwd(), 'KNOWN_ISSUES.md');
+  const knownIssuesStat = await fs.stat(knownIssuesPath).catch(() => null);
+  const knownIssuesContent = await fs.readFile(knownIssuesPath, 'utf8').catch(() => '');
   const incidents = await listRecentFiles(path.resolve(process.cwd(), 'docs/agent-handoffs/incidents'), sinceMs);
 
   const touchedKnownIssues = Boolean(knownIssuesStat && (sinceMs == null || knownIssuesStat.mtimeMs >= sinceMs));
-  const touchedIncident = incidents.length > 0;
+  const knownIssuesHasExplicitReference = touchedKnownIssues
+    && UNRESOLVED_REFERENCE_RE.test(knownIssuesContent)
+    && FAILURE_KEYWORD_RE.test(knownIssuesContent);
 
-  if (touchedKnownIssues || touchedIncident) {
+  let incidentHasExplicitReference = false;
+  for (const incident of incidents) {
+    const incidentContent = await fs.readFile(incident.filePath, 'utf8').catch(() => '');
+    if (UNRESOLVED_REFERENCE_RE.test(incidentContent) && FAILURE_KEYWORD_RE.test(incidentContent)) {
+      incidentHasExplicitReference = true;
+      break;
+    }
+  }
+
+  if (knownIssuesHasExplicitReference || incidentHasExplicitReference) {
     return { ok: true, message: null };
   }
 
   return {
     ok: false,
-    message: 'Failure-related output detected in src/test_logs but neither KNOWN_ISSUES.md nor docs/agent-handoffs/incidents/ were updated during this run.',
+    message: 'Failure-related output detected in src/test_logs; add an explicit unresolved-finding reference (with failure context) in updated KNOWN_ISSUES.md or a new incident note.',
   };
 }
 
@@ -125,20 +177,26 @@ async function main() {
   for (const artifact of REQUIRED_ARTIFACTS) {
     const dirPath = path.resolve(process.cwd(), artifact.dir);
     const files = await listRecentFiles(dirPath, sinceMs);
-    const hasExpected = hasExpectedArtifact(files, {
+    const matchingArtifacts = getMatchingArtifacts(files, {
       expectedPrefix: artifact.expectedPrefix,
       session: args.session,
     });
 
-    if (hasExpected) continue;
+    if (!matchingArtifacts.length) {
+      const hasNotNeeded = await hasExplicitNotNeeded(files);
+      if (hasNotNeeded) continue;
 
-    const hasNotNeeded = await hasExplicitNotNeeded(files);
-    if (hasNotNeeded) continue;
+      const expectedName = args.session
+        ? `${artifact.expectedPrefix}${args.session}.md`
+        : `${artifact.expectedPrefix}<timestamp>.md`;
+      missing.push(`${artifact.dir}/${expectedName}`);
+      continue;
+    }
 
-    const expectedName = args.session
-      ? `${artifact.expectedPrefix}${args.session}.md`
-      : `${artifact.expectedPrefix}<timestamp>.md`;
-    missing.push(`${artifact.dir}/${expectedName}`);
+    const hasValidStructure = await hasValidArtifactStructure(matchingArtifacts, artifact);
+    if (!hasValidStructure) {
+      missing.push(`${artifact.dir}: ${artifact.structureHint}`);
+    }
   }
 
   if (args.checkFailureNotes) {
