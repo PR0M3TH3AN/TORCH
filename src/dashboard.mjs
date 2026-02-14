@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +10,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
   // this file is in <root>/src/dashboard.mjs, so '..' goes to <root>
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
     // URL parsing
     const url = new URL(req.url, `http://${req.headers.host}`);
     let pathname = url.pathname;
@@ -21,11 +22,19 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
       return;
     }
 
+    async function statSafe(p) {
+      try {
+        return await fsp.stat(p);
+      } catch {
+        return null;
+      }
+    }
+
     // Special case: /torch-config.json
     // Priority: User's CWD > Package default
     if (pathname === '/torch-config.json') {
       const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
-      if (fs.existsSync(userConfigPath)) {
+      if (await statSafe(userConfigPath)) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         fs.createReadStream(userConfigPath).pipe(res);
         return;
@@ -40,12 +49,14 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
     let filePath = path.join(packageRoot, safePath);
 
     // If directory, try index.html
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+    let fileStat = await statSafe(filePath);
+    if (fileStat && fileStat.isDirectory()) {
        filePath = path.join(filePath, 'index.html');
+       fileStat = await statSafe(filePath);
     }
 
     // Check if file exists and is a file
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    if (!fileStat || !fileStat.isFile()) {
       res.writeHead(404);
       res.end('Not Found');
       return;
