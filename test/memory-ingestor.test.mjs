@@ -7,6 +7,7 @@ test('ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, an
   const inserted = [];
   const linked = [];
   const telemetry = [];
+  const upserted = [];
 
   const repository = {
     async insertMemory(memory) {
@@ -49,6 +50,20 @@ test('ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, an
       maxChunkChars: 40,
       embedText: (text) => [text.length],
       emitTelemetry: (event, payload) => telemetry.push({ event, payload }),
+      embedderAdapter: {
+        async embedText(text) {
+          return [text.length];
+        },
+        async upsertVector(entry) {
+          upserted.push(entry);
+        },
+        async queryVector() {
+          return [];
+        },
+        async deleteVector() {
+          return false;
+        },
+      },
       now: 2000,
     }
   );
@@ -57,9 +72,12 @@ test('ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, an
   assert.equal(inserted.length, 2);
   assert.equal(linked.length, 2);
   assert.equal(telemetry.length, 2);
+  assert.equal(upserted.length, 2);
   assert.ok(inserted.some((item) => item.content.includes('[redacted:email]')));
   assert.ok(inserted.some((item) => item.content.includes('[redacted:phone]')));
   assert.ok(telemetry.every((entry) => entry.event === 'memory:ingested'));
+  assert.ok(linked.every((entry) => typeof entry.embedding.metadata?.context_excerpt === 'string'));
+  assert.ok(linked.every((entry) => entry.embedding.metadata.context_excerpt.length > 0));
 });
 
 test('ingestMemoryWindow dedupes overlapping windows by hashed content + agent + timestamp bucket', async () => {
