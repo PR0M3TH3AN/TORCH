@@ -64,6 +64,19 @@ For weekly repository-fit maintenance, TORCH also includes `src/prompts/weekly/r
 
 Operational note: scheduler handoff commands are treated as required execution steps. A non-zero exit code (or missing command) is a hard failure: the scheduler writes a `_failed.md` task log, exits immediately, and does not publish `lock:complete` for that run.
 
+## Scheduler lock reliability reporting
+
+Run the lock reliability summary to aggregate recent scheduler outcomes by platform, cadence, backend error category, and relay endpoint:
+
+```bash
+npm run report:lock-reliability
+```
+
+Outputs:
+- `artifacts/lock-reliability/lock-reliability-summary.md`
+- `artifacts/lock-reliability/lock-reliability-summary.json`
+
+
 ## Roster precedence
 
 The lock CLI resolves roster names in this order:

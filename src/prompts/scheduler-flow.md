@@ -209,6 +209,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
     - `_completed.md` MUST be created only after completion publish succeeds.
     - `_failed.md` is required when step 11, step 12, or step 13 fails, and should include the failure reason and next retry action.
+    - Include `platform` in frontmatter using `AGENT_PLATFORM` (or the scheduler `--platform` value) for both `_completed.md` and `_failed.md`.
 
 15. Commit/push behavior is delegated outside this scheduler script.
 

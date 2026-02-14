@@ -127,9 +127,25 @@ If you are developing `torch-lock` itself:
 - `npm run dashboard:serve`
 - `npm test` (run unit tests)
 - `npm run lint` (run linter)
+- `npm run report:lock-reliability` (aggregate recent scheduler logs into markdown+JSON reliability reports)
 
 
 
+
+
+## Scheduler lock reliability reporting
+
+Use the reporting hook below to inspect lock backend reliability trends by platform/cadence/error category/relay:
+
+```bash
+npm run report:lock-reliability
+```
+
+This writes:
+- `artifacts/lock-reliability/lock-reliability-summary.md`
+- `artifacts/lock-reliability/lock-reliability-summary.json`
+
+Recommended cadence: run this at least weekly (or wire into your CI/cron scheduler) and compare `codex` vs other `platform` values.
 
 
 ## Memory rollout plan

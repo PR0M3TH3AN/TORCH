@@ -156,7 +156,10 @@ test('accepts required memory policy when markers or artifacts are produced', { 
   assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
 
   const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
-  assert.ok(logs.some((name) => name.endsWith('__completed.md')));
+  const completedLog = logs.find((name) => name.endsWith('__completed.md'));
+  assert.ok(completedLog);
+  const completedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', completedLog), 'utf8');
+  assert.match(completedBody, /platform: 'codex'/);
 
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'retrieve-daily.ok'));
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'store-daily.ok'));
@@ -188,6 +191,7 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
   assert.match(failedBody, /lock_stdout_excerpt: 'websocket: connection refused'/);
   assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
+  assert.match(failedBody, /platform: 'codex'/);
 });
 
 

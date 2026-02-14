@@ -38,7 +38,8 @@
     "lock:complete": "node bin/torch-lock.mjs complete",
     "validate:scheduler": "node scripts/validate-scheduler-roster.mjs && node scripts/validate-prompt-contract.mjs && node scripts/validate-scheduler-flow-parity.mjs",
     "scheduler:daily": "node scripts/agent/run-scheduler-cycle.mjs daily",
-    "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly"
+    "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly",
+    "report:lock-reliability": "node scripts/agent/summarize-lock-reliability.mjs --since-days 30"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
