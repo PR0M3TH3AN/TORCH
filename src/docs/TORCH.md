@@ -55,11 +55,14 @@ Common settings:
 - `dashboard.defaultCadenceView` — default dashboard view (`daily`, `weekly`, `all`).
 - `dashboard.defaultStatusView` — default dashboard status filter (`active`, `all`).
 - `scheduler.firstPromptByCadence.daily` / `.weekly` — first-run scheduler starting agent.
+- `scheduler.handoffCommandByCadence.daily` / `.weekly` — shell command run after lock acquisition; command must use `SCHEDULER_AGENT`, `SCHEDULER_CADENCE`, and `SCHEDULER_PROMPT_PATH` provided by `scripts/agent/run-scheduler-cycle.mjs`.
 - `scheduler.paused.daily` / `.weekly` — array of agent names to exclude from scheduler rotation.
 
 Default first-run daily scheduler prompt is `scheduler-update-agent`.
 
 For weekly repository-fit maintenance, TORCH also includes `src/prompts/weekly/repo-fit-agent.md` to periodically adjust defaults and docs to the host repository.
+
+Operational note: scheduler handoff commands are treated as required execution steps. A non-zero exit code (or missing command) is a hard failure: the scheduler writes a `_failed.md` task log, exits immediately, and does not publish `lock:complete` for that run.
 
 ## Roster precedence
 
