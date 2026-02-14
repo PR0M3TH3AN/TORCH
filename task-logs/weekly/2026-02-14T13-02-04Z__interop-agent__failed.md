@@ -1,0 +1,1 @@
+Preflight check failed: Required files `src/lib/eventSchemas.js`, `src/lib/clientFacade.js` (or defaultClient.js), and `js/dmDecryptor.js` are missing from the repository. This agent appears to be misconfigured for the current repository structure.
