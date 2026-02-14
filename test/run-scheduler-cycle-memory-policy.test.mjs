@@ -32,7 +32,13 @@ async function runNode(scriptPath, args, { cwd, env }) {
   });
 }
 
-async function setupFixture({ memoryPolicy, lockShellBody = '', roster = ['agent-a'] }) {
+async function setupFixture({
+  memoryPolicy,
+  lockShellBody = '',
+  roster = ['agent-a'],
+  lockHealthPreflight = undefined,
+  preflightScript = '#!/usr/bin/env node\nconsole.log(JSON.stringify({ ok: true, relays: ["wss://relay.test"] }));\nprocess.exit(0);\n',
+}) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-memory-policy-'));
   const scriptsDir = path.join(root, 'scripts', 'agent');
   const binDir = path.join(root, 'bin');
@@ -48,6 +54,7 @@ async function setupFixture({ memoryPolicy, lockShellBody = '', roster = ['agent
     '#!/usr/bin/env node\nprocess.exit(0);\n',
     'utf8',
   );
+  await fs.writeFile(path.join(scriptsDir, 'check-relay-health.mjs'), preflightScript, 'utf8');
 
   await fs.writeFile(path.join(root, 'src', 'prompts', 'roster.json'), JSON.stringify({ daily: roster }, null, 2));
   for (const agent of roster) {
@@ -62,6 +69,7 @@ async function setupFixture({ memoryPolicy, lockShellBody = '', roster = ['agent
         handoffCommandByCadence: { daily: 'echo HANDOFF_OK' },
         validationCommandsByCadence: { daily: ['true'] },
         memoryPolicyByCadence: { daily: memoryPolicy },
+        ...(lockHealthPreflight === undefined ? {} : { lockHealthPreflight }),
       },
     }, null, 2),
     'utf8',
@@ -182,6 +190,55 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
 });
 
+
+
+test('skips lock health preflight by default when not enabled', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    preflightScript: '#!/usr/bin/env node\nconsole.error("preflight should not run");\nprocess.exit(9);\n',
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  assert.ok(logs.some((name) => name.endsWith('__completed.md')));
+});
+
+test('fails scheduler with preflight metadata when lock health preflight is enabled', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    lockHealthPreflight: true,
+    preflightScript: `#!/usr/bin/env node
+console.log(JSON.stringify({
+  ok: false,
+  relays: ['wss://relay-1.test', 'wss://relay-2.test'],
+  failureCategory: 'relay query timeout',
+  error: 'Relay query timed out'
+}));
+process.exit(2);
+`,
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 2, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+
+  assert.match(failedBody, /reason: Lock backend unavailable preflight/);
+  assert.match(failedBody, /preflight_failure_category: 'relay query timeout'/);
+  assert.match(failedBody, /relay_list: 'wss:\/\/relay-1.test, wss:\/\/relay-2.test'/);
+});
 test('retries lock acquisition for backend error and succeeds on a later attempt', { concurrency: false }, async () => {
   const fixture = await setupFixture({
     memoryPolicy: { mode: 'optional' },
