@@ -41,3 +41,12 @@ export function filterAndRankMemories(memories, params) {
     .slice(0, k)
     .map((entry) => entry.memory);
 }
+
+/**
+ * @param {{ updateMemoryUsage: (id: string, lastSeen?: number) => Promise<unknown> }} repository
+ * @param {string[]} ids
+ * @param {number} [lastSeen]
+ */
+export async function updateMemoryUsage(repository, ids, lastSeen = Date.now()) {
+  await Promise.all(ids.map((id) => repository.updateMemoryUsage(id, lastSeen)));
+}

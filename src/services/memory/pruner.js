@@ -9,3 +9,14 @@ export function selectPrunableMemories(memories, options) {
 
   return memories.filter((memory) => !memory.pinned && memory.last_seen < cutoff);
 }
+
+
+/**
+ * @param {{ listPruneCandidates: (options: { cutoff: number, limit?: number }) => Promise<import('./schema.js').MemoryRecord[]> }} repository
+ * @param {{ retentionMs: number, now?: number, limit?: number }} options
+ */
+export async function listPruneCandidates(repository, options) {
+  const now = options.now ?? Date.now();
+  const cutoff = now - options.retentionMs;
+  return repository.listPruneCandidates({ cutoff, limit: options.limit });
+}
