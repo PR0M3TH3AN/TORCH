@@ -36,7 +36,9 @@
     "build": "node build.mjs",
     "lint": "eslint .",
     "lock:complete": "node bin/torch-lock.mjs complete",
-    "validate:scheduler": "node scripts/validate-scheduler-roster.mjs"
+    "validate:scheduler": "node scripts/validate-scheduler-roster.mjs",
+    "scheduler:daily": "node scripts/agent/run-scheduler-cycle.mjs daily",
+    "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
