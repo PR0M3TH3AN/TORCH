@@ -27,7 +27,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs tests/*.test.js",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
     "lock:list": "node bin/torch-lock.mjs list",
