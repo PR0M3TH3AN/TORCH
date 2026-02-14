@@ -23,13 +23,51 @@ import { getRoster as _getRoster } from './roster.mjs';
 import { queryLocks as _queryLocks, publishLock as _publishLock, parseLockEvent } from './lock-ops.mjs';
 import { cmdDashboard } from './dashboard.mjs';
 import { ExitError } from './errors.mjs';
-import { todayDateStr, nowUnix } from './utils.mjs';
+import { todayDateStr, nowUnix, getIsoWeekStr } from './utils.mjs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 useWebSocketImplementation(WebSocket);
 
 // Re-export for backward compatibility/library usage
 export { parseLockEvent, cmdDashboard, _queryLocks as queryLocks, _publishLock as publishLock };
 
+async function getCompletedAgents(cadence, logDir, deps) {
+  const { readdir = fs.readdir, getDateStr = todayDateStr, getIsoWeek = getIsoWeekStr } = deps;
+  const completed = new Set();
+  const targetDir = path.join(logDir, cadence);
+
+  try {
+    const files = await readdir(targetDir);
+    const today = getDateStr();
+    const currentWeek = getIsoWeek();
+
+    for (const file of files) {
+      // Format: YYYY-MM-DDTHH-mm-ssZ__<agent>__<status>.md
+      const match = file.match(/^(\d{4}-\d{2}-\d{2})T.*__([a-zA-Z0-9-_]+)__(.*)\.md$/);
+      if (!match) continue;
+
+      const [_, datePart, agent, status] = match;
+
+      if (status === 'completed') {
+        if (cadence === 'daily' && datePart === today) {
+          completed.add(agent);
+        } else if (cadence === 'weekly') {
+          const fileWeek = getIsoWeek(datePart); // datePart is YYYY-MM-DD
+          if (fileWeek === currentWeek) {
+            completed.add(agent);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.error(`Warning: Failed to read log dir ${targetDir}: ${err.message}`);
+    }
+  }
+
+  return completed;
+}
 
 export async function cmdCheck(cadence, deps = {}) {
   const {
@@ -40,7 +78,9 @@ export async function cmdCheck(cadence, deps = {}) {
     getRoster = _getRoster,
     getDateStr = todayDateStr,
     log = console.log,
-    error = console.error
+    error = console.error,
+    logDir = 'task-logs',
+    ignoreLogs = false,
   } = deps;
 
   const relays = getRelays();
@@ -55,12 +95,20 @@ export async function cmdCheck(cadence, deps = {}) {
     error(`Paused agents: ${pausedAgents.join(', ')}`);
   }
 
+  let completedAgents = new Set();
+  if (!ignoreLogs) {
+    completedAgents = await getCompletedAgents(cadence, logDir, deps);
+    if (completedAgents.size > 0) {
+      error(`Completed agents (logs): ${[...completedAgents].join(', ')}`);
+    }
+  }
+
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = getRoster(cadence);
   const rosterSet = new Set(roster);
 
-  const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents]);
+  const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents, ...completedAgents]);
   const excludedAgents = [...excludedAgentsSet];
   const unknownLockedAgents = lockedAgents.filter((agent) => !rosterSet.has(agent));
   const available = roster.filter((a) => !excludedAgentsSet.has(a));
@@ -71,6 +119,7 @@ export async function cmdCheck(cadence, deps = {}) {
     date: dateStr,
     locked: lockedAgents.sort(),
     paused: pausedAgents.sort(),
+    completed: [...completedAgents].sort(),
     excluded: excludedAgents.sort(),
     available: available.sort(),
     lockCount: locks.length,
@@ -280,7 +329,16 @@ export async function cmdList(cadence, deps = {}) {
 
 
 function parseArgs(argv) {
-  const args = { command: null, agent: null, cadence: null, dryRun: false, force: false, port: DEFAULT_DASHBOARD_PORT };
+  const args = {
+    command: null,
+    agent: null,
+    cadence: null,
+    dryRun: false,
+    force: false,
+    port: DEFAULT_DASHBOARD_PORT,
+    logDir: 'task-logs',
+    ignoreLogs: false,
+  };
   let i = 0;
 
   if (argv.length > 0 && !argv[0].startsWith('-')) {
@@ -304,6 +362,10 @@ function parseArgs(argv) {
       args.force = true;
     } else if (arg === '--port') {
       args.port = parseInt(argv[++i], 10) || DEFAULT_DASHBOARD_PORT;
+    } else if (arg === '--log-dir') {
+      args.logDir = argv[++i];
+    } else if (arg === '--ignore-logs') {
+      args.ignoreLogs = true;
     }
   }
 
@@ -322,8 +384,10 @@ Commands:
   update [--force]                                 Update torch/ configuration (backups, merges)
 
 Options:
-  --dry-run   Build and sign the event but do not publish
-  --force     Overwrite existing files (for init) or all files (for update)
+  --dry-run       Build and sign the event but do not publish
+  --force         Overwrite existing files (for init) or all files (for update)
+  --log-dir       Path to task logs directory (default: task-logs)
+  --ignore-logs   Skip checking local logs for completed tasks
 
 Environment:
   NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
@@ -357,7 +421,7 @@ export async function main(argv) {
           console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for check`);
           throw new ExitError(1, 'Missing cadence');
         }
-        await cmdCheck(args.cadence);
+        await cmdCheck(args.cadence, { logDir: args.logDir, ignoreLogs: args.ignoreLogs });
         break;
       }
 
