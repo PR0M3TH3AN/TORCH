@@ -391,7 +391,9 @@
       };
 
       function platformStyle(platform) {
-        return PLATFORM_COLORS[platform] || PLATFORM_COLORS.unknown;
+        const raw = String(platform || '').toLowerCase().trim();
+        if (raw === 'claude' || raw.includes('claude')) return PLATFORM_COLORS['claude-code'];
+        return PLATFORM_COLORS[raw] || PLATFORM_COLORS.unknown;
       }
 
       // -----------------------------------------------------------------------
@@ -416,7 +418,8 @@
         const active = locks.filter((l) => !isExpired(l));
         const platforms = {};
         for (const l of active) {
-          platforms[l.platform] = (platforms[l.platform] || 0) + 1;
+          const label = platformStyle(l.platform).label;
+          platforms[label] = (platforms[label] || 0) + 1;
         }
 
         const cards = [
