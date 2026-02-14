@@ -125,6 +125,9 @@ const invariants = [
         'step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes)',
         'Publish completion before writing final success log:',
         '`_completed.md` MUST be created only after completion publish succeeds.',
+        'backend_category',
+        'lock_command',
+        'lock_stderr_excerpt',
       ],
     },
     schedulerSnippets: [
@@ -134,6 +137,11 @@ const invariants = [
       "status: 'completed'",
       'Completion publish failed. Retry npm run lock:complete',
       "reason: 'Lock backend error'",
+      'classifyLockBackendError',
+      'backend_category',
+      'lock_command',
+      'lock_stderr_excerpt',
+      'lock_stdout_excerpt',
     ],
     orderedSchedulerSnippets: [
       "reason: 'Validation failed'",

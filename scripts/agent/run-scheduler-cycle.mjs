@@ -92,6 +92,57 @@ function normalizeStringList(value, fallback = []) {
   return value.filter((item) => typeof item === 'string' && item.trim()).map((item) => item.trim());
 }
 
+function redactSensitive(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/\b(BEARER\s+)[A-Za-z0-9._~+/=-]+/gi, '$1[REDACTED]')
+    .replace(/\b(token|api[_-]?key|secret(?:[_-]?key)?|password|passwd|authorization)\s*[:=]\s*[^\s,;]+/gi, '$1=[REDACTED]')
+    .replace(/\b(sk|pk|ghp|xoxb|xoxp)_[A-Za-z0-9_-]+\b/g, '[REDACTED]');
+}
+
+function excerptText(text, maxChars = 600) {
+  const clean = redactSensitive(String(text || '').trim());
+  if (!clean) return '';
+  if (clean.length <= maxChars) return clean;
+  return `${clean.slice(0, maxChars)}…`;
+}
+
+function classifyLockBackendError(outputText) {
+  const text = String(outputText || '').toLowerCase();
+  if (!text.trim()) return 'unknown backend error';
+
+  if ((text.includes('relay') || text.includes('query')) && text.includes('timeout')) {
+    return 'relay query timeout';
+  }
+
+  if (text.includes('publish failed to all relays') || text.includes('failed to publish to any relay')) {
+    return 'publish failed to all relays';
+  }
+
+  if (
+    text.includes('connection refused')
+    || text.includes('econnrefused')
+    || text.includes('getaddrinfo')
+    || text.includes('enotfound')
+    || text.includes('eai_again')
+    || (text.includes('websocket') && text.includes('dns'))
+  ) {
+    return 'websocket connection refused/dns';
+  }
+
+  if (
+    text.includes('invalid url')
+    || text.includes('malformed')
+    || text.includes('unsupported protocol')
+    || text.includes('must start with ws')
+    || text.includes('invalid relay')
+  ) {
+    return 'malformed relay url/config';
+  }
+
+  return 'unknown backend error';
+}
+
 async function artifactExistsSince(filePath, sinceMs) {
   if (!filePath) return false;
   const resolved = path.isAbsolute(filePath)
@@ -252,7 +303,12 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
   };
 }
 
-async function writeLog({ cadence, agent, status, reason, detail }) {
+function toYamlScalar(value) {
+  const str = String(value ?? '');
+  return `'${str.replace(/'/g, "''")}'`;
+}
+
+async function writeLog({ cadence, agent, status, reason, detail, metadata = {} }) {
   const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
   await fs.mkdir(logDir, { recursive: true });
   const file = `${ts()}__${agent}__${status}.md`;
@@ -263,12 +319,18 @@ async function writeLog({ cadence, agent, status, reason, detail }) {
     `status: ${status}`,
     `created_at: ${new Date().toISOString()}`,
     `timestamp: ${new Date().toISOString()}`,
+    ...Object.entries(metadata)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .map(([key, value]) => `${key}: ${toYamlScalar(value)}`),
     '---',
     '',
     `# Scheduler ${status}`,
     '',
     `- reason: ${reason}`,
     detail ? `- detail: ${detail}` : null,
+    ...Object.entries(metadata)
+      .filter(([, value]) => value !== undefined && value !== null && value !== '')
+      .map(([key, value]) => `- ${key}: ${value}`),
     '',
   ].filter(Boolean).join('\n');
   await fs.writeFile(path.join(logDir, file), body, 'utf8');
@@ -352,11 +414,23 @@ async function main() {
     }
 
     if (lockResult.code === 2) {
+      const combinedLockOutput = `${lockResult.stderr}\n${lockResult.stdout}`;
+      const backendCategory = classifyLockBackendError(combinedLockOutput);
+      const lockCommand = `AGENT_PLATFORM=${platform} npm run lock:lock -- --agent ${selectedAgent} --cadence ${cadence}`;
+      const stderrExcerpt = excerptText(lockResult.stderr);
+      const stdoutExcerpt = excerptText(lockResult.stdout);
       await writeLog({
         cadence,
         agent: selectedAgent,
         status: 'failed',
         reason: 'Lock backend error',
+        detail: `Lock backend error (${backendCategory}). Retry ${lockCommand} after verifying relay connectivity, relay URLs, and DNS/network status.`,
+        metadata: {
+          backend_category: backendCategory,
+          lock_command: lockCommand,
+          lock_stderr_excerpt: stderrExcerpt || '(empty)',
+          lock_stdout_excerpt: stdoutExcerpt || '(empty)',
+        },
       });
       process.exit(2);
     }

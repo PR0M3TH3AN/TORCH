@@ -32,7 +32,7 @@ async function runNode(scriptPath, args, { cwd, env }) {
   });
 }
 
-async function setupFixture({ memoryPolicy }) {
+async function setupFixture({ memoryPolicy, lockShellBody = '' }) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-memory-policy-'));
   const scriptsDir = path.join(root, 'scripts', 'agent');
   const binDir = path.join(root, 'bin');
@@ -76,7 +76,10 @@ case "$2" in
   lock:check:daily)
     echo '{"excluded":[]}'
     ;;
-  lock:lock|lock:complete|lint)
+  lock:lock)
+${lockShellBody || '    :'}
+    ;;
+  lock:complete|lint)
     ;;
   *)
     ;;
@@ -100,12 +103,12 @@ test('fails required memory policy when retrieval/storage evidence is missing', 
   const fixture = await setupFixture({
     memoryPolicy: {
       mode: 'required',
-    retrieveCommand: 'echo RETRIEVE_WITHOUT_MARKER',
-    storeCommand: 'echo STORE_WITHOUT_MARKER',
-    retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
-    storeSuccessMarkers: ['MEMORY_STORED'],
-    retrieveArtifacts: [],
-    storeArtifacts: [],
+      retrieveCommand: 'echo RETRIEVE_WITHOUT_MARKER',
+      storeCommand: 'echo STORE_WITHOUT_MARKER',
+      retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
+      storeSuccessMarkers: ['MEMORY_STORED'],
+      retrieveArtifacts: [],
+      storeArtifacts: [],
     },
   });
 
@@ -126,12 +129,12 @@ test('accepts required memory policy when markers or artifacts are produced', { 
   const fixture = await setupFixture({
     memoryPolicy: {
       mode: 'required',
-    retrieveCommand: 'echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok',
-    storeCommand: 'echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok',
-    retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
-    storeSuccessMarkers: ['MEMORY_STORED'],
-    retrieveArtifacts: ['.scheduler-memory/retrieve-daily.ok'],
-    storeArtifacts: ['.scheduler-memory/store-daily.ok'],
+      retrieveCommand: 'echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok',
+      storeCommand: 'echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok',
+      retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
+      storeSuccessMarkers: ['MEMORY_STORED'],
+      retrieveArtifacts: ['.scheduler-memory/retrieve-daily.ok'],
+      storeArtifacts: ['.scheduler-memory/store-daily.ok'],
     },
   });
 
@@ -147,4 +150,32 @@ test('accepts required memory policy when markers or artifacts are produced', { 
 
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'retrieve-daily.ok'));
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'store-daily.ok'));
+});
+
+test('records backend failure metadata when lock command exits with code 2', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    lockShellBody: `    echo 'publish failed to all relays token=abc123 SECRET_KEY=xyz987' >&2
+    echo 'websocket: connection refused' >&1
+    exit 2`,
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 2, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+
+  assert.match(failedBody, /reason: Lock backend error/);
+  assert.match(failedBody, /backend_category: 'publish failed to all relays'/);
+  assert.match(failedBody, /lock_command: 'AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily'/);
+  assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
+  assert.match(failedBody, /lock_stdout_excerpt: 'websocket: connection refused'/);
+  assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
 });

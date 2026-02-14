@@ -145,4 +145,23 @@ describe('Scheduler cycle ordering guarantees', () => {
       previousIndex = index;
     }
   });
+
+  it('includes lock backend failure metadata and classifier checkpoints', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const source = await readFile(new URL('../scripts/agent/run-scheduler-cycle.mjs', import.meta.url), 'utf8');
+
+    const requiredSnippets = [
+      'function classifyLockBackendError(outputText)',
+      "backend_category: backendCategory",
+      "lock_command: lockCommand",
+      "lock_stderr_excerpt: stderrExcerpt || '(empty)'",
+      "lock_stdout_excerpt: stdoutExcerpt || '(empty)'",
+      "reason: 'Lock backend error'",
+    ];
+
+    for (const snippet of requiredSnippets) {
+      assert.ok(source.includes(snippet), `Expected scheduler snippet not found: ${snippet}`);
+    }
+  });
+
 });
