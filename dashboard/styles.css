@@ -58,18 +58,18 @@ a { color: inherit; }
 .bg-surface { background-color: var(--surface); }
 .bg-surface-alt { background-color: var(--surface-alt); }
 .bg-muted { background-color: var(--muted); }
-.bg-muted\/10 { background-color: rgb(154 166 198 / 0.1); }
+.bg-muted\/10 { background-color: color-mix(in srgb, var(--muted) 10%, transparent); }
 .bg-accent { background-color: var(--accent); }
 .bg-accent-strong { background-color: var(--accent-strong); }
 .bg-success { background-color: var(--success); }
-.bg-success\/10 { background-color: rgb(53 196 124 / 0.1); }
-.bg-success\/5 { background-color: rgb(53 196 124 / 0.05); }
+.bg-success\/10 { background-color: color-mix(in srgb, var(--success) 10%, transparent); }
+.bg-success\/5 { background-color: color-mix(in srgb, var(--success) 5%, transparent); }
 .bg-warning { background-color: var(--warning); }
-.bg-warning\/10 { background-color: rgb(245 184 75 / 0.1); }
+.bg-warning\/10 { background-color: color-mix(in srgb, var(--warning) 10%, transparent); }
 .bg-danger { background-color: var(--danger); }
-.bg-danger\/10 { background-color: rgb(255 107 107 / 0.1); }
-.bg-info\/10 { background-color: rgb(70 183 255 / 0.1); }
-.bg-border\/30 { background-color: rgb(42 52 86 / 0.3); }
+.bg-danger\/10 { background-color: color-mix(in srgb, var(--danger) 10%, transparent); }
+.bg-info\/10 { background-color: color-mix(in srgb, var(--info) 10%, transparent); }
+.bg-border\/30 { background-color: color-mix(in srgb, var(--border) 30%, transparent); }
 
 .text-text { color: var(--text); }
 .text-text-strong { color: var(--text-strong); }
@@ -86,10 +86,10 @@ a { color: inherit; }
 .border-t { border-top-width: 1px; border-top-style: solid; }
 .border-b { border-bottom-width: 1px; border-bottom-style: solid; }
 .border-border { border-color: var(--border); }
-.border-border\/50 { border-color: rgb(42 52 86 / 0.5); }
-.border-border\/30 { border-color: rgb(42 52 86 / 0.3); }
+.border-border\/50 { border-color: color-mix(in srgb, var(--border) 50%, transparent); }
+.border-border\/30 { border-color: color-mix(in srgb, var(--border) 30%, transparent); }
 .border-success { border-color: var(--success); }
-.border-success\/30 { border-color: rgb(53 196 124 / 0.3); }
+.border-success\/30 { border-color: color-mix(in srgb, var(--success) 30%, transparent); }
 
 .rounded-md { border-radius: 0.375rem; }
 .rounded-lg { border-radius: 0.5rem; }
