@@ -34,7 +34,8 @@
     "lock:lock": "node bin/torch-lock.mjs lock",
     "dashboard:serve": "node bin/torch-lock.mjs dashboard",
     "build": "node build.mjs",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lock:complete": "node bin/torch-lock.mjs complete"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
