@@ -439,9 +439,14 @@ export async function cmdList(cadence) {
 
   console.error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
 
-  for (const c of cadences) {
-    const locks = await queryLocks(relays, c, dateStr, namespace);
+  const results = await Promise.all(
+    cadences.map(async (c) => {
+      const locks = await queryLocks(relays, c, dateStr, namespace);
+      return { c, locks };
+    }),
+  );
 
+  for (const { c, locks } of results) {
     console.log(`\n${'='.repeat(72)}`);
     console.log(`Active ${namespace} ${c} locks (${dateStr})`);
     console.log('='.repeat(72));

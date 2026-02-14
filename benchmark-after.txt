@@ -1,0 +1,12 @@
+Benchmarking "node bin/torch-lock.mjs list" (5 iterations)...
+Run 1: 15199.04ms
+Run 2: 15186.28ms
+Run 3: 15188.74ms
+Run 4: 15191.66ms
+Run 5: 15184.86ms
+
+Results:
+  Count:   5
+  Average: 15190.12ms
+  Min:     15184.86ms
+  Max:     15199.04ms
