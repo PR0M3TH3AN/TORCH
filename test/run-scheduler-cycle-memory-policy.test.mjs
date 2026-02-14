@@ -1,0 +1,150 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+
+const SOURCE_SCRIPT = path.resolve('scripts/agent/run-scheduler-cycle.mjs');
+
+async function runNode(scriptPath, args, { cwd, env }) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [scriptPath, ...args], {
+      cwd,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    child.on('close', (code) => {
+      resolve({ code: code ?? 1, stdout, stderr });
+    });
+  });
+}
+
+async function setupFixture({ memoryPolicy }) {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-memory-policy-'));
+  const scriptsDir = path.join(root, 'scripts', 'agent');
+  const binDir = path.join(root, 'bin');
+
+  await fs.mkdir(path.join(root, 'src', 'prompts'), { recursive: true });
+  await fs.mkdir(path.join(root, 'src', 'prompts', 'daily'), { recursive: true });
+  await fs.mkdir(scriptsDir, { recursive: true });
+  await fs.mkdir(binDir, { recursive: true });
+
+  await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
+  await fs.writeFile(
+    path.join(scriptsDir, 'verify-run-artifacts.mjs'),
+    '#!/usr/bin/env node\nprocess.exit(0);\n',
+    'utf8',
+  );
+
+  await fs.writeFile(path.join(root, 'src', 'prompts', 'roster.json'), JSON.stringify({ daily: ['agent-a'] }, null, 2));
+  await fs.writeFile(path.join(root, 'src', 'prompts', 'daily', 'agent-a.md'), '# agent-a\n', 'utf8');
+
+  await fs.writeFile(
+    path.join(root, 'torch-config.json'),
+    JSON.stringify({
+      scheduler: {
+        firstPromptByCadence: { daily: 'agent-a' },
+        handoffCommandByCadence: { daily: 'echo HANDOFF_OK' },
+        validationCommandsByCadence: { daily: ['true'] },
+        memoryPolicyByCadence: { daily: memoryPolicy },
+      },
+    }, null, 2),
+    'utf8',
+  );
+
+  await fs.writeFile(
+    path.join(binDir, 'npm'),
+    `#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$1" != "run" ]]; then
+  exit 1
+fi
+case "$2" in
+  lock:check:daily)
+    echo '{"excluded":[]}'
+    ;;
+  lock:lock|lock:complete|lint)
+    ;;
+  *)
+    ;;
+esac
+`,
+    'utf8',
+  );
+  await fs.chmod(path.join(binDir, 'npm'), 0o755);
+
+  return {
+    root,
+    scriptPath: path.join(scriptsDir, 'run-scheduler-cycle.mjs'),
+    env: {
+      ...process.env,
+      PATH: `${binDir}:${process.env.PATH}`,
+    },
+  };
+}
+
+test('fails required memory policy when retrieval/storage evidence is missing', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: {
+      mode: 'required',
+    retrieveCommand: 'echo RETRIEVE_WITHOUT_MARKER',
+    storeCommand: 'echo STORE_WITHOUT_MARKER',
+    retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
+    storeSuccessMarkers: ['MEMORY_STORED'],
+    retrieveArtifacts: [],
+    storeArtifacts: [],
+    },
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 1, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+  assert.match(failedBody, /Required memory steps not verified/);
+});
+
+test('accepts required memory policy when markers or artifacts are produced', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: {
+      mode: 'required',
+    retrieveCommand: 'echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok',
+    storeCommand: 'echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok',
+    retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
+    storeSuccessMarkers: ['MEMORY_STORED'],
+    retrieveArtifacts: ['.scheduler-memory/retrieve-daily.ok'],
+    storeArtifacts: ['.scheduler-memory/store-daily.ok'],
+    },
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  assert.ok(logs.some((name) => name.endsWith('__completed.md')));
+
+  await fs.access(path.join(fixture.root, '.scheduler-memory', 'retrieve-daily.ok'));
+  await fs.access(path.join(fixture.root, '.scheduler-memory', 'store-daily.ok'));
+});

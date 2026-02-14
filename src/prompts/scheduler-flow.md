@@ -32,10 +32,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - Record active unresolved reproducible items in `KNOWN_ISSUES.md`
 4. **Execute memory retrieval before implementation begins**:
    - Run configured memory retrieval workflow before prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.retrieveCommand`)
-   - Capture explicit evidence of retrieval with output markers and/or created artifact files
+   - For current scheduler enforcement, retrieval command MUST emit `MEMORY_RETRIEVED` and/or create the configured artifact (`.scheduler-memory/retrieve-daily.ok` or `.scheduler-memory/retrieve-weekly.ok`)
 5. **Store memory after implementation and before completion publish**:
    - Run configured memory storage workflow after prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.storeCommand`)
-   - Persist summary/decision memory and emit verifiable markers/artifacts
+   - For current scheduler enforcement, storage command MUST emit `MEMORY_STORED` and/or create the configured artifact (`.scheduler-memory/store-daily.ok` or `.scheduler-memory/store-weekly.ok`)
 6. **Publish lock completion only after validation passes and before writing success logs**:
    - Run `npm run lock:complete -- --agent <agent-name> --cadence <cadence>` (or equivalent `complete`) successfully
    - If any validation command exits non-zero, do **not** call `lock:complete`; write `_failed.md` with the validation failure reason and stop
@@ -138,6 +138,13 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
    - Memory retrieval evidence must exist for this run (output marker and/or artifact file).
    - Memory storage evidence must exist for this run (output marker and/or artifact file).
+   - Enforced daily commands in `torch-config.json` currently run:
+     - `echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok`
+     - `echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok`
+   - Enforced weekly commands in `torch-config.json` currently run:
+     - `echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-weekly.ok`
+     - `echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-weekly.ok`
+   - Prompt authors MUST keep any command changes aligned with configured markers/artifacts so scheduler evidence checks remain satisfiable.
    - If `scheduler.memoryPolicyByCadence.<cadence>.mode = required`, missing evidence is a hard failure.
    - If mode is `optional`, log warning context and continue.
 

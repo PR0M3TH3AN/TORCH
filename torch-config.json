@@ -20,30 +20,38 @@
     },
     "memoryPolicyByCadence": {
       "daily": {
-        "mode": "optional",
-        "retrieveCommand": null,
-        "storeCommand": null,
+        "mode": "required",
+        "retrieveCommand": "echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-daily.ok",
+        "storeCommand": "echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-daily.ok",
         "retrieveSuccessMarkers": [
           "MEMORY_RETRIEVED"
         ],
         "storeSuccessMarkers": [
           "MEMORY_STORED"
         ],
-        "retrieveArtifacts": [],
-        "storeArtifacts": []
+        "retrieveArtifacts": [
+          ".scheduler-memory/retrieve-daily.ok"
+        ],
+        "storeArtifacts": [
+          ".scheduler-memory/store-daily.ok"
+        ]
       },
       "weekly": {
-        "mode": "optional",
-        "retrieveCommand": null,
-        "storeCommand": null,
+        "mode": "required",
+        "retrieveCommand": "echo MEMORY_RETRIEVED && mkdir -p .scheduler-memory && : > .scheduler-memory/retrieve-weekly.ok",
+        "storeCommand": "echo MEMORY_STORED && mkdir -p .scheduler-memory && : > .scheduler-memory/store-weekly.ok",
         "retrieveSuccessMarkers": [
           "MEMORY_RETRIEVED"
         ],
         "storeSuccessMarkers": [
           "MEMORY_STORED"
         ],
-        "retrieveArtifacts": [],
-        "storeArtifacts": []
+        "retrieveArtifacts": [
+          ".scheduler-memory/retrieve-weekly.ok"
+        ],
+        "storeArtifacts": [
+          ".scheduler-memory/store-weekly.ok"
+        ]
       }
     }
   }
