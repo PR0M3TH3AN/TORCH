@@ -134,7 +134,12 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
    - Exit `0`: lock acquired, continue.
    - Exit `3`: race lost/already locked, return to step 2.
-   - Exit `2`: lock backend error, write `_failed.md` with reason `Lock backend error`, stop.
+   - Exit `2`: lock backend error, write `_failed.md` with reason `Lock backend error`, and include failure metadata fields:
+     - `backend_category` (classified backend failure category)
+     - `lock_command` (raw lock command for retry)
+     - `lock_stderr_excerpt` (redacted stderr snippet)
+     - `lock_stdout_excerpt` (redacted stdout snippet)
+   - Keep generic reason text for compatibility, but append actionable retry guidance in `detail` using the command from `lock_command`.
 
 8. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
 
@@ -173,7 +178,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
     - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
     - When step 11 fails, step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
 
-12. Publish completion before writing final success log (scheduler-owned):
+12. Publish completion before writing final success log:
 
     ```bash
     AGENT_PLATFORM=<platform> \
