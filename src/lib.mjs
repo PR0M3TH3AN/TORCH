@@ -486,65 +486,84 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
   // this file is in <root>/src/lib.mjs, so '..' goes to <root>
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-  const server = http.createServer((req, res) => {
-    // URL parsing
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    let pathname = url.pathname;
+  const server = http.createServer(async (req, res) => {
+    try {
+      // URL parsing
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      let pathname = url.pathname;
 
-    // Redirect / to /dashboard/
-    if (pathname === '/' || pathname === '/dashboard') {
-      res.writeHead(302, { 'Location': '/dashboard/' });
-      res.end();
-      return;
-    }
-
-    // Special case: /torch-config.json
-    // Priority: User's CWD > Package default
-    if (pathname === '/torch-config.json') {
-      const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
-      if (fs.existsSync(userConfigPath)) {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        fs.createReadStream(userConfigPath).pipe(res);
+      // Redirect / to /dashboard/
+      if (pathname === '/' || pathname === '/dashboard') {
+        res.writeHead(302, { 'Location': '/dashboard/' });
+        res.end();
         return;
       }
-      // If not found in CWD, fall through to serve from packageRoot (if it exists there)
-      // or return empty object if missing?
-      // Falling through means it looks for packageRoot/torch-config.json
+
+      // Special case: /torch-config.json
+      // Priority: User's CWD > Package default
+      if (pathname === '/torch-config.json') {
+        const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
+        try {
+          const stats = await fs.promises.stat(userConfigPath);
+          if (stats.isFile()) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            fs.createReadStream(userConfigPath).pipe(res);
+            return;
+          }
+        } catch {
+          // If not found in CWD, fall through to serve from packageRoot (if it exists there)
+        }
+      }
+
+      // Security check: prevent directory traversal
+      const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
+      let filePath = path.join(packageRoot, safePath);
+
+      let stats;
+      try {
+        stats = await fs.promises.stat(filePath);
+        // If directory, try index.html
+        if (stats.isDirectory()) {
+          filePath = path.join(filePath, 'index.html');
+          stats = await fs.promises.stat(filePath);
+        }
+      } catch {
+        res.writeHead(404);
+        res.end('Not Found');
+        return;
+      }
+
+      // Check if file exists and is a file
+      if (!stats.isFile()) {
+        res.writeHead(404);
+        res.end('Not Found');
+        return;
+      }
+
+      // MIME types
+      const extname = path.extname(filePath);
+      let contentType = 'text/plain';
+      switch (extname) {
+        case '.html': contentType = 'text/html'; break;
+        case '.js': contentType = 'text/javascript'; break;
+        case '.css': contentType = 'text/css'; break;
+        case '.json': contentType = 'application/json'; break;
+        case '.png': contentType = 'image/png'; break;
+        case '.jpg': contentType = 'image/jpeg'; break;
+        case '.svg': contentType = 'image/svg+xml'; break;
+        case '.ico': contentType = 'image/x-icon'; break;
+        case '.md': contentType = 'text/markdown'; break;
+      }
+
+      res.writeHead(200, { 'Content-Type': contentType });
+      fs.createReadStream(filePath).pipe(res);
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end('Internal Server Error');
+      }
     }
-
-    // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
-    let filePath = path.join(packageRoot, safePath);
-
-    // If directory, try index.html
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-       filePath = path.join(filePath, 'index.html');
-    }
-
-    // Check if file exists and is a file
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-      res.writeHead(404);
-      res.end('Not Found');
-      return;
-    }
-
-    // MIME types
-    const extname = path.extname(filePath);
-    let contentType = 'text/plain';
-    switch (extname) {
-      case '.html': contentType = 'text/html'; break;
-      case '.js': contentType = 'text/javascript'; break;
-      case '.css': contentType = 'text/css'; break;
-      case '.json': contentType = 'application/json'; break;
-      case '.png': contentType = 'image/png'; break;
-      case '.jpg': contentType = 'image/jpeg'; break;
-      case '.svg': contentType = 'image/svg+xml'; break;
-      case '.ico': contentType = 'image/x-icon'; break;
-      case '.md': contentType = 'text/markdown'; break;
-    }
-
-    res.writeHead(200, { 'Content-Type': contentType });
-    fs.createReadStream(filePath).pipe(res);
   });
 
   server.listen(port, () => {
