@@ -36,10 +36,10 @@
     "pr-review-agent",
     "race-condition-agent",
     "refactor-agent",
+    "repo-fit-agent",
     "smoke-agent",
     "telemetry-agent",
     "test-coverage-agent",
-    "repo-fit-agent",
     "weekly-synthesis-agent"
   ]
 }
