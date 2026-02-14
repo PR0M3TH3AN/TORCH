@@ -7,6 +7,10 @@
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
     <link rel="stylesheet" href="../dashboard/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
     <style>
         /* Landing Page Specific Overrides & Additions */
         body {
@@ -508,6 +512,30 @@
         :root {
             --danger: #ef4444;
         }
+
+        /* Agent Flow Section */
+        .agent-flow {
+            max-width: 1200px;
+            margin: 0 auto 4rem;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .agent-flow h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-strong);
+        }
+
+        .mermaid {
+            background: var(--surface-alt);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
@@ -587,6 +615,31 @@
                         <pre><code id="weekly-code">Loading...</code></pre>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="agent-flow">
+            <h2>Autonomous Improvement Cycle</h2>
+            <div class="mermaid">
+                flowchart TD
+                    %% Nodes
+                    S[Scheduler<br/>Daily & Weekly]
+                    C[Candidate Loop<br/>Audit & Check Agents]
+                    F[Fixer Agents<br/>Code Correction]
+                    P[Prompt Maintenance<br/>Self-Evolution]
+
+                    %% Edge Connections
+                    S -->|Orchestrates| C
+                    C -->|Identifies Gaps| F
+                    F -->|Resolves Issues| P
+                    P -->|Refines Prompts| S
+
+                    %% Styles
+                    classDef box fill:#151b2f,stroke:#2a3456,color:#dbe4ff,stroke-width:1px;
+                    classDef accent fill:#4f8cff,stroke:#2f6be5,color:#ffffff,stroke-width:2px;
+
+                    class S,P accent;
+                    class C,F box;
             </div>
         </section>
     </main>
