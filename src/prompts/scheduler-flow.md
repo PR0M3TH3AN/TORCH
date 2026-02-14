@@ -42,10 +42,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - Storage command MUST write cadence-scoped evidence artifacts:
      - `.scheduler-memory/store-<cadence>.ok`
      - `.scheduler-memory/store-<cadence>.json` containing operation inputs/outputs (`agentId`, input event count, stored count, generated summaries).
-6. **Publish lock completion only after validation passes and before writing success logs**:
-   - Run `npm run lock:complete -- --agent <agent-name> --cadence <cadence>` (or equivalent `complete`) successfully
-   - If any validation command exits non-zero, do **not** call `lock:complete`; write `_failed.md` with the validation failure reason and stop
-   - Only after completion publish succeeds may the agent write final `*_completed.md` log files
+6. **Scheduler-owned completion/logging is mandatory**:
+   - Spawned agents MUST NOT run `lock:complete`.
+   - Spawned agents MUST NOT write final `task-logs/<cadence>/<timestamp>__<agent-name>__completed.md` or `__failed.md` files.
+   - Scheduler performs completion publish and writes final success/failure task logs after its own validation gates.
 
 ## Numbered MUST Procedure
 
@@ -173,7 +173,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
     - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
     - When step 11 fails, step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
 
-12. Publish completion before writing final success log:
+12. Publish completion before writing final success log (scheduler-owned):
 
     ```bash
     AGENT_PLATFORM=<platform> \
@@ -185,10 +185,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
     - Exit `0`: completion published successfully; continue to step 13.
     - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry npm run lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
 
-13. Create final task log only after step 12 succeeds:
+13. Create final task log only after step 12 succeeds (scheduler-owned):
 
     - `_completed.md` MUST be created only after completion publish succeeds.
-    - `_failed.md` is required when step 10 or step 11 fails, and should include the failure reason and next retry action.
+    - `_failed.md` is required when step 10, step 11, or step 12 fails, and should include the failure reason and next retry action.
 
 14. Commit/push behavior is delegated outside this scheduler script.
 

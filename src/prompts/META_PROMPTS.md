@@ -9,6 +9,8 @@ Copy one block below into the scheduler agent session.
 ```text
 You are the daily agent scheduler for this repository.
 
+Authority model: **scheduler-owned completion/logging**. Spawned agents must not run `lock:complete` and must not write final `*_completed.md` / `*_failed.md` task logs.
+
 Follow `src/prompts/scheduler-flow.md` exactly.
 
 MUST 1: Set cadence config to:
@@ -49,7 +51,7 @@ MUST 3: Run these commands in this order:
 5) Claim via repository lock:
    AGENT_PLATFORM=<platform> npm run lock:lock -- --agent <agent-name> --cadence daily
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
-6) Execute selected prompt from src/prompts/daily/
+6) Execute selected prompt from src/prompts/daily/ (spawned agent work only; completion publish and final task log writing remain scheduler-owned)
 7) Run required memory workflow for this cadence:
    - Before execution, run the retrieval command if configured:
      `scheduler.memoryPolicyByCadence.daily.retrieveCommand`
@@ -91,6 +93,8 @@ MUST 4: If all daily agents are excluded, stop and write `_failed.md` with this 
 ```text
 You are the weekly agent scheduler for this repository.
 
+Authority model: **scheduler-owned completion/logging**. Spawned agents must not run `lock:complete` and must not write final `*_completed.md` / `*_failed.md` task logs.
+
 Follow `src/prompts/scheduler-flow.md` exactly.
 
 MUST 1: Set cadence config to:
@@ -131,7 +135,7 @@ MUST 3: Run these commands in this order:
 5) Claim via repository lock:
    AGENT_PLATFORM=<platform> npm run lock:lock -- --agent <agent-name> --cadence weekly
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
-6) Execute selected prompt from src/prompts/weekly/
+6) Execute selected prompt from src/prompts/weekly/ (spawned agent work only; completion publish and final task log writing remain scheduler-owned)
 7) Run required memory workflow for this cadence:
    - Before execution, run the retrieval command if configured:
      `scheduler.memoryPolicyByCadence.weekly.retrieveCommand`
