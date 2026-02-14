@@ -1,0 +1,600 @@
+
+> torch-lock@0.1.0 test
+> node --test test/*.test.mjs
+
+TAP version 13
+# Subtest: src/lib.mjs
+    # Subtest: cmdCheck
+        # Subtest: returns correct structure with empty locks
+        ok 1 - returns correct structure with empty locks
+          ---
+          duration_ms: 11.041212
+          type: 'test'
+          ...
+        # Subtest: identifies locked agents
+        ok 2 - identifies locked agents
+          ---
+          duration_ms: 0.760284
+          type: 'test'
+          ...
+        # Subtest: excludes paused agents
+        ok 3 - excludes paused agents
+          ---
+          duration_ms: 0.822208
+          type: 'test'
+          ...
+        # Subtest: identifies unknown locked agents
+        ok 4 - identifies unknown locked agents
+          ---
+          duration_ms: 0.85916
+          type: 'test'
+          ...
+        1..4
+    ok 1 - cmdCheck
+      ---
+      duration_ms: 15.580149
+      type: 'suite'
+      ...
+    # Subtest: cmdLock
+        # Subtest: successfully locks an available agent
+        ok 1 - successfully locks an available agent
+          ---
+          duration_ms: 11.410628
+          type: 'test'
+          ...
+        # Subtest: fails if agent is not in roster
+        ok 2 - fails if agent is not in roster
+          ---
+          duration_ms: 1.39463
+          type: 'test'
+          ...
+        # Subtest: fails if agent is already locked
+        ok 3 - fails if agent is already locked
+          ---
+          duration_ms: 1.114336
+          type: 'test'
+          ...
+        # Subtest: fails if agent is already completed
+        ok 4 - fails if agent is already completed
+          ---
+          duration_ms: 0.724132
+          type: 'test'
+          ...
+        # Subtest: fails if race check is lost
+        ok 5 - fails if race check is lost
+          ---
+          duration_ms: 7.492092
+          type: 'test'
+          ...
+        # Subtest: dry run does not publish
+        ok 6 - dry run does not publish
+          ---
+          duration_ms: 0.706617
+          type: 'test'
+          ...
+        1..6
+    ok 2 - cmdLock
+      ---
+      duration_ms: 24.08577
+      type: 'suite'
+      ...
+    # Subtest: cmdList
+        # Subtest: lists active locks
+        ok 1 - lists active locks
+          ---
+          duration_ms: 0.83374
+          type: 'test'
+          ...
+        # Subtest: warns about unknown agents
+        ok 2 - warns about unknown agents
+          ---
+          duration_ms: 0.496584
+          type: 'test'
+          ...
+        # Subtest: handles no locks
+        ok 3 - handles no locks
+          ---
+          duration_ms: 0.326104
+          type: 'test'
+          ...
+        1..3
+    ok 3 - cmdList
+      ---
+      duration_ms: 1.892244
+      type: 'suite'
+      ...
+    # Subtest: cmdComplete
+        # Subtest: successfully completes an active lock
+        ok 1 - successfully completes an active lock
+          ---
+          duration_ms: 1.080992
+          type: 'test'
+          ...
+        # Subtest: fails if no active lock found
+        ok 2 - fails if no active lock found
+          ---
+          duration_ms: 0.500767
+          type: 'test'
+          ...
+        # Subtest: detects already completed task
+        ok 3 - detects already completed task
+          ---
+          duration_ms: 0.32976
+          type: 'test'
+          ...
+        1..3
+    ok 4 - cmdComplete
+      ---
+      duration_ms: 2.110436
+      type: 'suite'
+      ...
+    1..4
+ok 1 - src/lib.mjs
+  ---
+  duration_ms: 45.03511
+  type: 'suite'
+  ...
+# Subtest: parseLockEvent
+    # Subtest: should parse a valid lock event correctly
+    ok 1 - should parse a valid lock event correctly
+      ---
+      duration_ms: 3.976866
+      type: 'test'
+      ...
+    # Subtest: should handle missing d tag
+    ok 2 - should handle missing d tag
+      ---
+      duration_ms: 0.478869
+      type: 'test'
+      ...
+    # Subtest: should handle missing expiration tag
+    ok 3 - should handle missing expiration tag
+      ---
+      duration_ms: 0.270815
+      type: 'test'
+      ...
+    # Subtest: should handle malformed JSON content
+    ok 4 - should handle malformed JSON content
+      ---
+      duration_ms: 0.436994
+      type: 'test'
+      ...
+    # Subtest: should handle non-object JSON content (string)
+    ok 5 - should handle non-object JSON content (string)
+      ---
+      duration_ms: 0.226085
+      type: 'test'
+      ...
+    # Subtest: should handle non-object JSON content (array)
+    ok 6 - should handle non-object JSON content (array)
+      ---
+      duration_ms: 0.207773
+      type: 'test'
+      ...
+    # Subtest: should handle partial JSON content
+    ok 7 - should handle partial JSON content
+      ---
+      duration_ms: 0.260396
+      type: 'test'
+      ...
+    1..7
+ok 2 - parseLockEvent
+  ---
+  duration_ms: 7.871324
+  type: 'suite'
+  ...
+# Subtest: CLI Smoke Test
+    # Subtest: should print usage when no args provided
+    ok 1 - should print usage when no args provided
+      ---
+      duration_ms: 214.629961
+      type: 'test'
+      ...
+    # Subtest: should fail when checking without cadence
+    ok 2 - should fail when checking without cadence
+      ---
+      duration_ms: 210.477652
+      type: 'test'
+      ...
+    # Subtest: should include paused agents in check output
+    ok 3 - should include paused agents in check output
+      ---
+      duration_ms: 1002.85269
+      type: 'test'
+      ...
+    1..3
+ok 3 - CLI Smoke Test
+  ---
+  duration_ms: 1429.608541
+  type: 'suite'
+  ...
+# Initializing torch configuration in /app/test-ops-TxOxDw/project1/torch...
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created torch/scripts/check-file-size.mjs
+# Created torch/scripts/check-innerhtml.mjs
+# Created 22 files in torch/prompts/daily/
+# Created 19 files in torch/prompts/weekly/
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Initializing torch configuration in /app/test-ops-TxOxDw/project2/torch...
+# Initializing torch configuration in /app/test-ops-TxOxDw/project3/torch...
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created torch/scripts/check-file-size.mjs
+# Created torch/scripts/check-innerhtml.mjs
+# Created 22 files in torch/prompts/daily/
+# Created 19 files in torch/prompts/weekly/
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Updating torch configuration in /app/test-ops-TxOxDw/project3/torch...
+# Creating backup at torch/_backups/backup_2026-02-14T19-23-09-502Z...
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Skipped roster.json (preserved)
+# Updating scripts...
+#   Skipped check-file-size.mjs (preserved)
+#   Skipped check-innerhtml.mjs (preserved)
+# Updating prompts...
+#   daily/: 0 added, 0 updated, 22 preserved
+#   weekly/: 0 added, 0 updated, 19 preserved
+# Update complete.
+# Initializing torch configuration in /app/test-ops-TxOxDw/project4/torch...
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created torch/scripts/check-file-size.mjs
+# Created torch/scripts/check-innerhtml.mjs
+# Created 22 files in torch/prompts/daily/
+# Created 19 files in torch/prompts/weekly/
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Updating torch configuration in /app/test-ops-TxOxDw/project4/torch...
+# Creating backup at torch/_backups/backup_2026-02-14T19-23-09-555Z...
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Overwrote roster.json (forced)
+# Updating scripts...
+#   Updated check-file-size.mjs (forced)
+#   Updated check-innerhtml.mjs (forced)
+# Updating prompts...
+#   daily/: 0 added, 22 updated, 0 preserved
+#   weekly/: 0 added, 19 updated, 0 preserved
+# Update complete.
+# Initializing torch configuration in /app/test-ops-TxOxDw/project5/torch...
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created torch/scripts/check-file-size.mjs
+# Created torch/scripts/check-innerhtml.mjs
+# Created 22 files in torch/prompts/daily/
+# Created 19 files in torch/prompts/weekly/
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Updating torch configuration in /app/test-ops-TxOxDw/project5/torch...
+# Creating backup at torch/_backups/backup_2026-02-14T19-23-09-617Z...
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Skipped roster.json (preserved)
+# Updating scripts...
+#   Skipped check-file-size.mjs (preserved)
+#   Skipped check-innerhtml.mjs (preserved)
+# Updating prompts...
+#   daily/: 0 added, 0 updated, 22 preserved
+#   weekly/: 0 added, 0 updated, 19 preserved
+# Update complete.
+# Initializing torch configuration in /app/test-ops-TxOxDw/project_roster/torch...
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created torch/scripts/check-file-size.mjs
+# Created torch/scripts/check-innerhtml.mjs
+# Created 22 files in torch/prompts/daily/
+# Created 19 files in torch/prompts/weekly/
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Checking locks: namespace=torch, cadence=daily, date=2026-02-14
+# Relays: wss://relay.damus.io, wss://nos.lol, wss://relay.primal.net
+# Subtest: cmdInit creates directory structure and files
+ok 4 - cmdInit creates directory structure and files
+  ---
+  duration_ms: 38.939852
+  type: 'test'
+  ...
+# Subtest: cmdInit fails if directory exists without force
+ok 5 - cmdInit fails if directory exists without force
+  ---
+  duration_ms: 1.385876
+  type: 'test'
+  ...
+# Subtest: cmdUpdate preserves modified prompt
+ok 6 - cmdUpdate preserves modified prompt
+  ---
+  duration_ms: 50.406001
+  type: 'test'
+  ...
+# Subtest: cmdUpdate overwrites prompt with force
+ok 7 - cmdUpdate overwrites prompt with force
+  ---
+  duration_ms: 59.092881
+  type: 'test'
+  ...
+# Subtest: cmdUpdate creates backup
+ok 8 - cmdUpdate creates backup
+  ---
+  duration_ms: 59.382969
+  type: 'test'
+  ...
+# Subtest: torch-lock check respects local roster
+ok 9 - torch-lock check respects local roster
+  ---
+  duration_ms: 1074.410444
+  type: 'test'
+  ...
+# Subtest: Scheduler Ratchet Logic (Log Checking)
+    # Subtest: excludes agents completed today (daily)
+    ok 1 - excludes agents completed today (daily)
+      ---
+      duration_ms: 3.8002
+      type: 'test'
+      ...
+    # Subtest: excludes agents completed this week (weekly)
+    ok 2 - excludes agents completed this week (weekly)
+      ---
+      duration_ms: 0.632534
+      type: 'test'
+      ...
+    # Subtest: combines locked and completed agents in exclusion list
+    ok 3 - combines locked and completed agents in exclusion list
+      ---
+      duration_ms: 0.722645
+      type: 'test'
+      ...
+    # Subtest: ignores logs when --ignore-logs is set
+    ok 4 - ignores logs when --ignore-logs is set
+      ---
+      duration_ms: 0.418629
+      type: 'test'
+      ...
+    # Subtest: handles missing log directory gracefully
+    ok 5 - handles missing log directory gracefully
+      ---
+      duration_ms: 0.463313
+      type: 'test'
+      ...
+    1..5
+ok 10 - Scheduler Ratchet Logic (Log Checking)
+  ---
+  duration_ms: 8.325635
+  type: 'suite'
+  ...
+# Subtest: loadTorchConfig (Unit Tests with Mocked FS)
+    # Subtest: loads valid config correctly
+    ok 1 - loads valid config correctly
+      ---
+      duration_ms: 4.439239
+      type: 'test'
+      ...
+    # Subtest: returns default config when file is missing
+    ok 2 - returns default config when file is missing
+      ---
+      duration_ms: 0.43711
+      type: 'test'
+      ...
+    # Subtest: throws error on malformed JSON
+    ok 3 - throws error on malformed JSON
+      ---
+      duration_ms: 1.046315
+      type: 'test'
+      ...
+    # Subtest: caches the config and ignores subsequent fs calls
+    ok 4 - caches the config and ignores subsequent fs calls
+      ---
+      duration_ms: 0.765738
+      type: 'test'
+      ...
+    1..4
+ok 11 - loadTorchConfig (Unit Tests with Mocked FS)
+  ---
+  duration_ms: 8.445371
+  type: 'suite'
+  ...
+# Subtest: torch-config
+    # Subtest: getTorchConfigPath
+        # Subtest: returns default path when env var is not set
+        ok 1 - returns default path when env var is not set
+          ---
+          duration_ms: 1.605283
+          type: 'test'
+          ...
+        # Subtest: returns custom path when env var is set
+        ok 2 - returns custom path when env var is set
+          ---
+          duration_ms: 0.753996
+          type: 'test'
+          ...
+        # Subtest: trims env var value
+        ok 3 - trims env var value
+          ---
+          duration_ms: 0.402756
+          type: 'test'
+          ...
+        1..3
+    ok 1 - getTorchConfigPath
+      ---
+      duration_ms: 5.989088
+      type: 'suite'
+      ...
+    # Subtest: parseTorchConfig
+        # Subtest: returns default values for empty raw config
+        ok 1 - returns default values for empty raw config
+          ---
+          duration_ms: 2.801311
+          type: 'test'
+          ...
+        # Subtest: correctly parses and normalizes nostrLock config
+        ok 2 - correctly parses and normalizes nostrLock config
+          ---
+          duration_ms: 1.217618
+          type: 'test'
+          ...
+        # Subtest: normalizes cadence and status in dashboard config
+        ok 3 - normalizes cadence and status in dashboard config
+          ---
+          duration_ms: 0.448055
+          type: 'test'
+          ...
+        # Subtest: falls back to defaults for invalid cadence/status
+        ok 4 - falls back to defaults for invalid cadence/status
+          ---
+          duration_ms: 0.688954
+          type: 'test'
+          ...
+        # Subtest: correctly parses scheduler config
+        ok 5 - correctly parses scheduler config
+          ---
+          duration_ms: 0.714744
+          type: 'test'
+          ...
+        # Subtest: handles non-array roster values by returning null or empty array
+        ok 6 - handles non-array roster values by returning null or empty array
+          ---
+          duration_ms: 1.026327
+          type: 'test'
+          ...
+        1..6
+    ok 2 - parseTorchConfig
+      ---
+      duration_ms: 9.912879
+      type: 'suite'
+      ...
+    # Subtest: loadTorchConfig
+        # Subtest: loads config from disk
+        ok 1 - loads config from disk
+          ---
+          duration_ms: 3.702332
+          type: 'test'
+          ...
+        # Subtest: returns defaults if file does not exist
+        ok 2 - returns defaults if file does not exist
+          ---
+          duration_ms: 7.053093
+          type: 'test'
+          ...
+        # Subtest: throws error for malformed JSON
+        ok 3 - throws error for malformed JSON
+          ---
+          duration_ms: 1.732978
+          type: 'test'
+          ...
+        # Subtest: caches the config
+        ok 4 - caches the config
+          ---
+          duration_ms: 1.19094
+          type: 'test'
+          ...
+        1..4
+    ok 3 - loadTorchConfig
+      ---
+      duration_ms: 14.502
+      type: 'suite'
+      ...
+    # Subtest: getRelays
+        # Subtest: returns default relays when no config or env var is set
+        ok 1 - returns default relays when no config or env var is set
+          ---
+          duration_ms: 0.652639
+          type: 'test'
+          ...
+        # Subtest: returns relays from env var if set
+        ok 2 - returns relays from env var if set
+          ---
+          duration_ms: 0.49769
+          type: 'test'
+          ...
+        1..2
+    ok 4 - getRelays
+      ---
+      duration_ms: 1.417182
+      type: 'suite'
+      ...
+    1..4
+ok 12 - torch-config
+  ---
+  duration_ms: 34.842305
+  type: 'suite'
+  ...
+# Subtest: Date Utilities
+    # Subtest: getIsoWeekStr
+        # Subtest: returns correct ISO week for simple cases
+        ok 1 - returns correct ISO week for simple cases
+          ---
+          duration_ms: 1.352074
+          type: 'test'
+          ...
+        # Subtest: handles year boundaries correctly
+        ok 2 - handles year boundaries correctly
+          ---
+          duration_ms: 0.236274
+          type: 'test'
+          ...
+        # Subtest: handles leap years
+        ok 3 - handles leap years
+          ---
+          duration_ms: 1.711613
+          type: 'test'
+          ...
+        # Subtest: handles empty input (defaults to today)
+        ok 4 - handles empty input (defaults to today)
+          ---
+          duration_ms: 0.4444
+          type: 'test'
+          ...
+        # Subtest: handles invalid input gracefully
+        ok 5 - handles invalid input gracefully
+          ---
+          duration_ms: 0.259293
+          type: 'test'
+          ...
+        1..5
+    ok 1 - getIsoWeekStr
+      ---
+      duration_ms: 5.292184
+      type: 'suite'
+      ...
+    1..1
+ok 13 - Date Utilities
+  ---
+  duration_ms: 5.978593
+  type: 'suite'
+  ...
+1..13
+# tests 61
+# suites 16
+# pass 61
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1721.810365
