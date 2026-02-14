@@ -137,5 +137,63 @@ export function createMemoryRepository(db) {
 
       return result.rows?.[0] ?? null;
     },
+
+    /**
+     * @param {string} id
+     */
+    async getMemoryById(id) {
+      const result = await db.query(
+        `SELECT *
+         FROM memories
+         WHERE id = $1
+         LIMIT 1`,
+        [id]
+      );
+
+      return result.rows?.[0] ?? null;
+    },
+
+    /**
+     * @param {{ agent_id?: string, type?: string, pinned?: boolean, limit?: number, offset?: number }} [filters]
+     */
+    async listMemories(filters = {}) {
+      const where = [];
+      const params = [];
+
+      if (typeof filters.agent_id === 'string' && filters.agent_id.length > 0) {
+        params.push(filters.agent_id);
+        where.push(`agent_id = $${params.length}`);
+      }
+
+      if (typeof filters.type === 'string' && filters.type.length > 0) {
+        params.push(filters.type);
+        where.push(`type = $${params.length}`);
+      }
+
+      if (typeof filters.pinned === 'boolean') {
+        params.push(filters.pinned);
+        where.push(`pinned = $${params.length}`);
+      }
+
+      const limit = Number.isFinite(filters.limit) ? Math.max(1, Number(filters.limit)) : 100;
+      const offset = Number.isFinite(filters.offset) ? Math.max(0, Number(filters.offset)) : 0;
+      params.push(limit);
+      const limitPos = params.length;
+      params.push(offset);
+      const offsetPos = params.length;
+
+      const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+      const result = await db.query(
+        `SELECT *
+         FROM memories
+         ${whereClause}
+         ORDER BY last_seen DESC
+         LIMIT $${limitPos}
+         OFFSET $${offsetPos}`,
+        params
+      );
+
+      return result.rows ?? [];
+    },
   };
 }

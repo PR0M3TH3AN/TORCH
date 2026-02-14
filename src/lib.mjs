@@ -22,6 +22,14 @@ import { cmdInit, cmdUpdate } from './ops.mjs';
 import { getRoster as _getRoster } from './roster.mjs';
 import { queryLocks as _queryLocks, publishLock as _publishLock, parseLockEvent } from './lock-ops.mjs';
 import { cmdDashboard } from './dashboard.mjs';
+import {
+  inspectMemory,
+  listMemories,
+  memoryStats,
+  pinMemory,
+  triggerPruneDryRun,
+  unpinMemory,
+} from './services/memory/index.js';
 import { ExitError } from './errors.mjs';
 import { todayDateStr, nowUnix, getIsoWeekStr } from './utils.mjs';
 import fs from 'node:fs/promises';
@@ -442,6 +450,14 @@ function parseArgs(argv) {
     port: DEFAULT_DASHBOARD_PORT,
     logDir: 'task-logs',
     ignoreLogs: false,
+    id: null,
+    type: null,
+    tags: [],
+    pinned: null,
+    limit: null,
+    offset: null,
+    retentionMs: null,
+    windowMs: null,
   };
   let i = 0;
 
@@ -470,6 +486,40 @@ function parseArgs(argv) {
       args.logDir = argv[++i];
     } else if (arg === '--ignore-logs') {
       args.ignoreLogs = true;
+    } else if (arg === '--id') {
+      args.id = argv[++i];
+    } else if (arg.startsWith('--id=')) {
+      args.id = arg.split('=')[1];
+    } else if (arg === '--type') {
+      args.type = argv[++i];
+    } else if (arg.startsWith('--type=')) {
+      args.type = arg.split('=')[1];
+    } else if (arg === '--tags') {
+      args.tags = String(argv[++i]).split(',').map((tag) => tag.trim()).filter(Boolean);
+    } else if (arg.startsWith('--tags=')) {
+      args.tags = String(arg.split('=')[1]).split(',').map((tag) => tag.trim()).filter(Boolean);
+    } else if (arg === '--pinned') {
+      const value = String(argv[++i]).toLowerCase();
+      args.pinned = value === 'true' ? true : value === 'false' ? false : null;
+    } else if (arg.startsWith('--pinned=')) {
+      const value = String(arg.split('=')[1]).toLowerCase();
+      args.pinned = value === 'true' ? true : value === 'false' ? false : null;
+    } else if (arg === '--limit') {
+      args.limit = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--limit=')) {
+      args.limit = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--offset') {
+      args.offset = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--offset=')) {
+      args.offset = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--retention-ms') {
+      args.retentionMs = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--retention-ms=')) {
+      args.retentionMs = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--window-ms') {
+      args.windowMs = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--window-ms=')) {
+      args.windowMs = parseInt(arg.split('=')[1], 10);
     }
   }
 
@@ -487,6 +537,13 @@ Commands:
   dashboard [--port <port>]                        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
+
+  list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>]
+  inspect-memory          --id <memoryId>
+  pin-memory              --id <memoryId>
+  unpin-memory            --id <memoryId>
+  trigger-prune-dry-run   [--retention-ms <ms>]
+  memory-stats            [--window-ms <ms>]
 
 Options:
   --dry-run       Build and sign the event but do not publish
@@ -577,6 +634,61 @@ export async function main(argv) {
 
       case 'update': {
         await cmdUpdate(args.force);
+        break;
+      }
+
+      case 'list-memories': {
+        const result = await listMemories({
+          agent_id: args.agent,
+          type: args.type,
+          tags: args.tags,
+          pinned: args.pinned,
+          limit: args.limit,
+          offset: args.offset,
+        });
+        console.log(JSON.stringify(result, null, 2));
+        break;
+      }
+
+      case 'inspect-memory': {
+        if (!args.id) {
+          console.error('ERROR: --id <memoryId> is required for inspect-memory');
+          throw new ExitError(1, 'Missing memory id');
+        }
+        const result = await inspectMemory(args.id);
+        console.log(JSON.stringify(result, null, 2));
+        break;
+      }
+
+      case 'pin-memory': {
+        if (!args.id) {
+          console.error('ERROR: --id <memoryId> is required for pin-memory');
+          throw new ExitError(1, 'Missing memory id');
+        }
+        const result = await pinMemory(args.id);
+        console.log(JSON.stringify(result, null, 2));
+        break;
+      }
+
+      case 'unpin-memory': {
+        if (!args.id) {
+          console.error('ERROR: --id <memoryId> is required for unpin-memory');
+          throw new ExitError(1, 'Missing memory id');
+        }
+        const result = await unpinMemory(args.id);
+        console.log(JSON.stringify(result, null, 2));
+        break;
+      }
+
+      case 'trigger-prune-dry-run': {
+        const result = await triggerPruneDryRun({ retentionMs: args.retentionMs ?? undefined });
+        console.log(JSON.stringify(result, null, 2));
+        break;
+      }
+
+      case 'memory-stats': {
+        const result = await memoryStats({ windowMs: args.windowMs ?? undefined });
+        console.log(JSON.stringify(result, null, 2));
         break;
       }
 
