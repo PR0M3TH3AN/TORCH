@@ -17,6 +17,34 @@
     "firstPromptByCadence": {
       "daily": "scheduler-update-agent",
       "weekly": "bug-reproducer-agent"
+    },
+    "memoryPolicyByCadence": {
+      "daily": {
+        "mode": "optional",
+        "retrieveCommand": null,
+        "storeCommand": null,
+        "retrieveSuccessMarkers": [
+          "MEMORY_RETRIEVED"
+        ],
+        "storeSuccessMarkers": [
+          "MEMORY_STORED"
+        ],
+        "retrieveArtifacts": [],
+        "storeArtifacts": []
+      },
+      "weekly": {
+        "mode": "optional",
+        "retrieveCommand": null,
+        "storeCommand": null,
+        "retrieveSuccessMarkers": [
+          "MEMORY_RETRIEVED"
+        ],
+        "storeSuccessMarkers": [
+          "MEMORY_STORED"
+        ],
+        "retrieveArtifacts": [],
+        "storeArtifacts": []
+      }
     }
   }
 }

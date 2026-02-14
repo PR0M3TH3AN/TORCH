@@ -50,15 +50,25 @@ MUST 3: Run these commands in this order:
    AGENT_PLATFORM=<platform> npm run lock:lock -- --agent <agent-name> --cadence daily
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
 6) Execute selected prompt from src/prompts/daily/
-7) Run repository checks (for example: npm run lint)
+7) Run required memory workflow for this cadence:
+   - Before execution, run the retrieval command if configured:
+     `scheduler.memoryPolicyByCadence.daily.retrieveCommand`
+   - After execution, run the storage command if configured:
+     `scheduler.memoryPolicyByCadence.daily.storeCommand`
+   - Emit or collect verifiable evidence for both steps using configured markers/artifacts.
+8) Validate memory evidence:
+   - Confirm retrieval evidence exists (marker and/or artifact file).
+   - Confirm storage evidence exists (marker and/or artifact file).
+   - If `scheduler.memoryPolicyByCadence.daily.mode` is `required`, fail the run if either check is missing.
+9) Run repository checks (for example: npm run lint)
    - If any validation command exits non-zero, do not call `lock:complete`.
    - Instead, write `_failed.md` with the failing command and reason, then stop.
-8) Publish completion before writing `_completed.md` (only after step 7 passes):
+10) Publish completion before writing `_completed.md` (only after step 9 passes):
    AGENT_PLATFORM=<platform> npm run lock:complete -- --agent <agent-name> --cadence daily
    (Equivalent command allowed: torch-lock complete --agent <agent-name> --cadence daily)
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
-9) Only after step 8 succeeds, write final task log (`_completed.md` for success). For any failure in step 7 or step 8, write `_failed.md`, then stop.
+11) Only after step 10 succeeds, write final task log (`_completed.md` for success). For any failure in step 9 or step 10, write `_failed.md`, then stop.
 
    Worked example (required order):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
@@ -122,15 +132,25 @@ MUST 3: Run these commands in this order:
    AGENT_PLATFORM=<platform> npm run lock:lock -- --agent <agent-name> --cadence weekly
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
 6) Execute selected prompt from src/prompts/weekly/
-7) Run repository checks (for example: npm run lint)
+7) Run required memory workflow for this cadence:
+   - Before execution, run the retrieval command if configured:
+     `scheduler.memoryPolicyByCadence.weekly.retrieveCommand`
+   - After execution, run the storage command if configured:
+     `scheduler.memoryPolicyByCadence.weekly.storeCommand`
+   - Emit or collect verifiable evidence for both steps using configured markers/artifacts.
+8) Validate memory evidence:
+   - Confirm retrieval evidence exists (marker and/or artifact file).
+   - Confirm storage evidence exists (marker and/or artifact file).
+   - If `scheduler.memoryPolicyByCadence.weekly.mode` is `required`, fail the run if either check is missing.
+9) Run repository checks (for example: npm run lint)
    - If any validation command exits non-zero, do not call `lock:complete`.
    - Instead, write `_failed.md` with the failing command and reason, then stop.
-8) Publish completion before writing `_completed.md` (only after step 7 passes):
+10) Publish completion before writing `_completed.md` (only after step 9 passes):
    AGENT_PLATFORM=<platform> npm run lock:complete -- --agent <agent-name> --cadence weekly
    (Equivalent command allowed: torch-lock complete --agent <agent-name> --cadence weekly)
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
-9) Only after step 8 succeeds, write final task log (`_completed.md` for success). For any failure in step 7 or step 8, write `_failed.md`, then stop.
+11) Only after step 10 succeeds, write final task log (`_completed.md` for success). For any failure in step 9 or step 10, write `_failed.md`, then stop.
 
    Worked example (required order):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent bug-reproducer-agent --cadence weekly`
