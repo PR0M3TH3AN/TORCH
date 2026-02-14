@@ -65,6 +65,7 @@
               class="rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="active" selected>Active only</option>
+              <option value="completed">Completed only</option>
               <option value="all">All (incl. expired)</option>
             </select>
           </div>
@@ -175,7 +176,7 @@
 
       function normalizeStatus(value) {
         const normalized = String(value || '').trim().toLowerCase();
-        return normalized === 'active' || normalized === 'all'
+        return ['active', 'completed', 'all'].includes(normalized)
           ? normalized
           : DASHBOARD_DEFAULTS.defaultStatusView;
       }
@@ -401,13 +402,25 @@
       // -----------------------------------------------------------------------
       function getFilteredLocks() {
         const cadence = cadenceFilter.value;
-        const showExpired = statusFilter.value === 'all';
+        const statusMode = statusFilter.value;
         const now = nowUnix();
 
         return [...lockStore.values()]
           .filter((l) => {
             if (cadence !== 'all' && l.cadence !== cadence) return false;
-            if (!showExpired && isExpired(l)) return false;
+
+            if (statusMode === 'completed') {
+              return l.status === 'completed';
+            }
+
+            if (statusMode === 'active') {
+              // Active means not expired AND not completed
+              if (isExpired(l)) return false;
+              if (l.status === 'completed') return false;
+              return true;
+            }
+
+            // If 'all', show everything (expired, completed, started)
             return true;
           })
           .sort((a, b) => b.createdAt - a.createdAt);
@@ -479,6 +492,7 @@
         lockGrid.innerHTML = locks
           .map((lock) => {
             const expired = isExpired(lock);
+            const isCompleted = lock.status === 'completed';
             const ps = platformStyle(lock.platform);
             const age = now - lock.createdAt;
             const remaining = lock.expiresAt ? lock.expiresAt - now : 0;
@@ -489,11 +503,19 @@
               ? 0
               : Math.max(0, Math.min(100, (remaining / ttlTotal) * 100));
 
+            let cardBg = 'bg-surface-alt';
+            let cardBorder = expired ? 'border-border/50 opacity-60' : 'border-border';
+
+            if (isCompleted) {
+              cardBg = 'bg-success/5';
+              cardBorder = 'border-success/30';
+            }
+
             return `
-            <div class="rounded-lg border ${expired ? 'border-border/50 opacity-60' : 'border-border'} bg-surface-alt p-4 flex flex-col gap-3">
+            <div class="rounded-lg border ${cardBorder} ${cardBg} p-4 flex flex-col gap-3">
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-2">
-                  ${expired ? '' : '<span class="pulse-dot bg-success mt-1 shrink-0"></span>'}
+                  ${expired || isCompleted ? '' : '<span class="pulse-dot bg-success mt-1 shrink-0"></span>'}
                   <div>
                     <div class="font-medium text-text-strong text-sm">${lock.agent}</div>
                     <div class="text-xs text-muted">${lock.cadence} &middot; ${lock.date}</div>
