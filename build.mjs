@@ -11,6 +11,7 @@ const DASHBOARD_SRC = path.join(__dirname, 'dashboard');
 const DOCS_SRC = path.join(__dirname, 'src', 'docs');
 const PROMPTS_SRC = path.join(__dirname, 'src', 'prompts', 'META_PROMPTS.md');
 const CONFIG_SRC = path.join(__dirname, 'torch-config.json');
+const ASSETS_SRC = path.join(__dirname, 'assets');
 
 // Ensure clean slate
 if (fs.existsSync(DIST_DIR)) {
@@ -27,6 +28,7 @@ let distHtml = landingHtml;
 distHtml = distHtml.replace(/"\.\.\/dashboard\/styles\.css"/g, '"dashboard/styles.css"');
 distHtml = distHtml.replace(/"\.\.\/dashboard\/"/g, '"dashboard/"'); // Link to dashboard
 distHtml = distHtml.replace(/'\.\.\/src\/docs\/TORCH\.md'/g, "'src/docs/TORCH.md'");
+distHtml = distHtml.replace(/"\.\.\/assets\//g, '"assets/');
 
 fs.writeFileSync(path.join(DIST_DIR, 'index.html'), distHtml);
 
@@ -50,6 +52,13 @@ if (fs.existsSync(PROMPTS_SRC)) {
 // 5. Copy torch-config.json -> dist/torch-config.json (optional config)
 if (fs.existsSync(CONFIG_SRC)) {
   fs.copyFileSync(CONFIG_SRC, path.join(DIST_DIR, 'torch-config.json'));
+}
+
+// 6. Copy assets/ -> dist/assets/
+const distAssets = path.join(DIST_DIR, 'assets');
+if (fs.existsSync(ASSETS_SRC)) {
+  fs.mkdirSync(distAssets, { recursive: true });
+  fs.cpSync(ASSETS_SRC, distAssets, { recursive: true });
 }
 
 console.log('Build complete! Output directory: dist/');
