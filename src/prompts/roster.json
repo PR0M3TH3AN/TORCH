@@ -38,6 +38,7 @@
     "smoke-agent",
     "telemetry-agent",
     "test-coverage-agent",
+    "repo-fit-agent",
     "weekly-synthesis-agent"
   ]
 }
