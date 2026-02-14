@@ -130,12 +130,15 @@ function selectNextAgent({ roster, excludedSet, previousAgent, firstPrompt }) {
   return null;
 }
 
-async function getSchedulerConfig(cadence) {
+async function getSchedulerConfig(cadence, { isInteractive }) {
   const cfg = await readJson(path.resolve(process.cwd(), 'torch-config.json'), {});
   const scheduler = cfg.scheduler || {};
+  const handoffCommand = scheduler.handoffCommandByCadence?.[cadence] || null;
+  const missingHandoffCommandForMode = !isInteractive && !handoffCommand;
   return {
     firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
-    handoffCommand: scheduler.handoffCommandByCadence?.[cadence] || null,
+    handoffCommand,
+    missingHandoffCommandForMode,
     validationCommands: Array.isArray(scheduler.validationCommandsByCadence?.[cadence])
       ? scheduler.validationCommandsByCadence[cadence].filter((cmd) => typeof cmd === 'string' && cmd.trim())
       : ['npm', 'run', 'lint'],
@@ -177,7 +180,8 @@ async function main() {
     process.exit(1);
   }
 
-  const schedulerConfig = await getSchedulerConfig(cadence);
+  const isInteractive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
+  const schedulerConfig = await getSchedulerConfig(cadence, { isInteractive });
   const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
 
   while (true) {
@@ -252,7 +256,6 @@ async function main() {
     }
 
     const promptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
-    const hasPrompt = await fs.stat(promptPath).then(() => true).catch(() => false);
     if (schedulerConfig.handoffCommand) {
       const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
         env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
@@ -261,14 +264,11 @@ async function main() {
         await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail: 'Handoff callback failed.' });
         process.exit(handoff.code);
       }
-    } else if (hasPrompt) {
-      const catResult = await runCommand('cat', [promptPath]);
-      if (catResult.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail: 'Unable to read prompt file.' });
-        process.exit(catResult.code);
-      }
     } else {
-      await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail: 'No prompt file or handoff callback configured.' });
+      const detail = schedulerConfig.missingHandoffCommandForMode
+        ? 'Missing scheduler handoff command for non-interactive run. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.'
+        : 'No handoff callback configured. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.';
+      await writeLog({ cadence, agent: selectedAgent, status: 'failed', reason: 'Prompt/handoff execution failed', detail });
       process.exit(1);
     }
 
