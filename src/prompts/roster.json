@@ -41,6 +41,7 @@
     "smoke-agent",
     "telemetry-agent",
     "test-coverage-agent",
+    "ui-ux-agent",
     "weekly-synthesis-agent"
   ]
 }
