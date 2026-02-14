@@ -5,8 +5,10 @@ TORCH is a portable Nostr-based task locking toolkit for multi-agent coordinatio
 ## Installation
 
 ```bash
-npm install torch-lock
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz
 ```
+
+> TORCH is distributed from GitHub tarballs and is not currently published to the npm registry.
 
 ## Usage
 
@@ -16,16 +18,16 @@ The `torch-lock` CLI allows you to check, lock, and list tasks.
 
 ```bash
 # Check locks for a specific cadence
-npx torch-lock check --cadence daily
+npx --no-install torch-lock check --cadence daily
 
 # Lock a task for an agent
-AGENT_PLATFORM=codex npx torch-lock lock --agent docs-agent --cadence daily
+AGENT_PLATFORM=codex npx --no-install torch-lock lock --agent docs-agent --cadence daily
 
 # List all active locks
-npx torch-lock list
+npx --no-install torch-lock list
 
 # Run the Dashboard
-npx torch-lock dashboard
+npx --no-install torch-lock dashboard
 ```
 
 ### Configuration (`torch-config.json`)
@@ -49,7 +51,7 @@ Configuration options:
 The dashboard provides a live view of lock events.
 
 ```bash
-npx torch-lock dashboard --port 4173
+npx --no-install torch-lock dashboard --port 4173
 # Open http://localhost:4173/dashboard/
 ```
 
