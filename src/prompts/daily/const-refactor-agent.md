@@ -61,10 +61,10 @@ DETAILED WORKFLOW (step-by-step)
      ```
      - (Adjust regex to include more candidates you want.)
    - For a more robust approach, run an AST scan (Node/ES module) to find numeric literals:
-     - If comfortable, use `node` + `acorn` or `@babel/parser` to create a script (e.g., `scripts/find-numeric-literals.js`) that produces JSON output of numeric literals with file, line, column, and nearby AST context (identifier or property name).
+     - If comfortable, use `node` + `acorn` or `@babel/parser` to create a script (e.g., `torch/scripts/find-numeric-literals.js`) that produces JSON output of numeric literals with file, line, column, and nearby AST context (identifier or property name).
      - Example (conceptual — script must be created first):
        ```
-       node scripts/find-numeric-literals.js js > perf/constants-refactor/numeric-literals.json
+       node torch/scripts/find-numeric-literals.js js > perf/constants-refactor/numeric-literals.json
        ```
    - From results, group occurrences by numeric value and inspect contexts to find semantic similarity (timeouts, retries, TTLs).
 
@@ -188,8 +188,8 @@ rg --hidden --no-ignore -n --glob 'js/**/*.js' '\b(5000|10000|30000|60000|15000|
 ````
 - AST-based approach (recommended for accuracy):
 - Use `@babel/parser` to parse, walk nodes, and collect numeric literals with context (parent identifiers or property names). Example script:
-  - `scripts/find-numeric-literals.js` (create if needed)
-  - Run: `node scripts/find-numeric-literals.js js > perf/constants-refactor/numeric-literals.json`
+  - `torch/scripts/find-numeric-literals.js` (create if needed)
+  - Run: `node torch/scripts/find-numeric-literals.js js > perf/constants-refactor/numeric-literals.json`
 - For replacements, prefer editor/IDE or `jscodeshift` transforms to keep edits safe and consistent:
 - Example: create a `jscodeshift` codemod that replaces numeric literal with identifier and adds import.
 - If using manual edits, ensure ESLint passes and imports are correct.

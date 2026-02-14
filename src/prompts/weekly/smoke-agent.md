@@ -17,7 +17,7 @@ If a higher-level policy or doc conflicts with this prompt, follow the higher-le
 SCOPE
 
 In scope:
-- Implement a small smoke-test harness at `scripts/agent/smoke-test.mjs` (or `.ts`/`.py` if repo prefers), exercising:
+- Implement a small smoke-test harness at `torch/scripts/agent/smoke-test.mjs` (or `.ts`/`.py` if repo prefers), exercising:
   - app start/serve (per README)
   - headless browser/client run (Playwright preferred if available)
   - sharedClient connection to a local/test relay
@@ -73,7 +73,7 @@ PREPARATION (preflight)
 WORKFLOW (implementation & run steps)
 
 1) Create harness file
-   - Path: `scripts/agent/smoke-test.mjs`
+   - Path: `torch/scripts/agent/smoke-test.mjs`
    - Language: follow repo conventions (Node/Playwright preferred). If Playwright is used, the harness should run headless.
    - CLI/ENV options:
      - `--relays` or `RELAY_URLS` (csv) — **required**
@@ -149,11 +149,11 @@ EXAMPLE RUN
 
 ```bash
 # conservative default (local test relay)
-RELAY_URLS="ws://localhost:8080" node scripts/agent/smoke-test.mjs \
+RELAY_URLS="ws://localhost:8080" node torch/scripts/agent/smoke-test.mjs \
   --serve=npx --timeout=30 --burst=1 --out=artifacts/
 
 # public relays only with explicit confirmation and extreme throttle
-RELAY_URLS="wss://relay.example" node scripts/agent/smoke-test.mjs \
+RELAY_URLS="wss://relay.example" node torch/scripts/agent/smoke-test.mjs \
   --confirm-public --burst=1 --timeout=30 --out=artifacts/
 ```
 

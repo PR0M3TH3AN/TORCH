@@ -6,6 +6,7 @@ const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 
 // Source paths (in the package)
 const SRC_PROMPTS_DIR = path.join(PKG_ROOT, 'src', 'prompts');
+const SRC_SCRIPTS_DIR = path.join(PKG_ROOT, 'scripts');
 
 // Files to treat as "Static" (always overwrite on update, with transformations)
 const STATIC_FILES = [
@@ -17,6 +18,7 @@ const STATIC_FILES = [
 
 // Directories containing "Evolving" files (copy if missing, preserve if present)
 const EVOLVING_DIRS = ['daily', 'weekly'];
+const EVOLVING_SCRIPTS = ['check-file-size.mjs', 'check-innerhtml.mjs'];
 
 function getPaths(userRoot) {
     const torchDir = path.join(userRoot, 'torch');
@@ -24,6 +26,7 @@ function getPaths(userRoot) {
         root: userRoot,
         torchDir,
         promptsDir: path.join(torchDir, 'prompts'),
+        scriptsDir: path.join(torchDir, 'scripts'),
         roster: path.join(torchDir, 'roster.json'),
     };
 }
@@ -62,6 +65,8 @@ export function cmdInit(force = false, cwd = process.cwd()) {
 
   ensureDir(paths.torchDir);
   ensureDir(paths.promptsDir);
+  ensureDir(paths.scriptsDir);
+  ensureDir(path.join(paths.scriptsDir, 'agent'));
 
   // 1. Copy Roster (Evolving, but initially copied)
   const srcRoster = path.join(SRC_PROMPTS_DIR, 'roster.json');
@@ -80,7 +85,17 @@ export function cmdInit(force = false, cwd = process.cwd()) {
     }
   }
 
-  // 3. Copy Prompts (Evolving)
+  // 3. Copy Scripts (Evolving)
+  for (const file of EVOLVING_SCRIPTS) {
+    const src = path.join(SRC_SCRIPTS_DIR, file);
+    const dest = path.join(paths.scriptsDir, file);
+    if (fs.existsSync(src)) {
+      copyFile(src, dest, false, true);
+      console.log(`Created ${path.relative(paths.root, dest)}`);
+    }
+  }
+
+  // 4. Copy Prompts (Evolving)
   for (const dir of EVOLVING_DIRS) {
     const srcDir = path.join(SRC_PROMPTS_DIR, dir);
     const destDir = path.join(paths.promptsDir, dir);
@@ -149,7 +164,29 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
     }
   }
 
-  // 4. Update Prompts (Copy missing, preserve existing unless force)
+  // 4. Update Scripts (Copy missing, preserve existing unless force)
+  console.log('Updating scripts...');
+  ensureDir(paths.scriptsDir);
+  for (const file of EVOLVING_SCRIPTS) {
+    const src = path.join(SRC_SCRIPTS_DIR, file);
+    const dest = path.join(paths.scriptsDir, file);
+
+    if (fs.existsSync(src)) {
+      if (force) {
+        copyFile(src, dest, false, true);
+        console.log(`  Updated ${file} (forced)`);
+      } else {
+        if (!fs.existsSync(dest)) {
+          copyFile(src, dest, false, true);
+          console.log(`  Added ${file}`);
+        } else {
+          console.log(`  Skipped ${file} (preserved)`);
+        }
+      }
+    }
+  }
+
+  // 5. Update Prompts (Copy missing, preserve existing unless force)
   console.log('Updating prompts...');
   for (const dir of EVOLVING_DIRS) {
     const srcDir = path.join(SRC_PROMPTS_DIR, dir);

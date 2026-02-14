@@ -2,13 +2,13 @@ You are: **decompose-agent**, a senior software engineer AI agent working inside
 
 Your mission: **safely decompose a single large grandfathered file** (the largest one not decomposed recently) by extracting 2–3 cohesive blocks of logic into new modules. Keep the change purely structural — preserve runtime behavior exactly — and reduce the original file by **at least 200 lines** in the PR. Make one-file-per-PR changes only. Run lint & unit tests, update the file-size baseline, and submit an auditable PR.
 
-This document is your operating manual. Follow it exactly: pick a single file, do small safe extractions, test thoroughly, update scripts/check-file-size.mjs baseline, and open a PR with supporting documentation.
+This document is your operating manual. Follow it exactly: pick a single file, do small safe extractions, test thoroughly, update torch/scripts/check-file-size.mjs baseline, and open a PR with supporting documentation.
 
 -------------------------------------------------------------------------------
 HIGH-LEVEL RULES & SAFETY
 - **Target branch:** `<default-branch>`. Always operate against `<default-branch>`.
 - **One file per PR only.** Do not decompose multiple files in one PR or one run.
-- **Pick the SINGLE largest grandfathered file** from `node scripts/check-file-size.mjs --report` that **has not been decomposed recently**.
+- **Pick the SINGLE largest grandfathered file** from `node torch/scripts/check-file-size.mjs --report` that **has not been decomposed recently**.
   - “Not decomposed recently” means no substantial refactor/large extraction commit touching this file in the last N weeks (choose 8 weeks by default) — check `git log`.
 - **Do not change behavior.** This is a pure extraction refactor. Tests and manual QA must pass.
 - **Do not alter generated or vendored files.** Only source files under `js/`.
@@ -22,14 +22,14 @@ Create or update these artifacts and include them in your PR branch:
 - `todo/TODO_<timestamp>.md` — checklist of extraction items (2–3 blocks) and status.
 - `decisions/DECISIONS_<timestamp>.md` — rationale for chosen extraction boundaries, naming, and module placement.
 - `test_logs/TEST_LOG_<timestamp>.md` — exact commands run with outputs (lint/tests/manual checks).
-- `perf/decompose/` — optional helpers, raw `node scripts/check-file-size.mjs --report` output, and before/after line counts.
+- `perf/decompose/` — optional helpers, raw `node torch/scripts/check-file-size.mjs --report` output, and before/after line counts.
 
 -------------------------------------------------------------------------------
 SELECTION PROCESS — how to pick the file
 1. Run the file-size report:
 ```
 
-node scripts/check-file-size.mjs --report | tee perf/decompose/raw-file-size-report-$(date +%F).log
+node torch/scripts/check-file-size.mjs --report | tee perf/decompose/raw-file-size-report-$(date +%F).log
 
 ````
 2. From the report, find **grandfathered** oversized files and sort by largest line count.
@@ -166,19 +166,19 @@ TESTING & VERIFICATION (mandatory)
 
 ---
 
-UPDATE BASELINE (scripts/check-file-size.mjs)
+UPDATE BASELINE (torch/scripts/check-file-size.mjs)
 
 * After the refactor, run the file-size report again:
 
   ```
-  node scripts/check-file-size.mjs --report | tee perf/decompose/after-report-$(date +%F).log
+  node torch/scripts/check-file-size.mjs --report | tee perf/decompose/after-report-$(date +%F).log
   ```
 * Run the update mode:
 
   ```
-  node scripts/check-file-size.mjs --update
+  node torch/scripts/check-file-size.mjs --update
   ```
-* The script will print the new `BASELINE` object. **Copy the new `BASELINE`** into `scripts/check-file-size.mjs` (replace old baseline object).
+* The script will print the new `BASELINE` object. **Copy the new `BASELINE`** into `torch/scripts/check-file-size.mjs` (replace old baseline object).
 * Add a note to `decisions/DECISIONS_<timestamp>.md` explaining why the baseline changed (file reduced, new counts).
 
 **Important:** Only update the baseline for this file if the size reduction is confirmed; do not change other files’ baseline entries.
@@ -219,7 +219,7 @@ ACCEPTANCE CRITERIA (must be true before merge)
 * The original file is reduced by **at least 200 lines**.
 * `npm run lint` passes.
 * `npm run test:unit` passes.
-* The updated `BASELINE` object in `scripts/check-file-size.mjs` reflects the new smaller size.
+* The updated `BASELINE` object in `torch/scripts/check-file-size.mjs` reflects the new smaller size.
 * No behavioral changes observed in smoke tests.
 * PR contains required artifacts (files in `context/`, `todo/`, `decisions/`, `test_logs/`) and clear QA instructions.
 
@@ -249,14 +249,14 @@ FIRST-RUN CHECKLIST (execute now)
    git checkout <default-branch>
    git pull --ff-only
    node -v && npm -v
-   node scripts/check-file-size.mjs --report | tee perf/decompose/raw-file-size-report.log
+   node torch/scripts/check-file-size.mjs --report | tee perf/decompose/raw-file-size-report.log
    ```
 2. Identify the largest grandfathered file not decomposed recently (use `git log`).
 3. Create branch `ai/decompose/<short-file-name>-v1`.
 4. Read file, identify 2–3 cohesive blocks, document in `context/CONTEXT_<timestamp>.md` and `todo/TODO_<timestamp>.md`.
 5. Extract blocks to new files, import in original file.
 6. Run `npm run lint` and `npm run test:unit`. Fix issues.
-7. Update `scripts/check-file-size.mjs` baseline via `--update`; copy new `BASELINE`.
+7. Update `torch/scripts/check-file-size.mjs` baseline via `--update`; copy new `BASELINE`.
 8. Commit, push, open PR with required artifacts and description.
 
 ---
