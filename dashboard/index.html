@@ -99,6 +99,43 @@
           </p>
         </div>
 
+        <!-- Pagination Controls -->
+        <div id="paginationControls" class="flex items-center justify-between border-t border-border pt-4 mb-8 hidden">
+          <div class="flex flex-1 justify-between sm:hidden">
+            <button id="mobilePrevBtn" class="pagination-btn rounded-md">Previous</button>
+            <button id="mobileNextBtn" class="pagination-btn rounded-md ml-auto">Next</button>
+          </div>
+          <div class="sm:flex sm:flex-1 sm:items-center sm:justify-between hidden">
+            <div>
+              <p class="text-sm text-muted">
+                Showing
+                <span class="font-medium text-text" id="pageStart">1</span>
+                to
+                <span class="font-medium text-text" id="pageEnd">10</span>
+                of
+                <span class="font-medium text-text" id="totalItems">97</span>
+                results
+              </p>
+            </div>
+            <div>
+              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button id="prevBtn" class="pagination-btn rounded-l-md px-2 py-2">
+                  <span class="sr-only">Previous</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <button id="nextBtn" class="pagination-btn rounded-r-md px-2 py-2">
+                  <span class="sr-only">Next</span>
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+
         <!-- Raw event log -->
         <details class="rounded-lg border border-border">
           <summary
@@ -301,6 +338,20 @@
       const cadenceFilter = document.getElementById('cadenceFilter');
       const statusFilter = document.getElementById('statusFilter');
       const refreshBtn = document.getElementById('refreshBtn');
+
+      // Pagination DOM refs
+      const paginationControls = document.getElementById('paginationControls');
+      const mobilePrevBtn = document.getElementById('mobilePrevBtn');
+      const mobileNextBtn = document.getElementById('mobileNextBtn');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const pageStartEl = document.getElementById('pageStart');
+      const pageEndEl = document.getElementById('pageEnd');
+      const totalItemsEl = document.getElementById('totalItems');
+
+      // Pagination State
+      let currentPage = 1;
+      const itemsPerPage = 20;
 
       // -----------------------------------------------------------------------
       // Cleanup check
@@ -568,24 +619,59 @@
       function renderLocks() {
         if (!isAlive()) return;
 
-        const locks = getFilteredLocks();
+        const allLocks = getFilteredLocks();
         const now = nowUnix();
 
         eventCount.textContent = `${lockStore.size} events`;
+        renderSummary(allLocks);
 
-        renderSummary(locks);
+        const totalItems = allLocks.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        if (locks.length === 0) {
+        // Adjust currentPage if out of bounds
+        if (currentPage > totalPages && totalPages > 0) {
+          currentPage = totalPages;
+        }
+        if (currentPage < 1) currentPage = 1;
+
+        if (totalItems === 0) {
           lockGrid.replaceChildren(emptyState);
           emptyState.textContent =
             lockStore.size === 0
               ? 'Waiting for lock events from relays\u2026'
               : 'No locks match the current filters.';
+          paginationControls.classList.add('hidden');
           return;
         }
 
-        const cards = locks.map((lock) => createLockCard(lock, now));
+        // Slice for pagination
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+        const pageLocks = allLocks.slice(startIdx, endIdx);
+
+        const cards = pageLocks.map((lock) => createLockCard(lock, now));
         lockGrid.replaceChildren(...cards);
+
+        // Update Pagination Controls
+        if (totalItems > itemsPerPage) {
+          paginationControls.classList.remove('hidden');
+
+          // Update text
+          pageStartEl.textContent = startIdx + 1;
+          pageEndEl.textContent = endIdx;
+          totalItemsEl.textContent = totalItems;
+
+          // Update buttons state
+          const isFirst = currentPage === 1;
+          const isLast = currentPage === totalPages;
+
+          prevBtn.disabled = isFirst;
+          nextBtn.disabled = isLast;
+          mobilePrevBtn.disabled = isFirst;
+          mobileNextBtn.disabled = isLast;
+        } else {
+          paginationControls.classList.add('hidden');
+        }
       }
 
       // -----------------------------------------------------------------------
@@ -729,8 +815,19 @@
       // -----------------------------------------------------------------------
       // Event handlers
       // -----------------------------------------------------------------------
-      if (cadenceFilter) cadenceFilter.addEventListener('change', renderLocks);
-      if (statusFilter) statusFilter.addEventListener('change', renderLocks);
+      function setPage(p) {
+        currentPage = p;
+        renderLocks();
+      }
+
+      if (cadenceFilter) cadenceFilter.addEventListener('change', () => { currentPage = 1; renderLocks(); });
+      if (statusFilter) statusFilter.addEventListener('change', () => { currentPage = 1; renderLocks(); });
+
+      if (prevBtn) prevBtn.addEventListener('click', () => setPage(currentPage - 1));
+      if (nextBtn) nextBtn.addEventListener('click', () => setPage(currentPage + 1));
+      if (mobilePrevBtn) mobilePrevBtn.addEventListener('click', () => setPage(currentPage - 1));
+      if (mobileNextBtn) mobileNextBtn.addEventListener('click', () => setPage(currentPage + 1));
+
       if (refreshBtn) refreshBtn.addEventListener('click', () => {
         // Close existing connections and reconnect
         for (const ws of sockets) {
