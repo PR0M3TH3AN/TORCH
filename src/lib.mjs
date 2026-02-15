@@ -33,61 +33,16 @@ import {
   unpinMemory,
 } from './services/memory/index.js';
 import { ExitError } from './errors.mjs';
-import { todayDateStr, nowUnix, getIsoWeekStr, detectPlatform } from './utils.mjs';
+import { todayDateStr, nowUnix, detectPlatform } from './utils.mjs';
 import { runRelayHealthCheck } from './relay-health.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { getCompletedAgents } from './lock-utils.mjs';
 
 useWebSocketImplementation(WebSocket);
 
 // Re-export for backward compatibility/library usage
 export { parseLockEvent, cmdDashboard, _queryLocks as queryLocks, _publishLock as publishLock };
-
-/**
- * Scans the local log directory to identify agents that have already completed their task
- * for the current period (daily or weekly).
- *
- * @param {string} cadence - 'daily' or 'weekly'
- * @param {string} logDir - Path to the log directory (e.g., 'task-logs')
- * @param {Object} deps - Dependency injection for testing
- * @returns {Promise<Set<string>>} - Set of agent names that have completed their task
- */
-async function getCompletedAgents(cadence, logDir, deps) {
-  const { readdir = fs.readdir, getDateStr = todayDateStr, getIsoWeek = getIsoWeekStr } = deps;
-  const completed = new Set();
-  const targetDir = path.join(logDir, cadence);
-
-  try {
-    const files = await readdir(targetDir);
-    const today = getDateStr();
-    const currentWeek = getIsoWeek();
-
-    for (const file of files) {
-      // Format: YYYY-MM-DDTHH-mm-ssZ__<agent>__<status>.md
-      const match = file.match(/^(\d{4}-\d{2}-\d{2})T.*__([a-zA-Z0-9-_]+)__(.*)\.md$/);
-      if (!match) continue;
-
-      const [_, datePart, agent, status] = match;
-
-      if (status === 'completed') {
-        if (cadence === 'daily' && datePart === today) {
-          completed.add(agent);
-        } else if (cadence === 'weekly') {
-          const fileWeek = getIsoWeek(datePart); // datePart is YYYY-MM-DD
-          if (fileWeek === currentWeek) {
-            completed.add(agent);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    if (err.code !== 'ENOENT') {
-      console.error(`Warning: Failed to read log dir ${targetDir}: ${err.message}`);
-    }
-  }
-
-  return completed;
-}
 
 /**
  * Checks the status of the repository locks for a given cadence.
