@@ -12,6 +12,7 @@ import {
   getPublishTimeoutMs,
   getMinSuccessfulRelayPublishes,
   getRelayFallbacks,
+  getMinActiveRelayPool,
 } from '../src/torch-config.mjs';
 import { DEFAULT_RELAYS } from '../src/constants.mjs';
 
@@ -45,6 +46,7 @@ describe('torch-config', () => {
           queryTimeoutMs: 5000,
           publishTimeoutMs: 8000,
           minSuccessfulRelayPublishes: 2,
+          minActiveRelayPool: 2,
         },
       });
 
@@ -54,6 +56,7 @@ describe('torch-config', () => {
       assert.strictEqual(config.nostrLock.queryTimeoutMs, 5000);
       assert.strictEqual(config.nostrLock.publishTimeoutMs, 8000);
       assert.strictEqual(config.nostrLock.minSuccessfulRelayPublishes, 2);
+      assert.strictEqual(config.nostrLock.minActiveRelayPool, 2);
     });
   });
 
@@ -101,6 +104,7 @@ describe('torch-config', () => {
       NOSTR_LOCK_PUBLISH_TIMEOUT_MS: process.env.NOSTR_LOCK_PUBLISH_TIMEOUT_MS,
       NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES: process.env.NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES,
       NOSTR_LOCK_RELAY_FALLBACKS: process.env.NOSTR_LOCK_RELAY_FALLBACKS,
+      NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL: process.env.NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL,
     };
 
     beforeEach(() => {
@@ -110,6 +114,7 @@ describe('torch-config', () => {
       delete process.env.NOSTR_LOCK_PUBLISH_TIMEOUT_MS;
       delete process.env.NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES;
       delete process.env.NOSTR_LOCK_RELAY_FALLBACKS;
+      delete process.env.NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL;
     });
 
     after(() => {
@@ -138,6 +143,10 @@ describe('torch-config', () => {
 
       process.env.NOSTR_LOCK_RELAY_FALLBACKS = 'https://bad';
       assert.throws(() => getRelayFallbacks(), /NOSTR_LOCK_RELAY_FALLBACKS/);
+
+      process.env.NOSTR_LOCK_RELAY_FALLBACKS = '';
+      process.env.NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL = '0';
+      assert.throws(() => getMinActiveRelayPool(), /NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL/);
     });
   });
 });
