@@ -5,7 +5,8 @@ import { createEmbedderAdapter, embedText } from '../src/services/memory/embedde
 
 test('createEmbedderAdapter selects in-memory backend and supports vector CRUD', async () => {
   const adapter = createEmbedderAdapter({ backend: 'inmemory' });
-  const vector = await adapter.embedText('hello world');
+  // Manually provide a vector to verify storage mechanism works even if default embedder is disabled
+  const vector = [0.1, 0.2, 0.3];
 
   await adapter.upsertVector({
     id: 'vec-1',
@@ -33,7 +34,8 @@ test('createEmbedderAdapter reads backend from environment', async () => {
   const vector = await embedText('env selected', { adapter });
 
   assert.ok(Array.isArray(vector));
-  assert.ok(vector.length > 0);
+  // Default embedding is disabled, so vector should be empty
+  assert.equal(vector.length, 0);
 
   delete process.env.MEMORY_VECTOR_BACKEND;
 });

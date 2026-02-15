@@ -4,13 +4,46 @@ import { listPruneCandidates, selectPrunableMemories } from './pruner.js';
 import { filterAndRankMemories, updateMemoryUsage } from './retriever.js';
 import { startScheduler } from './scheduler.js';
 import { getMemoryPruneMode, isMemoryIngestEnabled } from './feature-flags.js';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const memoryStore = new Map();
+const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
+
+function loadMemoryStore() {
+  try {
+    if (fs.existsSync(MEMORY_FILE_PATH)) {
+      const data = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
+      const entries = JSON.parse(data);
+      if (Array.isArray(entries)) {
+        return new Map(entries);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load memory store:', err);
+  }
+  return new Map();
+}
+
+function saveMemoryStore(store) {
+  try {
+    const dir = path.dirname(MEMORY_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const entries = [...store.entries()];
+    fs.writeFileSync(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to save memory store:', err);
+  }
+}
+
+const memoryStore = loadMemoryStore();
 const cache = createMemoryCache();
 
 const memoryRepository = {
   async insertMemory(memory) {
     memoryStore.set(memory.id, memory);
+    saveMemoryStore(memoryStore);
     return memory;
   },
   async updateMemoryUsage(id, lastSeen = Date.now()) {
@@ -18,6 +51,7 @@ const memoryRepository = {
     if (!existing) return null;
     const updated = { ...existing, last_seen: lastSeen };
     memoryStore.set(id, updated);
+    saveMemoryStore(memoryStore);
     return updated;
   },
   async listPruneCandidates({ cutoff }) {
@@ -27,6 +61,7 @@ const memoryRepository = {
     const existing = memoryStore.get(id);
     if (!existing) return false;
     memoryStore.set(id, { ...existing, merged_into: mergedInto, last_seen: Date.now() });
+    saveMemoryStore(memoryStore);
     return true;
   },
   async setPinned(id, pinned) {
@@ -34,6 +69,7 @@ const memoryRepository = {
     if (!existing) return null;
     const updated = { ...existing, pinned, last_seen: Date.now() };
     memoryStore.set(id, updated);
+    saveMemoryStore(memoryStore);
     return updated;
   },
   async getMemoryById(id) {
@@ -236,6 +272,10 @@ export async function runPruneCycle(options = {}) {
 
   for (const memory of prunable) {
     memoryStore.delete(memory.id);
+  }
+
+  if (prunable.length > 0) {
+    saveMemoryStore(memoryStore);
   }
 
   memoryStatsState.deleted += prunable.length;
