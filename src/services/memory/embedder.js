@@ -15,10 +15,8 @@ const VECTOR_BACKEND_ENV = 'MEMORY_VECTOR_BACKEND';
  * @returns {number[]}
  */
 function fallbackEmbedding(text) {
-  const chars = [...text];
-  if (chars.length === 0) return [0];
-  const mean = chars.reduce((sum, char) => sum + char.codePointAt(0), 0) / chars.length;
-  return [Number(mean.toFixed(4)), chars.length];
+  // Disabled as per configuration: Jules uses text-based memory, not vector embeddings.
+  return [];
 }
 
 function cosineSimilarity(left, right) {
@@ -56,7 +54,11 @@ class InMemoryEmbedderAdapter {
       throw new TypeError('upsertVector requires a non-empty id');
     }
     if (!Array.isArray(vector) || vector.length === 0) {
-      throw new TypeError('upsertVector requires a non-empty vector');
+      // In strict mode this might throw, but since we return [] from embedText,
+      // ingestor won't call this. If someone calls it manually with [], we can just ignore or warn.
+      // But adhering to the interface, we should probably throw or just return.
+      // Given we want to support "no embedding", simply returning is safer than throwing.
+      return;
     }
     this.vectors.set(id, { vector: [...vector], metadata: { ...metadata } });
   }
