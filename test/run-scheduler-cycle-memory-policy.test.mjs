@@ -193,6 +193,9 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /lock_command: 'AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily'/);
   assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
   assert.match(failedBody, /lock_stdout_excerpt: 'websocket: connection refused'/);
+  assert.match(failedBody, /lock_failure_reason_distribution: '\{\}'/);
+  assert.match(failedBody, /lock_attempt_id: '3'/);
+  assert.match(failedBody, /lock_correlation_id: 'daily:agent-a:/);
   assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
   assert.match(failedBody, /platform: 'codex'/);
 });

@@ -50,6 +50,23 @@ function parseJsonFromOutput(text) {
   return null;
 }
 
+function parseJsonEventsFromOutput(text) {
+  const events = [];
+  for (const line of String(text || '').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('{')) continue;
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        events.push(parsed);
+      }
+    } catch {
+      // Ignore non-JSON lines.
+    }
+  }
+  return events;
+}
+
 async function runCommand(command, args = [], options = {}) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -428,6 +445,7 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetr
   const lockCommandArgs = ['run', 'lock:lock', '--', '--agent', selectedAgent, '--cadence', cadence];
   const backoffScheduleMs = [];
   let attempts = 0;
+  const correlationId = idempotencyKey || `${cadence}:${selectedAgent}:${getRunDateKey()}`;
 
   while (true) {
     attempts += 1;
@@ -435,11 +453,13 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetr
       env: {
         AGENT_PLATFORM: platform,
         ...(idempotencyKey ? { SCHEDULER_LOCK_IDEMPOTENCY_KEY: idempotencyKey } : {}),
+        SCHEDULER_LOCK_CORRELATION_ID: correlationId,
+        SCHEDULER_LOCK_ATTEMPT_ID: String(attempts),
       },
     });
 
     if (result.code !== 2) {
-      return { result, attempts, backoffScheduleMs };
+      return { result, attempts, backoffScheduleMs, correlationId };
     }
 
     if (attempts > lockRetry.maxRetries) {
@@ -447,6 +467,7 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetr
         result,
         attempts,
         backoffScheduleMs,
+        correlationId,
         finalBackendCategory: classifyLockBackendError(`${result.stderr}\n${result.stdout}`),
       };
     }
@@ -463,6 +484,7 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetr
       attempt: attempts,
       max_retries: lockRetry.maxRetries,
       delay_ms: delayMs,
+      correlation_id: correlationId,
       selected_agent: selectedAgent,
       cadence,
     }));
@@ -471,6 +493,34 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetr
       await sleep(delayMs);
     }
   }
+}
+
+function summarizeLockFailureReasons(outputText) {
+  const events = parseJsonEventsFromOutput(outputText);
+  const quorumFailure = [...events].reverse().find((entry) => entry.event === 'lock_publish_quorum_failed');
+  if (quorumFailure && quorumFailure.reasonDistribution && typeof quorumFailure.reasonDistribution === 'object') {
+    return {
+      reasonDistribution: quorumFailure.reasonDistribution,
+      attemptId: quorumFailure.attemptId || null,
+      correlationId: quorumFailure.correlationId || null,
+      totalElapsedMs: quorumFailure.totalElapsedMs ?? null,
+    };
+  }
+
+  const distribution = {};
+  for (const entry of events) {
+    if (entry.event !== 'lock_publish_failure') continue;
+    const reason = typeof entry.reason === 'string' && entry.reason.trim()
+      ? entry.reason.trim()
+      : 'unknown';
+    distribution[reason] = (distribution[reason] || 0) + 1;
+  }
+  return {
+    reasonDistribution: distribution,
+    attemptId: null,
+    correlationId: null,
+    totalElapsedMs: null,
+  };
 }
 
 function toYamlScalar(value) {
@@ -622,6 +672,7 @@ async function main() {
 
     if (lockResult.code === 2) {
       const combinedLockOutput = `${lockResult.stderr}\n${lockResult.stdout}`;
+      const diagnosticsSummary = summarizeLockFailureReasons(combinedLockOutput);
       const backendCategory = lockAttempt.finalBackendCategory || classifyLockBackendError(combinedLockOutput);
       const lockCommand = `AGENT_PLATFORM=${platform} npm run lock:lock -- --agent ${selectedAgent} --cadence ${cadence}`;
       const stderrExcerpt = excerptText(lockResult.stderr);
@@ -678,6 +729,10 @@ async function main() {
           failure_class: 'backend_unavailable',
           lock_attempts_total: lockAttempt.attempts,
           lock_backoff_schedule_ms: backoffSchedule || '(none)',
+          lock_correlation_id: diagnosticsSummary.correlationId || lockAttempt.correlationId,
+          lock_attempt_id: diagnosticsSummary.attemptId || String(lockAttempt.attempts),
+          lock_total_retry_timeline_ms: diagnosticsSummary.totalElapsedMs,
+          lock_failure_reason_distribution: JSON.stringify(diagnosticsSummary.reasonDistribution),
           backend_category: backendCategory,
           deferral_attempt_count: deferralAttemptCount,
           deferral_first_failure_timestamp: firstFailureAt,
