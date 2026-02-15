@@ -88,6 +88,13 @@ case "$2" in
   lock:check:daily)
     echo '{"excluded":[]}'
     ;;
+  lock:health)
+    shift 2
+    if [[ "\${1:-}" == "--" ]]; then
+      shift
+    fi
+    node scripts/agent/check-relay-health.mjs "$@"
+    ;;
   lock:lock)
 ${lockShellBody || '    :'}
     ;;
@@ -189,6 +196,7 @@ test('records backend failure metadata when lock command exits with code 2', { c
 
   assert.match(failedBody, /reason: Lock backend error/);
   assert.match(failedBody, /failure_class: 'backend_unavailable'/);
+  assert.match(failedBody, /failure_category: 'lock_backend_error'/);
   assert.match(failedBody, /backend_category: 'publish failed to all relays'/);
   assert.match(failedBody, /lock_command: 'AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily'/);
   assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
@@ -196,7 +204,9 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /lock_failure_reason_distribution: '\{\}'/);
   assert.match(failedBody, /lock_attempt_id: '3'/);
   assert.match(failedBody, /lock_correlation_id: 'daily:agent-a:/);
-  assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
+  assert.match(failedBody, /Recommended auto-remediation:/);
+  assert.match(failedBody, /Run health check: npm run lock:health -- --cadence daily/);
+  assert.match(failedBody, /Review incident runbook: docs\/agent-handoffs\/learnings\/2026-02-15-relay-health-preflight-job.md/);
   assert.match(failedBody, /platform: 'codex'/);
 });
 
@@ -262,6 +272,7 @@ test('defers backend failures in non-strict mode and reuses idempotency key on s
   assert.ok(deferredLog);
   const deferredBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', deferredLog), 'utf8');
   assert.match(deferredBody, /failure_class: 'backend_unavailable'/);
+  assert.match(deferredBody, /failure_category: 'lock_backend_error'/);
   assert.match(deferredBody, /deferral_attempt_count: '\d+'/);
 
   const keyLog = await fs.readFile(path.join(fixture.root, '.idempotency-keys'), 'utf8');
@@ -311,6 +322,7 @@ test('fails after exceeding non-strict deferral budget', { concurrency: false },
   assert.ok(failedLog);
   const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
   assert.match(failedBody, /failure_class: 'backend_unavailable'/);
+  assert.match(failedBody, /failure_category: 'lock_backend_error'/);
   assert.match(failedBody, /deferral_attempt_count: '2'/);
 });
 
@@ -389,9 +401,80 @@ process.exit(2);
   const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
 
   assert.match(failedBody, /reason: Lock backend unavailable preflight/);
+  assert.match(failedBody, /prompt not executed/i);
+  assert.match(failedBody, /failure_category: 'lock_backend_error'/);
   assert.match(failedBody, /preflight_failure_category: 'relay query timeout'/);
   assert.match(failedBody, /relay_list: 'wss:\/\/relay-1.test, wss:\/\/relay-2.test'/);
 });
+
+
+test('categorizes unreadable prompt files as prompt_parse_error', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+  });
+
+  await fs.unlink(path.join(fixture.root, 'src', 'prompts', 'daily', 'agent-a.md'));
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 1, `stdout: ${result.stdout}
+stderr: ${result.stderr}`);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+  assert.match(failedBody, /reason: Prompt file parse\/read failed/);
+  assert.match(failedBody, /failure_category: 'prompt_parse_error'/);
+});
+
+test('categorizes invalid prompt schema as prompt_schema_error', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+  });
+
+  await fs.writeFile(path.join(fixture.root, 'src', 'prompts', 'daily', 'agent-a.md'), 'plain text without heading\n', 'utf8');
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 1, `stdout: ${result.stdout}
+stderr: ${result.stderr}`);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+  assert.match(failedBody, /reason: Prompt file schema validation failed/);
+  assert.match(failedBody, /failure_category: 'prompt_schema_error'/);
+});
+
+test('categorizes handoff runtime failures as execution_error', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    schedulerPolicy: {
+      handoffCommandByCadence: { daily: 'exit 7' },
+    },
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: fixture.env,
+  });
+
+  assert.equal(result.code, 7, `stdout: ${result.stdout}
+stderr: ${result.stderr}`);
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+  assert.match(failedBody, /reason: Prompt\/handoff execution failed/);
+  assert.match(failedBody, /failure_category: 'execution_error'/);
+});
+
 test('retries lock acquisition for backend error and succeeds on a later attempt', { concurrency: false }, async () => {
   const fixture = await setupFixture({
     memoryPolicy: { mode: 'optional' },

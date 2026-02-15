@@ -80,8 +80,15 @@ Operational note: scheduler handoff commands are treated as required execution s
 
 Scheduler failure classes in task logs:
 
-- `backend_unavailable` — lock backend unavailable preflight failures and lock acquisition backend exit code `2` failures/deferrals; includes relay health alert metadata and incident signal IDs when all relays are unhealthy.
-- `prompt_validation_error` — prompt/handoff, memory evidence, artifact verification, and validation command failures.
+- `backend_unavailable` — legacy compatibility field for lock backend unavailable failures.
+- `prompt_validation_error` — legacy compatibility field for prompt/runtime validation failures.
+
+Scheduler failure categories in task logs:
+
+- `lock_backend_error` — lock backend unavailable preflight failures and lock acquisition backend exit code `2` failures/deferrals; includes relay health alert metadata, retry window guidance, health check command, and incident runbook link.
+- `prompt_parse_error` — scheduler could not read/parse the selected prompt file; prompt execution is skipped.
+- `prompt_schema_error` — selected prompt file or generated run artifacts failed schema/contract checks; prompt run is treated as invalid.
+- `execution_error` — runtime execution failures in handoff callbacks, memory commands, or configured validation commands.
 
 
 ## Lock backend production defaults
@@ -100,6 +107,11 @@ Validation behavior:
 - Relay URLs must be absolute `ws://` or `wss://` URLs.
 - Invalid relay URLs or invalid timeout/count ranges are fatal startup errors.
 - Lock backend errors include phase (`query:primary`, `query:fallback`, `publish:primary`, `publish:fallback`), relay endpoint, and timeout value used.
+- When scheduler preflight fails before lock acquisition, task logs must explicitly state `prompt not executed` to make lock-vs-prompt root cause obvious in UI/CLI summaries.
+- Interpret `relay_publish_quorum_failure` (derived from `lock_publish_quorum_failed` telemetry) as quorum not met even after retries/fallbacks. Expected operator actions:
+  1. Run `npm run lock:health -- --cadence <daily|weekly>` to confirm relay readiness and identify failing relays/reasons.
+  2. Review task log metadata (`lock_failure_reason_distribution`, `backend_category`, `lock_correlation_id`) for dominant failure modes (timeouts, DNS, auth, malformed relay URL).
+  3. If failures persist past retry window, follow incident runbook `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md` and escalate relay/network remediation.
 - Relay health snapshots are emitted periodically and whenever lock publish/query fails; snapshots include success rate, timeout rate, rolling latency, and quarantine state per relay.
 
 ## Scheduler lock reliability reporting

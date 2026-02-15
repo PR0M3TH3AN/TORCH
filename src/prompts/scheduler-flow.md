@@ -85,8 +85,8 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    ```
 
    - Escape hatch: set `SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT=1` to skip this check for local/offline workflows.
-   - If preflight exits non-zero because every relay is unhealthy, write `_deferred.md` with reason `All relays unhealthy preflight`, include `incident_signal_id`, and stop before lock acquisition.
-   - For other non-zero preflight failures, write `_failed.md` with reason `Lock backend unavailable preflight` and include:
+   - If preflight exits non-zero because every relay is unhealthy, write `_deferred.md` with reason `All relays unhealthy preflight`, include `incident_signal_id`, set `failure_category: lock_backend_error`, state `prompt not executed`, and stop before lock acquisition.
+   - For other non-zero preflight failures, write `_failed.md` with reason `Lock backend unavailable preflight`, set `failure_category: lock_backend_error`, state `prompt not executed`, and include:
      - `relay_list`
      - `preflight_failure_category`
      - `preflight_stderr_excerpt`
@@ -159,14 +159,17 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      - `lock_command` (raw lock command for retry)
      - `lock_stderr_excerpt` (redacted stderr snippet)
      - `lock_stdout_excerpt` (redacted stdout snippet)
-     - Include `failure_class: backend_unavailable` for both deferred and failed backend-unavailable lock outcomes.
+     - Include `failure_class: backend_unavailable` and `failure_category: lock_backend_error` for both deferred and failed backend-unavailable lock outcomes.
+    - Include recommended auto-remediation text in `detail`: retry window, `npm run lock:health -- --cadence <cadence>`, and incident runbook link.
    - Keep generic reason text for compatibility, but append actionable retry guidance in `detail` using the command from `lock_command`.
 
 9. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
 
    - Scheduler automation runs `scheduler.handoffCommandByCadence.<cadence>` with environment variables for cadence/agent/prompt path.
    - If no handoff command is configured for the cadence, write `_failed.md` and stop.
-   - Prompt/handoff and prompt validation failures should emit `failure_class: prompt_validation_error`.
+   - Prompt file read/parse failures should emit `failure_category: prompt_parse_error`.
+   - Prompt schema/contract failures should emit `failure_category: prompt_schema_error`.
+   - Command/handoff/validation runtime failures should emit `failure_category: execution_error`.
 
 10. Confirm memory contract completion:
 
