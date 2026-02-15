@@ -36,6 +36,7 @@
     "prompt-maintenance-agent",
     "prompt-safety-agent",
     "prompt-fixer-agent",
+    "prompt-gap-analysis-agent",
     "race-condition-agent",
     "refactor-agent",
     "repo-fit-agent",

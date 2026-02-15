@@ -19,11 +19,11 @@ PRIMARY GOALS / SUCCESS CRITERIA
 - Build a daily test-audit workflow that:
   1. Runs the repo’s tests and captures results, coverage and flaky behavior.
   2. Statically inspects tests to ensure they make real, behavioral assertions (not only implementation checks), and avoid fragile patterns (sleep/race/network).
-  3. Maps tests to critical production files (login/auth, relayManager, decryption, watch-history, moderation, playback) and reports coverage gaps.
+  3. Maps tests to critical production files (auth, core logic, crypto, data management) and reports coverage gaps.
   4. Generates prioritized remediation (PRs for clear fixes, issues for complex/risky fixes).
 - Success criteria:
   - A `test-audit-report-YYYY-MM-DD.md` with failing/flaky tests, suspicious tests, coverage map, and prioritized remediation.
-  - Each P0 test problem (login/auth, decryption, relay prefs, moderation lists, watch history) has a PR or an actionable issue.
+  - Each P0 test problem (critical logic, security, data integrity) has a PR or an actionable issue.
   - Reproducible `src/test_logs/TEST_LOG_<timestamp>.md` entries detailing test runs and flakiness runs.
 
 ===============================================================================
@@ -47,7 +47,7 @@ Create or update these files and folders in the repo before making changes:
   - `test-audit/coverage-summary.json`
   - `test-audit/mutation-summary.json`
 
-Always read `AGENTS.md` and `KNOWN_ISSUES.md` for repo-specific caveats (login/relay/video schemas, integration libs, etc.) before editing tests.
+Always read `AGENTS.md` and `KNOWN_ISSUES.md` for repo-specific caveats before editing tests.
 
 ===============================================================================
 DAILY WORKFLOW (run every day or as scheduled)
@@ -63,7 +63,7 @@ DAILY WORKFLOW (run every day or as scheduled)
      - Mocha + nyc: `npx nyc --reporter=lcov npm test`
      - Playwright e2e: `npx playwright test --reporter=list`
      - Cypress e2e: `npx cypress run`
-   - Always include `--runInBand` / single-threaded option where it helps surface async/flaky behaviors (Jest: `--runInBand --detectOpenHandles`).
+   - Always include `--runInBand` / single-threaded option where it helps surface async/flaky behaviors.
 
 2) **Run tests with coverage (capture artifacts)**
    - Run the unit suite with coverage and capture output:
@@ -77,7 +77,6 @@ DAILY WORKFLOW (run every day or as scheduled)
    - Re-run the whole test suite N times (default `N=5` or `N=10`) and produce a run matrix:
      - Example loop (bash): `for i in $(seq 1 5); do npm test -- --runInBand --silent; done`
    - Record which tests change status across runs (pass/fail/skip). Save the matrix to `test-audit/flakiness-matrix.json`.
-   - For Jest add: `--runInBand --detectOpenHandles` to surface leaks.
 
 4) **Static test analysis**
    - Find test files:
@@ -95,14 +94,7 @@ DAILY WORKFLOW (run every day or as scheduled)
    - Summarize suspicious tests to `test-audit/suspicious-tests.json`.
 
 5) **Behavioral mapping & coverage gap analysis**
-   - Identify critical production files that must be tested (examples):
-     - `js/services/authService.js` — login/hydration/lockdown flows.
-     - `src/relayManager.js` — load/publish relay list, fast vs background logic.
-     - `js/integration/dmDecryptWorker.js` & `dmDecryptWorkerClient.js` — encryption/decryption worker and fallbacks.
-     - `js/integration/watchHistory.js` — normalization, payload limits, republish backoff/jitter.
-     - `js/userBlocks.js` — block list parsing/sanitation.
-     - `js/ui/ambientBackground.js` — RAF and visibility gating.
-     - `js/webtorrent*` / `torrent/app.js` — lazy initialization.
+   - Identify critical production files that must be tested by scanning for keywords (auth, crypto, payment, user, data) or high complexity/churn.
    - Parse coverage data (LCOV/coverage-summary) and map production files to coverage percentages.
    - Flag critical files with coverage < X% (configurable threshold, default 70%) and record in `test-audit/coverage-gaps.json`.
 
@@ -120,7 +112,7 @@ DAILY WORKFLOW (run every day or as scheduled)
    - For parameterized tests ensure each case has unique assertions.
 
 8) **Mutation testing (optional but high value)**
-   - If available and lightweight: run Stryker on one critical module (e.g., `authService`, `relayManager`) to detect weak tests.
+   - If available and lightweight: run Stryker on one critical module to detect weak tests.
    - If Stryker not viable, perform manual "needle" perturbation:
      - Modify a conditional or return-value in a critical module, re-run tests, and see if tests detect the change.
    - Log mutation results to `test-audit/mutation-summary.json`.
@@ -183,28 +175,19 @@ PR & ISSUE GUIDELINES (what to include)
 
 ===============================================================================
 SPECIAL FOCUS — CRITICAL AREAS (check these first)
-Focus on tests that exercise real behavior for these critical modules (examples — ensure tests exist and are meaningful):
+Focus on tests that exercise real behavior for these critical modules:
 
-- **Auth & login flows**: `js/services/authService.js`
-  - Tests: `login()` success/failure, lockdown checks, profile hydration, persisted profile sync.
-- **Relay manager & publishing**: `src/relayManager.js`
-  - Tests: `loadRelayList`, `publishRelayList`, fast/background fetch timeouts, `integrationClient.pool` handling.
-- **Decryption & worker flows**: `js/integration/dmDecryptWorker.js` + `dmDecryptWorkerClient.js`
-  - Tests: scheme detection, signature verification before decryption, worker queue behavior, timeouts, fallback order (`nip44_v2` → `nip44` → `nip04`).
-- **Watch history & republish loops**: `js/integration/watchHistory.js`
-  - Tests: normalization, payload size limits, republish backoff/jitter handling, serialization.
-- **Block lists & moderation**: `js/userBlocks.js`
-  - Tests: tag sanitation, self-target filtering, parsing, and dumping behavior.
-- **Playback & WebTorrent**: `js/webtorrent*`, `torrent/app.js`, `js/ui/ambientBackground.js`
-  - Tests: lazy webtorrent init, visibility gating, ensure heavy loops paused when hidden.
-
-(If you need file paths to scan, search the `js/` tree for the filenames above).
+- **Auth & Identity**: Login, logout, session persistence, token refresh.
+- **Data Integrity**: Serialization, parsing, storage adaptation, migrations.
+- **Security & Crypto**: Encryption/decryption, signing, permission checks, sanitation.
+- **Core Business Logic**: The unique value proposition of the application.
+- **Performance Critical**: Heavy loops, background workers, large payload handling.
 
 ===============================================================================
 QUALITY HEURISTICS & CLASSIFICATION
 Classify issues by severity:
 
-- **Critical**: Missing or flaky tests covering login, decryption, moderation, or relay behavior; tests that mock away network I/O and give false confidence.
+- **Critical**: Missing or flaky tests covering auth, crypto, or data integrity; tests that mock away network I/O and give false confidence.
 - **High**: Tests with zero assertions or that assert only internal calls; tests that access real network/time.
 - **Medium**: Slow tests (> 2s) that increase CI runtime.
 - **Low**: Cosmetic issues (misleading test names, console.log leftovers).
@@ -223,7 +206,7 @@ EXAMPLE REMEDIATIONS (what PRs should do)
 - Replace `await new Promise(r => setTimeout(r, 1000))` with a deterministic `await waitFor(() => condition)` or mock timers.
 - Use `nock`/`msw`/local test double for network calls instead of hitting remote endpoints.
 - Convert heavily-mocked unit tests into integration tests that instantiate real dependencies and assert public behavior.
-- Add edge-case tests (malformed tags, empty relay lists, decryption fallback).
+- Add edge-case tests (malformed input, empty lists, fallback logic).
 - Ensure tests clean up global state and restore mocks between runs.
 
 ===============================================================================
