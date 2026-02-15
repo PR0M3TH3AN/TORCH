@@ -13,6 +13,9 @@ AGENT_PLATFORM=codex node bin/torch-lock.mjs lock --agent docs-agent --cadence d
 
 # List all active locks
 node bin/torch-lock.mjs list
+
+# Probe relay health before scheduler lock acquisition
+node bin/torch-lock.mjs health --cadence daily
 ```
 
 ## Defaults
@@ -77,7 +80,7 @@ Operational note: scheduler handoff commands are treated as required execution s
 
 Scheduler failure classes in task logs:
 
-- `backend_unavailable` — lock backend unavailable preflight failures and lock acquisition backend exit code `2` failures/deferrals.
+- `backend_unavailable` — lock backend unavailable preflight failures and lock acquisition backend exit code `2` failures/deferrals; includes relay health alert metadata and incident signal IDs when all relays are unhealthy.
 - `prompt_validation_error` — prompt/handoff, memory evidence, artifact verification, and validation command failures.
 
 

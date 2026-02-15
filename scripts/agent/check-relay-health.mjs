@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-import { getRelays, getNamespace, getQueryTimeoutMs } from '../../src/torch-config.mjs';
-import { queryLocks } from '../../src/lock-ops.mjs';
-import { todayDateStr } from '../../src/utils.mjs';
+import { runRelayHealthCheck } from '../../src/relay-health.mjs';
 
 function parseArgs(argv) {
-  const args = { cadence: 'daily' };
+  const args = {
+    cadence: 'daily',
+    timeoutMs: 6000,
+    allRelaysDownMinutes: 10,
+    minSuccessRate: 0.7,
+    windowMinutes: 60,
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
     if (!value.startsWith('--') && !args.cadence) {
@@ -14,93 +18,41 @@ function parseArgs(argv) {
     if (value === '--cadence') {
       args.cadence = argv[i + 1] || args.cadence;
       i += 1;
+    } else if (value === '--timeout-ms') {
+      args.timeoutMs = Number.parseInt(argv[i + 1], 10) || args.timeoutMs;
+      i += 1;
+    } else if (value === '--all-relays-down-minutes') {
+      args.allRelaysDownMinutes = Number.parseInt(argv[i + 1], 10) || args.allRelaysDownMinutes;
+      i += 1;
+    } else if (value === '--min-success-rate') {
+      const parsed = Number.parseFloat(argv[i + 1]);
+      args.minSuccessRate = Number.isFinite(parsed) ? parsed : args.minSuccessRate;
+      i += 1;
+    } else if (value === '--window-minutes') {
+      args.windowMinutes = Number.parseInt(argv[i + 1], 10) || args.windowMinutes;
+      i += 1;
     }
   }
   return args;
 }
 
-function classifyRelayFailure(outputText) {
-  const text = String(outputText || '').toLowerCase();
-  if (!text.trim()) return 'unknown backend error';
-
-  if ((text.includes('relay') || text.includes('query')) && text.includes('timeout')) {
-    return 'relay query timeout';
-  }
-
-  if (
-    text.includes('connection refused')
-    || text.includes('econnrefused')
-    || text.includes('getaddrinfo')
-    || text.includes('enotfound')
-    || text.includes('eai_again')
-    || (text.includes('websocket') && text.includes('dns'))
-  ) {
-    return 'websocket connection refused/dns';
-  }
-
-  if (
-    text.includes('invalid url')
-    || text.includes('malformed')
-    || text.includes('unsupported protocol')
-    || text.includes('must start with ws')
-    || text.includes('invalid relay')
-  ) {
-    return 'malformed relay url/config';
-  }
-
-  return 'unknown backend error';
-}
-
 async function main() {
-  const { cadence } = parseArgs(process.argv.slice(2));
-  if (cadence !== 'daily' && cadence !== 'weekly') {
+  const args = parseArgs(process.argv.slice(2));
+  if (args.cadence !== 'daily' && args.cadence !== 'weekly') {
     console.error('Usage: node scripts/agent/check-relay-health.mjs --cadence <daily|weekly>');
     process.exit(1);
   }
 
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const timeoutMs = getQueryTimeoutMs();
-  const dateStr = todayDateStr();
-
-  try {
-    const locks = await queryLocks(relays, cadence, dateStr, namespace);
-    console.log(JSON.stringify({
-      ok: true,
-      cadence,
-      namespace,
-      timeoutMs,
-      relays,
-      lockCount: locks.length,
-    }));
-    process.exit(0);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error ?? 'unknown error');
-    const failureCategory = classifyRelayFailure(message);
-    console.log(JSON.stringify({
-      ok: false,
-      cadence,
-      namespace,
-      timeoutMs,
-      relays,
-      failureCategory,
-      error: message,
-    }));
-    process.exit(2);
+  const result = await runRelayHealthCheck(args);
+  if (!result.ok) {
+    result.failureCategory = 'all relays unhealthy';
   }
+  console.log(JSON.stringify(result));
+  process.exit(result.ok ? 0 : 2);
 }
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error ?? 'unknown error');
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const failureCategory = classifyRelayFailure(message);
-  console.log(JSON.stringify({
-    ok: false,
-    namespace,
-    relays,
-    failureCategory,
-    error: message,
-  }));
+  console.log(JSON.stringify({ ok: false, failureCategory: 'health check failed', error: message }));
   process.exit(2);
 });

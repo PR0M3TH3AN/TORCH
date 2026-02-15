@@ -417,7 +417,7 @@ function createIdempotencyKey({ cadence, selectedAgent, runDate }) {
 }
 
 async function runLockHealthPreflight({ cadence, platform }) {
-  const preflight = await runCommand('node', ['scripts/agent/check-relay-health.mjs', '--cadence', cadence], {
+  const preflight = await runCommand('npm', ['run', 'lock:health', '--', '--cadence', cadence], {
     env: { AGENT_PLATFORM: platform },
   });
   const payload = parseJsonFromOutput(`${preflight.stdout}\n${preflight.stderr}`) || {};
@@ -593,22 +593,32 @@ async function main() {
     if (schedulerConfig.lockHealthPreflight.enabled && !schedulerConfig.lockHealthPreflight.skip) {
       const preflight = await runLockHealthPreflight({ cadence, platform });
       if (preflight.code !== 0) {
+        const allRelaysUnhealthy = Boolean(preflight.payload?.summary?.allRelaysUnhealthy);
+        const incidentSignal = preflight.payload?.incidentSignal || null;
         await writeLog({
           cadence,
           agent: 'scheduler',
-          status: 'failed',
+          status: allRelaysUnhealthy ? 'deferred' : 'failed',
           platform,
-          reason: 'Lock backend unavailable preflight',
-          detail: `Preflight failed (${preflight.failureCategory}). Retry scheduler after verifying relay connectivity, relay URLs, and DNS/network status.`,
+          reason: allRelaysUnhealthy
+            ? 'All relays unhealthy preflight'
+            : 'Lock backend unavailable preflight',
+          detail: allRelaysUnhealthy
+            ? `Deferred run before lock acquisition: ${incidentSignal?.reason || 'all relays unhealthy'}.`
+            : `Preflight failed (${preflight.failureCategory}). Retry scheduler after verifying relay connectivity, relay URLs, and DNS/network status.`,
           metadata: {
             failure_class: 'backend_unavailable',
             preflight_failure_category: preflight.failureCategory,
             relay_list: preflight.relayList.join(', ') || '(none)',
             preflight_stderr_excerpt: preflight.stderrExcerpt || '(empty)',
             preflight_stdout_excerpt: preflight.stdoutExcerpt || '(empty)',
+            incident_signal_id: incidentSignal?.id || null,
+            incident_signal_severity: incidentSignal?.severity || null,
+            preflight_alerts: JSON.stringify(preflight.payload?.alerts || []),
+            relay_health_history_path: preflight.payload?.historyPath || null,
           },
         });
-        process.exit(preflight.code || 1);
+        process.exit(allRelaysUnhealthy ? 0 : (preflight.code || 1));
       }
     }
 
