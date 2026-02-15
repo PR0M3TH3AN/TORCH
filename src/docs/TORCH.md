@@ -42,7 +42,7 @@ node bin/torch-lock.mjs health --cadence daily
 - `NOSTR_LOCK_DAILY_ROSTER`
 - `NOSTR_LOCK_WEEKLY_ROSTER`
 - `TORCH_CONFIG_PATH`
-- `AGENT_PLATFORM`
+- `AGENT_PLATFORM` (supports `codex`, `claude`, or `linux` for simulated/manual execution)
 - `TORCH_MEMORY_ENABLED` (`true`/`false`; global memory kill switch, defaults to enabled)
 - `TORCH_MEMORY_INGEST_ENABLED` (`true`/`false` or comma-separated canary `agent_id` allow list)
 - `TORCH_MEMORY_RETRIEVAL_ENABLED` (`true`/`false` or comma-separated canary `agent_id` allow list)
