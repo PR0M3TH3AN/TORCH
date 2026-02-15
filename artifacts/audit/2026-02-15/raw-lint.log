@@ -1,0 +1,26 @@
+
+> torch-lock@0.1.0 lint
+> eslint .
+
+
+/app/scripts/benchmark-dashboard.mjs
+  25:14  warning  'e' is defined but never used  no-unused-vars
+  62:22  warning  'e' is defined but never used  no-unused-vars
+
+/app/src/lib.mjs
+  69:14  warning  '_' is assigned a value but never used  no-unused-vars
+
+/app/test-audit/run-flaky-check.mjs
+  18:24  warning  'code' is defined but never used  no-unused-vars
+
+/app/test-audit/run-static-analysis.mjs
+  15:12  warning  'e' is defined but never used  no-unused-vars
+
+/app/test/lib.test.mjs
+  102:11  warning  'mockPublishLock' is assigned a value but never used  no-unused-vars
+  356:11  warning  'mockPublishLock' is assigned a value but never used  no-unused-vars
+
+/app/test/nostr-lock.test.mjs
+  1:10  warning  'test' is defined but never used  no-unused-vars
+
+✖ 8 problems (0 errors, 8 warnings)

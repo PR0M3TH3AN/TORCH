@@ -47,6 +47,7 @@ node bin/torch-lock.mjs health --cadence daily
 ## Environment variables
 
 - `NOSTR_LOCK_NAMESPACE`
+- `NOSTR_LOCK_HASHTAG`
 - `NOSTR_LOCK_RELAYS`
 - `NOSTR_LOCK_TTL`
 - `NOSTR_LOCK_QUERY_TIMEOUT_MS`
@@ -80,6 +81,7 @@ Common settings:
 - `nostrLock.dailyRoster` / `nostrLock.weeklyRoster` — optional per-project roster overrides.
 - `dashboard.defaultCadenceView` — default dashboard view (`daily`, `weekly`, `all`).
 - `dashboard.defaultStatusView` — default dashboard status filter (`active`, `all`).
+- `dashboard.hashtag` — custom hashtag for lock events (defaults to `<namespace>-agent-lock`).
 - `scheduler.firstPromptByCadence.daily` / `.weekly` — first-run scheduler starting agent.
 - `scheduler.handoffCommandByCadence.daily` / `.weekly` — shell command run after lock acquisition; command must use `SCHEDULER_AGENT`, `SCHEDULER_CADENCE`, and `SCHEDULER_PROMPT_PATH` provided by `scripts/agent/run-scheduler-cycle.mjs`.
 - `scheduler.paused.daily` / `.weekly` — array of agent names to exclude from scheduler rotation.

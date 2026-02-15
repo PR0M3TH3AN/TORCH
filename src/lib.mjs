@@ -11,6 +11,7 @@ import {
   getRelays as _getRelays,
   getNamespace as _getNamespace,
   getTtl as _getTtl,
+  getHashtag as _getHashtag,
 } from './torch-config.mjs';
 import {
   DEFAULT_DASHBOARD_PORT,
@@ -207,6 +208,7 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
   const {
     getRelays = _getRelays,
     getNamespace = _getNamespace,
+    getHashtag = _getHashtag,
     getTtl = _getTtl,
     queryLocks = _queryLocks,
     getRoster = _getRoster,
@@ -222,12 +224,14 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
 
   const relays = getRelays();
   const namespace = getNamespace();
+  const hashtag = getHashtag();
   const dateStr = getDateStr();
   const ttl = getTtl();
   const now = nowUnix();
   const expiresAt = now + ttl;
 
   error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
+  error(`Hashtag: #${hashtag}`);
   error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
   error(`Relays: ${relays.join(', ')}`);
 
@@ -275,7 +279,7 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
       created_at: now,
       tags: [
         ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
-        ['t', `${namespace}-agent-lock`],
+        ['t', hashtag],
         ['t', `${namespace}-lock-${cadence}`],
         ['t', `${namespace}-lock-${cadence}-${dateStr}`],
         ['expiration', String(expiresAt)],
@@ -329,6 +333,7 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
   log(`LOCK_EVENT_ID=${event.id}`);
   log(`LOCK_PUBKEY=${pk}`);
   log(`LOCK_AGENT=${agent}`);
+  log(`LOCK_HASHTAG=${hashtag}`);
   log(`LOCK_CADENCE=${cadence}`);
   log(`LOCK_DATE=${dateStr}`);
   log(`LOCK_EXPIRES=${expiresAt}`);
@@ -435,6 +440,7 @@ export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
   const {
     getRelays = _getRelays,
     getNamespace = _getNamespace,
+    getHashtag = _getHashtag,
     queryLocks = _queryLocks,
     publishLock = _publishLock,
     generateSecretKey = _generateSecretKey,
@@ -447,6 +453,7 @@ export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
 
   const relays = getRelays();
   const namespace = getNamespace();
+  const hashtag = getHashtag();
   const dateStr = getDateStr();
   const now = nowUnix();
 
@@ -482,7 +489,7 @@ export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
       created_at: now,
       tags: [
         ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
-        ['t', `${namespace}-agent-lock`],
+        ['t', hashtag],
         ['t', `${namespace}-lock-${cadence}`],
         ['t', `${namespace}-lock-${cadence}-${dateStr}`],
         // No expiration tag -> permanent
