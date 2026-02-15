@@ -37,12 +37,11 @@ In scope:
         execution
       - event listener registration order dependencies
       - initialization races (components reading state before it is populated)
-      - relay connection and subscription timing (connect vs subscribe ordering,
+      - network connection and subscription timing (connect vs subscribe ordering,
         pool readiness assumptions)
-      - signer adapter availability races (extension/plugin load timing and remote signer handshake)
-      - playback fallback races (URL-first vs magnet negotiation, WebTorrent
-        readiness vs video element attachment)
-      - cache read-before-write and stale-read hazards in `js/state/cache.js`
+      - external adapter availability races (extension/plugin load timing)
+      - data fetching fallback races
+      - cache read-before-write and stale-read hazards
       - DOM-ready assumptions (querySelector on elements not yet rendered)
       - WebWorker message ordering and postMessage races
   - Writing or improving deterministic reproduction tests (Playwright or unit)
@@ -63,7 +62,7 @@ GOALS & SUCCESS CRITERIA
 1. Evidence-first — Identify races through code path analysis, not intuition.
    Show the interleaving or ordering that causes the bug.
 2. Severity ranking — Classify each finding by user impact:
-   - Critical: data loss, incorrect signing, broken playback
+   - Critical: data loss, incorrect signing, broken functionality
    - High: UI state corruption, stale data displayed, silent failures
    - Medium: cosmetic glitches, redundant work, non-deterministic test flakiness
    - Low: theoretical race with no observed symptoms
@@ -89,31 +88,31 @@ RACE CONDITION TAXONOMY (what to look for)
 
 1. **Initialization Ordering**
    - App startup assumes a specific load order that isn't guaranteed
-   - `projectApp` callbacks wired before dependent modules are ready
+   - Callbacks wired before dependent modules are ready
    - DOM elements accessed before rendering completes
-   - Signer availability assumed before browser extension injects runtime signer APIs
+   - External dependencies assumed available before injection
 
 2. **Async State Mutations**
    - Multiple async operations read-modify-write the same state without
-     coordination (e.g., cache updates, relay pool state)
+     coordination (e.g., cache updates, pool state)
    - Fire-and-forget promises that silently fail or resolve after the caller
      has moved on
    - `await` chains where intermediate state is visible to concurrent readers
 
 3. **Event Ordering**
-   - Relay message handlers that assume events arrive in a specific order
+   - Message handlers that assume events arrive in a specific order
    - Subscription callbacks that race with connection lifecycle events
    - UI event handlers that trigger overlapping async operations (double-click,
      rapid navigation)
 
 4. **Resource Lifecycle**
-   - WebSocket connections used after close/error
-   - WebTorrent clients or torrents accessed after destroy
-   - Video elements manipulated after removal from DOM
+   - Connections used after close/error
+   - Clients or torrents accessed after destroy
+   - UI elements manipulated after removal from DOM
    - Timers or intervals not cleaned up, firing into stale closures
 
 5. **Concurrency Hazards**
-   - Unbounded parallel relay queries with no coordination
+   - Unbounded parallel queries with no coordination
    - Promise.all/race with insufficient error isolation
    - Shared mutable arrays/objects modified during iteration
 
@@ -132,14 +131,14 @@ WEEKLY WORKFLOW (mandatory)
 
 2) Select audit focus areas (1–3 subsystems)
   Rotate through subsystems across weeks to ensure full coverage over time.
-  Priority order for initial runs:
+  Priority order for initial runs (adapt to project structure):
 
-  - shared client and relay pool (`js/integration/client.js`, adapters, facade)
-  - App initialization and login flow (`js/app.js`, signer setup)
-  - Playback orchestration (`js/services/playbackService.js`, WebTorrent)
-  - State management (`js/state/cache.js`, shared module state)
-  - UI controllers and DOM interactions (`js/ui/`)
-  - Session actor and telemetry (`js/integration/sessionActor.js`)
+  - Shared clients and connection pools (integration/adapters)
+  - App initialization and authentication flow
+  - Background services and workers
+  - State management and caching
+  - UI controllers and DOM interactions
+  - Telemetry and logging
 
   Document the chosen focus areas at the top of the weekly report.
 
@@ -184,7 +183,7 @@ WEEKLY WORKFLOW (mandatory)
   - Run format/lint/test commands per repo policy (verify in `package.json`):
       - `npm run format`
       - `npm run lint`
-      - `npm run test:unit`
+      - `npm test`
   - If a reproduction test was written, confirm it passes deterministically
     (run 3+ times).
   - Confirm no new lint or test failures were introduced.
