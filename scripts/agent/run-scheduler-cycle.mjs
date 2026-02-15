@@ -8,6 +8,14 @@ import { randomUUID } from 'node:crypto';
 
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 const ALL_EXCLUDED_REASON = 'All roster tasks currently claimed by other agents';
+const FAILURE_CATEGORY = {
+  PROMPT_PARSE: 'prompt_parse_error',
+  PROMPT_SCHEMA: 'prompt_schema_error',
+  LOCK_BACKEND: 'lock_backend_error',
+  EXECUTION: 'execution_error',
+};
+
+const LOCK_INCIDENT_LINK = 'docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md';
 
 function parseArgs(argv) {
   const args = { cadence: null, platform: process.env.AGENT_PLATFORM || 'codex' };
@@ -139,6 +147,58 @@ function excerptText(text, maxChars = 600) {
   if (!clean) return '';
   if (clean.length <= maxChars) return clean;
   return `${clean.slice(0, maxChars)}…`;
+}
+
+function categorizeFailureMetadata(failureCategory, extraMetadata = {}) {
+  return {
+    failure_category: failureCategory,
+    ...extraMetadata,
+  };
+}
+
+function formatDurationMs(ms) {
+  if (!Number.isFinite(ms) || ms < 0) return 'unknown';
+  const minutes = Math.round(ms / 60000);
+  return `${minutes} minute(s)`;
+}
+
+function buildLockBackendRemediation({ cadence, retryWindowMs, maxDeferrals, incidentSignalId = null }) {
+  const steps = [
+    `Retry window: ${formatDurationMs(retryWindowMs)} (max deferrals: ${maxDeferrals}).`,
+    `Run health check: npm run lock:health -- --cadence ${cadence}`,
+    `Review incident runbook: ${LOCK_INCIDENT_LINK}`,
+  ];
+  if (incidentSignalId) {
+    steps.push(`Incident signal: ${incidentSignalId}`);
+  }
+  return `Recommended auto-remediation: ${steps.join(' ')}`;
+}
+
+async function validatePromptFile(promptPath) {
+  let content;
+  try {
+    content = await fs.readFile(promptPath, 'utf8');
+  } catch (error) {
+    return {
+      ok: false,
+      category: FAILURE_CATEGORY.PROMPT_PARSE,
+      reason: 'Prompt file parse/read failed',
+      detail: `Prompt not executed; unable to read prompt file at ${promptPath}: ${error.message}`,
+    };
+  }
+
+  const lines = String(content).split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const firstLine = lines[0] || '';
+  if (!firstLine.startsWith('#')) {
+    return {
+      ok: false,
+      category: FAILURE_CATEGORY.PROMPT_SCHEMA,
+      reason: 'Prompt file schema validation failed',
+      detail: `Prompt not executed; expected markdown heading on first non-empty line in ${promptPath}.`,
+    };
+  }
+
+  return { ok: true };
 }
 
 function classifyLockBackendError(outputText) {
@@ -604,10 +664,10 @@ async function main() {
             ? 'All relays unhealthy preflight'
             : 'Lock backend unavailable preflight',
           detail: allRelaysUnhealthy
-            ? `Deferred run before lock acquisition: ${incidentSignal?.reason || 'all relays unhealthy'}.`
-            : `Preflight failed (${preflight.failureCategory}). Retry scheduler after verifying relay connectivity, relay URLs, and DNS/network status.`,
+            ? `Deferred run before lock acquisition: ${incidentSignal?.reason || 'all relays unhealthy'}. Prompt not executed. ${buildLockBackendRemediation({ cadence, retryWindowMs: schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs, maxDeferrals: schedulerConfig.lockFailurePolicy.maxDeferrals, incidentSignalId: incidentSignal?.id || null })}`
+            : `Preflight failed (${preflight.failureCategory}). Prompt not executed. ${buildLockBackendRemediation({ cadence, retryWindowMs: schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs, maxDeferrals: schedulerConfig.lockFailurePolicy.maxDeferrals, incidentSignalId: incidentSignal?.id || null })}`,
           metadata: {
-            failure_class: 'backend_unavailable',
+            ...categorizeFailureMetadata(FAILURE_CATEGORY.LOCK_BACKEND, { failure_class: 'backend_unavailable' }),
             preflight_failure_category: preflight.failureCategory,
             relay_list: preflight.relayList.join(', ') || '(none)',
             preflight_stderr_excerpt: preflight.stderrExcerpt || '(empty)',
@@ -714,9 +774,9 @@ async function main() {
           status: 'deferred',
           platform,
           reason: 'Lock backend deferred',
-          detail: `Deferred after lock backend failure (${backendCategory}); retry window active and deferral budget remaining.`,
+          detail: `Deferred after lock backend failure (${backendCategory}); retry window active and deferral budget remaining. Prompt not executed. ${buildLockBackendRemediation({ cadence, retryWindowMs: schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs, maxDeferrals: schedulerConfig.lockFailurePolicy.maxDeferrals })}`,
           metadata: {
-            failure_class: 'backend_unavailable',
+            ...categorizeFailureMetadata(FAILURE_CATEGORY.LOCK_BACKEND, { failure_class: 'backend_unavailable' }),
             deferral_attempt_count: deferralAttemptCount,
             deferral_first_failure_timestamp: firstFailureAt,
             backend_category: backendCategory,
@@ -734,9 +794,9 @@ async function main() {
         status: 'failed',
         platform,
         reason: 'Lock backend error',
-        detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). Retry ${lockCommand} after verifying relay connectivity, relay URLs, and DNS/network status.`,
+        detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). ${buildLockBackendRemediation({ cadence, retryWindowMs: schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs, maxDeferrals: schedulerConfig.lockFailurePolicy.maxDeferrals })}`,
         metadata: {
-          failure_class: 'backend_unavailable',
+          ...categorizeFailureMetadata(FAILURE_CATEGORY.LOCK_BACKEND, { failure_class: 'backend_unavailable' }),
           lock_attempts_total: lockAttempt.attempts,
           lock_backoff_schedule_ms: backoffSchedule || '(none)',
           lock_correlation_id: diagnosticsSummary.correlationId || lockAttempt.correlationId,
@@ -769,6 +829,20 @@ async function main() {
     }
 
     const promptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
+    const promptValidation = await validatePromptFile(promptPath);
+    if (!promptValidation.ok) {
+      await writeLog({
+        cadence,
+        agent: selectedAgent,
+        status: 'failed',
+        platform,
+        reason: promptValidation.reason,
+        detail: promptValidation.detail,
+        metadata: categorizeFailureMetadata(promptValidation.category, { prompt_path: promptPath }),
+      });
+      process.exit(1);
+    }
+
     schedulerRunState.lock_deferral = null;
     await writeRunState(runStatePath, schedulerRunState);
     const runArtifactSince = new Date().toISOString();
@@ -788,7 +862,7 @@ async function main() {
           platform,
           reason: 'Memory retrieval command failed',
           detail: schedulerConfig.memoryPolicy.retrieveCommand,
-          metadata: { failure_class: 'prompt_validation_error' },
+          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
         process.exit(retrieveResult.code);
       }
@@ -807,7 +881,7 @@ async function main() {
           platform,
           reason: 'Prompt/handoff execution failed',
           detail: 'Handoff callback failed.',
-          metadata: { failure_class: 'prompt_validation_error' },
+          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
         process.exit(handoff.code);
       }
@@ -822,7 +896,7 @@ async function main() {
         platform,
         reason: 'Prompt/handoff execution failed',
         detail,
-        metadata: { failure_class: 'prompt_validation_error' },
+        metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
       });
       process.exit(1);
     }
@@ -840,7 +914,7 @@ async function main() {
           platform,
           reason: 'Memory storage command failed',
           detail: schedulerConfig.memoryPolicy.storeCommand,
-          metadata: { failure_class: 'prompt_validation_error' },
+          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
         process.exit(storeResult.code);
       }
@@ -871,7 +945,7 @@ async function main() {
         platform,
         reason: 'Required memory steps not verified',
         detail: `Missing evidence for: ${missingSteps.join(', ')}`,
-        metadata: { failure_class: 'prompt_validation_error' },
+        metadata: categorizeFailureMetadata(FAILURE_CATEGORY.PROMPT_SCHEMA, { failure_class: 'prompt_validation_error' }),
       });
       process.exit(1);
     }
@@ -903,7 +977,7 @@ async function main() {
         platform,
         reason: 'Missing required run artifacts',
         detail,
-        metadata: { failure_class: 'prompt_validation_error' },
+        metadata: categorizeFailureMetadata(FAILURE_CATEGORY.PROMPT_SCHEMA, { failure_class: 'prompt_validation_error' }),
       });
       process.exit(artifactCheck.code);
     }
@@ -920,7 +994,7 @@ async function main() {
           platform,
           reason: 'Validation failed',
           detail: validation,
-          metadata: { failure_class: 'prompt_validation_error' },
+          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
         process.exit(result.code);
       }

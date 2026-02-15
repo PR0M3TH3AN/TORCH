@@ -17,7 +17,7 @@ Canonical roster source: `src/prompts/roster.json` (`weekly` key).
 ## Lock Backend Preflight Behavior
 
 - When `scheduler.lockHealthPreflight` is enabled (or `SCHEDULER_LOCK_HEALTH_PREFLIGHT=1`), run `node scripts/agent/check-relay-health.mjs --cadence weekly` before agent selection/lock attempt.
-- On preflight failure, scheduler must write a `_failed.md` entry with reason `Lock backend unavailable preflight`, including relay list + classified preflight failure metadata, and stop.
+- On preflight failure, scheduler must write a `_failed.md` entry with reason `Lock backend unavailable preflight`, including relay list + classified preflight failure metadata, `failure_category: lock_backend_error`, and `prompt not executed` summary text before stopping.
 - Escape hatch for local/offline workflows: `SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT=1`.
 
 ## Weekly Roster
