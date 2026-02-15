@@ -794,7 +794,7 @@ async function main() {
         status: 'failed',
         platform,
         reason: 'Lock backend error',
-        detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). ${buildLockBackendRemediation({ cadence, retryWindowMs: schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs, maxDeferrals: schedulerConfig.lockFailurePolicy.maxDeferrals })}`,
+        detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). Prompt not executed. ${buildLockBackendRemediation({ cadence, retryWindowMs: schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs, maxDeferrals: schedulerConfig.lockFailurePolicy.maxDeferrals })}`,
         metadata: {
           ...categorizeFailureMetadata(FAILURE_CATEGORY.LOCK_BACKEND, { failure_class: 'backend_unavailable' }),
           lock_attempts_total: lockAttempt.attempts,

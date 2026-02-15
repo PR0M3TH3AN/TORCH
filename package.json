@@ -28,7 +28,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "npm run validate:scheduler && node --test test/*.test.mjs tests/*.test.js",
+    "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test test/*.test.mjs tests/*.test.js",
     "test:unit:lock-backend": "node --test test/lock-ops.test.mjs test/lock-ops-publish-retry.test.mjs",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
@@ -42,7 +42,8 @@
     "validate:scheduler": "node scripts/validate-scheduler-roster.mjs && node scripts/validate-prompt-contract.mjs && node scripts/validate-scheduler-flow-parity.mjs",
     "scheduler:daily": "node scripts/agent/run-scheduler-cycle.mjs daily",
     "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly",
-    "report:lock-reliability": "node scripts/agent/summarize-lock-reliability.mjs --since-days 30"
+    "report:lock-reliability": "node scripts/agent/summarize-lock-reliability.mjs --since-days 30",
+    "test:integration:e2e": "node --test test/scheduler-preflight-lock.e2e.test.mjs"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
