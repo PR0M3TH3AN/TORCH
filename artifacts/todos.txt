@@ -1,1 +1,3 @@
-src/todo/2026-02-13-dom-migration-todo.md:1:# TODO — Rendering Migration (Example)
+docs/proposals/prompt-packages.md:26:    *   `todo-triage-agent`: Manage TODOs.
+scripts/agent/verify-run-artifacts.mjs:15:    expectedPrefix: 'TODO_',
+test/verify-run-artifacts.test.mjs:46:  await fs.writeFile(path.join(root, 'src', 'todo', 'TODO_1.md'), `${metadata}\n\nPending tasks:\n- finish checks\n`, 'utf8');
