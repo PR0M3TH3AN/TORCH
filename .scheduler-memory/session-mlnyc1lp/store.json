@@ -1,0 +1,19 @@
+{
+  "cadence": "daily",
+  "operation": "store",
+  "runId": "session-mlnyc1lp",
+  "servicePath": "src/services/memory/index.js#ingestEvents",
+  "inputs": {
+    "agentId": "test-audit-agent",
+    "promptPath": "src/prompts/daily/test-audit-agent.md",
+    "promptIntent": "## Required startup + artifacts + memory + issue capture",
+    "events": 2
+  },
+  "outputs": {
+    "storedCount": 1,
+    "summaries": [
+      "Store memory event A for daily :: ## Required startup + artifacts + memory + issue capture Store memory event B for daily :: ## Required startup + artifacts + memory + issue capture"
+    ]
+  },
+  "status": "ok"
+}
