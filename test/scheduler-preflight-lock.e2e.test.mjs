@@ -185,7 +185,7 @@ test('lock preflight e2e: exit code 2 quorum failure persists failed backend sta
       status: 'failed',
       failure_category: 'lock_backend_error',
       failure_class: 'backend_unavailable',
-      backend_category: 'publish failed to all relays',
+      backend_category: 'relay_publish_quorum_failure',
     },
   );
 

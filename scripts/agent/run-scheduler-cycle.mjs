@@ -203,14 +203,19 @@ async function validatePromptFile(promptPath) {
 
 function classifyLockBackendError(outputText) {
   const text = String(outputText || '').toLowerCase();
-  if (!text.trim()) return 'unknown backend error';
+  if (!text.trim()) return 'unknown_backend_error';
+
+  const errorCategoryMatch = text.match(/error_category=([a-z0-9_]+)/);
+  if (errorCategoryMatch?.[1]) {
+    return errorCategoryMatch[1];
+  }
 
   if ((text.includes('relay') || text.includes('query')) && text.includes('timeout')) {
-    return 'relay query timeout';
+    return 'relay_query_timeout';
   }
 
   if (text.includes('publish failed to all relays') || text.includes('failed to publish to any relay')) {
-    return 'publish failed to all relays';
+    return 'relay_publish_quorum_failure';
   }
 
   if (
@@ -221,7 +226,7 @@ function classifyLockBackendError(outputText) {
     || text.includes('eai_again')
     || (text.includes('websocket') && text.includes('dns'))
   ) {
-    return 'websocket connection refused/dns';
+    return 'websocket_connection_refused_or_dns';
   }
 
   if (
@@ -231,10 +236,10 @@ function classifyLockBackendError(outputText) {
     || text.includes('must start with ws')
     || text.includes('invalid relay')
   ) {
-    return 'malformed relay url/config';
+    return 'malformed_relay_url_config';
   }
 
-  return 'unknown backend error';
+  return 'unknown_backend_error';
 }
 
 async function artifactExistsSince(filePath, sinceMs) {
@@ -602,6 +607,8 @@ async function writeLog({ cadence, agent, status, reason, detail, platform, meta
     `cadence: ${cadence}`,
     `agent: ${agent}`,
     `status: ${status}`,
+    `reason: ${toYamlScalar(reason)}`,
+    detail ? `detail: ${toYamlScalar(detail)}` : null,
     `created_at: ${new Date().toISOString()}`,
     `timestamp: ${new Date().toISOString()}`,
     ...Object.entries(mergedMetadata)

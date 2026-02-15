@@ -197,7 +197,7 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /reason: Lock backend error/);
   assert.match(failedBody, /failure_class: 'backend_unavailable'/);
   assert.match(failedBody, /failure_category: 'lock_backend_error'/);
-  assert.match(failedBody, /backend_category: 'publish failed to all relays'/);
+  assert.match(failedBody, /backend_category: 'relay_publish_quorum_failure'/);
   assert.match(failedBody, /lock_command: 'AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily'/);
   assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
   assert.match(failedBody, /lock_stdout_excerpt: 'websocket: connection refused'/);
@@ -533,7 +533,7 @@ test('stops retrying after configured lock backend retries are exhausted', { con
 
   assert.match(failedBody, /lock_attempts_total: '2'/);
   assert.match(failedBody, /lock_backoff_schedule_ms: '0'/);
-  assert.match(failedBody, /backend_category: 'publish failed to all relays'/);
+  assert.match(failedBody, /backend_category: 'relay_publish_quorum_failure'/);
 });
 
 test('does not use backend retry flow for exit code 3 lock conflicts', { concurrency: false }, async () => {
