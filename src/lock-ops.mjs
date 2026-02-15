@@ -69,6 +69,39 @@ function relayListLabel(relays) {
 
 function classifyPublishError(message) {
   const normalized = String(message || '').toLowerCase();
+  if (normalized.includes('publish timed out after') || normalized.includes('publish timeout')) {
+    return 'publish_timeout';
+  }
+  if (
+    normalized.includes('enotfound')
+    || normalized.includes('eai_again')
+    || normalized.includes('getaddrinfo')
+    || (normalized.includes('dns') && normalized.includes('websocket'))
+  ) {
+    return 'dns_resolution';
+  }
+  if (
+    normalized.includes('connect etimedout')
+    || normalized.includes('tcp connect timed out')
+    || normalized.includes('connect timeout')
+  ) {
+    return 'tcp_connect_timeout';
+  }
+  if (
+    normalized.includes('tls')
+    || normalized.includes('ssl')
+    || normalized.includes('certificate')
+    || normalized.includes('handshake')
+  ) {
+    return 'tls_handshake';
+  }
+  if (
+    normalized.includes('websocket')
+    || normalized.includes('bad response')
+    || normalized.includes('unexpected server response')
+  ) {
+    return 'websocket_open_failure';
+  }
   if (normalized.includes('timed out') || normalized.includes('timeout') || normalized.includes('etimedout')) {
     return 'network_timeout';
   }
@@ -89,7 +122,16 @@ function classifyPublishError(message) {
 }
 
 function isTransientPublishCategory(category) {
-  return category === 'network_timeout' || category === 'connection_reset' || category === 'relay_unavailable';
+  return [
+    'publish_timeout',
+    'dns_resolution',
+    'tcp_connect_timeout',
+    'tls_handshake',
+    'websocket_open_failure',
+    'network_timeout',
+    'connection_reset',
+    'relay_unavailable',
+  ].includes(category);
 }
 
 function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = Math.random) {
@@ -366,7 +408,11 @@ export async function publishLock(relays, event, deps = {}) {
     randomFn = Math.random,
     telemetryLogger = console.error,
     healthLogger = console.error,
+    diagnostics = {},
   } = deps;
+
+  const correlationId = diagnostics.correlationId || process.env.SCHEDULER_LOCK_CORRELATION_ID || 'none';
+  const attemptId = diagnostics.attemptId || process.env.SCHEDULER_LOCK_ATTEMPT_ID || '1';
 
   const pool = poolFactory();
   const publishTimeoutMs = getPublishTimeoutMsFn();
@@ -423,11 +469,32 @@ export async function publishLock(relays, event, deps = {}) {
   try {
     maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'publish:periodic');
     let lastAttemptState = null;
+    const retryTimeline = [];
+    const overallStartedAt = Date.now();
     for (let attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber += 1) {
       const startedAtMs = Date.now();
       lastAttemptState = await publishOnce();
+      const elapsedMs = Date.now() - startedAtMs;
+      retryTimeline.push({
+        publishAttempt: attemptNumber,
+        successCount: lastAttemptState.successCount,
+        relayAttemptedCount: lastAttemptState.attempted.size,
+        elapsedMs,
+      });
 
       if (lastAttemptState.successCount >= minSuccesses) {
+        telemetryLogger(JSON.stringify({
+          event: 'lock_publish_quorum_met',
+          correlationId,
+          attemptId,
+          publishAttempt: attemptNumber,
+          successCount: lastAttemptState.successCount,
+          relayAttemptedCount: lastAttemptState.attempted.size,
+          requiredSuccesses: minSuccesses,
+          timeoutMs: publishTimeoutMs,
+          retryTimeline,
+          totalElapsedMs: Date.now() - overallStartedAt,
+        }));
         console.error(
           `  Published to ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} relays `
           + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)`,
@@ -443,13 +510,14 @@ export async function publishLock(relays, event, deps = {}) {
         break;
       }
 
-      const elapsedMs = Date.now() - startedAtMs;
       const nextDelayMs = calculateBackoffDelayMs(attemptNumber, retryBaseDelayMs, retryCapDelayMs, randomFn);
       for (const failure of lastAttemptState.failures) {
         if (!isTransientPublishCategory(failure.category)) continue;
         telemetryLogger(JSON.stringify({
           event: 'lock_publish_retry',
-          attempt: attemptNumber,
+          correlationId,
+          attemptId,
+          publishAttempt: attemptNumber,
           relayUrl: failure.relay,
           errorCategory: failure.category,
           elapsedMs,
@@ -460,13 +528,42 @@ export async function publishLock(relays, event, deps = {}) {
       await sleepFn(nextDelayMs);
     }
 
+    const reasonDistribution = {};
     const failureLines = lastAttemptState.failures
-      .map((result) => `${result.relay} (${result.phase}, category=${result.category}): ${result.message}`);
+      .map((result) => {
+        reasonDistribution[result.category] = (reasonDistribution[result.category] || 0) + 1;
+        telemetryLogger(JSON.stringify({
+          event: 'lock_publish_failure',
+          correlationId,
+          attemptId,
+          relayUrl: result.relay,
+          phase: result.phase,
+          reason: result.category,
+          message: result.message,
+        }));
+        return `${result.relay} (${result.phase}, reason=${result.category}): ${result.message}`;
+      });
+
+    telemetryLogger(JSON.stringify({
+      event: 'lock_publish_quorum_failed',
+      correlationId,
+      attemptId,
+      successCount: lastAttemptState.successCount,
+      relayAttemptedCount: lastAttemptState.attempted.size,
+      requiredSuccesses: minSuccesses,
+      timeoutMs: publishTimeoutMs,
+      attempts: maxAttempts,
+      reasonDistribution,
+      retryTimeline,
+      totalElapsedMs: Date.now() - overallStartedAt,
+    }));
 
     maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'publish:failure', true);
     throw new Error(
       `Failed relay publish quorum in publish phase: ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} successful `
-      + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms, attempts=${maxAttempts})\n  ${failureLines.join('\n  ')}`,
+      + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms, attempts=${maxAttempts}, attempt_id=${attemptId}, correlation_id=${correlationId}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
+      + `  retry timeline: ${retryTimeline.map((item) => `#${item.publishAttempt}:${item.elapsedMs}ms`).join(', ')}\n`
+      + `  ${failureLines.join('\n  ')}`,
     );
   } finally {
     pool.close(allRelays);

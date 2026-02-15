@@ -109,30 +109,47 @@ describe('lock-ops', () => {
           telemetry.push(JSON.parse(line));
         },
         healthLogger: () => {},
+        diagnostics: {
+          attemptId: 'attempt-1',
+          correlationId: 'corr-1',
+        },
       });
 
       assert.strictEqual(result, event);
       assert.strictEqual(publishCalls, 2);
       assert.deepStrictEqual(sleepCalls, [250]);
-      assert.strictEqual(telemetry.length, 2);
-      assert.deepStrictEqual(telemetry[0], {
+
+      const retryEvents = telemetry.filter((entry) => entry.event === 'lock_publish_retry');
+      assert.strictEqual(retryEvents.length, 2);
+      assert.deepStrictEqual(retryEvents[0], {
         event: 'lock_publish_retry',
-        attempt: 1,
+        correlationId: 'corr-1',
+        attemptId: 'attempt-1',
+        publishAttempt: 1,
         relayUrl: 'wss://primary-a',
         errorCategory: 'connection_reset',
-        elapsedMs: telemetry[0].elapsedMs,
+        elapsedMs: retryEvents[0].elapsedMs,
         nextDelayMs: 250,
       });
-      assert.deepStrictEqual(telemetry[1], {
+      assert.deepStrictEqual(retryEvents[1], {
         event: 'lock_publish_retry',
-        attempt: 1,
+        correlationId: 'corr-1',
+        attemptId: 'attempt-1',
+        publishAttempt: 1,
         relayUrl: 'wss://primary-b',
         errorCategory: 'connection_reset',
-        elapsedMs: telemetry[1].elapsedMs,
+        elapsedMs: retryEvents[1].elapsedMs,
         nextDelayMs: 250,
       });
-      assert.ok(Number.isInteger(telemetry[0].elapsedMs));
-      assert.ok(Number.isInteger(telemetry[1].elapsedMs));
+      assert.ok(Number.isInteger(retryEvents[0].elapsedMs));
+      assert.ok(Number.isInteger(retryEvents[1].elapsedMs));
+
+      const metEvent = telemetry.find((entry) => entry.event === 'lock_publish_quorum_met');
+      assert.ok(metEvent);
+      assert.equal(metEvent.correlationId, 'corr-1');
+      assert.equal(metEvent.attemptId, 'attempt-1');
+      assert.equal(metEvent.publishAttempt, 2);
+      assert.ok(Array.isArray(metEvent.retryTimeline));
     });
 
     it('fails after retry budget is exhausted for persistent transient failures', async () => {
@@ -162,7 +179,7 @@ describe('lock-ops', () => {
           telemetryLogger: () => {},
           healthLogger: () => {},
         }),
-        /Failed relay publish quorum in publish phase: 0\/1 successful \(required=1, timeout=200ms, attempts=3\)/,
+        /Failed relay publish quorum in publish phase: 0\/1 successful \(required=1, timeout=200ms, attempts=3,/,
       );
 
       assert.strictEqual(publishCalls, 3);
@@ -190,15 +207,61 @@ describe('lock-ops', () => {
           sleepFn: async () => {
             throw new Error('should not sleep for permanent failures');
           },
-          telemetryLogger: () => {
-            throw new Error('should not emit retry telemetry for permanent failures');
-          },
+          telemetryLogger: () => {},
           healthLogger: () => {},
         }),
-        /Failed relay publish quorum in publish phase: 0\/1 successful \(required=1, timeout=200ms, attempts=4\)/,
+        /Failed relay publish quorum in publish phase: 0\/1 successful \(required=1, timeout=200ms, attempts=4,/,
       );
 
       assert.strictEqual(publishCalls, 1);
+    });
+
+    it('includes per-relay reason categories and retry metadata in failure diagnostics', async () => {
+      const telemetry = [];
+      const mockPool = {
+        publish: (relays) => relays.map((relay) => {
+          if (relay.includes('dns')) return Promise.reject(new Error('getaddrinfo ENOTFOUND relay.example'));
+          if (relay.includes('tcp')) return Promise.reject(new Error('connect ETIMEDOUT 1.2.3.4:443'));
+          if (relay.includes('tls')) return Promise.reject(new Error('TLS handshake failure'));
+          if (relay.includes('ws')) return Promise.reject(new Error('websocket: unexpected server response'));
+          return Promise.reject(new Error('[publish:primary] Publish timed out after 200ms'));
+        }),
+        close: () => {},
+      };
+
+      await assert.rejects(
+        () => publishLock(['wss://dns', 'wss://tcp', 'wss://tls', 'wss://ws', 'relay-timeout'], { id: 'evt-diag' }, {
+          poolFactory: () => mockPool,
+          getPublishTimeoutMsFn: () => 200,
+          getMinSuccessfulRelayPublishesFn: () => 1,
+          getRelayFallbacksFn: () => [],
+          getMinActiveRelayPoolFn: () => 1,
+          retryAttempts: 1,
+          telemetryLogger: (line) => telemetry.push(JSON.parse(line)),
+          healthLogger: () => {},
+          diagnostics: { attemptId: 'attempt-42', correlationId: 'corr-42' },
+        }),
+      );
+
+      const summaryEvent = telemetry.find((entry) => entry.event === 'lock_publish_quorum_failed');
+      assert.ok(summaryEvent);
+      const failureEvents = telemetry.filter((entry) => entry.event === 'lock_publish_failure');
+      const failureText = failureEvents.map((entry) => `${entry.relayUrl}:${entry.reason}`).join('\n');
+
+      assert.match(failureText, /wss:\/\/dns:dns_resolution/);
+      assert.match(failureText, /wss:\/\/tcp:tcp_connect_timeout/);
+      assert.match(failureText, /wss:\/\/tls:tls_handshake/);
+      assert.match(failureText, /wss:\/\/ws:websocket_open_failure/);
+      assert.match(failureText, /relay-timeout:publish_timeout/);
+
+
+      assert.deepStrictEqual(summaryEvent.reasonDistribution, {
+        dns_resolution: 1,
+        tcp_connect_timeout: 1,
+        tls_handshake: 1,
+        websocket_open_failure: 1,
+        publish_timeout: 1,
+      });
     });
 
     it('returns success when mixed relay outcomes still satisfy quorum', async () => {
@@ -269,7 +332,6 @@ describe('lock-ops', () => {
 
       const event = { id: 'evt-health' };
 
-      // Warm up failure history so bad relay enters quarantine.
       for (let i = 0; i < 3; i += 1) {
         await publishLock(['wss://bad', 'wss://healthy'], event, {
           poolFactory: () => mockPool,
