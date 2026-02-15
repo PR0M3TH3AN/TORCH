@@ -86,16 +86,48 @@ async function runCommand(command, args = [], options = {}) {
     let stdout = '';
     let stderr = '';
 
+    const OUTPUT_LIMIT = 20000; // 20KB
+    let stdoutWritten = 0;
+    let stderrWritten = 0;
+    let stdoutTruncated = false;
+    let stderrTruncated = false;
+
     child.stdout.on('data', (chunk) => {
       const text = chunk.toString();
       stdout += text;
-      process.stdout.write(text);
+
+      if (stdoutWritten < OUTPUT_LIMIT) {
+        const remaining = OUTPUT_LIMIT - stdoutWritten;
+        if (text.length <= remaining) {
+          process.stdout.write(text);
+          stdoutWritten += text.length;
+        } else {
+          process.stdout.write(text.slice(0, remaining));
+          stdoutWritten += remaining;
+        }
+      } else if (!stdoutTruncated) {
+        process.stdout.write('\n...[stdout truncated]...\n');
+        stdoutTruncated = true;
+      }
     });
 
     child.stderr.on('data', (chunk) => {
       const text = chunk.toString();
       stderr += text;
-      process.stderr.write(text);
+
+      if (stderrWritten < OUTPUT_LIMIT) {
+        const remaining = OUTPUT_LIMIT - stderrWritten;
+        if (text.length <= remaining) {
+          process.stderr.write(text);
+          stderrWritten += text.length;
+        } else {
+          process.stderr.write(text.slice(0, remaining));
+          stderrWritten += remaining;
+        }
+      } else if (!stderrTruncated) {
+        process.stderr.write('\n...[stderr truncated]...\n');
+        stderrTruncated = true;
+      }
     });
 
     child.on('close', (code) => {
