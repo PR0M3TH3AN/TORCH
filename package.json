@@ -29,6 +29,7 @@
   ],
   "scripts": {
     "test": "npm run validate:scheduler && node --test test/*.test.mjs tests/*.test.js",
+    "test:unit:lock-backend": "node --test test/lock-ops.test.mjs test/lock-ops-publish-retry.test.mjs",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
     "lock:list": "node bin/torch-lock.mjs list",

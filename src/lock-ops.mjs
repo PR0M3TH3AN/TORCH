@@ -471,6 +471,7 @@ export async function publishLock(relays, event, deps = {}) {
     let lastAttemptState = null;
     const retryTimeline = [];
     const overallStartedAt = Date.now();
+    let terminalFailureCategory = 'relay_publish_non_retryable';
     for (let attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber += 1) {
       const startedAtMs = Date.now();
       lastAttemptState = await publishOnce();
@@ -505,6 +506,14 @@ export async function publishLock(relays, event, deps = {}) {
       const hasTransientFailure = lastAttemptState.failures.some((failure) => isTransientPublishCategory(failure.category));
       const hasPermanentFailure = lastAttemptState.failures.some((failure) => !isTransientPublishCategory(failure.category));
       const canRetry = attemptNumber < maxAttempts && hasTransientFailure && !hasPermanentFailure;
+
+      if (hasTransientFailure && !hasPermanentFailure && attemptNumber >= maxAttempts) {
+        terminalFailureCategory = 'relay_publish_quorum_failure';
+      } else if (hasPermanentFailure) {
+        terminalFailureCategory = 'relay_publish_non_retryable';
+      } else {
+        terminalFailureCategory = 'relay_publish_quorum_failure';
+      }
 
       if (!canRetry) {
         break;
@@ -548,6 +557,7 @@ export async function publishLock(relays, event, deps = {}) {
       event: 'lock_publish_quorum_failed',
       correlationId,
       attemptId,
+      errorCategory: terminalFailureCategory,
       successCount: lastAttemptState.successCount,
       relayAttemptedCount: lastAttemptState.attempted.size,
       requiredSuccesses: minSuccesses,
@@ -561,7 +571,7 @@ export async function publishLock(relays, event, deps = {}) {
     maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'publish:failure', true);
     throw new Error(
       `Failed relay publish quorum in publish phase: ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} successful `
-      + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms, attempts=${maxAttempts}, attempt_id=${attemptId}, correlation_id=${correlationId}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
+      + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms, attempts=${maxAttempts}, attempt_id=${attemptId}, correlation_id=${correlationId}, error_category=${terminalFailureCategory}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
       + `  retry timeline: ${retryTimeline.map((item) => `#${item.publishAttempt}:${item.elapsedMs}ms`).join(', ')}\n`
       + `  ${failureLines.join('\n  ')}`,
     );
