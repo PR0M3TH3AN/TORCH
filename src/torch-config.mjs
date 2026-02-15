@@ -282,3 +282,16 @@ export function getMinActiveRelayPool() {
   assertPositiveCount(value, 'effective min active relay pool');
   return value;
 }
+
+export function getHashtag() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_HASHTAG;
+  if (envValue) {
+    return envValue.trim();
+  }
+  if (config.dashboard.hashtag) {
+    return config.dashboard.hashtag;
+  }
+  const namespace = getNamespace();
+  return `${namespace}-agent-lock`;
+}
