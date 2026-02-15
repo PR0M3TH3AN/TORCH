@@ -16,6 +16,26 @@ Track only **active, reproducible, unresolved** issues.
 
 ## Active issues
 
+### Goose Desktop: hermit "text file busy" (ETXTBSY) blocks all `node`/`npm` commands
+- **Status:** Active (local workaround applied, upstream fix needed)
+- **Area:** Tooling
+- **Symptom:** Every `node`/`npm` command fails with `fatal:hermit: open /home/user/.config/goose/mcp-hermit/bin/hermit: text file busy`. All Torch lock/scheduler commands are blocked.
+- **Trigger/Conditions:** Any Goose Desktop on Linux. The Goose `node` wrapper downloads hermit, then runs `hermit init` which tries to overwrite its own running binary — Linux returns ETXTBSY.
+- **Workaround:** Use patched setup: `PATH=/home/user/.local/goose-fix/bin:$PATH` before commands. Or: `rm -rf ~/.config/goose/mcp-hermit` then use patched wrappers. See `docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md` for the full patch.
+- **Impact:** Critical — 100% blocks scheduler runs, lock operations, and any npm script on Goose Desktop.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md`, patch at `docs/agent-handoffs/incidents/goose-hermit-etxtbsy-fix.patch`
+- **Last verified:** 2026-02-15
+
+### Goose Desktop: `node`/`npx` wrappers swallow non-zero exit codes
+- **Status:** Active (no workaround except stdout parsing)
+- **Area:** Tooling
+- **Symptom:** The Goose `node` wrapper uses `node "$@" || log "Failed"` which catches non-zero exits and returns 0. Torch `lock:lock` exit 3 (lock denied) appears as exit 0.
+- **Trigger/Conditions:** Any Goose Desktop shell command that relies on `node` exit codes.
+- **Workaround:** Parse stdout for `LOCK_STATUS=denied` / `LOCK_STATUS=race_lost` instead of relying on exit codes.
+- **Impact:** Medium — scheduler lock-race retry logic broken; requires stdout parsing fallback.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md`
+- **Last verified:** 2026-02-15
+
 ### `npm test` fails due to prompt contract violations
 - **Status:** Active
 - **Area:** Tooling
