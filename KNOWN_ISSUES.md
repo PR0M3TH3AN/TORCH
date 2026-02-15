@@ -30,7 +30,8 @@ Track only **active, reproducible, unresolved** issues.
 - **Area:** Runtime
 - **Symptom:** Multiple scheduler runs fail with `Lock backend error` before prompt handoff/validation.
 - **Trigger/Conditions:** Running scheduler cycles when relay connectivity is unstable or lock backend operations time out; observed in both `daily` and `weekly` task logs.
-- **Workaround:** Retry with explicit platform and inspect reliability report output (`npm run report:lock-reliability`), then validate relay health (`node scripts/agent/check-relay-health.mjs --cadence <daily|weekly>`) before rerunning scheduler.
-- **Impact:** Scheduled agent execution is skipped for affected cycles until lock acquisition succeeds.
-- **Last verified:** 2026-02-14
+- **Workaround:** Run relay preflight (`npm run lock:health -- --cadence <daily|weekly>`) and inspect `task-logs/relay-health/<cadence>.jsonl` for trend/alert data before rerunning scheduler. If scheduler logs `All relays unhealthy preflight`, treat it as an incident signal, defer lock attempts, and escalate relay/network checks (DNS/TLS/connectivity).
+- **Impact:** Scheduled agent execution may be deferred early when all relays are unhealthy, preventing noisy lock retries until relay health recovers.
+- **Related notes:** `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md`
+- **Last verified:** 2026-02-15
 

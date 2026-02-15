@@ -81,16 +81,17 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 5. When lock health preflight is enabled (`scheduler.lockHealthPreflight: true` or env `SCHEDULER_LOCK_HEALTH_PREFLIGHT=1`), verify relay/query health before selecting an agent or calling `lock:lock`:
 
    ```bash
-   node scripts/agent/check-relay-health.mjs --cadence <cadence>
+   npm run lock:health -- --cadence <cadence>
    ```
 
    - Escape hatch: set `SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT=1` to skip this check for local/offline workflows.
-   - If preflight exits non-zero, write `_failed.md` with reason `Lock backend unavailable preflight` and include:
+   - If preflight exits non-zero because every relay is unhealthy, write `_deferred.md` with reason `All relays unhealthy preflight`, include `incident_signal_id`, and stop before lock acquisition.
+   - For other non-zero preflight failures, write `_failed.md` with reason `Lock backend unavailable preflight` and include:
      - `relay_list`
      - `preflight_failure_category`
      - `preflight_stderr_excerpt`
      - `preflight_stdout_excerpt`
-   - Stop the run immediately when preflight fails.
+   - Always include any preflight alert payload (`preflight_alerts`) in the scheduler metadata for operational triage.
 
 6. Find latest cadence log file, derive the previous agent, then choose the next roster agent not in exclusion set:
 

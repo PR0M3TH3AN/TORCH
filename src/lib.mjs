@@ -32,6 +32,7 @@ import {
 } from './services/memory/index.js';
 import { ExitError } from './errors.mjs';
 import { todayDateStr, nowUnix, getIsoWeekStr } from './utils.mjs';
+import { runRelayHealthCheck } from './relay-health.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -527,6 +528,10 @@ function parseArgs(argv) {
     offset: null,
     retentionMs: null,
     windowMs: null,
+    timeoutMs: null,
+    allRelaysDownMinutes: null,
+    minSuccessRate: null,
+    windowMinutes: null,
   };
   let i = 0;
 
@@ -589,6 +594,22 @@ function parseArgs(argv) {
       args.windowMs = parseInt(argv[++i], 10);
     } else if (arg.startsWith('--window-ms=')) {
       args.windowMs = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--timeout-ms') {
+      args.timeoutMs = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--timeout-ms=')) {
+      args.timeoutMs = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--all-relays-down-minutes') {
+      args.allRelaysDownMinutes = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--all-relays-down-minutes=')) {
+      args.allRelaysDownMinutes = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--min-success-rate') {
+      args.minSuccessRate = parseFloat(argv[++i]);
+    } else if (arg.startsWith('--min-success-rate=')) {
+      args.minSuccessRate = parseFloat(arg.split('=')[1]);
+    } else if (arg === '--window-minutes') {
+      args.windowMinutes = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--window-minutes=')) {
+      args.windowMinutes = parseInt(arg.split('=')[1], 10);
     }
   }
 
@@ -603,6 +624,7 @@ Commands:
   lock      --agent <name> --cadence <daily|weekly> Claim a lock
   complete  --agent <name> --cadence <daily|weekly> Mark task as completed (permanent)
   list      [--cadence <daily|weekly>]             Print active lock table
+  health    --cadence <daily|weekly>               Probe relay websocket + publish/read health
   dashboard [--port <port>]                        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
@@ -694,6 +716,26 @@ export async function main(argv) {
           throw new ExitError(1, 'Invalid cadence');
         }
         await cmdList(args.cadence || null);
+        break;
+      }
+
+      case 'health': {
+        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for health`);
+          throw new ExitError(1, 'Missing cadence');
+        }
+        const result = await runRelayHealthCheck({
+          cadence: args.cadence,
+          ...(Number.isFinite(args.timeoutMs) ? { timeoutMs: args.timeoutMs } : {}),
+          ...(Number.isFinite(args.allRelaysDownMinutes) ? { allRelaysDownMinutes: args.allRelaysDownMinutes } : {}),
+          ...(Number.isFinite(args.minSuccessRate) ? { minSuccessRate: args.minSuccessRate } : {}),
+          ...(Number.isFinite(args.windowMinutes) ? { windowMinutes: args.windowMinutes } : {}),
+        });
+        if (!result.ok) {
+          result.failureCategory = 'all relays unhealthy';
+        }
+        console.log(JSON.stringify(result, null, 2));
+        if (!result.ok) throw new ExitError(2, 'Relay health check failed');
         break;
       }
 
