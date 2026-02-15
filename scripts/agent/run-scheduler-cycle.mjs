@@ -4,6 +4,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 const ALL_EXCLUDED_REASON = 'All roster tasks currently claimed by other agents';
@@ -314,6 +315,18 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     lockHealthPreflightFromConfig,
   );
   const lockHealthPreflightSkip = parseBooleanFlag(process.env.SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT, false);
+  const strictLock = parseBooleanFlag(
+    process.env.SCHEDULER_STRICT_LOCK,
+    parseBooleanFlag(scheduler.strict_lock, true),
+  );
+  const degradedLockRetryWindowMs = parseNonNegativeInt(
+    process.env.SCHEDULER_DEGRADED_LOCK_RETRY_WINDOW_MS,
+    parseNonNegativeInt(scheduler.degraded_lock_retry_window, 3600000),
+  );
+  const maxDeferrals = parseNonNegativeInt(
+    process.env.SCHEDULER_MAX_DEFERRALS,
+    parseNonNegativeInt(scheduler.max_deferrals, 3),
+  );
 
   return {
     firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
@@ -331,6 +344,11 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
       enabled: lockHealthPreflightEnabled,
       skip: lockHealthPreflightSkip,
     },
+    lockFailurePolicy: {
+      strictLock,
+      degradedLockRetryWindowMs,
+      maxDeferrals,
+    },
     memoryPolicy: {
       mode,
       retrieveCommand: typeof memoryPolicyRaw.retrieveCommand === 'string' && memoryPolicyRaw.retrieveCommand.trim()
@@ -345,6 +363,40 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
       storeArtifacts: normalizeStringList(memoryPolicyRaw.storeArtifacts),
     },
   };
+}
+
+function getRunDateKey(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
+async function readRunState(cadence) {
+  const statePath = path.resolve(process.cwd(), 'task-logs', cadence, '.scheduler-run-state.json');
+  const fallback = { run_date: getRunDateKey(), lock_deferral: null };
+  const raw = await readJson(statePath, fallback);
+  if (!raw || typeof raw !== 'object') {
+    return { statePath, state: fallback };
+  }
+
+  if (raw.run_date !== getRunDateKey()) {
+    return { statePath, state: fallback };
+  }
+
+  return {
+    statePath,
+    state: {
+      run_date: raw.run_date,
+      lock_deferral: raw.lock_deferral && typeof raw.lock_deferral === 'object' ? raw.lock_deferral : null,
+    },
+  };
+}
+
+async function writeRunState(statePath, state) {
+  await fs.mkdir(path.dirname(statePath), { recursive: true });
+  await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+}
+
+function createIdempotencyKey({ cadence, selectedAgent, runDate }) {
+  return `${cadence}:${selectedAgent}:${runDate}:${randomUUID()}`;
 }
 
 async function runLockHealthPreflight({ cadence, platform }) {
@@ -372,14 +424,19 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetry }) {
+async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetry, idempotencyKey }) {
   const lockCommandArgs = ['run', 'lock:lock', '--', '--agent', selectedAgent, '--cadence', cadence];
   const backoffScheduleMs = [];
   let attempts = 0;
 
   while (true) {
     attempts += 1;
-    const result = await runCommand('npm', lockCommandArgs, { env: { AGENT_PLATFORM: platform } });
+    const result = await runCommand('npm', lockCommandArgs, {
+      env: {
+        AGENT_PLATFORM: platform,
+        ...(idempotencyKey ? { SCHEDULER_LOCK_IDEMPOTENCY_KEY: idempotencyKey } : {}),
+      },
+    });
 
     if (result.code !== 2) {
       return { result, attempts, backoffScheduleMs };
@@ -481,6 +538,8 @@ async function main() {
   }
 
   while (true) {
+    const { statePath: runStatePath, state: schedulerRunState } = await readRunState(cadence);
+
     if (schedulerConfig.lockHealthPreflight.enabled && !schedulerConfig.lockHealthPreflight.skip) {
       const preflight = await runLockHealthPreflight({ cadence, platform });
       if (preflight.code !== 0) {
@@ -492,6 +551,7 @@ async function main() {
           reason: 'Lock backend unavailable preflight',
           detail: `Preflight failed (${preflight.failureCategory}). Retry scheduler after verifying relay connectivity, relay URLs, and DNS/network status.`,
           metadata: {
+            failure_class: 'backend_unavailable',
             preflight_failure_category: preflight.failureCategory,
             relay_list: preflight.relayList.join(', ') || '(none)',
             preflight_stderr_excerpt: preflight.stderrExcerpt || '(empty)',
@@ -543,11 +603,16 @@ async function main() {
       process.exit(1);
     }
 
+    const deferralForAgent = schedulerRunState.lock_deferral?.selected_agent === selectedAgent
+      ? schedulerRunState.lock_deferral
+      : null;
+
     const lockAttempt = await acquireLockWithRetry({
       selectedAgent,
       cadence,
       platform,
       lockRetry: schedulerConfig.lockRetry,
+      idempotencyKey: deferralForAgent?.idempotency_key,
     });
     const lockResult = lockAttempt.result;
 
@@ -562,6 +627,46 @@ async function main() {
       const stderrExcerpt = excerptText(lockResult.stderr);
       const stdoutExcerpt = excerptText(lockResult.stdout);
       const backoffSchedule = lockAttempt.backoffScheduleMs.join(', ');
+
+      const existingDeferral = deferralForAgent || {};
+      const firstFailureAt = existingDeferral.first_failure_timestamp || new Date().toISOString();
+      const firstFailureMs = parseDateValue(firstFailureAt) || Date.now();
+      const nowMs = Date.now();
+      const deferralAttemptCount = parseNonNegativeInt(existingDeferral.attempt_count, 0) + 1;
+      const idempotencyKey = existingDeferral.idempotency_key
+        || createIdempotencyKey({ cadence, selectedAgent, runDate: schedulerRunState.run_date });
+      const withinRetryWindow = nowMs - firstFailureMs <= schedulerConfig.lockFailurePolicy.degradedLockRetryWindowMs;
+      const withinDeferralBudget = deferralAttemptCount <= schedulerConfig.lockFailurePolicy.maxDeferrals;
+
+      if (!schedulerConfig.lockFailurePolicy.strictLock && withinRetryWindow && withinDeferralBudget) {
+        schedulerRunState.lock_deferral = {
+          attempt_count: deferralAttemptCount,
+          first_failure_timestamp: firstFailureAt,
+          backend_category: backendCategory,
+          idempotency_key: idempotencyKey,
+          selected_agent: selectedAgent,
+        };
+        await writeRunState(runStatePath, schedulerRunState);
+        await writeLog({
+          cadence,
+          agent: selectedAgent,
+          status: 'deferred',
+          platform,
+          reason: 'Lock backend deferred',
+          detail: `Deferred after lock backend failure (${backendCategory}); retry window active and deferral budget remaining.`,
+          metadata: {
+            failure_class: 'backend_unavailable',
+            deferral_attempt_count: deferralAttemptCount,
+            deferral_first_failure_timestamp: firstFailureAt,
+            backend_category: backendCategory,
+            lock_idempotency_key: idempotencyKey,
+          },
+        });
+        process.exit(0);
+      }
+
+      schedulerRunState.lock_deferral = null;
+      await writeRunState(runStatePath, schedulerRunState);
       await writeLog({
         cadence,
         agent: selectedAgent,
@@ -570,10 +675,14 @@ async function main() {
         reason: 'Lock backend error',
         detail: `Lock backend error (${backendCategory}) after ${lockAttempt.attempts} attempt(s). Retry ${lockCommand} after verifying relay connectivity, relay URLs, and DNS/network status.`,
         metadata: {
+          failure_class: 'backend_unavailable',
           lock_attempts_total: lockAttempt.attempts,
           lock_backoff_schedule_ms: backoffSchedule || '(none)',
           backend_category: backendCategory,
+          deferral_attempt_count: deferralAttemptCount,
+          deferral_first_failure_timestamp: firstFailureAt,
           lock_command: lockCommand,
+          lock_idempotency_key: idempotencyKey,
           lock_stderr_excerpt: stderrExcerpt || '(empty)',
           lock_stdout_excerpt: stdoutExcerpt || '(empty)',
         },
@@ -582,6 +691,8 @@ async function main() {
     }
 
     if (lockResult.code !== 0) {
+      schedulerRunState.lock_deferral = null;
+      await writeRunState(runStatePath, schedulerRunState);
       await writeLog({
         cadence,
         agent: selectedAgent,
@@ -593,6 +704,8 @@ async function main() {
     }
 
     const promptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
+    schedulerRunState.lock_deferral = null;
+    await writeRunState(runStatePath, schedulerRunState);
     const runArtifactSince = new Date().toISOString();
     const runStartMs = Date.parse(runArtifactSince);
     const outputChunks = [];
@@ -603,7 +716,15 @@ async function main() {
       });
       outputChunks.push(retrieveResult.stdout, retrieveResult.stderr);
       if (retrieveResult.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Memory retrieval command failed', detail: schedulerConfig.memoryPolicy.retrieveCommand });
+        await writeLog({
+          cadence,
+          agent: selectedAgent,
+          status: 'failed',
+          platform,
+          reason: 'Memory retrieval command failed',
+          detail: schedulerConfig.memoryPolicy.retrieveCommand,
+          metadata: { failure_class: 'prompt_validation_error' },
+        });
         process.exit(retrieveResult.code);
       }
     }
@@ -614,14 +735,30 @@ async function main() {
       });
       outputChunks.push(handoff.stdout, handoff.stderr);
       if (handoff.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Prompt/handoff execution failed', detail: 'Handoff callback failed.' });
+        await writeLog({
+          cadence,
+          agent: selectedAgent,
+          status: 'failed',
+          platform,
+          reason: 'Prompt/handoff execution failed',
+          detail: 'Handoff callback failed.',
+          metadata: { failure_class: 'prompt_validation_error' },
+        });
         process.exit(handoff.code);
       }
     } else {
       const detail = schedulerConfig.missingHandoffCommandForMode
         ? 'Missing scheduler handoff command for non-interactive run. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.'
         : 'No handoff callback configured. Set scheduler.handoffCommandByCadence.daily|weekly in torch-config.json.';
-      await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Prompt/handoff execution failed', detail });
+      await writeLog({
+        cadence,
+        agent: selectedAgent,
+        status: 'failed',
+        platform,
+        reason: 'Prompt/handoff execution failed',
+        detail,
+        metadata: { failure_class: 'prompt_validation_error' },
+      });
       process.exit(1);
     }
 
@@ -631,7 +768,15 @@ async function main() {
       });
       outputChunks.push(storeResult.stdout, storeResult.stderr);
       if (storeResult.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Memory storage command failed', detail: schedulerConfig.memoryPolicy.storeCommand });
+        await writeLog({
+          cadence,
+          agent: selectedAgent,
+          status: 'failed',
+          platform,
+          reason: 'Memory storage command failed',
+          detail: schedulerConfig.memoryPolicy.storeCommand,
+          metadata: { failure_class: 'prompt_validation_error' },
+        });
         process.exit(storeResult.code);
       }
     }
@@ -661,6 +806,7 @@ async function main() {
         platform,
         reason: 'Required memory steps not verified',
         detail: `Missing evidence for: ${missingSteps.join(', ')}`,
+        metadata: { failure_class: 'prompt_validation_error' },
       });
       process.exit(1);
     }
@@ -692,6 +838,7 @@ async function main() {
         platform,
         reason: 'Missing required run artifacts',
         detail,
+        metadata: { failure_class: 'prompt_validation_error' },
       });
       process.exit(artifactCheck.code);
     }
@@ -701,7 +848,15 @@ async function main() {
       if (!parts.length) continue;
       const result = await runCommand(parts[0], parts.slice(1));
       if (result.code !== 0) {
-        await writeLog({ cadence, agent: selectedAgent, status: 'failed', platform, reason: 'Validation failed', detail: validation });
+        await writeLog({
+          cadence,
+          agent: selectedAgent,
+          status: 'failed',
+          platform,
+          reason: 'Validation failed',
+          detail: validation,
+          metadata: { failure_class: 'prompt_validation_error' },
+        });
         process.exit(result.code);
       }
     }

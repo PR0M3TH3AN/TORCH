@@ -148,17 +148,24 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
    - Exit `0`: lock acquired, continue.
    - Exit `3`: race lost/already locked, return to step 2.
-   - Exit `2`: lock backend error, write `_failed.md` with reason `Lock backend error`, and include failure metadata fields:
+   - Exit `2`: lock backend error.
+     - If `scheduler.strict_lock` is `false`, defer the run while both budget constraints are still satisfied:
+       - `degraded_lock_retry_window` (ms) since first backend failure has not elapsed.
+       - `max_deferrals` has not been exceeded.
+       - Record deferral metadata in scheduler run state (`attempt_count`, `first_failure_timestamp`, `backend_category`, and preserved idempotency key).
+     - Otherwise write `_failed.md` with reason `Lock backend error`, and include failure metadata fields:
      - `backend_category` (classified backend failure category)
      - `lock_command` (raw lock command for retry)
      - `lock_stderr_excerpt` (redacted stderr snippet)
      - `lock_stdout_excerpt` (redacted stdout snippet)
+     - Include `failure_class: backend_unavailable` for both deferred and failed backend-unavailable lock outcomes.
    - Keep generic reason text for compatibility, but append actionable retry guidance in `detail` using the command from `lock_command`.
 
 9. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
 
    - Scheduler automation runs `scheduler.handoffCommandByCadence.<cadence>` with environment variables for cadence/agent/prompt path.
    - If no handoff command is configured for the cadence, write `_failed.md` and stop.
+   - Prompt/handoff and prompt validation failures should emit `failure_class: prompt_validation_error`.
 
 10. Confirm memory contract completion:
 
