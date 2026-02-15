@@ -82,6 +82,13 @@ WORKFLOW
    - If you created/updated a style guide, link to it.
 
 ───────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS PER RUN
 
 - 0–1 PR containing design/copy improvements or style guide updates.

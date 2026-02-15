@@ -187,6 +187,7 @@ MEASUREMENT RULES (strict)
     still small and reviewable) and open an issue for the optimization.
 
 ───────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
 RISK & SECURITY POLICY
 
 - Any change touching crypto/signing/auth/moderation:
@@ -215,6 +216,12 @@ PR body must include:
 - Links to follow-up issues
 
 ───────────────────────────────────────────────────────────────────────────────
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS PER RUN
 
 - `weekly-perf-report-YYYY-MM-DD.md`

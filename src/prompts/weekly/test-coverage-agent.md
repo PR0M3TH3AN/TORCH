@@ -143,6 +143,7 @@ WORKFLOW (mandatory)
   - Open issues for modules where testability requires design changes.
 
 ─────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
 TEST DESIGN & MOCKING GUIDELINES
 
 - **Use existing patterns.** Follow the repo’s current test style (fixtures, factories, naming).

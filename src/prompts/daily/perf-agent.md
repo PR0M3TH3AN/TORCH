@@ -167,6 +167,7 @@ Docs PR:
 - Body: summary, diffs, validation artifacts, note for contributors.
 
 -------------------------------------------------------------------------------
+- If no work is required, exit without making changes.
 ESCALATION & RISK POLICY
 - Any change touching crypto/signing/moderation: **stop** and open issue; request maintainer review.
 - If an attempted automated fix causes regression or test failures: revert, document, open issue with failure reproduction.
@@ -181,6 +182,12 @@ FIRST-RUN CHECKLIST (execute now)
 5. Produce `daily-perf-report-YYYY-MM-DD.md` summarizing results and PR links.
 
 -------------------------------------------------------------------------------
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS (per run)
 - `daily-perf-report-YYYY-MM-DD.md` with:
   - Summary line.

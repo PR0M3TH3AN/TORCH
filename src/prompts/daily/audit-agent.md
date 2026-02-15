@@ -234,6 +234,12 @@ FIRST-RUN CHECKLIST (do this now)
 8. If thresholds exceeded, open follow-up issues and tag maintainers.
 
 ===============================================================================
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS (what you must produce each run)
 - `artifacts/audit/YYYY-MM-DD/` containing:
   - `raw-check-file-size.log`

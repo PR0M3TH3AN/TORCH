@@ -157,6 +157,8 @@ WORKFLOW
   - micro-fixes performed (if any) + follow-up PR links
 
 ───────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
+
 COMMENT TEMPLATE (required structure)
 
 **Automated verification run**

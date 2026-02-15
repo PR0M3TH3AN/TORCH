@@ -85,6 +85,7 @@ WORKFLOW
       - `git log --since='7 days ago' --pretty=format:'%h %ad %s' --date=short`
   - Gather branch refs:
       - `git for-each-ref --sort=-committerdate --format='%(committerdate:short) %(refname:short)' refs/heads/ai`
+- If no work is required, exit without making changes.
 
 Optional method (use curl to query the GitHub API):
   - Fetch open PRs:

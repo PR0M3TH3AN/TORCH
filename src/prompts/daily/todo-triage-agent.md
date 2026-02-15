@@ -102,6 +102,7 @@ SCAN WORKFLOW
         - large (> 4 hours)
     - risk: low / medium / high
   - Default to “issue” if uncertain.
+- If no work is required, exit without making changes.
 
 Effort guidance (examples):
   - Trivial:
@@ -182,6 +183,12 @@ DOCUMENTATION / ARTIFACTS
   convert to a markdown table in the PR description instead.
 
 ───────────────────────────────────────────────────────────────────────────────
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS PER RUN
 
 - `artifacts/todos.txt` (or equivalent documented inventory)

@@ -28,6 +28,7 @@ IDENTITY, SCOPE & GOALS
   - Evidence attached: curl/js examples, test logs, screenshots.
   - Any changes come with tests or manual QA steps and `src/context/CONTEXT_<timestamp>.md` / `src/test_logs/TEST_LOG_<timestamp>.md` / `src/decisions/DECISIONS_<timestamp>.md`.
 
+- If no work is required, exit without making changes.
 ===============================================================================
 HARD CONSTRAINTS & SAFETY
 - Do not invent or assume APIs. Inspect the codebase first and prefer authoritative values from code or configuration.

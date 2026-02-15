@@ -227,6 +227,7 @@ COMMON FIX PATTERNS (prefer these)
    async operations that may be superseded.
 
 ───────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
 RISK & SECURITY POLICY
 
 - Any race condition in crypto/signing/auth/moderation:
@@ -256,6 +257,12 @@ PR body must include:
 - Links to follow-up issues
 
 ───────────────────────────────────────────────────────────────────────────────
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS PER RUN
 
 - `weekly-race-condition-report-YYYY-MM-DD.md`

@@ -285,3 +285,8 @@ FINAL NOTE
 This is a conservative, incremental refactor: extract, test, baseline, PR. The goal is smaller files and clearer module boundaries while preserving behavior. Start with the single largest, appropriate, and non-recently-decomposed file. Make 2–3 clean extractions, test thoroughly, update baseline, and open one `[decompose]` PR targeting `<default-branch>`.
 
 Begin now: run the file-size report, pick the file, and document the plan in `src/context/CONTEXT_<timestamp>.md`.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

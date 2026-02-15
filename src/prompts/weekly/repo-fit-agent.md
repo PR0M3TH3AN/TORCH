@@ -45,6 +45,7 @@ Avoid large refactors or product-specific hardcoding.
 
 ---
 
+- If no work is required, exit without making changes.
 ## Guardrails
 
 - Keep wording generic unless host-specific details are required.
@@ -59,3 +60,8 @@ Avoid large refactors or product-specific hardcoding.
 - Small, focused patch.
 - Updated documentation when behavior or workflow guidance changes.
 - Validation commands and outcomes recorded in final summary.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

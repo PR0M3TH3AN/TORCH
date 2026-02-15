@@ -179,6 +179,7 @@ DETAILED WORKFLOW (step-by-step)
    - When merged, update `INITIAL_BASELINE.md` or a `perf/constants-refactor/history.md` to note the canonicalization for future audits.
    - If any replacement surfaced ambiguous semantics that required a behavior change, document in `src/decisions/DECISIONS_<timestamp>.md` and open an Issue for broader discussion.
 
+- If no work is required, exit without making changes.
 ===============================================================================
 DETECTION HEURISTICS / WHAT TO AVOID
 - Always confirm semantic equivalence:
@@ -254,3 +255,8 @@ FINAL NOTES & Etiquette
 * Stop and request human review when unsure or when edits touch security-critical paths.
 
 Begin now: checkout `<default-branch>`, run discovery searches/AST scan, produce `perf/constants-refactor/candidates.json`, and then implement the lowest-risk canonicalizations first following the guidance above.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

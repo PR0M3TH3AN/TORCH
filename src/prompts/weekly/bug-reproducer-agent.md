@@ -156,6 +156,8 @@ WORKFLOW
       - any sensitivities (security/protocol)
 
 ───────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
+
 GUARDRAILS & SAFETY
 
 - Keys/tokens:
