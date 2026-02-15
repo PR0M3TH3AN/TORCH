@@ -164,7 +164,9 @@ function formatDurationMs(ms) {
 
 function buildLockBackendRemediation({ cadence, retryWindowMs, maxDeferrals, incidentSignalId = null }) {
   const steps = [
+    'Likely backend/relay connectivity issue during lock acquisition.',
     `Retry window: ${formatDurationMs(retryWindowMs)} (max deferrals: ${maxDeferrals}).`,
+    `Retry command: npm run scheduler:${cadence}`,
     `Run health check: npm run lock:health -- --cadence ${cadence}`,
     `Review incident runbook: ${LOCK_INCIDENT_LINK}`,
   ];
