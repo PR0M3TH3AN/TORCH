@@ -68,6 +68,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT) {
     switch (extname) {
       case '.html': contentType = 'text/html'; break;
       case '.js': contentType = 'text/javascript'; break;
+      case '.mjs': contentType = 'text/javascript'; break;
       case '.css': contentType = 'text/css'; break;
       case '.json': contentType = 'application/json'; break;
       case '.png': contentType = 'image/png'; break;
