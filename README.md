@@ -71,6 +71,7 @@ Configuration options:
 - `nostrLock.dailyRoster` / `nostrLock.weeklyRoster` (explicit rosters)
 - `dashboard.defaultCadenceView` (`daily`, `weekly`, or `all`)
 - `dashboard.defaultStatusView` (`active` or `all`)
+- `dashboard.hashtag` (custom hashtag for lock events)
 - `scheduler.firstPromptByCadence.daily` / `.weekly` (first prompt to run)
 - `scheduler.paused.daily` / `.weekly` (array of agent names to pause locally)
 
@@ -88,6 +89,7 @@ npx --no-install torch-lock dashboard --port 4173
 You can override configuration using environment variables:
 
 - `NOSTR_LOCK_NAMESPACE`
+- `NOSTR_LOCK_HASHTAG`
 - `NOSTR_LOCK_RELAYS` (comma-separated)
 - `NOSTR_LOCK_TTL`
 - `NOSTR_LOCK_QUERY_TIMEOUT_MS`
