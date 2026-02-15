@@ -1,0 +1,6 @@
+./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./run-perf-agent.sh:59:rg -n --hidden --glob '!node_modules/' --glob '!dist/' --glob '!.git/' "new Worker|Worker\(|postMessage\(|getDmDecryptWorkerQueueSize|decryptDmInWorker" . > perf/hits-workers.txt || true
+./src/prompts/daily/perf-agent.md:102:- `new Worker|Worker\(|postMessage\(|getDmDecryptWorkerQueueSize|decryptDmInWorker`
+./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./src/prompts/daily/perf-agent.md:119:  - Add `MAX_DM_WORKER_PENDING` to `dmDecryptWorkerClient.js`. Throttle/reject when exceeded; log `getDmDecryptWorkerQueueSize()`.
+./src/prompts/daily/perf-agent.md:147:- Log `getDmDecryptWorkerQueueSize()` and warn > 20.

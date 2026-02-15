@@ -1,0 +1,34 @@
+./DIAGNOSIS.md:13:        setTimeout(() => reject(new Error('Relay query timed out')), queryTimeoutMs),
+./DIAGNOSIS.md:18:When `pool.querySync` completes successfully (e.g., in 600ms), the `Promise.race` resolves immediately. However, the `setTimeout` created in the second promise remains active in the Node.js event loop. Node.js processes do not exit as long as there are active handles (like timers). Thus, the process waits for the remaining ~14.4s until the timer fires (and the callback is executed, though ignored) before exiting.
+./DIAGNOSIS.md:21:A reproduction script confirmed that `Promise.race` with an uncleared `setTimeout` prevents process exit until the timeout fires.
+./DIAGNOSIS.md:24:Capture the `timeoutHandle` from `setTimeout` and explicitly clear it using `clearTimeout(timeoutHandle)` in the `finally` block of the `queryLocks` function.
+./test/memory-cache.test.mjs:30:  await new Promise((resolve) => setTimeout(resolve, 10));
+./test/lock-acquisition-resilience.integration.test.mjs:44:    mock.timers.enable({ apis: ['Date', 'setTimeout'] });
+./test/lock-ops-publish-retry.test.mjs:64:    mock.timers.enable({ apis: ['Date', 'setTimeout'] });
+./test/lock-ops-publish-retry.test.mjs:105:    mock.timers.enable({ apis: ['Date', 'setTimeout'] });
+./test/memory-scheduler.test.mjs:9:const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+./test/relay-fanout-quorum.integration.test.mjs:60:          setTimeout(() => {
+./scripts/agent/run-scheduler-cycle.mjs:508:  return new Promise((resolve) => setTimeout(resolve, ms));
+./scripts/agent/load-test.mjs:19:const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+./scripts/benchmark-dashboard.mjs:10:  return new Promise(resolve => setTimeout(resolve, ms));
+./dashboard/index.html:681:          setTimeout(() => {
+./dashboard/index.html:698:      refreshIntervalId = setInterval(() => {
+./src/services/memory/scheduler.js:33:  const handle = setInterval(() => {
+./src/services/memory/scheduler.js:167:          setTimeout(resolve, options.retryDelayMs);
+./src/services/memory/scheduler.js:252:    const intervalHandle = setInterval(run, definition.intervalMs);
+./src/services/memory/scheduler.js:260:      const timeout = setTimeout(async () => {
+./tests/memory.test.js:18:const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+./src/relay-health.mjs:12:    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+./run-perf-agent.sh:57:rg -n --hidden --glob '!node_modules/' --glob '!dist/' --glob '!.git/' "setInterval|setTimeout|requestAnimationFrame|requestIdleCallback" . > perf/hits-intervals.txt || true
+./landing/index.html:795:                setTimeout(() => {
+./src/lock-ops.mjs:59:    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+./src/lock-ops.mjs:407:    sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+./src/cmd-lock.mjs:91:    await new Promise((resolve) => setTimeout(resolve, RACE_CHECK_DELAY_MS));
+./src/lib.mjs:290:    await new Promise((resolve) => setTimeout(resolve, raceCheckDelayMs));
+./src/prompts/daily/test-audit-agent.md:88:     - Long sleeps: `setTimeout(`, `sleep(`, `await delay(`.
+./src/prompts/daily/test-audit-agent.md:156:  - `rg "setTimeout\\(|sleep\\(|await delay\\(|new Promise\\(r => setTimeout" -n`
+./src/prompts/daily/test-audit-agent.md:171:  1. **Test-fix PR** — add missing assertions, replace `setTimeout` sleeps with `waitFor`, or mock timers. Include `src/context/CONTEXT_<timestamp>.md`, `src/todo/TODO_<timestamp>.md`, `src/test_logs/TEST_LOG_<timestamp>.md`.
+./src/prompts/daily/test-audit-agent.md:222:- Replace `await new Promise(r => setTimeout(r, 1000))` with a deterministic `await waitFor(() => condition)` or mock timers.
+./src/prompts/daily/const-refactor-agent.md:84:     - Timeout: look for `setTimeout`, `fetch(..., { timeout: ...})`, `pool.list` timeouts, `BACKGROUND_RELAY_TIMEOUT_MS`.
+./src/prompts/daily/perf-agent.md:100:- `setInterval|setTimeout|requestAnimationFrame|requestIdleCallback`
+./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`

@@ -1,0 +1,27 @@
+./src/prompts/daily/test-audit-agent.md:105:     - `js/webtorrent*` / `torrent/app.js` — lazy initialization.
+./src/prompts/daily/test-audit-agent.md:197:- **Playback & WebTorrent**: `js/webtorrent*`, `torrent/app.js`, `js/ui/ambientBackground.js`
+./src/prompts/daily/test-audit-agent.md:198:  - Tests: lazy webtorrent init, visibility gating, ensure heavy loops paused when hidden.
+./src/prompts/daily/deps-security-agent.md:48:Also read `AGENTS.md` and `KNOWN_ISSUES.md` for project-specific caveats (e.g., the repo uses `integration-tools`, `webtorrent`, `Playwright`, `Tailwind`). Tag these libraries for special handling.
+./src/prompts/daily/content-audit-agent.md:82:- Storage/processing: check any `torrent/`, `storage/`, or `cloud` integration code.
+./src/prompts/weekly/race-condition-agent.md:43:      - playback fallback races (URL-first vs magnet negotiation, WebTorrent
+./src/prompts/weekly/race-condition-agent.md:111:   - WebTorrent clients or torrents accessed after destroy
+./src/prompts/weekly/race-condition-agent.md:139:  - Playback orchestration (`js/services/playbackService.js`, WebTorrent)
+./src/prompts/daily/perf-agent.md:22:  - **P2**: User-initiated heavy features (WebTorrent playback) — lazy-init/deprioritize until P0/P1 resolved.
+./src/prompts/daily/perf-agent.md:28:  1. Finds expensive background patterns (main-thread loops, unbounded concurrency, eager socket/torrent creation).
+./src/prompts/daily/perf-agent.md:53:- `INITIAL_BASELINE.md` — baseline metrics (login time, decrypt queue size, relay latencies, webtorrent count).
+./src/prompts/daily/perf-agent.md:93:- **Lazy init**: WebTorrent and socket-heavy clients created only on explicit user action.
+./src/prompts/daily/perf-agent.md:103:- `new WebTorrent|WebTorrent|torrent|magnet|torrentHash|magnetValidators`
+./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./src/prompts/daily/perf-agent.md:150:- Active WebTorrent client count at page load.
+./src/prompts/daily/known-issues-agent.md:48:    magnets/webtorrent safety, logging/PII policy) without explicit human review.
+./src/prompts/daily/known-issues-agent.md:71:  (e.g., shared signing/publishing, key handling, moderation, magnets/torrents,
+./src/prompts/daily/known-issues-agent.md:95:      - magnets/webtorrent behavior
+./src/prompts/weekly/fuzz-agent.md:13:Mission: improve **input robustness** by fuzzing high-risk parsers/decoders (shared event schemas, DM unwrapping/decrypt paths, magnet normalization), capturing crashes/exceptions with minimized reproducers, and landing **small, safe** guard/validation fixes when appropriate. Every change must be traceable, reviewable, and compliant with repo security policy.
+./src/prompts/weekly/fuzz-agent.md:34:      - magnet normalization utilities
+./src/prompts/weekly/fuzz-agent.md:105:      - `magnet-utils`
+./perf/hits-workers.txt:1:./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-workers.txt:4:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./run-perf-agent.sh:60:rg -n --hidden --glob '!node_modules/' --glob '!dist/' --glob '!.git/' "new WebTorrent|WebTorrent|torrent|magnet|torrentHash|magnetValidators" . > perf/hits-torrent.txt || true
+./run-perf-agent.sh:68:TORRENT=$(wc -l < perf/hits-torrent.txt)
+./run-perf-agent.sh:78:  "torrent": "$TORRENT",

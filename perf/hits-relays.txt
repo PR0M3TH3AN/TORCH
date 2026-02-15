@@ -1,0 +1,27 @@
+./run-perf-agent.sh:61:rg -n --hidden --glob '!node_modules/' --glob '!dist/' --glob '!.git/' "integrationClient\.pool|publishEventToRelays|pool\.list|queueSignEvent|relayManager|authService|hydrateFromStorage" . > perf/hits-relays.txt || true
+./perf/hits-torrent.txt:14:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-torrent.txt:22:./perf/hits-workers.txt:1:./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-torrent.txt:23:./perf/hits-workers.txt:4:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-torrent.txt:24:./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-workers.txt:1:./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-workers.txt:4:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./perf/hits-intervals.txt:32:./src/prompts/daily/const-refactor-agent.md:84:     - Timeout: look for `setTimeout`, `fetch(..., { timeout: ...})`, `pool.list` timeouts, `BACKGROUND_RELAY_TIMEOUT_MS`.
+./perf/hits-intervals.txt:34:./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./src/prompts/daily/test-audit-agent.md:22:  3. Maps tests to critical production files (login/auth, relayManager, decryption, watch-history, moderation, playback) and reports coverage gaps.
+./src/prompts/daily/test-audit-agent.md:99:     - `js/services/authService.js` — login/hydration/lockdown flows.
+./src/prompts/daily/test-audit-agent.md:100:     - `src/relayManager.js` — load/publish relay list, fast vs background logic.
+./src/prompts/daily/test-audit-agent.md:123:   - If available and lightweight: run Stryker on one critical module (e.g., `authService`, `relayManager`) to detect weak tests.
+./src/prompts/daily/test-audit-agent.md:187:- **Auth & login flows**: `js/services/authService.js`
+./src/prompts/daily/test-audit-agent.md:189:- **Relay manager & publishing**: `src/relayManager.js`
+./src/prompts/daily/test-audit-agent.md:190:  - Tests: `loadRelayList`, `publishRelayList`, fast/background fetch timeouts, `integrationClient.pool` handling.
+./src/prompts/daily/const-refactor-agent.md:84:     - Timeout: look for `setTimeout`, `fetch(..., { timeout: ...})`, `pool.list` timeouts, `BACKGROUND_RELAY_TIMEOUT_MS`.
+./src/prompts/daily/const-refactor-agent.md:94:         {"file": "src/relayManager.js", "line": 24, "context":"FAST_RELAY_TIMEOUT_MS"},
+./src/prompts/daily/const-refactor-agent.md:108:     - Example: if `FAST_RELAY_TIMEOUT_MS` exists in `src/relayManager.js` or `relayConstants.js`, import it.
+./src/prompts/daily/const-refactor-agent.md:154:         - Reason: relayManager & integration-related code; existing relay constants live here.
+./src/prompts/daily/const-refactor-agent.md:224:- Discover `5000` appears in `src/relayManager.js`, `js/integration/watchHistory.js`, `js/integration/relayClient.js`.
+./src/prompts/daily/perf-agent.md:104:- `integrationClient\.pool|publishEventToRelays|pool\.list|queueSignEvent|relayManager|authService|hydrateFromStorage`
+./src/prompts/daily/perf-agent.md:110:- Ripgrep: `rg -n --hidden --ignore-file .gitignore "requestAnimationFrame|new Worker|new WebTorrent|integrationClient.pool" js`
+./src/prompts/daily/perf-agent.md:111:- Open suspicious files for review: `sed -n '1,240p' src/relayManager.js`
+./src/prompts/daily/docs-code-investigator.md:135:- Use examples that match the code style (e.g., use `await integrationClient.pool.list(...)` if code uses that).
+./src/prompts/daily/docs-code-investigator.md:205:// 1) initClient() sets up integrationClient.pool
+./src/prompts/daily/docs-code-investigator.md:210:- `docs/relayManager-overview.md` with step-sequence, API table, and "When to change" notes.
