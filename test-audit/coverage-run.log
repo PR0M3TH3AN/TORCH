@@ -1,0 +1,151 @@
+TAP version 13
+# Subtest: parseArgs should parse basic command
+ok 1 - parseArgs should parse basic command
+  ---
+  duration_ms: 2.074523
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse agent and cadence
+ok 2 - parseArgs should parse agent and cadence
+  ---
+  duration_ms: 0.373647
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse equals sign syntax
+ok 3 - parseArgs should parse equals sign syntax
+  ---
+  duration_ms: 0.204255
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse dry-run flag
+ok 4 - parseArgs should parse dry-run flag
+  ---
+  duration_ms: 0.16969
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse port with default
+ok 5 - parseArgs should parse port with default
+  ---
+  duration_ms: 0.170406
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse custom port
+ok 6 - parseArgs should parse custom port
+  ---
+  duration_ms: 0.211104
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse ignore-logs flag
+ok 7 - parseArgs should parse ignore-logs flag
+  ---
+  duration_ms: 0.273681
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse memory flags
+ok 8 - parseArgs should parse memory flags
+  ---
+  duration_ms: 5.033281
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse memory flags with equals
+ok 9 - parseArgs should parse memory flags with equals
+  ---
+  duration_ms: 0.269666
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 32.484347
+# start of coverage report
+# ---------------------------------------------------------------------
+# file                 | line % | branch % | funcs % | uncovered lines
+# ---------------------------------------------------------------------
+# src                  |        |          |         |
+#  cli-parser.mjs      |  76.99 |    85.71 |  100.00 | 52 56 86-109
+#  constants.mjs       | 100.00 |   100.00 |  100.00 |
+# test                 |        |          |         |
+#  cli-parser.test.mjs | 100.00 |   100.00 |  100.00 |
+# ---------------------------------------------------------------------
+# all files            |  87.50 |    88.33 |  100.00 |
+# ---------------------------------------------------------------------
+# end of coverage report
+TAP version 13
+# node:internal/modules/cjs/loader:1386
+#   throw err;
+#   ^
+# Error: Cannot find module '/app/test'
+#     at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+#     at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+#     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+#     at Function._load (node:internal/modules/cjs/loader:1192:37)
+#     at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+#     at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+#     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+#     at node:internal/main/run_main_module:36:49 {
+#   code: 'MODULE_NOT_FOUND',
+#   requireStack: []
+# }
+# Node.js v22.22.0
+# Subtest: test
+not ok 1 - test
+  ---
+  duration_ms: 51.535733
+  type: 'test'
+  location: '/app/test:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# node:internal/modules/cjs/loader:1386
+#   throw err;
+#   ^
+# Error: Cannot find module '/app/tests'
+#     at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+#     at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+#     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+#     at Function._load (node:internal/modules/cjs/loader:1192:37)
+#     at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+#     at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+#     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+#     at node:internal/main/run_main_module:36:49 {
+#   code: 'MODULE_NOT_FOUND',
+#   requireStack: []
+# }
+# Node.js v22.22.0
+# Subtest: tests
+not ok 2 - tests
+  ---
+  duration_ms: 50.740646
+  type: 'test'
+  location: '/app/tests:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66.495879
+# start of coverage report
+# ----------------------------------------------------------
+# file      | line % | branch % | funcs % | uncovered lines
+# ----------------------------------------------------------
+# ----------------------------------------------------------
+# all files | 100.00 |   100.00 |  100.00 |
+# ----------------------------------------------------------
+# end of coverage report

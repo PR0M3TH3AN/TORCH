@@ -1,0 +1,32 @@
+[
+  {
+    "file": "test/memory-cache.test.mjs",
+    "issues": [
+      "Found setTimeout()"
+    ]
+  },
+  {
+    "file": "test/memory-scheduler.test.mjs",
+    "issues": [
+      "Found setTimeout()"
+    ]
+  },
+  {
+    "file": "test/relay-fanout-quorum.integration.test.mjs",
+    "issues": [
+      "Found setTimeout()"
+    ]
+  },
+  {
+    "file": "tests/fixtures/memory-fixtures.js",
+    "issues": [
+      "No obvious assertions"
+    ]
+  },
+  {
+    "file": "tests/memory.test.js",
+    "issues": [
+      "Found setTimeout()"
+    ]
+  }
+]
