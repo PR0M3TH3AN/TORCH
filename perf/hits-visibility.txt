@@ -1,0 +1,4 @@
+./run-perf-agent.sh:62:rg -n --hidden --glob '!node_modules/' --glob '!dist/' --glob '!.git/' "document.hidden|visibilitychange" . > perf/hits-visibility.txt || true
+./src/prompts/daily/perf-agent.md:91:- **Visibility gating**: RAF/polling/animation loops must check `document.hidden` and pause when not visible.
+./src/prompts/daily/perf-agent.md:105:- `document.hidden|visibilitychange`
+./src/prompts/daily/perf-agent.md:121:  - Ensure RAF loops check `document.hidden` and avoid multiple attachments.

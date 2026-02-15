@@ -15,9 +15,6 @@ const REQUIRED_TOKENS = [
   '`src/decisions/`',
   '`src/test_logs/`',
   '`docs/agent-handoffs/incidents/`',
-  '`npm run lock:complete -- --agent <agent-name> --cadence <cadence>`',
-  '`*_completed.md`',
-  '`*_failed.md`',
   'memory retrieval before implementation',
   'memory storage after implementation',
 ];

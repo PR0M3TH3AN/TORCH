@@ -1,0 +1,20 @@
+./DIAGNOSIS.md:7:The `queryLocks` function in `src/lock-ops.mjs` uses `Promise.race` to enforce a timeout (default 15s) on relay queries.
+./DIAGNOSIS.md:10:    const events = await Promise.race([
+./DIAGNOSIS.md:18:When `pool.querySync` completes successfully (e.g., in 600ms), the `Promise.race` resolves immediately. However, the `setTimeout` created in the second promise remains active in the Node.js event loop. Node.js processes do not exit as long as there are active handles (like timers). Thus, the process waits for the remaining ~14.4s until the timer fires (and the callback is executed, though ignored) before exiting.
+./DIAGNOSIS.md:21:A reproduction script confirmed that `Promise.race` with an uncleared `setTimeout` prevents process exit until the timeout fires.
+./test/relay-fanout-quorum.integration.test.mjs:76:      await Promise.all(servers.map((server) => new Promise((resolve, reject) => {
+./task-logs/weekly/2026-02-14T14-30-00Z__perf-optimization-agent__completed.md:8:Identified a 15-second execution floor in `torch-lock` operations caused by a `Promise.race` timeout that was not cleared upon successful completion. This kept the Node.js event loop active until the 15s timer fired.
+./src/services/memory/formatter.js:181:    await Promise.all((memories ?? []).map((memory) => memoryService.updateMemoryUsage(memory.id, now)));
+./src/services/memory/retriever.js:178:  await Promise.all(ids.map((id) => repository.updateMemoryUsage(id, lastSeen)));
+./src/cmd-list.mjs:17:  const results = await Promise.all(
+./src/lock-ops.mjs:61:  return Promise.race([promise, timeoutPromise]).finally(() => {
+./src/lock-ops.mjs:368:  const settled = await Promise.allSettled(
+./perf/hits-intervals.txt:2:./DIAGNOSIS.md:18:When `pool.querySync` completes successfully (e.g., in 600ms), the `Promise.race` resolves immediately. However, the `setTimeout` created in the second promise remains active in the Node.js event loop. Node.js processes do not exit as long as there are active handles (like timers). Thus, the process waits for the remaining ~14.4s until the timer fires (and the callback is executed, though ignored) before exiting.
+./perf/hits-intervals.txt:3:./DIAGNOSIS.md:21:A reproduction script confirmed that `Promise.race` with an uncleared `setTimeout` prevents process exit until the timeout fires.
+./scripts/validate-scheduler-flow-parity.mjs:155:const [meta, flow, scheduler] = await Promise.all([
+./scripts/agent/load-test.mjs:126:        await Promise.all(promises);
+./src/prompts/weekly/race-condition-agent.md:117:   - Promise.all/race with insufficient error isolation
+./scripts/benchmark-dashboard.mjs:73:    await Promise.all(workers);
+./weekly-perf-report-2026-02-14.md:17:Modified `src/lib.mjs` to execute relay queries in parallel using `Promise.all`.
+./src/lib.mjs:348:  const results = await Promise.all(
+./src/relay-health.mjs:14:  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
