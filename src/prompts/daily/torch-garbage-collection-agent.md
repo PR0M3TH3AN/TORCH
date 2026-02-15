@@ -80,3 +80,8 @@ Provide a concise cleanup summary including:
 - any anomalies (for example: permission errors).
 
 If deletion fails for any path, do not broaden scope. Report the failing paths and stop.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

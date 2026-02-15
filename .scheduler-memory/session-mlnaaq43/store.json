@@ -1,0 +1,19 @@
+{
+  "cadence": "weekly",
+  "operation": "store",
+  "runId": "session-mlnaaq43",
+  "servicePath": "src/services/memory/index.js#ingestEvents",
+  "inputs": {
+    "agentId": "prompt-fixer-agent",
+    "promptPath": "src/prompts/weekly/prompt-fixer-agent.md",
+    "promptIntent": "## Required startup + artifacts + memory + issue capture",
+    "events": 2
+  },
+  "outputs": {
+    "storedCount": 1,
+    "summaries": [
+      "Store memory event A for weekly :: ## Required startup + artifacts + memory + issue capture Store memory event B for weekly :: ## Required startup + artifacts + memory + issue capture"
+    ]
+  },
+  "status": "ok"
+}

@@ -66,7 +66,14 @@ WORKFLOW
    - If you removed a prompt, verify it is also removed from `src/prompts/roster.json`.
 
 ───────────────────────────────────────────────────────────────────────────────
+- If no work is required, exit without making changes.
+
 OUTPUT
 
 - PR(s) containing the updates to prompts and/or roster.
 - A summary of actions taken (removed agents, fixed paths, etc.).
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

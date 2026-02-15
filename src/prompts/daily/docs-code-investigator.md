@@ -228,6 +228,12 @@ git grep -n -E "TODO|FIXME|XXX" -- js | sed -n '1,200p'
 8. Commit, push branch `ai/doc-<short-file>-YYYYMMDD` and open PR as described.
 
 ===============================================================================
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS & ACCEPTANCE
 - Inline JSDoc & comments in the file.
 - `docs/<module>-overview.md` (when created).

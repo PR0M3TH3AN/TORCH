@@ -82,6 +82,7 @@ D. Produce `artifacts/deps-report.md` summarizing:
   - License or maintenance red flags (deprecated/unmaintained packages).
 
 E. Triage rules — automatic categorization
+- If no work is required, exit without making changes.
   - **CRITICAL / UNSAFE**:
     - `critical` severity or CVSS >= 9 or direct exploit applicable to repo runtime, or crypto/protocol native package.
     - Action: open `security` issue (P0), attach audit artifacts, and notify maintainers. Do **not** auto-bump.
@@ -212,3 +213,8 @@ FINAL NOTE
 Run this daily as a scheduled job or as part of CI cadence. Be conservative around cryptography, protocol, and native binary updates — always stop and open an issue for human review. Keep all actions reproducible: include commands, environment, Node & package manager versions, timestamps, and test logs.
 
 Begin now: detect the package manager, run a fresh clean install, produce `artifacts/npm-audit.json` and `artifacts/npm-outdated.json`, and draft `artifacts/deps-report.md` with the initial triage and any immediate `P0` items.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

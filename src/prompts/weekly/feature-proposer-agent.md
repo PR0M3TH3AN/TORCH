@@ -49,7 +49,13 @@ Out of scope:
 
 ---
 
+- If no work is required, exit without making changes.
 ## Output expectations
 
 - A new file in `features/` containing the implemented feature.
 - A commit titled `feat: add new feature <name>`.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.

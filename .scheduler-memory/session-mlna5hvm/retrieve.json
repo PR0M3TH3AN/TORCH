@@ -1,0 +1,18 @@
+{
+  "cadence": "weekly",
+  "operation": "retrieve",
+  "runId": "session-mlna5hvm",
+  "servicePath": "src/services/memory/index.js#getRelevantMemories",
+  "inputs": {
+    "agentId": "prompt-fixer-agent",
+    "promptPath": "src/prompts/weekly/prompt-fixer-agent.md",
+    "promptIntent": "## Required startup + artifacts + memory + issue capture",
+    "query": "scheduler | weekly | agent | prompt-fixer-agent | intent | Required startup + artifacts + memory + issue capture",
+    "events": 1
+  },
+  "outputs": {
+    "ingestedCount": 1,
+    "retrievedCount": 1
+  },
+  "status": "ok"
+}

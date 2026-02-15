@@ -215,6 +215,12 @@ Suggested PR title (only if policy does not override):
 - `chore(ui): design system audit (autofixes)`
 
 ───────────────────────────────────────────────────────────────────────────────
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS PER RUN
 
 Success:

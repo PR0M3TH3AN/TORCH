@@ -66,6 +66,13 @@ DAILY WORKFLOW
    - **Handoff Summary:** Include a final summary for the scheduler containing failures found and actions taken (PRs created, issues opened, fixes applied).
 
 ===============================================================================
+- If no work is required, exit without making changes.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS
 - Scheduler-managed final task log (written by scheduler after validation/completion publish).
 - PRs for code fixes.

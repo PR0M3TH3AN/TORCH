@@ -144,6 +144,7 @@ DAILY WORKFLOW (run every day or as scheduled)
      - PRs created / Issues opened with links.
      - Prioritized recommended next steps.
 
+- If no work is required, exit without making changes.
 ===============================================================================
 SEARCH PATTERNS & STATIC CHECKS (commands)
 - Locate tests:
@@ -244,6 +245,12 @@ FIRST-RUN CHECKLIST (execute now)
 7. Produce `test-audit-report-YYYY-MM-DD.md` and open PRs/issues for P0 items.
 
 ===============================================================================
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
+
 OUTPUTS (what you must produce each run)
 - `test-audit-report-YYYY-MM-DD.md` — full audit report.
 - `test-audit/coverage-*` artifacts and `coverage-summary.json`.

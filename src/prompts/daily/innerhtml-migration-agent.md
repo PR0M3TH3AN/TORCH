@@ -265,3 +265,8 @@ Begin now:
 1. Run `node torch/scripts/check-innerhtml.mjs --report`
 2. Pick **ONE** file (RISKY/high-count preferred).
 3. Follow the workflow above and open a `[security]` PR to `<default-branch>` when ready.
+
+FAILURE MODES
+- If preconditions are not met, stop.
+- If no changes are needed, do nothing.
+- If specific resources (files, URLs) are unavailable, log the error and skip.
