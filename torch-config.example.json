@@ -10,6 +10,7 @@
     "queryTimeoutMs": 15000,
     "publishTimeoutMs": 8000,
     "minSuccessfulRelayPublishes": 2,
+    "minActiveRelayPool": 2,
     "relayFallbacks": [
       "wss://relay.snort.social",
       "wss://relay.nostr.band"

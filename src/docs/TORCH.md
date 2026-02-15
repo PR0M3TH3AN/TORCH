@@ -35,6 +35,7 @@ node bin/torch-lock.mjs list
 - `NOSTR_LOCK_PUBLISH_TIMEOUT_MS`
 - `NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES`
 - `NOSTR_LOCK_RELAY_FALLBACKS`
+- `NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL`
 - `NOSTR_LOCK_DAILY_ROSTER`
 - `NOSTR_LOCK_WEEKLY_ROSTER`
 - `TORCH_CONFIG_PATH`
@@ -57,6 +58,7 @@ Common settings:
 - `nostrLock.publishTimeoutMs` — per-relay publish timeout (ms, valid range: 100..120000).
 - `nostrLock.minSuccessfulRelayPublishes` — minimum successful publishes required before lock acquisition continues (default: `1`).
 - `nostrLock.relayFallbacks` — optional fallback relay URLs used when primary query/publish attempts fail quorum.
+- `nostrLock.minActiveRelayPool` — minimum number of relays kept active even when lower-ranked relays are quarantined (default: `1`).
 - `nostrLock.dailyRoster` / `nostrLock.weeklyRoster` — optional per-project roster overrides.
 - `dashboard.defaultCadenceView` — default dashboard view (`daily`, `weekly`, `all`).
 - `dashboard.defaultStatusView` — default dashboard status filter (`active`, `all`).
@@ -80,12 +82,14 @@ Recommended baseline for production scheduler runs:
 - `nostrLock.queryTimeoutMs`: `10000`
 - `nostrLock.publishTimeoutMs`: `8000`
 - `nostrLock.minSuccessfulRelayPublishes`: `2`
+- `nostrLock.minActiveRelayPool`: `2`
 
 Validation behavior:
 
 - Relay URLs must be absolute `ws://` or `wss://` URLs.
 - Invalid relay URLs or invalid timeout/count ranges are fatal startup errors.
 - Lock backend errors include phase (`query:primary`, `query:fallback`, `publish:primary`, `publish:fallback`), relay endpoint, and timeout value used.
+- Relay health snapshots are emitted periodically and whenever lock publish/query fails; snapshots include success rate, timeout rate, rolling latency, and quarantine state per relay.
 
 ## Scheduler lock reliability reporting
 

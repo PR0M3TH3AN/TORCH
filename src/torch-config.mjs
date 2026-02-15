@@ -7,6 +7,7 @@ import {
   DEFAULT_QUERY_TIMEOUT_MS,
   DEFAULT_PUBLISH_TIMEOUT_MS,
   DEFAULT_MIN_SUCCESSFUL_PUBLISHES,
+  DEFAULT_MIN_ACTIVE_RELAY_POOL,
 } from './constants.mjs';
 
 const DEFAULT_CONFIG_PATH = 'torch-config.json';
@@ -96,6 +97,7 @@ export function parseTorchConfig(raw, configPath = null) {
       queryTimeoutMs: parsePositiveInteger(nostrLock.queryTimeoutMs),
       publishTimeoutMs: parsePositiveInteger(nostrLock.publishTimeoutMs),
       minSuccessfulRelayPublishes: parsePositiveInteger(nostrLock.minSuccessfulRelayPublishes),
+      minActiveRelayPool: parsePositiveInteger(nostrLock.minActiveRelayPool),
       dailyRoster: parseRoster(nostrLock.dailyRoster),
       weeklyRoster: parseRoster(nostrLock.weeklyRoster),
     },
@@ -164,6 +166,9 @@ function validateLockBackendConfig(config) {
   }
   if (config.nostrLock.minSuccessfulRelayPublishes !== null) {
     assertPositiveCount(config.nostrLock.minSuccessfulRelayPublishes, 'nostrLock.minSuccessfulRelayPublishes');
+  }
+  if (config.nostrLock.minActiveRelayPool !== null) {
+    assertPositiveCount(config.nostrLock.minActiveRelayPool, 'nostrLock.minActiveRelayPool');
   }
 }
 
@@ -262,5 +267,18 @@ export function getMinSuccessfulRelayPublishes() {
   }
   const value = config.nostrLock.minSuccessfulRelayPublishes || DEFAULT_MIN_SUCCESSFUL_PUBLISHES;
   assertPositiveCount(value, 'effective min successful relay publishes');
+  return value;
+}
+
+export function getMinActiveRelayPool() {
+  const config = loadTorchConfig();
+  const envValue = process.env.NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL;
+  if (envValue) {
+    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL');
+    assertPositiveCount(parsed, 'NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL');
+    return parsed;
+  }
+  const value = config.nostrLock.minActiveRelayPool || DEFAULT_MIN_ACTIVE_RELAY_POOL;
+  assertPositiveCount(value, 'effective min active relay pool');
   return value;
 }

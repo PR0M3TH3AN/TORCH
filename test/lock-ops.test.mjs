@@ -1,8 +1,17 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { parseLockEvent, publishLock, queryLocks } from '../src/lock-ops.mjs';
+import {
+  parseLockEvent,
+  publishLock,
+  queryLocks,
+  _resetRelayHealthState,
+} from '../src/lock-ops.mjs';
 
 describe('lock-ops', () => {
+  beforeEach(() => {
+    _resetRelayHealthState();
+  });
+
   describe('parseLockEvent', () => {
     it('parses a valid lock event correctly', () => {
       const event = {
@@ -32,7 +41,7 @@ describe('lock-ops', () => {
     it('falls back to fallback relays when primary query fails', async () => {
       const mockPool = {
         querySync: async (relays) => {
-          if (relays[0] === 'wss://primary') {
+          if (relays.includes('wss://primary')) {
             throw new Error('primary unavailable');
           }
           return [{
@@ -56,6 +65,7 @@ describe('lock-ops', () => {
           getQueryTimeoutMsFn: () => 200,
           getRelayFallbacksFn: () => ['wss://fallback'],
           errorLogger: () => {},
+          healthLogger: () => {},
         },
       );
 
@@ -87,6 +97,7 @@ describe('lock-ops', () => {
         getPublishTimeoutMsFn: () => 200,
         getMinSuccessfulRelayPublishesFn: () => 1,
         getRelayFallbacksFn: () => [],
+        getMinActiveRelayPoolFn: () => 1,
         retryAttempts: 3,
         retryBaseDelayMs: 500,
         retryCapDelayMs: 8_000,
@@ -97,6 +108,7 @@ describe('lock-ops', () => {
         telemetryLogger: (line) => {
           telemetry.push(JSON.parse(line));
         },
+        healthLogger: () => {},
       });
 
       assert.strictEqual(result, event);
@@ -123,7 +135,6 @@ describe('lock-ops', () => {
       assert.ok(Number.isInteger(telemetry[1].elapsedMs));
     });
 
-
     it('fails after retry budget is exhausted for persistent transient failures', async () => {
       let publishCalls = 0;
       const sleepCalls = [];
@@ -142,12 +153,14 @@ describe('lock-ops', () => {
           getPublishTimeoutMsFn: () => 200,
           getMinSuccessfulRelayPublishesFn: () => 1,
           getRelayFallbacksFn: () => [],
+          getMinActiveRelayPoolFn: () => 1,
           retryAttempts: 3,
           randomFn: () => 1,
           sleepFn: async (ms) => {
             sleepCalls.push(ms);
           },
           telemetryLogger: () => {},
+          healthLogger: () => {},
         }),
         /Failed relay publish quorum in publish phase: 0\/1 successful \(required=1, timeout=200ms, attempts=3\)/,
       );
@@ -172,6 +185,7 @@ describe('lock-ops', () => {
           getPublishTimeoutMsFn: () => 200,
           getMinSuccessfulRelayPublishesFn: () => 1,
           getRelayFallbacksFn: () => [],
+          getMinActiveRelayPoolFn: () => 1,
           retryAttempts: 4,
           sleepFn: async () => {
             throw new Error('should not sleep for permanent failures');
@@ -179,6 +193,7 @@ describe('lock-ops', () => {
           telemetryLogger: () => {
             throw new Error('should not emit retry telemetry for permanent failures');
           },
+          healthLogger: () => {},
         }),
         /Failed relay publish quorum in publish phase: 0\/1 successful \(required=1, timeout=200ms, attempts=4\)/,
       );
@@ -206,10 +221,12 @@ describe('lock-ops', () => {
         getPublishTimeoutMsFn: () => 200,
         getMinSuccessfulRelayPublishesFn: () => 1,
         getRelayFallbacksFn: () => [],
+        getMinActiveRelayPoolFn: () => 1,
         retryAttempts: 3,
         sleepFn: async () => {
           throw new Error('should not sleep when quorum is satisfied');
         },
+        healthLogger: () => {},
       });
 
       assert.strictEqual(result, event);
@@ -230,9 +247,86 @@ describe('lock-ops', () => {
         getPublishTimeoutMsFn: () => 200,
         getMinSuccessfulRelayPublishesFn: () => 1,
         getRelayFallbacksFn: () => ['wss://fallback-ok'],
+        getMinActiveRelayPoolFn: () => 1,
+        healthLogger: () => {},
       });
 
       assert.strictEqual(result, event);
+    });
+
+    it('quarantines repeatedly failing relays and still reaches quorum with one healthy relay', async () => {
+      const callOrder = [];
+      const mockPool = {
+        publish: (relays) => relays.map((relay) => {
+          callOrder.push(relay);
+          if (relay === 'wss://healthy') {
+            return Promise.resolve('ok');
+          }
+          return Promise.reject(new Error('offline'));
+        }),
+        close: () => {},
+      };
+
+      const event = { id: 'evt-health' };
+
+      // Warm up failure history so bad relay enters quarantine.
+      for (let i = 0; i < 3; i += 1) {
+        await publishLock(['wss://bad', 'wss://healthy'], event, {
+          poolFactory: () => mockPool,
+          getPublishTimeoutMsFn: () => 200,
+          getMinSuccessfulRelayPublishesFn: () => 1,
+          getRelayFallbacksFn: () => [],
+          getMinActiveRelayPoolFn: () => 1,
+          retryAttempts: 1,
+          failureThreshold: 2,
+          quarantineCooldownMs: 60_000,
+          healthLogger: () => {},
+        });
+      }
+
+      callOrder.length = 0;
+      await publishLock(['wss://bad', 'wss://healthy'], event, {
+        poolFactory: () => mockPool,
+        getPublishTimeoutMsFn: () => 200,
+        getMinSuccessfulRelayPublishesFn: () => 1,
+        getRelayFallbacksFn: () => [],
+        getMinActiveRelayPoolFn: () => 1,
+        retryAttempts: 1,
+        failureThreshold: 2,
+        quarantineCooldownMs: 60_000,
+        healthLogger: () => {},
+      });
+
+      assert.deepStrictEqual(callOrder, ['wss://healthy']);
+    });
+
+    it('uses fallback and min active pool to reintroduce quarantined relay when needed', async () => {
+      const attempts = [];
+      const mockPool = {
+        publish: (relays) => relays.map((relay) => {
+          attempts.push(relay);
+          if (relay === 'wss://fallback-healthy') {
+            return Promise.resolve('ok');
+          }
+          return Promise.reject(new Error('relay timeout'));
+        }),
+        close: () => {},
+      };
+
+      const event = { id: 'evt-quorum' };
+      await publishLock(['wss://primary-a', 'wss://primary-b'], event, {
+        poolFactory: () => mockPool,
+        getPublishTimeoutMsFn: () => 200,
+        getMinSuccessfulRelayPublishesFn: () => 1,
+        getRelayFallbacksFn: () => ['wss://fallback-healthy'],
+        getMinActiveRelayPoolFn: () => 2,
+        retryAttempts: 1,
+        failureThreshold: 1,
+        quarantineCooldownMs: 60_000,
+        healthLogger: () => {},
+      });
+
+      assert.ok(attempts.includes('wss://fallback-healthy'));
     });
   });
 });
