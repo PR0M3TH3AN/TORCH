@@ -199,6 +199,94 @@ describe('src/lib.mjs', () => {
       assert.match(logs.join('\n'), /LOCK_STATUS=race_lost/);
     });
 
+    it('handles race condition with identical timestamps using eventId tie-breaker (we win)', async () => {
+      let callCount = 0;
+      const deps = {
+        ...baseDeps,
+        queryLocks: async () => {
+          callCount++;
+          if (callCount === 1) return [];
+          return [{
+            agent: 'agent1',
+            eventId: 'aaaaa', // competitor (higher ID)
+            createdAt: 100,
+            createdAtIso: 'time'
+          }, {
+            agent: 'agent1',
+            eventId: 'mock-id', // our ID (we need to ensure mockFinalizeEvent returns this or we control comparison)
+            // The test mockFinalizeEvent returns 'mock-id'.
+            // 'mock-id' > 'aaaaa'. So we would lose if competitor is 'aaaaa'.
+            // To win, competitor must be 'zzzzz'.
+            // Let's re-check the logic.
+            // sort((a, b) => ... || a.id.localeCompare(b.id))
+            // If we are 'mock-id', and competitor is 'zzzzz'.
+            // 'mock-id'.localeCompare('zzzzz') is negative. So we come first.
+            // racingLocks[0] is us. We win.
+            createdAt: 100,
+          }];
+        },
+        publishLock: async () => {},
+        generateSecretKey: mockGenerateSecretKey,
+        getPublicKey: mockGetPublicKey,
+        finalizeEvent: (t) => ({ ...t, id: 'mock-id' }),
+        raceCheckDelayMs: 1,
+      };
+
+      // Competitor is 'aaaaa'. We are 'mock-id'. 'aaaaa' comes first. We lose.
+      // Wait, I want a test where we WIN.
+      // So competitor should be 'zzzzz'.
+      deps.queryLocks = async () => {
+          callCount++;
+          if (callCount === 1) return [];
+          return [{
+            agent: 'agent1',
+            eventId: 'zzzzz', // competitor (higher ID)
+            createdAt: 100,
+            createdAtIso: 'time'
+          }, {
+            agent: 'agent1',
+            eventId: 'mock-id', // our ID
+            createdAt: 100,
+          }];
+      };
+
+      const result = await cmdLock('agent1', 'daily', false, deps);
+      assert.strictEqual(result.status, 'ok');
+      assert.match(logs.join('\n'), /LOCK_STATUS=ok/);
+    });
+
+    it('handles race condition with identical timestamps using eventId tie-breaker (we lose)', async () => {
+      let callCount = 0;
+      const deps = {
+        ...baseDeps,
+        queryLocks: async () => {
+          callCount++;
+          if (callCount === 1) return [];
+          return [{
+            agent: 'agent1',
+            eventId: 'aaaaa', // competitor (lower ID)
+            createdAt: 100,
+            createdAtIso: 'time'
+          }, {
+            agent: 'agent1',
+            eventId: 'mock-id', // our ID ('m' > 'a')
+            createdAt: 100,
+          }];
+        },
+        publishLock: async () => {},
+        generateSecretKey: mockGenerateSecretKey,
+        getPublicKey: mockGetPublicKey,
+        finalizeEvent: (t) => ({ ...t, id: 'mock-id' }),
+        raceCheckDelayMs: 1,
+      };
+
+      await assert.rejects(
+        async () => await cmdLock('agent1', 'daily', false, deps),
+        (err) => err.code === 3 && err.message === 'Race check lost'
+      );
+      assert.match(logs.join('\n'), /LOCK_STATUS=race_lost/);
+    });
+
     it('dry run does not publish', async () => {
       let published = false;
       const deps = {

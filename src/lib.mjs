@@ -292,7 +292,7 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
     const postLocks = await queryLocks(relays, cadence, dateStr, namespace);
     const racingLocks = postLocks
       .filter((l) => l.agent === agent)
-      .sort((a, b) => a.createdAt - b.createdAt);
+      .sort((a, b) => (a.createdAt - b.createdAt) || String(a.eventId).localeCompare(String(b.eventId)));
 
     if (racingLocks.length > 1 && racingLocks[0].eventId !== event.id) {
       const winner = racingLocks[0];
