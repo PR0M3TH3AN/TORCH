@@ -43,7 +43,7 @@ const invariants = [
       ],
     },
     schedulerSnippets: [
-      "runCommand('npm', ['run', `lock:check:${cadence}`])",
+      "runCommand('npm', ['run', `lock:check:${cadence}`",
       'checkPayload.excluded',
       'checkPayload.locked',
       'checkPayload.paused',

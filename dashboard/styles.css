@@ -143,6 +143,7 @@ a { color: inherit; }
 .w-full { width: 100%; }
 .shrink-0 { flex-shrink: 0; }
 .opacity-60 { opacity: 0.6; }
+.opacity-75 { opacity: 0.75; }
 
 .text-center { text-align: center; }
 .text-xs { font-size: 0.75rem; line-height: 1rem; }

@@ -437,6 +437,7 @@
           status: content.status ?? 'unknown',
           date: content.date ?? dTag.split('/')[3] ?? todayStr(),
           platform: content.platform ?? 'unknown',
+          model: content.model ?? null,
         };
       }
 
@@ -585,8 +586,14 @@
         left.appendChild(meta);
         header.appendChild(left);
 
+        const right = createElement('div', 'flex flex-col items-end gap-1');
         const badge = createElement('span', `inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${ps.bg} ${ps.text}`, ps.label);
-        header.appendChild(badge);
+        right.appendChild(badge);
+
+        if (lock.model && lock.model !== 'unknown') {
+          right.appendChild(createElement('span', 'text-xs text-muted mono opacity-75', lock.model));
+        }
+        header.appendChild(right);
         card.appendChild(header);
 
         // Grid

@@ -31,6 +31,8 @@ export function parseArgs(argv) {
     allRelaysDownMinutes: null,
     minSuccessRate: null,
     windowMinutes: null,
+    platform: null,
+    model: null,
   };
   let i = 0;
 
@@ -117,6 +119,14 @@ export function parseArgs(argv) {
       args.windowMinutes = parseInt(argv[++i], 10);
     } else if (arg.startsWith('--window-minutes=')) {
       args.windowMinutes = parseInt(arg.split('=')[1], 10);
+    } else if (arg === '--platform') {
+      args.platform = argv[++i];
+    } else if (arg.startsWith('--platform=')) {
+      args.platform = arg.split('=')[1];
+    } else if (arg === '--model') {
+      args.model = argv[++i];
+    } else if (arg.startsWith('--model=')) {
+      args.model = arg.split('=')[1];
     }
   }
 
