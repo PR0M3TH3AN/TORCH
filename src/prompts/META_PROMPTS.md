@@ -21,7 +21,7 @@ MUST 1: Set cadence config to:
 
 MUST 2: Run preflight to get the exclusion set:
 
-npm run lock:check:daily
+npm run lock:check:daily -- --json --quiet
 
 Use `excluded` from the JSON output as the canonical exclusion set.
 If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed`.
@@ -105,7 +105,7 @@ MUST 1: Set cadence config to:
 
 MUST 2: Run preflight to get the exclusion set:
 
-npm run lock:check:weekly
+npm run lock:check:weekly -- --json --quiet
 
 Use `excluded` from the JSON output as the canonical exclusion set.
 If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed`.

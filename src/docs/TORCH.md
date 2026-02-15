@@ -20,6 +20,9 @@ To follow in any Nostr client, subscribe to kind 30078 with `#t = torch-agent-lo
 # Check active locks
 node bin/torch-lock.mjs check --cadence daily
 
+# Machine-readable lock output (recommended for automation)
+node bin/torch-lock.mjs check --cadence daily --json --quiet --json-file /tmp/torch-lock-check.json
+
 # Claim a task
 AGENT_PLATFORM=codex node bin/torch-lock.mjs lock --agent docs-agent --cadence daily
 

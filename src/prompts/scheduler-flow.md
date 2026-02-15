@@ -59,12 +59,14 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 2. Run preflight to build the exclusion set:
 
    ```bash
-   if daily: `npm run lock:check:daily`; if weekly: `npm run lock:check:weekly`
+   if daily: `npm run lock:check:daily -- --json --quiet`; if weekly: `npm run lock:check:weekly -- --json --quiet`
    ```
 
    Canonical exclusion rule:
    - Use `excluded` from the `npm run lock:check:<cadence>` JSON output.
    - If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed` from that same JSON payload.
+
+   Goose Desktop note: `npm run lock:check:<cadence>` can emit large hermit wrapper logs. Use `--json --quiet` (as documented above). If the command still fails due to Goose hermit issues, apply the PATH workaround in `KNOWN_ISSUES.md` before rerunning.
 
 3. Read policy file(s) once before the run loop. This step is conditional: if `AGENTS.md` is missing, continue without failing.
 

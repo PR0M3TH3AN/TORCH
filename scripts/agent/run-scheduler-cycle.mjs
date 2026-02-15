@@ -691,7 +691,7 @@ async function main() {
       }
     }
 
-    const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);
+    const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`, '--', '--json', '--quiet']);
     const checkPayload = parseJsonFromOutput(`${checkResult.stdout}\n${checkResult.stderr}`) || {};
     const excluded = Array.isArray(checkPayload.excluded)
       ? checkPayload.excluded

@@ -11,6 +11,9 @@ export function parseArgs(argv) {
     command: null,
     agent: null,
     cadence: null,
+    json: false,
+    jsonFile: null,
+    quiet: false,
     dryRun: false,
     force: false,
     port: DEFAULT_DASHBOARD_PORT,
@@ -42,6 +45,14 @@ export function parseArgs(argv) {
       args.agent = argv[++i];
     } else if (arg === '--cadence' || arg === '-c') {
       args.cadence = argv[++i];
+    } else if (arg === '--json') {
+      args.json = true;
+    } else if (arg === '--json-file') {
+      args.jsonFile = argv[++i];
+    } else if (arg.startsWith('--json-file=')) {
+      args.jsonFile = arg.split('=')[1];
+    } else if (arg === '--quiet') {
+      args.quiet = true;
     } else if (arg.startsWith('--agent=')) {
       args.agent = arg.split('=')[1];
     } else if (arg.startsWith('--cadence=')) {

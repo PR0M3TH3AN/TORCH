@@ -114,6 +114,9 @@ export async function cmdCheck(cadence, deps = {}) {
     error = console.error,
     logDir = 'task-logs',
     ignoreLogs = false,
+    json = false,
+    jsonFile = null,
+    quiet = false,
   } = deps;
 
   const relays = getRelays();
@@ -122,16 +125,18 @@ export async function cmdCheck(cadence, deps = {}) {
   const config = loadTorchConfig();
   const pausedAgents = config.scheduler.paused[cadence] || [];
 
-  error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
-  error(`Relays: ${relays.join(', ')}`);
-  if (pausedAgents.length > 0) {
-    error(`Paused agents: ${pausedAgents.join(', ')}`);
+  if (!quiet) {
+    error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
+    error(`Relays: ${relays.join(', ')}`);
+    if (pausedAgents.length > 0) {
+      error(`Paused agents: ${pausedAgents.join(', ')}`);
+    }
   }
 
   let completedAgents = new Set();
   if (!ignoreLogs) {
     completedAgents = await getCompletedAgents(cadence, logDir, deps);
-    if (completedAgents.size > 0) {
+    if (!quiet && completedAgents.size > 0) {
       error(`Completed agents (logs): ${[...completedAgents].join(', ')}`);
     }
   }
@@ -166,7 +171,18 @@ export async function cmdCheck(cadence, deps = {}) {
     })),
   };
 
-  log(JSON.stringify(result, null, 2));
+  const output = json ? JSON.stringify(result) : JSON.stringify(result, null, 2);
+
+  if (jsonFile) {
+    const resolvedPath = path.resolve(process.cwd(), jsonFile);
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
+    await fs.writeFile(resolvedPath, `${output}\n`, 'utf8');
+  }
+
+  if (json || !quiet) {
+    log(output);
+  }
+
   return result;
 }
 
@@ -530,6 +546,9 @@ Options:
   --force         Overwrite existing files (for init) or all files (for update)
   --log-dir       Path to task logs directory (default: task-logs)
   --ignore-logs   Skip checking local logs for completed tasks
+  --json          Emit compact single-line JSON
+  --json-file     Write JSON output to a file path
+  --quiet         Suppress stderr progress logs (pairs well with --json)
 
 Environment:
   NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
@@ -569,7 +588,13 @@ export async function main(argv) {
           console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for check`);
           throw new ExitError(1, 'Missing cadence');
         }
-        await cmdCheck(args.cadence, { logDir: args.logDir, ignoreLogs: args.ignoreLogs });
+        await cmdCheck(args.cadence, {
+          logDir: args.logDir,
+          ignoreLogs: args.ignoreLogs,
+          json: args.json,
+          jsonFile: args.jsonFile,
+          quiet: args.quiet,
+        });
         break;
       }
 
