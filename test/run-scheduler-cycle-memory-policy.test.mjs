@@ -37,6 +37,7 @@ async function setupFixture({
   lockShellBody = '',
   roster = ['agent-a'],
   lockHealthPreflight = undefined,
+  schedulerPolicy = {},
   preflightScript = '#!/usr/bin/env node\nconsole.log(JSON.stringify({ ok: true, relays: ["wss://relay.test"] }));\nprocess.exit(0);\n',
 }) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-memory-policy-'));
@@ -69,6 +70,7 @@ async function setupFixture({
         handoffCommandByCadence: { daily: 'echo HANDOFF_OK' },
         validationCommandsByCadence: { daily: ['true'] },
         memoryPolicyByCadence: { daily: memoryPolicy },
+        ...schedulerPolicy,
         ...(lockHealthPreflight === undefined ? {} : { lockHealthPreflight }),
       },
     }, null, 2),
@@ -186,12 +188,156 @@ test('records backend failure metadata when lock command exits with code 2', { c
   const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
 
   assert.match(failedBody, /reason: Lock backend error/);
+  assert.match(failedBody, /failure_class: 'backend_unavailable'/);
   assert.match(failedBody, /backend_category: 'publish failed to all relays'/);
   assert.match(failedBody, /lock_command: 'AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily'/);
   assert.match(failedBody, /lock_stderr_excerpt: 'publish failed to all relays token=\[REDACTED\] SECRET_KEY=\[REDACTED\]'/);
   assert.match(failedBody, /lock_stdout_excerpt: 'websocket: connection refused'/);
   assert.match(failedBody, /Retry AGENT_PLATFORM=codex npm run lock:lock -- --agent agent-a --cadence daily/);
   assert.match(failedBody, /platform: 'codex'/);
+});
+
+test('defers backend failures in non-strict mode and reuses idempotency key on successful retry', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    schedulerPolicy: {
+      strict_lock: false,
+      degraded_lock_retry_window: 3600000,
+      max_deferrals: 3,
+    },
+    lockShellBody: `    count_file="$PWD/.lock-count"
+    key_log="$PWD/.idempotency-keys"
+    count=0
+    if [[ -f "$count_file" ]]; then
+      count="$(cat "$count_file")"
+    fi
+    count=$((count + 1))
+    echo "$count" > "$count_file"
+    echo "\${SCHEDULER_LOCK_IDEMPOTENCY_KEY:-missing}" >> "$key_log"
+    if [[ "$count" -lt 3 ]]; then
+      echo 'relay query timeout' >&2
+      exit 2
+    fi
+    :`,
+  });
+
+  const first = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '0',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+  assert.equal(first.code, 0, `stdout: ${first.stdout}\nstderr: ${first.stderr}`);
+
+  const second = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '0',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+  assert.equal(second.code, 0, `stdout: ${second.stdout}\nstderr: ${second.stderr}`);
+
+  const third = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '0',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+  assert.equal(third.code, 0, `stdout: ${third.stdout}\nstderr: ${third.stderr}`);
+
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const deferredLog = logs.find((name) => name.endsWith('__deferred.md'));
+  assert.ok(deferredLog);
+  const deferredBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', deferredLog), 'utf8');
+  assert.match(deferredBody, /failure_class: 'backend_unavailable'/);
+  assert.match(deferredBody, /deferral_attempt_count: '\d+'/);
+
+  const keyLog = await fs.readFile(path.join(fixture.root, '.idempotency-keys'), 'utf8');
+  const keys = keyLog.trim().split(/\r?\n/).filter(Boolean);
+  assert.equal(keys.length, 3);
+  assert.equal(keys[0], 'missing');
+  assert.notEqual(keys[1], 'missing');
+  assert.equal(keys[1], keys[2]);
+});
+
+test('fails after exceeding non-strict deferral budget', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    schedulerPolicy: {
+      strict_lock: false,
+      degraded_lock_retry_window: 3600000,
+      max_deferrals: 1,
+    },
+    lockShellBody: `    echo 'publish failed to all relays' >&2
+    exit 2`,
+  });
+
+  const first = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '0',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+  assert.equal(first.code, 0, `stdout: ${first.stdout}\nstderr: ${first.stderr}`);
+
+  const second = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '0',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+  assert.equal(second.code, 2, `stdout: ${second.stdout}\nstderr: ${second.stderr}`);
+
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
+  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
+  assert.match(failedBody, /failure_class: 'backend_unavailable'/);
+  assert.match(failedBody, /deferral_attempt_count: '2'/);
+});
+
+test('strict lock mode fails immediately without deferral', { concurrency: false }, async () => {
+  const fixture = await setupFixture({
+    memoryPolicy: { mode: 'optional' },
+    schedulerPolicy: {
+      strict_lock: true,
+      degraded_lock_retry_window: 3600000,
+      max_deferrals: 5,
+    },
+    lockShellBody: `    echo 'relay timeout' >&2
+    exit 2`,
+  });
+
+  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
+    cwd: fixture.root,
+    env: {
+      ...fixture.env,
+      SCHEDULER_LOCK_MAX_RETRIES: '0',
+      SCHEDULER_LOCK_BACKOFF_MS: '0',
+      SCHEDULER_LOCK_JITTER_MS: '0',
+    },
+  });
+  assert.equal(result.code, 2, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+
+  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
+  assert.equal(logs.some((name) => name.endsWith('__deferred.md')), false);
+  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
+  assert.ok(failedLog);
 });
 
 

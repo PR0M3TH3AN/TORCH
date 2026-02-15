@@ -65,12 +65,20 @@ Common settings:
 - `scheduler.firstPromptByCadence.daily` / `.weekly` — first-run scheduler starting agent.
 - `scheduler.handoffCommandByCadence.daily` / `.weekly` — shell command run after lock acquisition; command must use `SCHEDULER_AGENT`, `SCHEDULER_CADENCE`, and `SCHEDULER_PROMPT_PATH` provided by `scripts/agent/run-scheduler-cycle.mjs`.
 - `scheduler.paused.daily` / `.weekly` — array of agent names to exclude from scheduler rotation.
+- `scheduler.strict_lock` — lock backend policy switch (default: `true`); when `false`, scheduler defers backend-unavailable lock failures before converting the run to failed.
+- `scheduler.degraded_lock_retry_window` — non-strict deferral window in milliseconds; backend lock failures outside this window immediately consume failure budget and mark run failed.
+- `scheduler.max_deferrals` — max number of non-strict lock deferrals allowed in-window before scheduler records a hard failure.
 
 Default first-run daily scheduler prompt is `scheduler-update-agent`.
 
 For weekly repository-fit maintenance, TORCH also includes `src/prompts/weekly/repo-fit-agent.md` to periodically adjust defaults and docs to the host repository.
 
 Operational note: scheduler handoff commands are treated as required execution steps. A non-zero exit code (or missing command) is a hard failure: the scheduler writes a `_failed.md` task log, exits immediately, and does not publish `lock:complete` for that run.
+
+Scheduler failure classes in task logs:
+
+- `backend_unavailable` — lock backend unavailable preflight failures and lock acquisition backend exit code `2` failures/deferrals.
+- `prompt_validation_error` — prompt/handoff, memory evidence, artifact verification, and validation command failures.
 
 
 ## Lock backend production defaults
