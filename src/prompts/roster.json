@@ -35,6 +35,7 @@
     "pr-review-agent",
     "prompt-maintenance-agent",
     "prompt-safety-agent",
+    "prompt-fixer-agent",
     "race-condition-agent",
     "refactor-agent",
     "repo-fit-agent",
