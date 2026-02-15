@@ -25,6 +25,10 @@ function resolveRunner(promptMarkdown) {
     return { command: 'claude', args: ['-p', promptMarkdown] };
   }
 
+  if (platform === 'linux') {
+    return { command: 'echo', args: [`[scheduler] Platform 'linux' detected. simulated execution for prompt.`] };
+  }
+
   fail(`Unsupported AGENT_PLATFORM="${platform}". Set SCHEDULER_AGENT_RUNNER_COMMAND to override.`);
 }
 
