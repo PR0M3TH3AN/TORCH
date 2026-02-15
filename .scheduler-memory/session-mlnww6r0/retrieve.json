@@ -1,0 +1,18 @@
+{
+  "cadence": "weekly",
+  "operation": "retrieve",
+  "runId": "session-mlnww6r0",
+  "servicePath": "src/services/memory/index.js#getRelevantMemories",
+  "inputs": {
+    "agentId": "refactor-agent",
+    "promptPath": "",
+    "promptIntent": "scheduler memory retrieval",
+    "query": "scheduler | weekly | agent | refactor-agent | intent | scheduler memory retrieval",
+    "events": 1
+  },
+  "outputs": {
+    "ingestedCount": 1,
+    "retrievedCount": 1
+  },
+  "status": "ok"
+}
