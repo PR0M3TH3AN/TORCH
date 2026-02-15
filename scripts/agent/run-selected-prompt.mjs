@@ -52,6 +52,20 @@ async function main() {
     fail(`Scheduler prompt at ${promptPath} is empty.`);
   }
 
+  const cadence = process.env.SCHEDULER_CADENCE;
+  const memoriesPath = path.resolve(process.cwd(), `.scheduler-memory/latest/${cadence}/memories.md`);
+  try {
+    const memories = await fs.readFile(memoriesPath, 'utf8');
+    if (memories && memories.trim()) {
+      promptMarkdown += `\n\n# Retrieved Memories\n\n${memories.trim()}\n`;
+      console.error(`[scheduler] Injected memories from ${memoriesPath}`);
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.error(`[scheduler] Warning: Failed to read memories from ${memoriesPath}: ${error.message}`);
+    }
+  }
+
   const runner = resolveRunner(promptMarkdown);
   const child = spawn(runner.command, runner.args, {
     cwd: process.cwd(),

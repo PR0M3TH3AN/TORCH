@@ -549,7 +549,7 @@ Commands:
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
 
-  list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>]
+  list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>] [--full]
   inspect-memory          --id <memoryId>
   pin-memory              --id <memoryId>
   unpin-memory            --id <memoryId>
@@ -700,6 +700,15 @@ export async function main(argv) {
           limit: args.limit,
           offset: args.offset,
         });
+
+        if (!args.full && Array.isArray(result)) {
+          for (const memory of result) {
+            if (typeof memory.content === 'string' && memory.content.length > 200) {
+              memory.content = memory.content.slice(0, 200) + '... (truncated, use --full to see all)';
+            }
+          }
+        }
+
         console.log(JSON.stringify(result, null, 2));
         break;
       }
