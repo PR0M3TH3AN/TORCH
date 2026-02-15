@@ -61,6 +61,36 @@ function relayListLabel(relays) {
   return relays.join(', ');
 }
 
+function classifyPublishError(message) {
+  const normalized = String(message || '').toLowerCase();
+  if (normalized.includes('timed out') || normalized.includes('timeout') || normalized.includes('etimedout')) {
+    return 'network_timeout';
+  }
+  if (normalized.includes('econnreset') || normalized.includes('connection reset') || normalized.includes('socket hang up')) {
+    return 'connection_reset';
+  }
+  if (
+    normalized.includes('unavailable') ||
+    normalized.includes('offline') ||
+    normalized.includes('econnrefused') ||
+    normalized.includes('connection refused') ||
+    normalized.includes('enotfound') ||
+    normalized.includes('503')
+  ) {
+    return 'relay_unavailable';
+  }
+  return 'permanent_validation_error';
+}
+
+function isTransientPublishCategory(category) {
+  return category === 'network_timeout' || category === 'connection_reset' || category === 'relay_unavailable';
+}
+
+function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = Math.random) {
+  const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
+  return Math.floor(randomFn() * maxDelay);
+}
+
 export async function queryLocks(relays, cadence, dateStr, namespace, deps = {}) {
   const {
     poolFactory = () => new SimplePool(),
@@ -137,26 +167,33 @@ export async function publishLock(relays, event, deps = {}) {
     getPublishTimeoutMsFn = getPublishTimeoutMs,
     getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
     getRelayFallbacksFn = getRelayFallbacks,
+    retryAttempts = 4,
+    retryBaseDelayMs = 500,
+    retryCapDelayMs = 8_000,
+    sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    randomFn = Math.random,
+    telemetryLogger = console.error,
   } = deps;
 
   const pool = poolFactory();
   const publishTimeoutMs = getPublishTimeoutMsFn();
   const minSuccesses = getMinSuccessfulRelayPublishesFn();
   const fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
+  const maxAttempts = Math.max(1, Math.floor(retryAttempts));
 
-  const attempted = new Set();
-  const publishResults = [];
+  const publishOnce = async () => {
+    const attempted = new Set();
+    const publishResults = [];
 
-  const attemptPhase = async (phaseRelays, phaseName) => {
-    if (!phaseRelays.length) return;
-    for (const relay of phaseRelays) {
-      attempted.add(relay);
-    }
-    const phaseResults = await publishToRelays(pool, phaseRelays, event, publishTimeoutMs, phaseName);
-    publishResults.push(...phaseResults);
-  };
+    const attemptPhase = async (phaseRelays, phaseName) => {
+      if (!phaseRelays.length) return;
+      for (const relay of phaseRelays) {
+        attempted.add(relay);
+      }
+      const phaseResults = await publishToRelays(pool, phaseRelays, event, publishTimeoutMs, phaseName);
+      publishResults.push(...phaseResults);
+    };
 
-  try {
     await attemptPhase(relays, 'publish:primary');
 
     let successCount = publishResults.filter((result) => result.success).length;
@@ -165,23 +202,63 @@ export async function publishLock(relays, event, deps = {}) {
       successCount = publishResults.filter((result) => result.success).length;
     }
 
-    if (successCount < minSuccesses) {
-      const failureLines = publishResults
-        .filter((result) => !result.success)
-        .map((result) => `${result.relay} (${result.phase}): ${result.message}`);
+    const failures = publishResults
+      .filter((result) => !result.success)
+      .map((result) => ({
+        ...result,
+        category: classifyPublishError(result.message),
+      }));
 
-      throw new Error(
-        `Failed relay publish quorum in publish phase: ${successCount}/${attempted.size} successful ` +
-        `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)\n  ${failureLines.join('\n  ')}`,
-      );
+    return { attempted, publishResults, successCount, failures };
+  };
+
+  try {
+    let lastAttemptState = null;
+    for (let attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber += 1) {
+      const startedAtMs = Date.now();
+      lastAttemptState = await publishOnce();
+
+      if (lastAttemptState.successCount >= minSuccesses) {
+        console.error(
+          `  Published to ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} relays ` +
+          `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)`,
+        );
+        return event;
+      }
+
+      const hasTransientFailure = lastAttemptState.failures.some((failure) => isTransientPublishCategory(failure.category));
+      const hasPermanentFailure = lastAttemptState.failures.some((failure) => !isTransientPublishCategory(failure.category));
+      const canRetry = attemptNumber < maxAttempts && hasTransientFailure && !hasPermanentFailure;
+
+      if (!canRetry) {
+        break;
+      }
+
+      const elapsedMs = Date.now() - startedAtMs;
+      const nextDelayMs = calculateBackoffDelayMs(attemptNumber, retryBaseDelayMs, retryCapDelayMs, randomFn);
+      for (const failure of lastAttemptState.failures) {
+        if (!isTransientPublishCategory(failure.category)) continue;
+        telemetryLogger(JSON.stringify({
+          event: 'lock_publish_retry',
+          attempt: attemptNumber,
+          relayUrl: failure.relay,
+          errorCategory: failure.category,
+          elapsedMs,
+          nextDelayMs,
+        }));
+      }
+
+      await sleepFn(nextDelayMs);
     }
 
-    console.error(
-      `  Published to ${successCount}/${attempted.size} relays ` +
-      `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)`,
+    const failureLines = lastAttemptState.failures
+      .map((result) => `${result.relay} (${result.phase}, category=${result.category}): ${result.message}`);
+
+    throw new Error(
+      `Failed relay publish quorum in publish phase: ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} successful ` +
+      `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms, attempts=${maxAttempts})\n  ${failureLines.join('\n  ')}`,
     );
-    return event;
   } finally {
-    pool.close([...attempted]);
+    pool.close([...new Set([...relays, ...fallbackRelays])]);
   }
 }
