@@ -6,6 +6,7 @@ import {
 } from './torch-config.mjs';
 import {
   RACE_CHECK_DELAY_MS,
+  KIND_APP_DATA,
 } from './constants.mjs';
 import { getRoster } from './roster.mjs';
 import { queryLocks, publishLock } from './lock-ops.mjs';
@@ -55,7 +56,7 @@ export async function cmdLock(agent, cadence, dryRun = false) {
   console.error('Step 3: Building lock event...');
   const event = finalizeEvent(
     {
-      kind: 30078,
+      kind: KIND_APP_DATA,
       created_at: now,
       tags: [
         ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
