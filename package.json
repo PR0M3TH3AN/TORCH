@@ -44,7 +44,9 @@
     "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly",
     "report:lock-reliability": "node scripts/agent/summarize-lock-reliability.mjs --since-days 30",
     "test:integration:e2e": "node --test test/scheduler-preflight-lock.e2e.test.mjs",
-    "validate:scheduler-failure-schema": "node --test test/scheduler-lock-failure-schema.contract.test.mjs"
+    "validate:scheduler-failure-schema": "node --test test/scheduler-lock-failure-schema.contract.test.mjs",
+    "test:ci-resilience": "node --test test/lock-acquisition-resilience.integration.test.mjs",
+    "test:extended-main": "npm run test:integration:e2e && npm run test:ci-resilience"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",
