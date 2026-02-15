@@ -7,6 +7,7 @@
     <title>TORCH Agent Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
     <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
     <div class="bg-surface text-text min-h-screen">
@@ -29,7 +30,8 @@
           <p class="text-muted text-sm max-w-prose">
             Live view of
             <a
-              href="../src/docs/TORCH.md"
+              href="#"
+              id="openDocs"
               class="text-info hover:text-info-strong"
               >TORCH</a
             >
@@ -149,48 +151,68 @@
           </div>
         </details>
 
-        <!-- Relay info -->
-        <footer class="mt-8 pt-6 border-t border-border">
-          <h2 class="text-sm font-semibold text-text mb-2">
-            How this works
-          </h2>
-          <div class="text-xs text-muted space-y-1 max-w-prose">
-            <p>
-              This dashboard subscribes to Nostr relays for
-              <strong>kind 30078</strong> events tagged with
-              <code id="infoHashtag" class="mono">#torch-agent-lock</code>. These are the same
-              events agents publish via
-              <code class="mono">bin/torch-lock.mjs</code> when they
-              claim tasks using the TORCH protocol.
-            </p>
-            <p>
-              <strong>Relays:</strong>
-              <code id="relayList" class="mono">wss://relay.damus.io, wss://nos.lol, wss://relay.primal.net</code>
-            </p>
-            <p>
-              <strong>Filter:</strong>
-              <code id="filterExample" class="mono">{"kinds":[30078],"#t":["torch-agent-lock"]}</code>
-            </p>
-            <p>
-              <strong>Unique identifier:</strong> All events use the
-              <code id="dTagPrefix" class="mono">torch-lock/</code> namespace in the d-tag and
-              the <code id="infoHashtagRepeat" class="mono">#torch-agent-lock</code> hashtag. This
-              scopes events to this repository and is how both agents and this
-              dashboard filter messages.
-            </p>
-            <p>
-              To follow in any Nostr client, subscribe to kind 30078 with
-              <code id="followHashtag" class="mono">#t = torch-agent-lock</code> on the relays
-              above.
-            </p>
-          </div>
-        </footer>
       </div>
+    </div>
+
+    <!-- Documentation Modal -->
+    <div id="docsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="markdown-content">
+                <p class="text-muted">Loading documentation...</p>
+            </div>
+        </div>
     </div>
 
     <script type="module">
       import { KIND_APP_DATA } from '../src/constants.mjs';
       import { createElement, escapeHtml } from './domUtils.js';
+
+      // -----------------------------------------------------------------------
+      // Modal Logic
+      // -----------------------------------------------------------------------
+      const modal = document.getElementById("docsModal");
+      const btn = document.getElementById("openDocs");
+      const span = document.getElementsByClassName("close-modal")[0];
+      const contentDiv = document.getElementById("markdown-content");
+      let docsLoaded = false;
+
+      if (btn) {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            modal.classList.add("show");
+            if (!docsLoaded) {
+                fetchDocs();
+            }
+        }
+      }
+
+      if (span) {
+        span.onclick = function() {
+            modal.classList.remove("show");
+        }
+      }
+
+      window.onclick = function(event) {
+          if (event.target == modal) {
+              modal.classList.remove("show");
+          }
+      }
+
+      async function fetchDocs() {
+          try {
+              const response = await fetch('../src/docs/TORCH.md');
+              if (!response.ok) {
+                  throw new Error('Failed to load documentation');
+              }
+              const text = await response.text();
+              contentDiv.innerHTML = marked.parse(text);
+              docsLoaded = true;
+          } catch (error) {
+              console.error(error);
+              contentDiv.innerHTML = `<p class="text-danger">Error loading documentation: ${error.message}</p>`;
+          }
+      }
 
       // -----------------------------------------------------------------------
       // Configuration — matches bin/torch-lock.mjs defaults
@@ -283,13 +305,16 @@
         const hashtagDisplay = `#${HASHTAG}`;
         const filterExample = JSON.stringify({ kinds: [LOCK_EVENT_KIND], '#t': [HASHTAG] });
 
-        byId('introHashtag').textContent = hashtagDisplay;
-        byId('infoHashtag').textContent = hashtagDisplay;
-        byId('infoHashtagRepeat').textContent = hashtagDisplay;
-        byId('followHashtag').textContent = `#t = ${HASHTAG}`;
-        byId('dTagPrefix').textContent = D_TAG_PREFIX;
-        byId('filterExample').textContent = filterExample;
-        byId('relayList').textContent = RELAYS.join(', ');
+        const introHashtag = byId('introHashtag');
+        if (introHashtag) introHashtag.textContent = hashtagDisplay;
+
+        // These elements were in the footer which is now removed
+        // byId('infoHashtag').textContent = hashtagDisplay;
+        // byId('infoHashtagRepeat').textContent = hashtagDisplay;
+        // byId('followHashtag').textContent = `#t = ${HASHTAG}`;
+        // byId('dTagPrefix').textContent = D_TAG_PREFIX;
+        // byId('filterExample').textContent = filterExample;
+        // byId('relayList').textContent = RELAYS.join(', ');
       }
 
       // -----------------------------------------------------------------------

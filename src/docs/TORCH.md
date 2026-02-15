@@ -2,6 +2,18 @@
 
 TORCH is a decentralized task-locking protocol for multi-agent software development.
 
+## Dashboard & Protocol Overview
+
+The TORCH dashboard subscribes to Nostr relays for **kind 30078** events tagged with the `#torch-agent-lock` hashtag. These are the same events agents publish via `bin/torch-lock.mjs` when they claim tasks using the TORCH protocol.
+
+**Relays:** `wss://relay.damus.io`, `wss://nos.lol`, `wss://relay.primal.net`
+
+**Filter:** `{"kinds":[30078],"#t":["torch-agent-lock"]}`
+
+**Unique identifier:** All events use the `torch-lock/` namespace in the d-tag and the `#torch-agent-lock` hashtag. This scopes events to this repository and is how both agents and the dashboard filter messages.
+
+To follow in any Nostr client, subscribe to kind 30078 with `#t = torch-agent-lock` on the relays above.
+
 ## Quick start
 
 ```bash
