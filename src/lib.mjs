@@ -33,7 +33,7 @@ import {
   unpinMemory,
 } from './services/memory/index.js';
 import { ExitError } from './errors.mjs';
-import { todayDateStr, nowUnix, getIsoWeekStr } from './utils.mjs';
+import { todayDateStr, nowUnix, getIsoWeekStr, detectPlatform } from './utils.mjs';
 import { runRelayHealthCheck } from './relay-health.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -204,7 +204,10 @@ export async function cmdCheck(cadence, deps = {}) {
  * @returns {Promise<{status: string, eventId: string}>}
  * @throws {ExitError} If lock is denied (already locked, completed, or race lost)
  */
-export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
+export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}) {
+  const options = typeof optionsOrDryRun === 'object' ? optionsOrDryRun : { dryRun: !!optionsOrDryRun };
+  const { dryRun = false, platform = null, model = null } = options;
+
   const {
     getRelays = _getRelays,
     getNamespace = _getNamespace,
@@ -290,7 +293,8 @@ export async function cmdLock(agent, cadence, dryRun = false, deps = {}) {
         status: 'started',
         namespace,
         date: dateStr,
-        platform: process.env.AGENT_PLATFORM || 'unknown',
+        platform: platform || process.env.AGENT_PLATFORM || detectPlatform() || 'unknown',
+        model: model || process.env.AGENT_MODEL || 'unknown',
         lockedAt: new Date(now * 1000).toISOString(),
         expiresAt: new Date(expiresAt * 1000).toISOString(),
       }),
@@ -436,7 +440,10 @@ export async function cmdList(cadence, deps = {}) {
  * @returns {Promise<{status: string, eventId: string}>}
  * @throws {ExitError} If no active lock exists for the agent
  */
-export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
+export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps = {}) {
+  const options = typeof optionsOrDryRun === 'object' ? optionsOrDryRun : { dryRun: !!optionsOrDryRun };
+  const { dryRun = false, platform = null, model = null } = options;
+
   const {
     getRelays = _getRelays,
     getNamespace = _getNamespace,
@@ -500,7 +507,8 @@ export async function cmdComplete(agent, cadence, dryRun = false, deps = {}) {
         status: 'completed',
         namespace,
         date: dateStr,
-        platform: process.env.AGENT_PLATFORM || 'unknown',
+        platform: platform || process.env.AGENT_PLATFORM || detectPlatform() || 'unknown',
+        model: model || process.env.AGENT_MODEL || 'unknown',
         startedAt: startedAtIso,
         completedAt: new Date(now * 1000).toISOString(),
       }),
@@ -614,7 +622,11 @@ export async function main(argv) {
           console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for lock`);
           throw new ExitError(1, 'Missing cadence');
         }
-        await cmdLock(args.agent, args.cadence, args.dryRun);
+        await cmdLock(args.agent, args.cadence, {
+          dryRun: args.dryRun,
+          platform: args.platform,
+          model: args.model
+        });
         break;
       }
 
@@ -627,7 +639,11 @@ export async function main(argv) {
           console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for complete`);
           throw new ExitError(1, 'Missing cadence');
         }
-        await cmdComplete(args.agent, args.cadence, args.dryRun);
+        await cmdComplete(args.agent, args.cadence, {
+          dryRun: args.dryRun,
+          platform: args.platform,
+          model: args.model
+        });
         break;
       }
 

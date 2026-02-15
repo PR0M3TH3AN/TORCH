@@ -129,7 +129,7 @@ describe('Scheduler cycle ordering guarantees', () => {
 
     const order = [
       "const preflight = await runLockHealthPreflight({ cadence, platform });",
-      "const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`]);",
+      "const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`",
       "const lockAttempt = await acquireLockWithRetry({",
       "if (schedulerConfig.handoffCommand)",
       "const artifactCheck = await runCommand('node', [",

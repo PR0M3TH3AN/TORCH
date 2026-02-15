@@ -27,3 +27,10 @@ export function getIsoWeekStr(dateInput) {
 
   return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
+
+export function detectPlatform() {
+  if (process.env.JULES_API_KEY || process.env.JULES_SESSION_ID) return 'jules';
+  if (process.env.CODEX_API_KEY || process.env.CODEX_SESSION_ID) return 'codex';
+  if (process.env.GOOSE_API_KEY || process.env.GOOSE_SESSION_ID) return 'goose';
+  return null;
+}

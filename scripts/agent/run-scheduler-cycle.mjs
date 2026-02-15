@@ -18,7 +18,7 @@ const FAILURE_CATEGORY = {
 const LOCK_INCIDENT_LINK = 'docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md';
 
 function parseArgs(argv) {
-  const args = { cadence: null, platform: process.env.AGENT_PLATFORM || 'codex' };
+  const args = { cadence: null, platform: process.env.AGENT_PLATFORM || 'codex', model: process.env.AGENT_MODEL || null };
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
     if (!value.startsWith('--') && !args.cadence) {
@@ -32,6 +32,10 @@ function parseArgs(argv) {
     }
     if (value === '--platform') {
       args.platform = argv[i + 1] || args.platform;
+      i += 1;
+    }
+    if (value === '--model') {
+      args.model = argv[i + 1] || args.model;
       i += 1;
     }
   }
@@ -540,8 +544,11 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetry, idempotencyKey }) {
+async function acquireLockWithRetry({ selectedAgent, cadence, platform, model, lockRetry, idempotencyKey }) {
   const lockCommandArgs = ['run', 'lock:lock', '--', '--agent', selectedAgent, '--cadence', cadence];
+  if (model) {
+    lockCommandArgs.push('--model', model);
+  }
   const backoffScheduleMs = [];
   let attempts = 0;
   const correlationId = idempotencyKey || `${cadence}:${selectedAgent}:${getRunDateKey()}`;
@@ -551,6 +558,7 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, lockRetr
     const result = await runCommand('npm', lockCommandArgs, {
       env: {
         AGENT_PLATFORM: platform,
+        ...(model ? { AGENT_MODEL: model } : {}),
         ...(idempotencyKey ? { SCHEDULER_LOCK_IDEMPOTENCY_KEY: idempotencyKey } : {}),
         SCHEDULER_LOCK_CORRELATION_ID: correlationId,
         SCHEDULER_LOCK_ATTEMPT_ID: String(attempts),
@@ -664,7 +672,7 @@ async function writeLog({ cadence, agent, status, reason, detail, platform, meta
 }
 
 async function main() {
-  const { cadence, platform } = parseArgs(process.argv.slice(2));
+  const { cadence, platform, model } = parseArgs(process.argv.slice(2));
   if (!VALID_CADENCES.has(cadence)) {
     console.error('Usage: node scripts/agent/run-scheduler-cycle.mjs <daily|weekly>');
     process.exit(1);
@@ -772,6 +780,7 @@ async function main() {
       selectedAgent,
       cadence,
       platform,
+      model,
       lockRetry: schedulerConfig.lockRetry,
       idempotencyKey: deferralForAgent?.idempotency_key,
     });
@@ -785,7 +794,8 @@ async function main() {
       const combinedLockOutput = `${lockResult.stderr}\n${lockResult.stdout}`;
       const diagnosticsSummary = summarizeLockFailureReasons(combinedLockOutput);
       const backendCategory = lockAttempt.finalBackendCategory || classifyLockBackendError(combinedLockOutput);
-      const lockCommand = `AGENT_PLATFORM=${platform} npm run lock:lock -- --agent ${selectedAgent} --cadence ${cadence}`;
+      const modelPart = model ? ` --model ${model}` : '';
+      const lockCommand = `AGENT_PLATFORM=${platform} npm run lock:lock -- --agent ${selectedAgent} --cadence ${cadence}${modelPart}`;
       const stderrExcerpt = excerptText(lockResult.stderr);
       const stdoutExcerpt = excerptText(lockResult.stdout);
       const backoffSchedule = lockAttempt.backoffScheduleMs.join(', ');
@@ -892,7 +902,7 @@ async function main() {
 
     if (schedulerConfig.memoryPolicy.retrieveCommand) {
       const retrieveResult = await runCommand('bash', ['-lc', schedulerConfig.memoryPolicy.retrieveCommand], {
-        env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+        env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}), SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
       });
       outputChunks.push(retrieveResult.stdout, retrieveResult.stderr);
       if (retrieveResult.code !== 0) {
@@ -911,7 +921,7 @@ async function main() {
 
     if (schedulerConfig.handoffCommand) {
       const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
-        env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+        env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}), SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
       });
       outputChunks.push(handoff.stdout, handoff.stderr);
       if (handoff.code !== 0) {
@@ -944,7 +954,7 @@ async function main() {
 
     if (schedulerConfig.memoryPolicy.storeCommand) {
       const storeResult = await runCommand('bash', ['-lc', schedulerConfig.memoryPolicy.storeCommand], {
-        env: { AGENT_PLATFORM: platform, SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+        env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}), SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
       });
       outputChunks.push(storeResult.stdout, storeResult.stderr);
       if (storeResult.code !== 0) {
@@ -1043,8 +1053,8 @@ async function main() {
 
     const completeResult = await runCommand(
       'npm',
-      ['run', 'lock:complete', '--', '--agent', selectedAgent, '--cadence', cadence],
-      { env: { AGENT_PLATFORM: platform } },
+      ['run', 'lock:complete', '--', '--agent', selectedAgent, '--cadence', cadence, ...(model ? ['--model', model] : [])],
+      { env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}) } },
     );
 
     if (completeResult.code !== 0) {
