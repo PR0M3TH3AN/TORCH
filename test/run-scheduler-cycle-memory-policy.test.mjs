@@ -4,8 +4,10 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const SOURCE_SCRIPT = path.resolve('scripts/agent/run-scheduler-cycle.mjs');
+const SNAPSHOT_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '__snapshots__');
 
 async function runNode(scriptPath, args, { cwd, env }) {
   return new Promise((resolve) => {
@@ -30,6 +32,25 @@ async function runNode(scriptPath, args, { cwd, env }) {
       resolve({ code: code ?? 1, stdout, stderr });
     });
   });
+}
+
+function extractDetailLine(markdownBody) {
+  const line = String(markdownBody)
+    .split(/\r?\n/)
+    .find((entry) => entry.startsWith('- detail: '));
+  return line ? line.slice('- detail: '.length) : '';
+}
+
+function normalizePromptFileDetail(detailLine) {
+  return String(detailLine)
+    .replace(/at\s+.*?agent-a\.md:/, 'at <PROMPT_PATH>:')
+    .replace(/in\s+.*?agent-a\.md\./, 'in <PROMPT_PATH>.')
+    .replace(/'[^']*agent-a\.md'/g, "'<PROMPT_PATH>'");
+}
+
+async function assertSnapshot(snapshotName, actual) {
+  const expected = await fs.readFile(path.join(SNAPSHOT_DIR, snapshotName), 'utf8');
+  assert.equal(actual, expected);
 }
 
 async function setupFixture({
@@ -204,10 +225,16 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /lock_failure_reason_distribution: '\{\}'/);
   assert.match(failedBody, /lock_attempt_id: '3'/);
   assert.match(failedBody, /lock_correlation_id: 'daily:agent-a:/);
+  assert.match(failedBody, /Likely backend\/relay connectivity issue during lock acquisition\./);
+  assert.match(failedBody, /Retry command: npm run scheduler:daily/);
   assert.match(failedBody, /Recommended auto-remediation:/);
   assert.match(failedBody, /Run health check: npm run lock:health -- --cadence daily/);
   assert.match(failedBody, /Review incident runbook: docs\/agent-handoffs\/learnings\/2026-02-15-relay-health-preflight-job.md/);
+  assert.match(failedBody, /Prompt not executed\./);
   assert.match(failedBody, /platform: 'codex'/);
+
+  const detail = extractDetailLine(failedBody);
+  await assertSnapshot('lock-backend-error-detail.snapshot.txt', `${detail}\n`);
 });
 
 test('defers backend failures in non-strict mode and reuses idempotency key on successful retry', { concurrency: false }, async () => {
@@ -428,6 +455,10 @@ stderr: ${result.stderr}`);
   const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
   assert.match(failedBody, /reason: Prompt file parse\/read failed/);
   assert.match(failedBody, /failure_category: 'prompt_parse_error'/);
+  assert.doesNotMatch(failedBody, /Recommended auto-remediation|Run health check: npm run lock:health|Retry command: npm run scheduler:/);
+
+  const detail = normalizePromptFileDetail(extractDetailLine(failedBody));
+  await assertSnapshot('prompt-parse-error-detail.snapshot.txt', `${detail}\n`);
 });
 
 test('categorizes invalid prompt schema as prompt_schema_error', { concurrency: false }, async () => {
