@@ -134,42 +134,35 @@ export function cmdInit(force = false, cwd = process.cwd()) {
   }
 
   // 6. Create torch-config.json logic
-  const configPath = path.join(paths.torchDir, 'torch-config.json');
-  const rootConfigPath = path.join(cwd, 'torch-config.json');
+  const configPath = path.join(paths.root, 'torch-config.json');
 
   if (!fs.existsSync(configPath)) {
-      // Check root config first
-      if (fs.existsSync(rootConfigPath)) {
-          fs.copyFileSync(rootConfigPath, configPath);
-          console.log(`Copied existing configuration from root to ${path.relative(cwd, configPath)}`);
+    // Generate new
+    try {
+      const exampleConfigPath = path.join(PKG_ROOT, 'torch-config.example.json');
+      if (fs.existsSync(exampleConfigPath)) {
+        const exampleConfig = JSON.parse(fs.readFileSync(exampleConfigPath, 'utf8'));
+
+        // Generate random namespace
+        const randomSuffix = crypto.randomBytes(4).toString('hex');
+        const newNamespace = `torch-${randomSuffix}`;
+
+        if (exampleConfig.nostrLock) {
+          exampleConfig.nostrLock.namespace = newNamespace;
+        } else {
+          exampleConfig.nostrLock = { namespace: newNamespace };
+        }
+
+        fs.writeFileSync(configPath, JSON.stringify(exampleConfig, null, 2), 'utf8');
+        console.log(`Created ${path.relative(cwd, configPath)} with namespace "${newNamespace}"`);
       } else {
-          // Generate new
-            try {
-              const exampleConfigPath = path.join(PKG_ROOT, 'torch-config.example.json');
-              if (fs.existsSync(exampleConfigPath)) {
-                const exampleConfig = JSON.parse(fs.readFileSync(exampleConfigPath, 'utf8'));
-
-                // Generate random namespace
-                const randomSuffix = crypto.randomBytes(4).toString('hex');
-                const newNamespace = `torch-${randomSuffix}`;
-
-                if (exampleConfig.nostrLock) {
-                    exampleConfig.nostrLock.namespace = newNamespace;
-                } else {
-                    exampleConfig.nostrLock = { namespace: newNamespace };
-                }
-
-                fs.writeFileSync(configPath, JSON.stringify(exampleConfig, null, 2), 'utf8');
-                console.log(`Created ${path.relative(cwd, configPath)} with namespace "${newNamespace}"`);
-              } else {
-                 console.warn(`Warning: Could not find ${exampleConfigPath} to generate torch-config.json`);
-              }
-            } catch (err) {
-              console.error(`Failed to create torch-config.json: ${err.message}`);
-            }
+        console.warn(`Warning: Could not find ${exampleConfigPath} to generate torch-config.json`);
       }
+    } catch (err) {
+      console.error(`Failed to create torch-config.json: ${err.message}`);
+    }
   } else {
-      console.log(`Skipped ${path.relative(cwd, configPath)} (exists)`);
+    console.log(`Skipped ${path.relative(cwd, configPath)} (exists)`);
   }
 
   console.log('\nInitialization complete.');

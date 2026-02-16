@@ -7,127 +7,1405 @@
 > node scripts/validate-scheduler-roster.mjs && node scripts/validate-prompt-contract.mjs && node scripts/validate-scheduler-flow-parity.mjs && npm run validate:scheduler-failure-schema
 
 Scheduler tables, roster, and prompt filenames are in sync.
-Prompt contract drift detected:
-- [prompt-contract] src/prompts/daily/audit-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/audit-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/audit-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/ci-health-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/ci-health-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/ci-health-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/const-refactor-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/const-refactor-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/const-refactor-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/content-audit-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/content-audit-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/content-audit-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/decompose-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/decompose-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/decompose-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/deps-security-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/deps-security-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/deps-security-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/design-system-audit-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/design-system-audit-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/design-system-audit-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/docs-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/docs-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/docs-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/docs-alignment-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/docs-alignment-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/docs-alignment-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/docs-code-investigator.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/docs-code-investigator.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/docs-code-investigator.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/innerhtml-migration-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/innerhtml-migration-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/innerhtml-migration-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/known-issues-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/known-issues-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/known-issues-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/load-test-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/load-test-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/load-test-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/log-fixer-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/log-fixer-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/log-fixer-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/onboarding-audit-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/onboarding-audit-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/onboarding-audit-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/perf-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/perf-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/perf-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/protocol-research-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/protocol-research-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/protocol-research-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/scheduler-update-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/scheduler-update-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/scheduler-update-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/style-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/style-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/style-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/test-audit-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/test-audit-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/test-audit-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/todo-triage-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/todo-triage-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/todo-triage-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/daily/torch-garbage-collection-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/daily/torch-garbage-collection-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/daily/torch-garbage-collection-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/bug-reproducer-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/bug-reproducer-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/bug-reproducer-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/changelog-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/changelog-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/changelog-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/dead-code-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/dead-code-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/dead-code-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/feature-proposer-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/feature-proposer-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/feature-proposer-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/frontend-console-debug-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/frontend-console-debug-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/frontend-console-debug-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/fuzz-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/fuzz-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/fuzz-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/perf-deepdive-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/perf-deepdive-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/perf-deepdive-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/perf-optimization-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/perf-optimization-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/perf-optimization-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/pr-review-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/pr-review-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/pr-review-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/prompt-maintenance-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/prompt-maintenance-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/prompt-maintenance-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/prompt-safety-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/prompt-safety-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/prompt-safety-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/race-condition-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/race-condition-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/race-condition-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/refactor-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/refactor-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/refactor-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/repo-fit-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/repo-fit-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/repo-fit-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/smoke-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/smoke-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/smoke-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/telemetry-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/telemetry-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/telemetry-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/test-coverage-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/test-coverage-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/test-coverage-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/ui-ux-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/ui-ux-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/ui-ux-agent.md: missing contract token in required section: `*_failed.md`
-- [prompt-contract] src/prompts/weekly/weekly-synthesis-agent.md: missing contract token in required section: `npm run lock:complete -- --agent <agent-name> --cadence <cadence>`
-- [prompt-contract] src/prompts/weekly/weekly-synthesis-agent.md: missing contract token in required section: `*_completed.md`
-- [prompt-contract] src/prompts/weekly/weekly-synthesis-agent.md: missing contract token in required section: `*_failed.md`
+Prompt contract validated for all daily/weekly prompts.
+Scheduler flow parity validated for prompts and scheduler implementation.
+
+> torch-lock@0.1.0 validate:scheduler-failure-schema
+> node --test test/scheduler-lock-failure-schema.contract.test.mjs
+
+TAP version 13
+# Subtest: scheduler lock backend failure artifact matches required frontmatter schema
+ok 1 - scheduler lock backend failure artifact matches required frontmatter schema
+  ---
+  duration_ms: 173.91508
+  type: 'test'
+  ...
+# Subtest: schema contract catches missing required lock-backend field
+ok 2 - schema contract catches missing required lock-backend field
+  ---
+  duration_ms: 2.655671
+  type: 'test'
+  ...
+# Subtest: schema contract catches misnamed lock-backend key
+ok 3 - schema contract catches misnamed lock-backend key
+  ---
+  duration_ms: 0.661326
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 303.051564
+
+> torch-lock@0.1.0 test:integration:e2e
+> node --test test/scheduler-preflight-lock.e2e.test.mjs
+
+TAP version 13
+# Subtest: lock preflight e2e: successful lock writes completed status snapshot
+ok 1 - lock preflight e2e: successful lock writes completed status snapshot
+  ---
+  duration_ms: 681.264593
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+ok 2 - lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+  ---
+  duration_ms: 127.967485
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+ok 3 - lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+  ---
+  duration_ms: 139.912461
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1087.838225
+TAP version 13
+# Subtest: parseArgs should parse basic command
+ok 1 - parseArgs should parse basic command
+  ---
+  duration_ms: 3.109932
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse agent and cadence
+ok 2 - parseArgs should parse agent and cadence
+  ---
+  duration_ms: 0.569612
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse equals sign syntax
+ok 3 - parseArgs should parse equals sign syntax
+  ---
+  duration_ms: 2.584574
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse dry-run flag
+ok 4 - parseArgs should parse dry-run flag
+  ---
+  duration_ms: 0.604272
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse port with default
+ok 5 - parseArgs should parse port with default
+  ---
+  duration_ms: 0.276695
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse custom port
+ok 6 - parseArgs should parse custom port
+  ---
+  duration_ms: 0.305981
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse ignore-logs flag
+ok 7 - parseArgs should parse ignore-logs flag
+  ---
+  duration_ms: 0.676697
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse memory flags
+ok 8 - parseArgs should parse memory flags
+  ---
+  duration_ms: 2.077006
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse memory flags with equals
+ok 9 - parseArgs should parse memory flags with equals
+  ---
+  duration_ms: 0.812369
+  type: 'test'
+  ...
+# Subtest: src/lib.mjs
+    # Subtest: cmdCheck
+        # Subtest: returns correct structure with empty locks
+        ok 1 - returns correct structure with empty locks
+          ---
+          duration_ms: 5.394071
+          type: 'test'
+          ...
+        # Subtest: identifies locked agents
+        ok 2 - identifies locked agents
+          ---
+          duration_ms: 0.953434
+          type: 'test'
+          ...
+        # Subtest: excludes paused agents
+        ok 3 - excludes paused agents
+          ---
+          duration_ms: 0.840966
+          type: 'test'
+          ...
+        # Subtest: identifies unknown locked agents
+        ok 4 - identifies unknown locked agents
+          ---
+          duration_ms: 1.513014
+          type: 'test'
+          ...
+        1..4
+    ok 1 - cmdCheck
+      ---
+      duration_ms: 10.622484
+      type: 'suite'
+      ...
+    # Subtest: cmdLock
+        # Subtest: successfully locks an available agent
+        ok 1 - successfully locks an available agent
+          ---
+          duration_ms: 17.624564
+          type: 'test'
+          ...
+        # Subtest: fails if agent is not in roster
+        ok 2 - fails if agent is not in roster
+          ---
+          duration_ms: 1.541594
+          type: 'test'
+          ...
+        # Subtest: fails if agent is already locked
+        ok 3 - fails if agent is already locked
+          ---
+          duration_ms: 1.912634
+          type: 'test'
+          ...
+        # Subtest: fails if agent is already completed
+        ok 4 - fails if agent is already completed
+          ---
+          duration_ms: 0.794578
+          type: 'test'
+          ...
+        # Subtest: fails if race check is lost
+        ok 5 - fails if race check is lost
+          ---
+          duration_ms: 5.59365
+          type: 'test'
+          ...
+        # Subtest: handles race condition with identical timestamps using eventId tie-breaker (we win)
+        ok 6 - handles race condition with identical timestamps using eventId tie-breaker (we win)
+          ---
+          duration_ms: 22.206309
+          type: 'test'
+          ...
+        # Subtest: handles race condition with identical timestamps using eventId tie-breaker (we lose)
+        ok 7 - handles race condition with identical timestamps using eventId tie-breaker (we lose)
+          ---
+          duration_ms: 1.76807
+          type: 'test'
+          ...
+        # Subtest: dry run does not publish
+        ok 8 - dry run does not publish
+          ---
+          duration_ms: 0.921098
+          type: 'test'
+          ...
+        1..8
+    ok 2 - cmdLock
+      ---
+      duration_ms: 56.691102
+      type: 'suite'
+      ...
+    # Subtest: cmdList
+        # Subtest: lists active locks
+        ok 1 - lists active locks
+          ---
+          duration_ms: 1.042723
+          type: 'test'
+          ...
+        # Subtest: warns about unknown agents
+        ok 2 - warns about unknown agents
+          ---
+          duration_ms: 0.332011
+          type: 'test'
+          ...
+        # Subtest: handles no locks
+        ok 3 - handles no locks
+          ---
+          duration_ms: 0.379359
+          type: 'test'
+          ...
+        1..3
+    ok 3 - cmdList
+      ---
+      duration_ms: 2.03161
+      type: 'suite'
+      ...
+    # Subtest: cmdComplete
+        # Subtest: successfully completes an active lock
+        ok 1 - successfully completes an active lock
+          ---
+          duration_ms: 1.040732
+          type: 'test'
+          ...
+        # Subtest: fails if no active lock found
+        ok 2 - fails if no active lock found
+          ---
+          duration_ms: 0.857671
+          type: 'test'
+          ...
+        # Subtest: detects already completed task
+        ok 3 - detects already completed task
+          ---
+          duration_ms: 0.502097
+          type: 'test'
+          ...
+        1..3
+    ok 4 - cmdComplete
+      ---
+      duration_ms: 3.559052
+      type: 'suite'
+      ...
+    1..4
+ok 10 - src/lib.mjs
+  ---
+  duration_ms: 74.290803
+  type: 'suite'
+  ...
+#   Published to 1/3 relays (required=1, timeout=25ms)
+#   Published to 2/2 relays (required=2, timeout=25ms)
+#   Published to 2/3 relays (required=2, timeout=25ms)
+# (node:7978) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: ci-resilience lock acquisition under unstable relays
+    # Subtest: recovers after all relays are down for an initial outage window
+    ok 1 - recovers after all relays are down for an initial outage window
+      ---
+      duration_ms: 46.717814
+      type: 'test'
+      ...
+    # Subtest: survives intermittent timeout spikes and reaches quorum with bounded retries
+    ok 2 - survives intermittent timeout spikes and reaches quorum with bounded retries
+      ---
+      duration_ms: 5.692027
+      type: 'test'
+      ...
+    # Subtest: handles staggered relay recovery and never exceeds retry budget
+    ok 3 - handles staggered relay recovery and never exceeds retry budget
+      ---
+      duration_ms: 4.107827
+      type: 'test'
+      ...
+    1..3
+ok 11 - ci-resilience lock acquisition under unstable relays
+  ---
+  duration_ms: 59.644
+  type: 'suite'
+  ...
+#   Published to 1/1 relays (required=1, timeout=200ms)
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# (node:7992) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: publishLock retry behavior
+    # Subtest: succeeds immediately on first attempt without retries
+    ok 1 - succeeds immediately on first attempt without retries
+      ---
+      duration_ms: 10.658087
+      type: 'test'
+      ...
+    # Subtest: retries a transient failure then succeeds within retry budget with bounded jitter
+    ok 2 - retries a transient failure then succeeds within retry budget with bounded jitter
+      ---
+      duration_ms: 3.14105
+      type: 'test'
+      ...
+    # Subtest: returns terminal relay_publish_quorum_failure after exhausting retry budget
+    ok 3 - returns terminal relay_publish_quorum_failure after exhausting retry budget
+      ---
+      duration_ms: 6.64104
+      type: 'test'
+      ...
+    # Subtest: short-circuits non-retryable failures without extra attempts
+    ok 4 - short-circuits non-retryable failures without extra attempts
+      ---
+      duration_ms: 2.102652
+      type: 'test'
+      ...
+    1..4
+ok 12 - publishLock retry behavior
+  ---
+  duration_ms: 24.953206
+  type: 'suite'
+  ...
+#   Published to 2/2 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":1}],"totalElapsedMs":1}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":1}],"totalElapsedMs":1}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# {"event":"lock_publish_quorum_met","correlationId":"none","attemptId":"1","publishAttempt":1,"successCount":1,"relayAttemptedCount":3,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":3,"elapsedMs":1}],"totalElapsedMs":1}
+#   Published to 1/3 relays (required=1, timeout=200ms)
+# Subtest: lock-ops
+    # Subtest: parseLockEvent
+        # Subtest: parses a valid lock event correctly
+        ok 1 - parses a valid lock event correctly
+          ---
+          duration_ms: 3.419041
+          type: 'test'
+          ...
+        1..1
+    ok 1 - parseLockEvent
+      ---
+      duration_ms: 5.117934
+      type: 'suite'
+      ...
+    # Subtest: queryLocks
+        # Subtest: falls back to fallback relays when primary query fails
+        ok 1 - falls back to fallback relays when primary query fails
+          ---
+          duration_ms: 35.631622
+          type: 'test'
+          ...
+        1..1
+    ok 2 - queryLocks
+      ---
+      duration_ms: 35.891938
+      type: 'suite'
+      ...
+    # Subtest: publishLock
+        # Subtest: retries transient failures and succeeds on a later attempt
+        ok 1 - retries transient failures and succeeds on a later attempt
+          ---
+          duration_ms: 9.197412
+          type: 'test'
+          ...
+        # Subtest: fails after retry budget is exhausted for persistent transient failures
+        ok 2 - fails after retry budget is exhausted for persistent transient failures
+          ---
+          duration_ms: 4.434686
+          type: 'test'
+          ...
+        # Subtest: fails without retry for persistent validation failures
+        ok 3 - fails without retry for persistent validation failures
+          ---
+          duration_ms: 1.715021
+          type: 'test'
+          ...
+        # Subtest: includes per-relay reason categories and retry metadata in failure diagnostics
+        ok 4 - includes per-relay reason categories and retry metadata in failure diagnostics
+          ---
+          duration_ms: 3.375249
+          type: 'test'
+          ...
+        # Subtest: returns success when mixed relay outcomes still satisfy quorum
+        ok 5 - returns success when mixed relay outcomes still satisfy quorum
+          ---
+          duration_ms: 2.515328
+          type: 'test'
+          ...
+        # Subtest: uses fallback relays to satisfy min success quorum
+        ok 6 - uses fallback relays to satisfy min success quorum
+          ---
+          duration_ms: 3.455619
+          type: 'test'
+          ...
+        # Subtest: quarantines repeatedly failing relays and still reaches quorum with one healthy relay
+        ok 7 - quarantines repeatedly failing relays and still reaches quorum with one healthy relay
+          ---
+          duration_ms: 4.937704
+          type: 'test'
+          ...
+        # Subtest: uses fallback and min active pool to reintroduce quarantined relay when needed
+        ok 8 - uses fallback and min active pool to reintroduce quarantined relay when needed
+          ---
+          duration_ms: 2.794866
+          type: 'test'
+          ...
+        1..8
+    ok 3 - publishLock
+      ---
+      duration_ms: 33.641889
+      type: 'suite'
+      ...
+    1..3
+ok 13 - lock-ops
+  ---
+  duration_ms: 76.08316
+  type: 'suite'
+  ...
+# memory_telemetry {
+#   event: 'memory:ingested',
+#   payload: {
+#     memory_id: '1f0e34ac-9a1f-4c98-a01e-c3cdb90cd382',
+#     agent_id: 'agent-telemetry',
+#     dedupe_key: 'e296237253126e793e191f043ef4b23171637aabe7fec3a1b21f6386d5d82ec7',
+#     chunk_events: 1,
+#     window_start: 0,
+#     window_end: 1771201852349
+#   },
+#   ts: 1771201852357
+# }
+# memory_metric {
+#   metric: 'memory_ingested_total',
+#   payload: { count: 1 },
+#   ts: 1771201852359
+# }
+# memory_metric {
+#   metric: 'memory_retrieved_total',
+#   payload: { count: 3, cache_hit: false },
+#   ts: 1771201852363
+# }
+# memory_telemetry {
+#   event: 'memory:pruned',
+#   payload: { pruned_count: 1, retention_ms: 1000, dry_run: true },
+#   ts: 1771201852365
+# }
+# memory_metric {
+#   metric: 'memory_pruned_total',
+#   payload: { count: 0, retention_ms: 1000, dry_run: true },
+#   ts: 1771201852366
+# }
+# memory_telemetry {
+#   event: 'memory:prune_skipped',
+#   payload: { reason: 'flag_disabled', retention_ms: 1000 },
+#   ts: 1771201852366
+# }
+# Subtest: listMemories, inspectMemory, pinMemory, and unpinMemory support admin hooks
+ok 14 - listMemories, inspectMemory, pinMemory, and unpinMemory support admin hooks
+  ---
+  duration_ms: 4.035814
+  type: 'test'
+  ...
+# Subtest: triggerPruneDryRun returns candidate metadata without deleting records
+ok 15 - triggerPruneDryRun returns candidate metadata without deleting records
+  ---
+  duration_ms: 1.399948
+  type: 'test'
+  ...
+# Subtest: memoryStats reports counts/rates and retrieval telemetry remains redaction-safe
+ok 16 - memoryStats reports counts/rates and retrieval telemetry remains redaction-safe
+  ---
+  duration_ms: 19.317912
+  type: 'test'
+  ...
+# Subtest: runPruneCycle respects prune feature-flag modes
+ok 17 - runPruneCycle respects prune feature-flag modes
+  ---
+  duration_ms: 2.026059
+  type: 'test'
+  ...
+# Subtest: stores runtime events in signer/session namespace and clears scope
+ok 18 - stores runtime events in signer/session namespace and clears scope
+  ---
+  duration_ms: 4.628884
+  type: 'test'
+  ...
+# Subtest: expires runtime events and records expiration metrics
+ok 19 - expires runtime events and records expiration metrics
+  ---
+  duration_ms: 11.428945
+  type: 'test'
+  ...
+# Subtest: enforces LRU bounds and tracks eviction metrics
+ok 20 - enforces LRU bounds and tracks eviction metrics
+  ---
+  duration_ms: 0.902602
+  type: 'test'
+  ...
+# Subtest: blocks decrypted/session-sensitive data from durable promotion without sanitizer pass
+ok 21 - blocks decrypted/session-sensitive data from durable promotion without sanitizer pass
+  ---
+  duration_ms: 0.507301
+  type: 'test'
+  ...
+# Subtest: createEmbedderAdapter selects in-memory backend and supports vector CRUD
+ok 22 - createEmbedderAdapter selects in-memory backend and supports vector CRUD
+  ---
+  duration_ms: 2.566549
+  type: 'test'
+  ...
+# Subtest: createEmbedderAdapter reads backend from environment
+ok 23 - createEmbedderAdapter reads backend from environment
+  ---
+  duration_ms: 0.70104
+  type: 'test'
+  ...
+# Subtest: memory feature flags parse defaults and canary allow-lists
+ok 24 - memory feature flags parse defaults and canary allow-lists
+  ---
+  duration_ms: 1.93296
+  type: 'test'
+  ...
+# Subtest: memory prune flag supports off, dry-run, and active modes
+ok 25 - memory prune flag supports off, dry-run, and active modes
+  ---
+  duration_ms: 0.806638
+  type: 'test'
+  ...
+# Subtest: ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, and emits telemetry
+ok 26 - ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, and emits telemetry
+  ---
+  duration_ms: 9.359092
+  type: 'test'
+  ...
+# Subtest: ingestMemoryWindow dedupes overlapping windows by hashed content + agent + timestamp bucket
+ok 27 - ingestMemoryWindow dedupes overlapping windows by hashed content + agent + timestamp bucket
+  ---
+  duration_ms: 1.218449
+  type: 'test'
+  ...
+# Subtest: createLifecyclePlan respects delete safety constraints and logs reasons
+ok 28 - createLifecyclePlan respects delete safety constraints and logs reasons
+  ---
+  duration_ms: 2.635797
+  type: 'test'
+  ...
+# Subtest: createLifecyclePlan condenses near-duplicates and archives merged source records
+ok 29 - createLifecyclePlan condenses near-duplicates and archives merged source records
+  ---
+  duration_ms: 0.991207
+  type: 'test'
+  ...
+# Subtest: applyLifecycleActions executes keep/archive/delete and merge markers
+ok 30 - applyLifecycleActions executes keep/archive/delete and merge markers
+  ---
+  duration_ms: 1.605314
+  type: 'test'
+  ...
+# Subtest: filterAndRankMemories applies metadata filters and composite score
+ok 31 - filterAndRankMemories applies metadata filters and composite score
+  ---
+  duration_ms: 4.528994
+  type: 'test'
+  ...
+# Subtest: formatMemoriesForPrompt returns prompt blocks and enforces token budget trimming
+ok 32 - formatMemoriesForPrompt returns prompt blocks and enforces token budget trimming
+  ---
+  duration_ms: 4.21999
+  type: 'test'
+  ...
+# Subtest: isMemoryRetrievalEnabled supports global toggle and agent canary list
+ok 33 - isMemoryRetrievalEnabled supports global toggle and agent canary list
+  ---
+  duration_ms: 0.607103
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext injects bounded memory block before base prompt
+ok 34 - renderPromptWithMemoryContext injects bounded memory block before base prompt
+  ---
+  duration_ms: 1.301011
+  type: 'test'
+  ...
+# Subtest: createDbAdvisoryLockProvider acquires and releases postgres advisory locks
+ok 35 - createDbAdvisoryLockProvider acquires and releases postgres advisory locks
+  ---
+  duration_ms: 3.530168
+  type: 'test'
+  ...
+# Subtest: startMemoryMaintenanceScheduler runs all jobs and emits metrics including retries
+ok 36 - startMemoryMaintenanceScheduler runs all jobs and emits metrics including retries
+  ---
+  duration_ms: 28.83871
+  type: 'test'
+  ...
+# Subtest: startMemoryMaintenanceScheduler skips jobs when feature flags disable memory
+ok 37 - startMemoryMaintenanceScheduler skips jobs when feature flags disable memory
+  ---
+  duration_ms: 11.334734
+  type: 'test'
+  ...
+# Subtest: normalizeMemoryItem applies durable schema defaults and coercions
+ok 38 - normalizeMemoryItem applies durable schema defaults and coercions
+  ---
+  duration_ms: 2.938967
+  type: 'test'
+  ...
+# Subtest: validateMemoryItem reports field-level errors
+ok 39 - validateMemoryItem reports field-level errors
+  ---
+  duration_ms: 0.696844
+  type: 'test'
+  ...
+# Subtest: ingestEvents rejects invalid writes and logs structured validation details
+ok 40 - ingestEvents rejects invalid writes and logs structured validation details
+  ---
+  duration_ms: 7.191377
+  type: 'test'
+  ...
+# Subtest: loadMemoryPromptTemplates loads all memory prompt templates from disk
+ok 41 - loadMemoryPromptTemplates loads all memory prompt templates from disk
+  ---
+  duration_ms: 2.282962
+  type: 'test'
+  ...
+# Subtest: summarizeEvents retries with repair prompt when first response is malformed JSON
+ok 42 - summarizeEvents retries with repair prompt when first response is malformed JSON
+  ---
+  duration_ms: 3.901718
+  type: 'test'
+  ...
+# Subtest: summarizeEvents falls back to deterministic minimal summary with conservative importance when parsing fails twice
+ok 43 - summarizeEvents falls back to deterministic minimal summary with conservative importance when parsing fails twice
+  ---
+  duration_ms: 3.01171
+  type: 'test'
+  ...
+# Subtest: CLI Smoke Test
+    # Subtest: should print usage when no args provided
+    ok 1 - should print usage when no args provided
+      ---
+      duration_ms: 321.131201
+      type: 'test'
+      ...
+    # Subtest: should fail when checking without cadence
+    ok 2 - should fail when checking without cadence
+      ---
+      duration_ms: 257.929321
+      type: 'test'
+      ...
+    # Subtest: should include paused agents in check output
+    ok 3 - should include paused agents in check output
+      ---
+      duration_ms: 1056.854616
+      type: 'test'
+      ...
+    1..3
+ok 44 - CLI Smoke Test
+  ---
+  duration_ms: 1637.83201
+  type: 'suite'
+  ...
+# Initializing torch configuration in /app/test-ops-aVnFfO/project1/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 22 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created torch/torch-config.json with namespace "torch-4dc73b19"
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Initializing torch configuration in /app/test-ops-aVnFfO/project2/torch...
+# Initializing torch configuration in /app/test-ops-aVnFfO/project3/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 22 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created torch/torch-config.json with namespace "torch-d3f9e026"
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Updating torch configuration in /app/test-ops-aVnFfO/project3/torch...
+# Creating backup at torch/_backups/backup_2026-02-16T00-30-52-941Z...
+# Updating application directories...
+#   Updated src/
+#   Updated bin/
+#   Updated dashboard/
+#   Updated landing/
+#   Updated assets/
+#   Updated scripts/
+# Updating application files...
+#   Updated package.json
+#   Updated build.mjs
+#   Updated README.md
+#   Updated torch-config.example.json
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Skipped roster.json (preserved)
+# Updating prompts...
+#   daily/: 0 added, 0 updated, 22 preserved
+#   weekly/: 0 added, 0 updated, 21 preserved
+# Update complete.
+# Initializing torch configuration in /app/test-ops-aVnFfO/project4/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 22 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created torch/torch-config.json with namespace "torch-08be36be"
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Updating torch configuration in /app/test-ops-aVnFfO/project4/torch...
+# Creating backup at torch/_backups/backup_2026-02-16T00-30-53-043Z...
+# Updating application directories...
+#   Updated src/
+#   Updated bin/
+#   Updated dashboard/
+#   Updated landing/
+#   Updated assets/
+#   Updated scripts/
+# Updating application files...
+#   Updated package.json
+#   Updated build.mjs
+#   Updated README.md
+#   Updated torch-config.example.json
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Overwrote roster.json (forced)
+# Updating prompts...
+#   daily/: 0 added, 22 updated, 0 preserved
+#   weekly/: 0 added, 21 updated, 0 preserved
+# Update complete.
+# Initializing torch configuration in /app/test-ops-aVnFfO/project5/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 22 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created torch/torch-config.json with namespace "torch-68195510"
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Updating torch configuration in /app/test-ops-aVnFfO/project5/torch...
+# Creating backup at torch/_backups/backup_2026-02-16T00-30-53-165Z...
+# Updating application directories...
+#   Updated src/
+#   Updated bin/
+#   Updated dashboard/
+#   Updated landing/
+#   Updated assets/
+#   Updated scripts/
+# Updating application files...
+#   Updated package.json
+#   Updated build.mjs
+#   Updated README.md
+#   Updated torch-config.example.json
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Skipped roster.json (preserved)
+# Updating prompts...
+#   daily/: 0 added, 0 updated, 22 preserved
+#   weekly/: 0 added, 0 updated, 21 preserved
+# Update complete.
+# Initializing torch configuration in /app/test-ops-aVnFfO/project_roster/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 22 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created torch/torch-config.json with namespace "torch-62e63a2a"
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Checking locks: namespace=torch, cadence=daily, date=2026-02-16
+# Relays: wss://relay.damus.io, wss://nos.lol, wss://relay.primal.net
+# {"event":"relay_health_snapshot","reason":"query:periodic","relays":[{"relay":"wss://nos.lol","score":0.6,"sampleSize":0,"successRate":0.5,"timeoutRate":0,"averageLatencyMs":null,"failureStreak":0,"quarantined":false,"quarantineRemainingMs":0,"cooldownMs":30000,"lastResultAt":null},{"relay":"wss://relay.damus.io","score":0.6,"sampleSize":0,"successRate":0.5,"timeoutRate":0,"averageLatencyMs":null,"failureStreak":0,"quarantined":false,"quarantineRemainingMs":0,"cooldownMs":30000,"lastResultAt":null},{"relay":"wss://relay.primal.net","score":0.6,"sampleSize":0,"successRate":0.5,"timeoutRate":0,"averageLatencyMs":null,"failureStreak":0,"quarantined":false,"quarantineRemainingMs":0,"cooldownMs":30000,"lastResultAt":null}]}
+# Initializing torch configuration in /app/test-ops-aVnFfO/project_config_init/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 22 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created torch/torch-config.json with namespace "torch-8770abbc"
+# Initialization complete.
+# You can now customize the files in torch/ and torch/prompts/.
+# Subtest: cmdInit creates directory structure and files
+ok 45 - cmdInit creates directory structure and files
+  ---
+  duration_ms: 47.776512
+  type: 'test'
+  ...
+# Subtest: cmdInit fails if directory exists without force
+ok 46 - cmdInit fails if directory exists without force
+  ---
+  duration_ms: 1.790323
+  type: 'test'
+  ...
+# Subtest: cmdUpdate preserves modified prompt
+ok 47 - cmdUpdate preserves modified prompt
+  ---
+  duration_ms: 93.392409
+  type: 'test'
+  ...
+# Subtest: cmdUpdate overwrites prompt with force
+ok 48 - cmdUpdate overwrites prompt with force
+  ---
+  duration_ms: 126.41031
+  type: 'test'
+  ...
+# Subtest: cmdUpdate creates backup
+ok 49 - cmdUpdate creates backup
+  ---
+  duration_ms: 89.997898
+  type: 'test'
+  ...
+# Subtest: torch-lock check respects local roster
+ok 50 - torch-lock check respects local roster
+  ---
+  duration_ms: 1097.864944
+  type: 'test'
+  ...
+# Subtest: cmdInit creates torch-config.json with random namespace
+not ok 51 - cmdInit creates torch-config.json with random namespace
+  ---
+  duration_ms: 33.822657
+  type: 'test'
+  location: '/app/test/ops.test.mjs:125:1'
+  failureType: 'testCodeFailure'
+  error: 'torch-config.json created'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///app/test/ops.test.mjs:132:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+#   Published to 1/3 relays (required=1, timeout=80ms)
+# Subtest: relay fanout quorum integration
+    # Subtest: passes with required=1 when one relay succeeds and two fail
+    ok 1 - passes with required=1 when one relay succeeds and two fail
+      ---
+      duration_ms: 173.925241
+      type: 'test'
+      ...
+    # Subtest: fails with quorum error for required=1 when all relays fail
+    ok 2 - fails with quorum error for required=1 when all relays fail
+      ---
+      duration_ms: 100.059737
+      type: 'test'
+      ...
+    # Subtest: fails with required=2 when only one relay succeeds
+    ok 3 - fails with required=2 when only one relay succeeds
+      ---
+      duration_ms: 97.698306
+      type: 'test'
+      ...
+#   Published to 2/3 relays (required=2, timeout=80ms)
+    # Subtest: passes when delayed successes reach quorum before timeout
+    ok 4 - passes when delayed successes reach quorum before timeout
+      ---
+      duration_ms: 92.001904
+      type: 'test'
+      ...
+    1..4
+ok 52 - relay fanout quorum integration
+  ---
+  duration_ms: 470.893564
+  type: 'suite'
+  ...
+# Subtest: raises all-relays-down duration alert after threshold
+ok 53 - raises all-relays-down duration alert after threshold
+  ---
+  duration_ms: 2.023484
+  type: 'test'
+  ...
+# Subtest: raises success-rate alert when rolling health falls below threshold
+ok 54 - raises success-rate alert when rolling health falls below threshold
+  ---
+  duration_ms: 0.389051
+  type: 'test'
+  ...
+# Subtest: fails required memory policy when retrieval/storage evidence is missing
+ok 55 - fails required memory policy when retrieval/storage evidence is missing
+  ---
+  duration_ms: 1220.750123
+  type: 'test'
+  ...
+# Subtest: accepts required memory policy when markers or artifacts are produced
+ok 56 - accepts required memory policy when markers or artifacts are produced
+  ---
+  duration_ms: 1183.532398
+  type: 'test'
+  ...
+# Subtest: records backend failure metadata when lock command exits with code 2
+ok 57 - records backend failure metadata when lock command exits with code 2
+  ---
+  duration_ms: 999.978463
+  type: 'test'
+  ...
+# Subtest: defers backend failures in non-strict mode and reuses idempotency key on successful retry
+ok 58 - defers backend failures in non-strict mode and reuses idempotency key on successful retry
+  ---
+  duration_ms: 654.340525
+  type: 'test'
+  ...
+# Subtest: fails after exceeding non-strict deferral budget
+ok 59 - fails after exceeding non-strict deferral budget
+  ---
+  duration_ms: 194.450653
+  type: 'test'
+  ...
+# Subtest: strict lock mode fails immediately without deferral
+ok 60 - strict lock mode fails immediately without deferral
+  ---
+  duration_ms: 101.085877
+  type: 'test'
+  ...
+# Subtest: skips lock health preflight by default when not enabled
+ok 61 - skips lock health preflight by default when not enabled
+  ---
+  duration_ms: 415.242174
+  type: 'test'
+  ...
+# Subtest: fails scheduler with preflight metadata when lock health preflight is enabled
+ok 62 - fails scheduler with preflight metadata when lock health preflight is enabled
+  ---
+  duration_ms: 135.210193
+  type: 'test'
+  ...
+# Subtest: categorizes unreadable prompt files as prompt_parse_error
+ok 63 - categorizes unreadable prompt files as prompt_parse_error
+  ---
+  duration_ms: 100.122063
+  type: 'test'
+  ...
+# Subtest: categorizes invalid prompt schema as prompt_schema_error
+ok 64 - categorizes invalid prompt schema as prompt_schema_error
+  ---
+  duration_ms: 93.053842
+  type: 'test'
+  ...
+# Subtest: categorizes handoff runtime failures as execution_error
+ok 65 - categorizes handoff runtime failures as execution_error
+  ---
+  duration_ms: 357.688071
+  type: 'test'
+  ...
+# Subtest: retries lock acquisition for backend error and succeeds on a later attempt
+ok 66 - retries lock acquisition for backend error and succeeds on a later attempt
+  ---
+  duration_ms: 421.136622
+  type: 'test'
+  ...
+# Subtest: stops retrying after configured lock backend retries are exhausted
+ok 67 - stops retrying after configured lock backend retries are exhausted
+  ---
+  duration_ms: 104.569613
+  type: 'test'
+  ...
+# Subtest: does not use backend retry flow for exit code 3 lock conflicts
+ok 68 - does not use backend retry flow for exit code 3 lock conflicts
+  ---
+  duration_ms: 424.980927
+  type: 'test'
+  ...
+# Subtest: runs selected scheduler prompt through configured runner command
+ok 69 - runs selected scheduler prompt through configured runner command
+  ---
+  duration_ms: 510.100629
+  type: 'test'
+  ...
+# Subtest: propagates non-zero runner exit code
+ok 70 - propagates non-zero runner exit code
+  ---
+  duration_ms: 480.166197
+  type: 'test'
+  ...
+# Subtest: scheduler lock backend failure artifact matches required frontmatter schema
+ok 71 - scheduler lock backend failure artifact matches required frontmatter schema
+  ---
+  duration_ms: 172.163283
+  type: 'test'
+  ...
+# Subtest: schema contract catches missing required lock-backend field
+ok 72 - schema contract catches missing required lock-backend field
+  ---
+  duration_ms: 3.09229
+  type: 'test'
+  ...
+# Subtest: schema contract catches misnamed lock-backend key
+ok 73 - schema contract catches misnamed lock-backend key
+  ---
+  duration_ms: 0.819141
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: successful lock writes completed status snapshot
+ok 74 - lock preflight e2e: successful lock writes completed status snapshot
+  ---
+  duration_ms: 582.82363
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+ok 75 - lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+  ---
+  duration_ms: 144.296314
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+ok 76 - lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+  ---
+  duration_ms: 107.592925
+  type: 'test'
+  ...
+# Subtest: Scheduler Ratchet Logic (Log Checking)
+    # Subtest: excludes agents completed today (daily)
+    ok 1 - excludes agents completed today (daily)
+      ---
+      duration_ms: 3.107227
+      type: 'test'
+      ...
+    # Subtest: excludes agents completed this week (weekly)
+    ok 2 - excludes agents completed this week (weekly)
+      ---
+      duration_ms: 0.480117
+      type: 'test'
+      ...
+    # Subtest: combines locked and completed agents in exclusion list
+    ok 3 - combines locked and completed agents in exclusion list
+      ---
+      duration_ms: 0.697311
+      type: 'test'
+      ...
+    # Subtest: ignores logs when --ignore-logs is set
+    ok 4 - ignores logs when --ignore-logs is set
+      ---
+      duration_ms: 0.372914
+      type: 'test'
+      ...
+    # Subtest: handles missing log directory gracefully
+    ok 5 - handles missing log directory gracefully
+      ---
+      duration_ms: 0.413321
+      type: 'test'
+      ...
+    1..5
+ok 77 - Scheduler Ratchet Logic (Log Checking)
+  ---
+  duration_ms: 6.747592
+  type: 'suite'
+  ...
+# Subtest: Scheduler cycle ordering guarantees
+    # Subtest: keeps optional preflight before lock-acquire and preserves handoff/artifact/validation/complete ordering
+    ok 1 - keeps optional preflight before lock-acquire and preserves handoff/artifact/validation/complete ordering
+      ---
+      duration_ms: 13.40241
+      type: 'test'
+      ...
+    # Subtest: includes lock backend failure metadata and classifier checkpoints
+    ok 2 - includes lock backend failure metadata and classifier checkpoints
+      ---
+      duration_ms: 2.247956
+      type: 'test'
+      ...
+    1..2
+ok 78 - Scheduler cycle ordering guarantees
+  ---
+  duration_ms: 16.209926
+  type: 'suite'
+  ...
+# Subtest: summarizes recent lock reliability by platform/cadence/backend/relay
+ok 79 - summarizes recent lock reliability by platform/cadence/backend/relay
+  ---
+  duration_ms: 109.166646
+  type: 'test'
+  ...
+# Subtest: loadTorchConfig (Unit Tests with Mocked FS)
+    # Subtest: loads valid config correctly
+    ok 1 - loads valid config correctly
+      ---
+      duration_ms: 4.028814
+      type: 'test'
+      ...
+    # Subtest: returns default config when file is missing
+    ok 2 - returns default config when file is missing
+      ---
+      duration_ms: 0.439029
+      type: 'test'
+      ...
+    # Subtest: throws error on malformed JSON
+    ok 3 - throws error on malformed JSON
+      ---
+      duration_ms: 0.914997
+      type: 'test'
+      ...
+    # Subtest: caches the config and ignores subsequent fs calls
+    ok 4 - caches the config and ignores subsequent fs calls
+      ---
+      duration_ms: 0.806137
+      type: 'test'
+      ...
+    1..4
+ok 80 - loadTorchConfig (Unit Tests with Mocked FS)
+  ---
+  duration_ms: 7.949153
+  type: 'suite'
+  ...
+# Subtest: torch-config
+    # Subtest: getTorchConfigPath
+        # Subtest: returns default path when env var is not set
+        ok 1 - returns default path when env var is not set
+          ---
+          duration_ms: 1.008551
+          type: 'test'
+          ...
+        # Subtest: returns custom path when env var is set
+        ok 2 - returns custom path when env var is set
+          ---
+          duration_ms: 0.393877
+          type: 'test'
+          ...
+        1..2
+    ok 1 - getTorchConfigPath
+      ---
+      duration_ms: 3.011779
+      type: 'suite'
+      ...
+    # Subtest: parseTorchConfig
+        # Subtest: parses new lock backend knobs
+        ok 1 - parses new lock backend knobs
+          ---
+          duration_ms: 1.628688
+          type: 'test'
+          ...
+        1..1
+    ok 2 - parseTorchConfig
+      ---
+      duration_ms: 1.807937
+      type: 'suite'
+      ...
+    # Subtest: loadTorchConfig
+        # Subtest: throws fatal error for invalid relay URL
+        ok 1 - throws fatal error for invalid relay URL
+          ---
+          duration_ms: 2.108443
+          type: 'test'
+          ...
+        # Subtest: throws fatal error for invalid timeout range
+        ok 2 - throws fatal error for invalid timeout range
+          ---
+          duration_ms: 1.309529
+          type: 'test'
+          ...
+        # Subtest: throws error for malformed JSON
+        ok 3 - throws error for malformed JSON
+          ---
+          duration_ms: 0.782161
+          type: 'test'
+          ...
+        1..3
+    ok 3 - loadTorchConfig
+      ---
+      duration_ms: 5.010431
+      type: 'suite'
+      ...
+    # Subtest: backend getters
+        # Subtest: returns default relays
+        ok 1 - returns default relays
+          ---
+          duration_ms: 0.959893
+          type: 'test'
+          ...
+        # Subtest: validates env knob values
+        ok 2 - validates env knob values
+          ---
+          duration_ms: 0.99326
+          type: 'test'
+          ...
+        1..2
+    ok 4 - backend getters
+      ---
+      duration_ms: 4.225613
+      type: 'suite'
+      ...
+    1..4
+ok 81 - torch-config
+  ---
+  duration_ms: 15.414386
+  type: 'suite'
+  ...
+# Subtest: Date Utilities
+    # Subtest: getIsoWeekStr
+        # Subtest: returns correct ISO week for simple cases
+        ok 1 - returns correct ISO week for simple cases
+          ---
+          duration_ms: 1.646163
+          type: 'test'
+          ...
+        # Subtest: handles year boundaries correctly
+        ok 2 - handles year boundaries correctly
+          ---
+          duration_ms: 0.468622
+          type: 'test'
+          ...
+        # Subtest: handles leap years
+        ok 3 - handles leap years
+          ---
+          duration_ms: 2.394581
+          type: 'test'
+          ...
+        # Subtest: handles empty input (defaults to today)
+        ok 4 - handles empty input (defaults to today)
+          ---
+          duration_ms: 0.469912
+          type: 'test'
+          ...
+        # Subtest: handles invalid input gracefully
+        ok 5 - handles invalid input gracefully
+          ---
+          duration_ms: 0.508305
+          type: 'test'
+          ...
+        1..5
+    ok 1 - getIsoWeekStr
+      ---
+      duration_ms: 7.158361
+      type: 'suite'
+      ...
+    1..1
+ok 82 - Date Utilities
+  ---
+  duration_ms: 7.884209
+  type: 'suite'
+  ...
+# Subtest: passes when artifacts include metadata and failure IDs map to unresolved known issue entries
+ok 83 - passes when artifacts include metadata and failure IDs map to unresolved known issue entries
+  ---
+  duration_ms: 113.480675
+  type: 'test'
+  ...
+# Subtest: fails when required metadata is missing from artifacts
+ok 84 - fails when required metadata is missing from artifacts
+  ---
+  duration_ms: 82.537586
+  type: 'test'
+  ...
+# Subtest: fails when failure identifiers are not cross-linked to known issues or incidents
+ok 85 - fails when failure identifiers are not cross-linked to known issues or incidents
+  ---
+  duration_ms: 92.094837
+  type: 'test'
+  ...
+# Subtest: schema validation covers required fields, coercion, and rejection paths
+ok 86 - schema validation covers required fields, coercion, and rejection paths
+  ---
+  duration_ms: 3.664967
+  type: 'test'
+  ...
+# Subtest: summarizer parser accepts valid json and recovers after malformed json response
+ok 87 - summarizer parser accepts valid json and recovers after malformed json response
+  ---
+  duration_ms: 2.73789
+  type: 'test'
+  ...
+# Subtest: ingest integration persists memory records and links embeddings from event batches
+ok 88 - ingest integration persists memory records and links embeddings from event batches
+  ---
+  duration_ms: 4.941745
+  type: 'test'
+  ...
+# Subtest: retrieval ranking blends semantic, importance, and recency signals
+ok 89 - retrieval ranking blends semantic, importance, and recency signals
+  ---
+  duration_ms: 0.968013
+  type: 'test'
+  ...
+# Subtest: pruner policy protects pins, merges duplicates, and picks archive/delete outcomes
+ok 90 - pruner policy protects pins, merges duplicates, and picks archive/delete outcomes
+  ---
+  duration_ms: 1.99021
+  type: 'test'
+  ...
+# Subtest: scheduler smoke test handles mocked clock and lock contention
+ok 91 - scheduler smoke test handles mocked clock and lock contention
+  ---
+  duration_ms: 32.335004
+  type: 'test'
+  ...
+1..91
+# tests 146
+# suites 23
+# pass 145
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9158.321137
