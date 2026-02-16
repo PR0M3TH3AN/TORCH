@@ -313,6 +313,115 @@
             user-select: none;
         }
 
+        .install-code-wrapper.multiline {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            max-width: 800px; /* Wider for multiline prompt */
+        }
+
+        .install-code-wrapper.multiline code {
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-right: 0;
+            width: 100%;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #a5d6ff; /* Slightly lighter/blue tint for prompt text */
+        }
+
+        .install-code-wrapper.multiline code::before {
+            content: none;
+        }
+
+        .install-code-wrapper.multiline .copy-install-btn {
+            align-self: flex-end;
+        }
+
+        /* Agent Selector Styles */
+        .agent-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 3rem;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: left;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card.active {
+            border-color: var(--accent);
+            background: rgba(79, 140, 255, 0.08);
+            box-shadow: 0 0 30px rgba(79, 140, 255, 0.1);
+        }
+
+        .agent-card.active:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(79, 140, 255, 0.2);
+            background: rgba(79, 140, 255, 0.12);
+        }
+
+        .agent-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.2);
+            border-style: dashed;
+        }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-strong);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .agent-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            font-weight: 600;
+        }
+
+        .agent-card.active .agent-status {
+            color: var(--surface);
+            background: var(--accent);
+        }
+
+        .agent-card.disabled .agent-status {
+            background: rgba(255,255,255,0.1);
+            color: var(--muted);
+        }
+
+        .agent-desc {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
         .copy-install-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
@@ -459,9 +568,39 @@
         </section>
 
         <div class="install-container">
-            <p class="install-label">Install from GitHub tarball</p>
-            <div class="install-code-wrapper">
-                <code id="install-cmd">npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init</code>
+            <h2 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-strong);">Choose Your Agent</h2>
+
+            <div class="agent-selector">
+                <a href="https://jules.google/" target="_blank" class="agent-card active">
+                    <div class="agent-header">
+                        <span class="agent-name">Jules</span>
+                        <span class="agent-status">Active</span>
+                    </div>
+                    <p class="agent-desc">Optimized for Google's latest coding agent. Click to learn more.</p>
+                </a>
+
+                <div class="agent-card disabled">
+                    <div class="agent-header">
+                        <span class="agent-name">Codex</span>
+                        <span class="agent-status">Coming Soon</span>
+                    </div>
+                    <p class="agent-desc">Advanced reasoning for complex tasks.</p>
+                </div>
+
+                <div class="agent-card disabled">
+                    <div class="agent-header">
+                        <span class="agent-name">Claude</span>
+                        <span class="agent-status">Coming Soon</span>
+                    </div>
+                    <p class="agent-desc">Long-context understanding and safety.</p>
+                </div>
+            </div>
+
+            <p class="install-label" style="margin-top: 1rem;">Copy this prompt to onboard TORCH:</p>
+            <div class="install-code-wrapper multiline">
+                <code id="install-cmd">Hey Jules, can you install and setup TORCH into this repo? Here is the install command:
+
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init</code>
                 <button class="copy-install-btn" onclick="copyToClipboard('install-cmd', this, true)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
