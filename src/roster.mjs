@@ -5,6 +5,7 @@ import { loadTorchConfig } from './torch-config.mjs';
 
 const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
 const USER_ROSTER_FILE = path.resolve(process.cwd(), 'torch/roster.json');
+const CWD_ROSTER_FILE = path.resolve(process.cwd(), 'roster.json');
 
 const FALLBACK_ROSTER = {
   daily: [
@@ -60,6 +61,8 @@ function loadCanonicalRoster() {
   // Prefer user-managed roster if present
   if (fs.existsSync(USER_ROSTER_FILE)) {
     rosterPath = USER_ROSTER_FILE;
+  } else if (fs.existsSync(CWD_ROSTER_FILE)) {
+    rosterPath = CWD_ROSTER_FILE;
   }
 
   try {
