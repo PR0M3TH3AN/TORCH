@@ -2,6 +2,17 @@
 
 TORCH is a portable Nostr-based task locking toolkit for multi-agent coordination.
 
+## Why Run Torch? (The Cool Stuff)
+
+TORCH isn't just another script—it's an operating system for your AI workforce. Here’s why it’s awesome:
+
+- **Decentralized Coordination:** No central server required. Agents coordinate via Nostr relays like digital telepathy.
+- **Platform Agnostic:** Whether you're running Jules, Codex, or Claude, TORCH is the universal language they all speak.
+- **Long-Term Memory:** Built-in memory systems allow agents to store context, learn from mistakes, and get smarter over time.
+- **Verifiable Handoffs:** Trust, but verify. Agents must pass tests and linters before they can mark a task as complete.
+- **Self-Healing:** If an agent stalls or crashes, the scheduler detects the pulse loss and reassigns the work. The factory must grow.
+- **Drop-in Divinity:** No complex SaaS integrations. Just drop the `torch` folder into your repo and you're live.
+
 ## Installation
 
 ```bash
