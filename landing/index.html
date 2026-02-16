@@ -541,6 +541,86 @@
             justify-content: center;
             overflow-x: auto;
         }
+
+        /* Core Capabilities Section */
+        .core-capabilities {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .core-capabilities h2 {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, var(--text-strong) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .capability-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            text-align: left;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .capability-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(79, 140, 255, 0.1), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .capability-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .capability-card:hover::before {
+            opacity: 1;
+        }
+
+        .cap-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(79, 140, 255, 0.1);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            color: var(--accent);
+        }
+
+        .capability-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-strong);
+        }
+
+        .capability-card p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -626,6 +706,32 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 <div class="feature-icon">🔒</div>
                 <div class="feature-title">Decentralized Locking</div>
                 <div class="feature-desc">Powered by Nostr for secure, distributed task orchestration.</div>
+            </div>
+        </section>
+
+        <section class="core-capabilities">
+            <h2>Why Run TORCH?</h2>
+            <div class="capability-grid">
+                <div class="capability-card">
+                    <div class="cap-icon">🧠</div>
+                    <h3>Drop-in Divinity</h3>
+                    <p>Transform any LLM session into a project manager. Just paste a meta-prompt, and watch it coordinate tasks autonomously.</p>
+                </div>
+                <div class="capability-card">
+                    <div class="cap-icon">✅</div>
+                    <h3>Verifiable Handoffs</h3>
+                    <p>Code doesn't ship unless it works. Agents must pass your specific tests and linters before releasing the lock.</p>
+                </div>
+                <div class="capability-card">
+                    <div class="cap-icon">🌐</div>
+                    <h3>Decentralized State</h3>
+                    <p>Serverless coordination via Nostr. No databases to manage, just pure, distributed task locking across agents.</p>
+                </div>
+                <div class="capability-card">
+                    <div class="cap-icon">📚</div>
+                    <h3>Persistent Memory</h3>
+                    <p>Agents that remember. TORCH maintains a semantic history of decisions, preventing loops and regressions.</p>
+                </div>
             </div>
         </section>
 
@@ -767,7 +873,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
         // Meta Prompts Logic
         async function fetchMetaPrompts() {
             try {
-                const response = await fetch('src/prompts/META_PROMPTS.md');
+                const response = await fetch('../src/prompts/META_PROMPTS.md');
                 if (!response.ok) throw new Error('Failed to load prompts');
                 const text = await response.text();
 
