@@ -72,7 +72,14 @@ function parseRoster(value) {
 export function getTorchConfigPath() {
   const explicitPath = (process.env.TORCH_CONFIG_PATH || '').trim();
   if (explicitPath) return path.resolve(process.cwd(), explicitPath);
-  return path.resolve(process.cwd(), DEFAULT_CONFIG_PATH);
+
+  const localPath = path.resolve(process.cwd(), DEFAULT_CONFIG_PATH);
+  if (fs.existsSync(localPath)) return localPath;
+
+  const parentPath = path.resolve(process.cwd(), '..', DEFAULT_CONFIG_PATH);
+  if (fs.existsSync(parentPath)) return parentPath;
+
+  return localPath;
 }
 
 export function parseTorchConfig(raw, configPath = null) {

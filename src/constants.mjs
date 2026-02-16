@@ -7,8 +7,8 @@ export const DEFAULT_RELAYS = [
 ];
 export const DEFAULT_TTL = 7200;
 export const DEFAULT_NAMESPACE = 'torch';
-export const DEFAULT_QUERY_TIMEOUT_MS = 15_000;
-export const DEFAULT_PUBLISH_TIMEOUT_MS = 10_000;
+export const DEFAULT_QUERY_TIMEOUT_MS = 30_000;
+export const DEFAULT_PUBLISH_TIMEOUT_MS = 15_000;
 export const DEFAULT_MIN_SUCCESSFUL_PUBLISHES = 1;
 export const DEFAULT_MIN_ACTIVE_RELAY_POOL = 1;
 export const VALID_CADENCES = new Set(['daily', 'weekly']);
