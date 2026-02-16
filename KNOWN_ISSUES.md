@@ -45,6 +45,16 @@ Track only **active, reproducible, unresolved** issues.
 - **Impact:** CI/local testing blocked.
 - **Last verified:** 2026-02-14
 
+### `npm test` hangs/times out in full suite run
+- **Status:** Active
+- **Area:** Test
+- **Symptom:** `npm test` times out after 400s when running all tests together.
+- **Trigger/Conditions:** Running `npm test` in CI/Sandbox.
+- **Workaround:** Run individual test files or subsets (`npm run validate:scheduler`, `npm run test:integration:e2e`, then specific unit tests).
+- **Impact:** Cannot verify all tests in a single pass.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-16-npm-test-timeout.md`
+- **Last verified:** 2026-02-16
+
 ### Recurring scheduler lock backend failures in recent task logs
 - **Status:** Monitoring
 - **Area:** Runtime
