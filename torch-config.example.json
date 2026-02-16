@@ -7,8 +7,8 @@
       "wss://relay.primal.net"
     ],
     "ttlSeconds": 7200,
-    "queryTimeoutMs": 15000,
-    "publishTimeoutMs": 8000,
+    "queryTimeoutMs": 30000,
+    "publishTimeoutMs": 15000,
     "minSuccessfulRelayPublishes": 2,
     "minActiveRelayPool": 2,
     "relayFallbacks": [

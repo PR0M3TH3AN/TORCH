@@ -315,6 +315,10 @@ export async function queryLocks(relays, cadence, dateStr, namespace, deps = {})
 
   const runQuery = async (relaySet, phase) => {
     const { prioritized } = prioritizeRelays(relaySet, healthConfig);
+    if (prioritized.length > 0) {
+      errorLogger(`[${phase}] Querying ${prioritized.length} relays (${relayListLabel(prioritized)})...`);
+    }
+
     const startedAtMs = Date.now();
     try {
       const events = await withTimeout(
@@ -432,6 +436,8 @@ export async function publishLock(relays, event, deps = {}) {
       if (!phaseRelays.length) return;
       const { prioritized } = prioritizeRelays(phaseRelays, healthConfig);
       if (!prioritized.length) return;
+
+      console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${prioritized.join(', ')})...`);
 
       const startedAtMs = Date.now();
       for (const relay of prioritized) {
