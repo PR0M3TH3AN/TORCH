@@ -7,7 +7,6 @@ const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 
 // Source paths (in the package)
 const SRC_PROMPTS_DIR = path.join(PKG_ROOT, 'src', 'prompts');
-const SRC_SCRIPTS_DIR = path.join(PKG_ROOT, 'scripts');
 
 // Files to treat as "Static" (always overwrite on update, with transformations)
 const STATIC_FILES = [
@@ -19,7 +18,10 @@ const STATIC_FILES = [
 
 // Directories containing "Evolving" files (copy if missing, preserve if present)
 const EVOLVING_DIRS = ['daily', 'weekly'];
-const EVOLVING_SCRIPTS = ['check-file-size.mjs', 'check-innerhtml.mjs'];
+
+// New constants for full application install
+const APP_DIRS = ['src', 'bin', 'dashboard', 'landing', 'assets', 'scripts'];
+const APP_FILES = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json'];
 
 function getPaths(userRoot) {
     const torchDir = path.join(userRoot, 'torch');
@@ -27,13 +29,20 @@ function getPaths(userRoot) {
         root: userRoot,
         torchDir,
         promptsDir: path.join(torchDir, 'prompts'),
-        scriptsDir: path.join(torchDir, 'scripts'),
         roster: path.join(torchDir, 'roster.json'),
     };
 }
 
 function ensureDir(dir) {
-  fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function copyDir(src, dest) {
+    if (fs.existsSync(src)) {
+        fs.cpSync(src, dest, { recursive: true });
+    }
 }
 
 function transformContent(content) {
@@ -49,6 +58,7 @@ function copyFile(src, dest, transform = false, overwrite = true) {
   if (fs.existsSync(dest) && !overwrite) {
     return false; // Skipped
   }
+  if (!fs.existsSync(src)) return false;
 
   const content = fs.readFileSync(src, 'utf8');
   const finalContent = transform ? transformContent(content) : content;
@@ -66,17 +76,37 @@ export function cmdInit(force = false, cwd = process.cwd()) {
 
   ensureDir(paths.torchDir);
   ensureDir(paths.promptsDir);
-  ensureDir(paths.scriptsDir);
-  ensureDir(path.join(paths.scriptsDir, 'agent'));
 
-  // 1. Copy Roster (Evolving, but initially copied)
+  // 1. Copy App Directories
+  console.log('Copying application directories...');
+  for (const dir of APP_DIRS) {
+      const src = path.join(PKG_ROOT, dir);
+      const dest = path.join(paths.torchDir, dir);
+      if (fs.existsSync(src)) {
+          copyDir(src, dest);
+          console.log(`  Copied ${dir}/`);
+      }
+  }
+
+  // 2. Copy App Files
+  console.log('Copying application files...');
+  for (const file of APP_FILES) {
+      const src = path.join(PKG_ROOT, file);
+      const dest = path.join(paths.torchDir, file);
+      if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
+          console.log(`  Copied ${file}`);
+      }
+  }
+
+  // 3. Copy Roster (Evolving, but initially copied)
   const srcRoster = path.join(SRC_PROMPTS_DIR, 'roster.json');
   if (fs.existsSync(srcRoster)) {
     copyFile(srcRoster, paths.roster, false, true);
     console.log(`Created ${path.relative(paths.root, paths.roster)}`);
   }
 
-  // 2. Copy Static Files (Transformed)
+  // 4. Copy Static Files (Transformed) - Prompts root files
   for (const file of STATIC_FILES) {
     const src = path.join(SRC_PROMPTS_DIR, file);
     const dest = path.join(paths.torchDir, file);
@@ -86,17 +116,7 @@ export function cmdInit(force = false, cwd = process.cwd()) {
     }
   }
 
-  // 3. Copy Scripts (Evolving)
-  for (const file of EVOLVING_SCRIPTS) {
-    const src = path.join(SRC_SCRIPTS_DIR, file);
-    const dest = path.join(paths.scriptsDir, file);
-    if (fs.existsSync(src)) {
-      copyFile(src, dest, false, true);
-      console.log(`Created ${path.relative(paths.root, dest)}`);
-    }
-  }
-
-  // 4. Copy Prompts (Evolving)
+  // 5. Copy Prompts (Evolving)
   for (const dir of EVOLVING_DIRS) {
     const srcDir = path.join(SRC_PROMPTS_DIR, dir);
     const destDir = path.join(paths.promptsDir, dir);
@@ -113,32 +133,41 @@ export function cmdInit(force = false, cwd = process.cwd()) {
     }
   }
 
-  // 5. Create torch-config.json with random namespace if missing
-  const configPath = path.join(cwd, 'torch-config.json');
+  // 6. Create torch-config.json logic
+  const configPath = path.join(paths.torchDir, 'torch-config.json');
+  const rootConfigPath = path.join(cwd, 'torch-config.json');
+
   if (!fs.existsSync(configPath)) {
-    try {
-      const exampleConfigPath = path.join(PKG_ROOT, 'torch-config.example.json');
-      if (fs.existsSync(exampleConfigPath)) {
-        const exampleConfig = JSON.parse(fs.readFileSync(exampleConfigPath, 'utf8'));
-
-        // Generate random namespace
-        const randomSuffix = crypto.randomBytes(4).toString('hex');
-        const newNamespace = `torch-${randomSuffix}`;
-
-        if (exampleConfig.nostrLock) {
-            exampleConfig.nostrLock.namespace = newNamespace;
-        } else {
-            exampleConfig.nostrLock = { namespace: newNamespace };
-        }
-
-        fs.writeFileSync(configPath, JSON.stringify(exampleConfig, null, 2), 'utf8');
-        console.log(`Created ${path.relative(cwd, configPath)} with namespace "${newNamespace}"`);
+      // Check root config first
+      if (fs.existsSync(rootConfigPath)) {
+          fs.copyFileSync(rootConfigPath, configPath);
+          console.log(`Copied existing configuration from root to ${path.relative(cwd, configPath)}`);
       } else {
-         console.warn(`Warning: Could not find ${exampleConfigPath} to generate torch-config.json`);
+          // Generate new
+            try {
+              const exampleConfigPath = path.join(PKG_ROOT, 'torch-config.example.json');
+              if (fs.existsSync(exampleConfigPath)) {
+                const exampleConfig = JSON.parse(fs.readFileSync(exampleConfigPath, 'utf8'));
+
+                // Generate random namespace
+                const randomSuffix = crypto.randomBytes(4).toString('hex');
+                const newNamespace = `torch-${randomSuffix}`;
+
+                if (exampleConfig.nostrLock) {
+                    exampleConfig.nostrLock.namespace = newNamespace;
+                } else {
+                    exampleConfig.nostrLock = { namespace: newNamespace };
+                }
+
+                fs.writeFileSync(configPath, JSON.stringify(exampleConfig, null, 2), 'utf8');
+                console.log(`Created ${path.relative(cwd, configPath)} with namespace "${newNamespace}"`);
+              } else {
+                 console.warn(`Warning: Could not find ${exampleConfigPath} to generate torch-config.json`);
+              }
+            } catch (err) {
+              console.error(`Failed to create torch-config.json: ${err.message}`);
+            }
       }
-    } catch (err) {
-      console.error(`Failed to create torch-config.json: ${err.message}`);
-    }
   } else {
       console.log(`Skipped ${path.relative(cwd, configPath)} (exists)`);
   }
@@ -163,17 +192,39 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
   ensureDir(thisBackupDir);
   console.log(`Creating backup at ${path.relative(paths.root, thisBackupDir)}...`);
 
+  // We backup EVERYTHING in torchDir except _backups and node_modules
   const entries = fs.readdirSync(paths.torchDir);
   for (const entry of entries) {
-      // Skip the backups directory itself to avoid recursion
-      if (entry === '_backups') continue;
+      if (entry === '_backups' || entry === 'node_modules' || entry === '.git') continue;
 
       const srcPath = path.join(paths.torchDir, entry);
       const destPath = path.join(thisBackupDir, entry);
       fs.cpSync(srcPath, destPath, { recursive: true });
   }
 
-  // 2. Update Static Files (Always Overwrite)
+  // 2. Update App Directories (Overwrite)
+  console.log('Updating application directories...');
+  for (const dir of APP_DIRS) {
+      const src = path.join(PKG_ROOT, dir);
+      const dest = path.join(paths.torchDir, dir);
+      if (fs.existsSync(src)) {
+          copyDir(src, dest);
+          console.log(`  Updated ${dir}/`);
+      }
+  }
+
+  // 3. Update App Files (Overwrite)
+  console.log('Updating application files...');
+  for (const file of APP_FILES) {
+      const src = path.join(PKG_ROOT, file);
+      const dest = path.join(paths.torchDir, file);
+      if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
+          console.log(`  Updated ${file}`);
+      }
+  }
+
+  // 4. Update Static Files (Always Overwrite)
   console.log('Updating static files...');
   for (const file of STATIC_FILES) {
     const src = path.join(SRC_PROMPTS_DIR, file);
@@ -184,7 +235,7 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
     }
   }
 
-  // 3. Update Roster (Preserve unless force)
+  // 5. Update Roster (Preserve unless force)
   const srcRoster = path.join(SRC_PROMPTS_DIR, 'roster.json');
   if (fs.existsSync(srcRoster)) {
     if (force) {
@@ -195,29 +246,7 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
     }
   }
 
-  // 4. Update Scripts (Copy missing, preserve existing unless force)
-  console.log('Updating scripts...');
-  ensureDir(paths.scriptsDir);
-  for (const file of EVOLVING_SCRIPTS) {
-    const src = path.join(SRC_SCRIPTS_DIR, file);
-    const dest = path.join(paths.scriptsDir, file);
-
-    if (fs.existsSync(src)) {
-      if (force) {
-        copyFile(src, dest, false, true);
-        console.log(`  Updated ${file} (forced)`);
-      } else {
-        if (!fs.existsSync(dest)) {
-          copyFile(src, dest, false, true);
-          console.log(`  Added ${file}`);
-        } else {
-          console.log(`  Skipped ${file} (preserved)`);
-        }
-      }
-    }
-  }
-
-  // 5. Update Prompts (Copy missing, preserve existing unless force)
+  // 6. Update Prompts (Copy missing, preserve existing unless force)
   console.log('Updating prompts...');
   for (const dir of EVOLVING_DIRS) {
     const srcDir = path.join(SRC_PROMPTS_DIR, dir);
@@ -233,10 +262,6 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
       for (const file of files) {
         const srcFile = path.join(srcDir, file);
         const destFile = path.join(destDir, file);
-
-        // If force is true, we overwrite (updated++).
-        // If force is false and file missing, we write (added++).
-        // If force is false and file exists, we skip (skipped++).
 
         if (force) {
             copyFile(srcFile, destFile, false, true);
