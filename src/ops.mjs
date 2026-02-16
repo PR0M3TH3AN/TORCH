@@ -237,6 +237,31 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   configData.nostrLock.namespace = namespace;
   configData.nostrLock.relays = relays;
 
+  // Configure memory policy with correct paths
+  if (!configData.scheduler) configData.scheduler = {};
+  // Always ensure memory policy exists and points to the correct scripts
+  // We use the installDir to construct the path
+  const scriptPrefix = installDir === '.' ? '' : `${installDir}/`;
+
+  if (!configData.scheduler.memoryPolicyByCadence) {
+    configData.scheduler.memoryPolicyByCadence = {};
+  }
+
+  // Populate daily/weekly if missing
+  ['daily', 'weekly'].forEach(cadence => {
+    if (!configData.scheduler.memoryPolicyByCadence[cadence]) {
+      configData.scheduler.memoryPolicyByCadence[cadence] = {
+        mode: "required",
+        retrieveCommand: `node ${scriptPrefix}scripts/memory/retrieve.mjs`,
+        storeCommand: `node ${scriptPrefix}scripts/memory/store.mjs`,
+        retrieveSuccessMarkers: ["MEMORY_RETRIEVED"],
+        storeSuccessMarkers: ["MEMORY_STORED"],
+        retrieveArtifacts: [`.scheduler-memory/latest/${cadence}/retrieve.ok`],
+        storeArtifacts: [`.scheduler-memory/latest/${cadence}/store.ok`]
+      };
+    }
+  });
+
   fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
   console.log(`Saved configuration to ${path.relative(cwd, configPath)}`);
 
@@ -266,6 +291,8 @@ function injectScriptsIntoHost(hostRoot, installDirName) {
             'torch:check': `npm run --prefix ${installDirName} lock:check:daily`, // Default to daily check
             'torch:lock': `npm run --prefix ${installDirName} lock:lock`,
             'torch:health': `npm run --prefix ${installDirName} lock:health`,
+            'torch:memory:list': `node ${installDirName === '.' ? '' : installDirName + '/'}bin/torch-lock.mjs list-memories`,
+            'torch:memory:inspect': `node ${installDirName === '.' ? '' : installDirName + '/'}bin/torch-lock.mjs inspect-memory`,
         };
 
         let modified = false;
