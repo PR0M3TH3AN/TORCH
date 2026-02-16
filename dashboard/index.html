@@ -814,10 +814,16 @@
       // Periodic TTL refresh
       // -----------------------------------------------------------------------
       refreshIntervalId = setInterval(() => {
-        if (isAlive()) {
+        if (isAlive() && !document.hidden) {
           renderLocks();
         }
       }, 30_000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && isAlive()) {
+          renderLocks();
+        }
+      });
 
       // -----------------------------------------------------------------------
       // Event handlers
