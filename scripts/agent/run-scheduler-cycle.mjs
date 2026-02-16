@@ -227,12 +227,12 @@ async function validatePromptFile(promptPath) {
 
   const lines = String(content).split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const firstLine = lines[0] || '';
-  if (!firstLine.startsWith('#')) {
+  if (!firstLine.startsWith('#') && !firstLine.startsWith('>')) {
     return {
       ok: false,
       category: FAILURE_CATEGORY.PROMPT_SCHEMA,
       reason: 'Prompt file schema validation failed',
-      detail: `Prompt not executed; expected markdown heading on first non-empty line in ${promptPath}.`,
+      detail: `Prompt not executed; expected markdown heading or blockquote on first non-empty line in ${promptPath}.`,
     };
   }
 
@@ -454,7 +454,7 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     missingHandoffCommandForMode,
     validationCommands: Array.isArray(scheduler.validationCommandsByCadence?.[cadence])
       ? scheduler.validationCommandsByCadence[cadence].filter((cmd) => typeof cmd === 'string' && cmd.trim())
-      : ['npm', 'run', 'lint'],
+      : ['npm run lint'],
     lockRetry: {
       maxRetries,
       backoffMs,
