@@ -8,7 +8,8 @@ const __dirname = path.dirname(__filename);
 const DIST_DIR = path.join(__dirname, 'dist');
 const LANDING_SRC = path.join(__dirname, 'landing');
 const DASHBOARD_SRC = path.join(__dirname, 'dashboard');
-const DOCS_SRC = path.join(__dirname, 'src', 'docs');
+const DOCS_SRC = path.join(__dirname, 'docs');
+const TORCH_MD_SRC = path.join(__dirname, 'TORCH.md');
 const CONSTANTS_SRC = path.join(__dirname, 'src', 'constants.mjs');
 const PROMPTS_SRC = path.join(__dirname, 'src', 'prompts', 'META_PROMPTS.md');
 const CONFIG_SRC = path.join(__dirname, 'torch-config.json');
@@ -38,10 +39,15 @@ const distDashboard = path.join(DIST_DIR, 'dashboard');
 fs.mkdirSync(distDashboard, { recursive: true });
 fs.cpSync(DASHBOARD_SRC, distDashboard, { recursive: true });
 
-// 3. Copy src/docs/ -> dist/src/docs/
+// 3. Copy docs/ -> dist/src/docs/
 const distDocs = path.join(DIST_DIR, 'src', 'docs');
 fs.mkdirSync(distDocs, { recursive: true });
-fs.cpSync(DOCS_SRC, distDocs, { recursive: true });
+if (fs.existsSync(DOCS_SRC)) {
+  fs.cpSync(DOCS_SRC, distDocs, { recursive: true });
+}
+if (fs.existsSync(TORCH_MD_SRC)) {
+  fs.copyFileSync(TORCH_MD_SRC, path.join(distDocs, 'TORCH.md'));
+}
 
 // 3.5. Copy src/constants.mjs -> dist/src/constants.mjs
 fs.copyFileSync(CONSTANTS_SRC, path.join(DIST_DIR, 'src', 'constants.mjs'));
