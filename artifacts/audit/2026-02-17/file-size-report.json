@@ -1,0 +1,95 @@
+{
+  "oversizedFiles": [
+    {
+      "file": ".scheduler-memory/memory-store.json",
+      "lines": 377,
+      "excess": 77
+    },
+    {
+      "file": "TORCH.md",
+      "lines": 342,
+      "excess": 42
+    },
+    {
+      "file": "dashboard/index.html",
+      "lines": 1044,
+      "excess": 744
+    },
+    {
+      "file": "dashboard/styles.css",
+      "lines": 361,
+      "excess": 61
+    },
+    {
+      "file": "landing/index.html",
+      "lines": 924,
+      "excess": 624
+    },
+    {
+      "file": "scripts/agent/run-scheduler-cycle.mjs",
+      "lines": 1092,
+      "excess": 792
+    },
+    {
+      "file": "scripts/agent/verify-run-artifacts.mjs",
+      "lines": 363,
+      "excess": 63
+    },
+    {
+      "file": "src/lib.mjs",
+      "lines": 727,
+      "excess": 427
+    },
+    {
+      "file": "src/lock-ops.mjs",
+      "lines": 593,
+      "excess": 293
+    },
+    {
+      "file": "src/ops.mjs",
+      "lines": 434,
+      "excess": 134
+    },
+    {
+      "file": "src/services/memory/index.js",
+      "lines": 428,
+      "excess": 128
+    },
+    {
+      "file": "src/services/memory/pruner.js",
+      "lines": 314,
+      "excess": 14
+    },
+    {
+      "file": "src/services/memory/scheduler.js",
+      "lines": 318,
+      "excess": 18
+    },
+    {
+      "file": "src/torch-config.mjs",
+      "lines": 315,
+      "excess": 15
+    },
+    {
+      "file": "test/lib.test.mjs",
+      "lines": 418,
+      "excess": 118
+    },
+    {
+      "file": "test/lock-ops.test.mjs",
+      "lines": 395,
+      "excess": 95
+    },
+    {
+      "file": "test/run-scheduler-cycle-memory-policy.test.mjs",
+      "lines": 599,
+      "excess": 299
+    },
+    {
+      "file": "test-audit/flakiness-matrix.json",
+      "lines": 366,
+      "excess": 66
+    }
+  ],
+  "totalExcessLines": 4010
+}

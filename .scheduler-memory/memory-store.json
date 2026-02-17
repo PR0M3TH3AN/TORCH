@@ -348,5 +348,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "9f17b770-803f-401b-8bec-4c8ce413f232",
+    {
+      "schema_version": 1,
+      "id": "9f17b770-803f-401b-8bec-4c8ce413f232",
+      "agent_id": "audit-agent",
+      "session_id": "session-mlqwxsc8",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771351483834,
+      "last_seen": 1771351483843,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "30b53ec3-5d17-4b38-9d80-4f9c15e3cd7e",
+    {
+      "schema_version": 1,
+      "id": "30b53ec3-5d17-4b38-9d80-4f9c15e3cd7e",
+      "agent_id": "audit-agent",
+      "session_id": "session-mlqwzwl4",
+      "type": "batch_window",
+      "content": "# Audit Agent Report (2026-02-17)\n\n## Metrics\n- Oversized files: 18 (4010 excess lines)\n- InnerHTML assignments: 5\n- Lint failures: 13\n\n## Findings\n- Top oversized: scripts/agent/run-scheduler-cycle.mjs (1092 lines)\n- InnerHTML usage in dashboard/index.html and landing/index.html.\n- Lint warnings mostly unused vars.",
+      "summary": "# Audit Agent Report (2026-02-17)\n\n## Metrics\n- Oversized files: 18 (4010 excess lines)\n- InnerHTML assignments: 5\n- Lint failures: 13\n\n## Findings\n- Top oversized: scripts/agent/run-scheduler-cycle.mjs (1092 lines)\n- InnerHTML usage in dashboard/index.html and landing/index.htm…",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771351582653,
+      "last_seen": 1771351582653,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
