@@ -5,7 +5,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_DASHBOARD_PORT } from './constants.mjs';
-import { getDashboardAuth } from './torch-config.mjs';
+import { getDashboardAuth, parseTorchConfig } from './torch-config.mjs';
 
 function timingSafeCompare(a, b) {
   const bufA = Buffer.from(a);
@@ -73,17 +73,57 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     }
 
     // Special case: /torch-config.json
-    // Priority: User's CWD > Package default
+    // Priority: Env Var > User's CWD > Package default
     if (pathname === '/torch-config.json') {
-      const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
-      if (await statSafe(userConfigPath)) {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        fs.createReadStream(userConfigPath).pipe(res);
+      let configContent = null;
+
+      if (process.env.TORCH_CONFIG_PATH) {
+        const envPath = path.resolve(process.cwd(), process.env.TORCH_CONFIG_PATH);
+        try {
+          configContent = await fsp.readFile(envPath, 'utf8');
+        } catch {
+          // Explicitly provided config path not found, do not fall back
+        }
+      } else {
+        const userConfigPath = path.resolve(process.cwd(), 'torch-config.json');
+        try {
+          configContent = await fsp.readFile(userConfigPath, 'utf8');
+        } catch {
+          // Try package default
+          const packageConfigPath = path.join(packageRoot, 'torch-config.json');
+          try {
+            configContent = await fsp.readFile(packageConfigPath, 'utf8');
+          } catch {
+            // Not found in either location
+          }
+        }
+      }
+
+      if (configContent) {
+        try {
+          const rawConfig = JSON.parse(configContent);
+          const safeConfig = parseTorchConfig(rawConfig);
+
+          // Security: Sanitize sensitive fields
+          if (safeConfig.dashboard) {
+            delete safeConfig.dashboard.auth;
+          }
+          delete safeConfig.configPath;
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(safeConfig, null, 2));
+          return;
+        } catch (err) {
+          console.error('Error parsing torch-config.json:', err);
+          res.writeHead(500);
+          res.end('Internal Server Error');
+          return;
+        }
+      } else {
+        res.writeHead(404);
+        res.end('Not Found');
         return;
       }
-      // If not found in CWD, fall through to serve from packageRoot (if it exists there)
-      // or return empty object if missing?
-      // Falling through means it looks for packageRoot/torch-config.json
     }
 
     // Security check: prevent directory traversal
