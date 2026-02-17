@@ -1,4 +1,4 @@
-import { randomInt } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
@@ -7,7 +7,17 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { KIND_APP_DATA } from './constants.mjs';
+import {
+  KIND_APP_DATA,
+  DEFAULT_RETRY_ATTEMPTS,
+  DEFAULT_RETRY_BASE_DELAY_MS,
+  DEFAULT_RETRY_CAP_DELAY_MS,
+  DEFAULT_ROLLING_WINDOW_SIZE,
+  DEFAULT_FAILURE_THRESHOLD,
+  DEFAULT_QUARANTINE_COOLDOWN_MS,
+  DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
+  DEFAULT_SNAPSHOT_INTERVAL_MS,
+} from './constants.mjs';
 
 function nowUnix() {
   return Math.floor(Date.now() / 1000);
@@ -297,11 +307,11 @@ export const defaultHealthManager = new RelayHealthManager();
 
 function buildRelayHealthConfig(deps) {
   return {
-    rollingWindowSize: deps.rollingWindowSize ?? 25,
-    failureThreshold: deps.failureThreshold ?? 3,
-    quarantineCooldownMs: deps.quarantineCooldownMs ?? 30_000,
-    maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? 5 * 60_000,
-    snapshotIntervalMs: deps.snapshotIntervalMs ?? 60_000,
+    rollingWindowSize: deps.rollingWindowSize ?? DEFAULT_ROLLING_WINDOW_SIZE,
+    failureThreshold: deps.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
+    quarantineCooldownMs: deps.quarantineCooldownMs ?? DEFAULT_QUARANTINE_COOLDOWN_MS,
+    maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
+    snapshotIntervalMs: deps.snapshotIntervalMs ?? DEFAULT_SNAPSHOT_INTERVAL_MS,
     minActiveRelayPool: Math.max(1, deps.minActiveRelayPool),
   };
 }
@@ -415,26 +425,48 @@ async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
   });
 }
 
-export async function publishLock(relays, event, deps = {}) {
-  const {
-    poolFactory = () => new SimplePool(),
-    getPublishTimeoutMsFn = getPublishTimeoutMs,
-    getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
-    getRelayFallbacksFn = getRelayFallbacks,
-    getMinActiveRelayPoolFn = getMinActiveRelayPool,
-    retryAttempts = 4,
-    retryBaseDelayMs = 500,
-    retryCapDelayMs = 8_000,
-    sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-    randomFn = secureRandom,
-    telemetryLogger = console.error,
-    healthLogger = console.error,
-    diagnostics = {},
-  } = deps;
+class LockPublisher {
+  constructor(relays, event, deps = {}) {
+    this.relays = relays;
+    this.event = event;
+    this.poolFactory = deps.poolFactory || (() => new SimplePool());
+    this.getPublishTimeoutMsFn = deps.getPublishTimeoutMsFn || getPublishTimeoutMs;
+    this.getMinSuccessfulRelayPublishesFn = deps.getMinSuccessfulRelayPublishesFn || getMinSuccessfulRelayPublishes;
+    this.getRelayFallbacksFn = deps.getRelayFallbacksFn || getRelayFallbacks;
+    this.getMinActiveRelayPoolFn = deps.getMinActiveRelayPoolFn || getMinActiveRelayPool;
+    this.retryAttempts = deps.retryAttempts || DEFAULT_RETRY_ATTEMPTS;
+    this.retryBaseDelayMs = deps.retryBaseDelayMs || DEFAULT_RETRY_BASE_DELAY_MS;
+    this.retryCapDelayMs = deps.retryCapDelayMs || DEFAULT_RETRY_CAP_DELAY_MS;
+    this.sleepFn = deps.sleepFn || ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.randomFn = deps.randomFn || secureRandom;
+    this.telemetryLogger = deps.telemetryLogger || console.error;
+    this.healthLogger = deps.healthLogger || console.error;
+    this.diagnostics = deps.diagnostics || {};
+    this.healthManager = deps.healthManager || defaultHealthManager;
+
+    // Derived values initialized later in async method
+    this.attemptId = deps.diagnostics?.attemptId || deps.attemptId || randomUUID();
+    this.correlationId = deps.diagnostics?.correlationId || deps.correlationId || randomUUID();
+
+    this.pool = this.poolFactory();
+  }
 
   async publish() {
+    this.publishTimeoutMs = await this.getPublishTimeoutMsFn();
+    this.minSuccesses = await this.getMinSuccessfulRelayPublishesFn();
+    this.fallbackRelays = (await this.getRelayFallbacksFn()).filter((relay) => !this.relays.includes(relay));
+    const minActive = await this.getMinActiveRelayPoolFn();
+    this.healthConfig = buildRelayHealthConfig({
+      rollingWindowSize: DEFAULT_ROLLING_WINDOW_SIZE,
+      minActiveRelayPool: minActive,
+      ...this.diagnostics, // Assuming diagnostics might carry config overrides? Or better, just rely on defaults/config
+    });
+
+    this.allRelays = mergeRelayList(this.relays, this.fallbackRelays);
+    this.maxAttempts = this.retryAttempts;
+
     try {
-      maybeLogHealthSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
+      this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
       let lastAttemptState = null;
       const retryTimeline = [];
       const overallStartedAt = Date.now();
@@ -500,7 +532,7 @@ export async function publishLock(relays, event, deps = {}) {
 
   async attemptPhase(phaseRelays, phaseName, attempted, publishResults) {
     if (!phaseRelays.length) return;
-    const { prioritized } = prioritizeRelays(phaseRelays, this.healthConfig);
+    const { prioritized } = this.healthManager.prioritizeRelays(phaseRelays, this.healthConfig);
     if (!prioritized.length) return;
 
     console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${prioritized.join(', ')})...`);
@@ -513,7 +545,7 @@ export async function publishLock(relays, event, deps = {}) {
     const elapsedMs = Date.now() - startedAtMs;
     for (const result of phaseResults) {
       result.latencyMs = elapsedMs;
-      recordRelayOutcome(result.relay, result.success, result.message, elapsedMs, this.healthConfig);
+      this.healthManager.recordOutcome(result.relay, result.success, result.message, elapsedMs, this.healthConfig);
     }
     publishResults.push(...phaseResults);
   }
@@ -601,7 +633,7 @@ export async function publishLock(relays, event, deps = {}) {
       totalElapsedMs: Date.now() - overallStartedAt,
     }));
 
-    maybeLogHealthSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:failure', true);
+    this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:failure', true);
     throw new Error(
       `Failed relay publish quorum in publish phase: ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} successful `
       + `(required=${this.minSuccesses}, timeout=${this.publishTimeoutMs}ms, attempts=${this.maxAttempts}, attempt_id=${this.attemptId}, correlation_id=${this.correlationId}, error_category=${terminalFailureCategory}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
