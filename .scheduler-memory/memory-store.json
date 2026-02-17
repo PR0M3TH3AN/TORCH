@@ -115,8 +115,82 @@
       "importance": 0.25,
       "embedding_id": null,
       "created_at": 1771296636016,
-      "last_seen": 1771296636024,
+      "last_seen": 1771301051605,
       "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "19ef312e-a725-4544-850e-651713e2d9dc",
+    {
+      "schema_version": 1,
+      "id": "19ef312e-a725-4544-850e-651713e2d9dc",
+      "agent_id": "bug-reproducer-agent",
+      "session_id": "session-mlq2vq5p",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771300999213,
+      "last_seen": 1771300999222,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "bfbb3c6e-095d-4ccd-ad5a-140b6927421c",
+    {
+      "schema_version": 1,
+      "id": "bfbb3c6e-095d-4ccd-ad5a-140b6927421c",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771301051598,
+      "last_seen": 1771301051605,
+      "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "d74e3e34-6cf1-465e-b4a8-64acd0a8d803",
+    {
+      "schema_version": 1,
+      "id": "d74e3e34-6cf1-465e-b4a8-64acd0a8d803",
+      "agent_id": "bug-reproducer-agent",
+      "session_id": "session-mlq2ysd2",
+      "type": "batch_window",
+      "content": "Reproduced npm test timeout issue. Created reproduction script in artifacts/reproducers/npm-test-timeout/. Confirmed that `npm test` hangs/times out as expected.",
+      "summary": "Reproduced npm test timeout issue. Created reproduction script in artifacts/reproducers/npm-test-timeout/. Confirmed that `npm test` hangs/times out as expected.",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771301142040,
+      "last_seen": 1771301142040,
+      "source": "agent-output",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
