@@ -38,10 +38,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - **Agent Action**: Review `.scheduler-memory/latest/<cadence>/memories.md` for relevant context.
 
 5. **Store memory after implementation and before completion publish**:
-   - **Agent Action**: Write any new insights, learnings, or patterns to `memory-update.md`.
+   - **Agent Action**: Write any new insights, learnings, or patterns to the file specified by `$SCHEDULER_MEMORY_FILE` (defaulting to `memory-updates/<timestamp>__<agent>.md`).
    - Run configured memory storage workflow after prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.storeCommand`)
    - Storage command MUST call real memory services (`src/services/memory/index.js#ingestEvents`, which uses ingestor/summarizer pipeline) and MUST emit deterministic marker `MEMORY_STORED`.
-   - Storage command MUST ingest content from `memory-update.md` if present.
+   - Storage command MUST ingest content from the file at `$SCHEDULER_MEMORY_FILE` (or fallback to `memory-update.md` if present).
    - Storage command MUST write cadence-scoped evidence artifacts:
      - `.scheduler-memory/store-<cadence>.ok`
      - `.scheduler-memory/store-<cadence>.json` containing operation inputs/outputs (`agentId`, input event count, stored count, generated summaries).

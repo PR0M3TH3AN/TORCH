@@ -34,21 +34,21 @@ let memoryContent = '';
 const cliArgs = process.argv.slice(2);
 const fileArgIndex = cliArgs.indexOf('--file');
 const explicitFile = fileArgIndex !== -1 ? cliArgs[fileArgIndex + 1] : null;
+const envFile = process.env.SCHEDULER_MEMORY_FILE;
 const defaultFile = 'memory-update.md';
 
-if (explicitFile && existsSync(explicitFile)) {
+const targetFile = explicitFile || (envFile && existsSync(envFile) ? envFile : (existsSync(defaultFile) ? defaultFile : null));
+
+if (targetFile) {
     try {
-        memoryContent = readFileSync(explicitFile, 'utf8').trim();
-        console.log(`Loaded memory content from ${explicitFile}`);
+        if (existsSync(targetFile)) {
+            memoryContent = readFileSync(targetFile, 'utf8').trim();
+            console.log(`Loaded memory content from ${targetFile}`);
+        } else {
+             console.warn(`Target memory file does not exist: ${targetFile}`);
+        }
     } catch (err) {
-        console.warn(`Failed to read memory file ${explicitFile}:`, err.message);
-    }
-} else if (!explicitFile && existsSync(defaultFile)) {
-    try {
-        memoryContent = readFileSync(defaultFile, 'utf8').trim();
-        console.log(`Loaded memory content from default file ${defaultFile}`);
-    } catch (err) {
-        console.warn(`Failed to read default memory file ${defaultFile}:`, err.message);
+        console.warn(`Failed to read memory file ${targetFile}:`, err.message);
     }
 }
 
@@ -70,7 +70,7 @@ if (memoryContent) {
     });
 } else {
     // Fallback if no file provided (preserve existing behavior for compatibility)
-    console.warn('No memory input found (checked --file or default memory-update.md). using fallback placeholder.');
+    console.warn(`No memory input found (checked --file, env SCHEDULER_MEMORY_FILE=${envFile}, or default ${defaultFile}). using fallback placeholder.`);
     events = [
         {
             agent_id: agentId,
@@ -120,7 +120,7 @@ try {
             promptPath,
             promptIntent,
             events: events.length,
-            sourceFile: explicitFile || (memoryContent ? defaultFile : 'fallback')
+            sourceFile: targetFile || 'fallback'
         },
         outputs: {
             storedCount: stored.length,

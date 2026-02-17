@@ -900,9 +900,21 @@ async function main() {
     const runStartMs = Date.parse(runArtifactSince);
     const outputChunks = [];
 
+    const memoryDir = path.resolve(process.cwd(), 'memory-updates');
+    await fs.mkdir(memoryDir, { recursive: true });
+    const memoryFile = path.join(memoryDir, `${ts()}__${selectedAgent}.md`);
+    const schedulerEnv = {
+      AGENT_PLATFORM: platform,
+      ...(model ? { AGENT_MODEL: model } : {}),
+      SCHEDULER_AGENT: selectedAgent,
+      SCHEDULER_CADENCE: cadence,
+      SCHEDULER_PROMPT_PATH: promptPath,
+      SCHEDULER_MEMORY_FILE: memoryFile,
+    };
+
     if (schedulerConfig.memoryPolicy.retrieveCommand) {
       const retrieveResult = await runCommand('bash', ['-lc', schedulerConfig.memoryPolicy.retrieveCommand], {
-        env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}), SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+        env: schedulerEnv,
       });
       outputChunks.push(retrieveResult.stdout, retrieveResult.stderr);
       if (retrieveResult.code !== 0) {
@@ -921,7 +933,7 @@ async function main() {
 
     if (schedulerConfig.handoffCommand) {
       const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
-        env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}), SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+        env: schedulerEnv,
       });
       outputChunks.push(handoff.stdout, handoff.stderr);
       if (handoff.code !== 0) {
@@ -954,7 +966,7 @@ async function main() {
 
     if (schedulerConfig.memoryPolicy.storeCommand) {
       const storeResult = await runCommand('bash', ['-lc', schedulerConfig.memoryPolicy.storeCommand], {
-        env: { AGENT_PLATFORM: platform, ...(model ? { AGENT_MODEL: model } : {}), SCHEDULER_AGENT: selectedAgent, SCHEDULER_CADENCE: cadence, SCHEDULER_PROMPT_PATH: promptPath },
+        env: schedulerEnv,
       });
       outputChunks.push(storeResult.stdout, storeResult.stderr);
       if (storeResult.code !== 0) {
