@@ -451,28 +451,33 @@ export class LockPublisher {
 
   async publish() {
     const {
-        poolFactory = () => new SimplePool(),
-        getPublishTimeoutMsFn = getPublishTimeoutMs,
-        getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
-        getRelayFallbacksFn = getRelayFallbacks,
-        getMinActiveRelayPoolFn = getMinActiveRelayPool,
-        retryAttempts = 4,
-        retryBaseDelayMs = 500,
-        retryCapDelayMs = 8_000,
-        sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-        randomFn = secureRandom,
-        telemetryLogger = console.error,
-        healthLogger = console.error,
-        healthManager = defaultHealthManager,
-        diagnostics = {},
-    } = this.deps;
+      poolFactory = () => new SimplePool(),
+      getPublishTimeoutMsFn = getPublishTimeoutMs,
+      getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
+      getRelayFallbacksFn = getRelayFallbacks,
+      getMinActiveRelayPoolFn = getMinActiveRelayPool,
+      retryAttempts = 4,
+      retryBaseDelayMs = 500,
+      retryCapDelayMs = 8_000,
+      sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+      randomFn = Math.random,
+      telemetryLogger = console.error,
+      healthLogger = console.error,
+      diagnostics = {},
+      healthManager = defaultHealthManager,
+    } = deps;
 
+    this.healthManager = healthManager;
     this.pool = poolFactory();
-    this.publishTimeoutMs = await getPublishTimeoutMsFn();
-    this.minSuccesses = await getMinSuccessfulRelayPublishesFn();
-    this.fallbackRelays = await getRelayFallbacksFn();
-    this.minActiveRelayPool = await getMinActiveRelayPoolFn();
-    this.maxAttempts = retryAttempts;
+    this.publishTimeoutMs = deps.resolvedConfig?.publishTimeoutMs;
+    this.minSuccesses = deps.resolvedConfig?.minSuccesses;
+    this.fallbackRelays = (deps.resolvedConfig?.fallbackRelays || []).filter((relay) => !relays.includes(relay));
+    this.maxAttempts = Math.max(1, Math.floor(retryAttempts));
+    this.healthConfig = buildRelayHealthConfig({
+      ...deps,
+      minActiveRelayPool: deps.resolvedConfig?.minActiveRelayPool,
+    });
+
     this.retryBaseDelayMs = retryBaseDelayMs;
     this.retryCapDelayMs = retryCapDelayMs;
     this.sleepFn = sleepFn;
@@ -669,7 +674,29 @@ export class LockPublisher {
 }
 
 export async function publishLock(relays, event, deps = {}) {
-  return new LockPublisher(relays, event, deps).publish();
+  const {
+    getPublishTimeoutMsFn = getPublishTimeoutMs,
+    getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
+    getRelayFallbacksFn = getRelayFallbacks,
+    getMinActiveRelayPoolFn = getMinActiveRelayPool,
+  } = deps;
+
+  const [publishTimeoutMs, minSuccesses, fallbackRelays, minActiveRelayPool] = await Promise.all([
+    getPublishTimeoutMsFn(),
+    getMinSuccessfulRelayPublishesFn(),
+    getRelayFallbacksFn(),
+    getMinActiveRelayPoolFn(),
+  ]);
+
+  return new LockPublisher(relays, event, {
+    ...deps,
+    resolvedConfig: {
+      publishTimeoutMs,
+      minSuccesses,
+      fallbackRelays,
+      minActiveRelayPool,
+    },
+  }).publish();
 }
 
 export function _resetRelayHealthState() {

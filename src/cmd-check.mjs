@@ -7,11 +7,20 @@ import { getRoster } from './roster.mjs';
 import { queryLocks } from './lock-ops.mjs';
 import { todayDateStr } from './utils.mjs';
 
-export async function cmdCheck(cadence) {
-  const relays = await getRelays();
-  const namespace = await getNamespace();
-  const dateStr = todayDateStr();
-  const config = await loadTorchConfig();
+export async function cmdCheck(cadence, deps = {}) {
+  const {
+    loadTorchConfigFn = loadTorchConfig,
+    getRelaysFn = getRelays,
+    getNamespaceFn = getNamespace,
+    getRosterFn = getRoster,
+    queryLocksFn = queryLocks,
+    todayDateStrFn = todayDateStr,
+  } = deps;
+
+  const relays = await getRelaysFn();
+  const namespace = await getNamespaceFn();
+  const dateStr = todayDateStrFn();
+  const config = await loadTorchConfigFn();
   const pausedAgents = (cadence === 'daily' ? config.scheduler.paused.daily : config.scheduler.paused.weekly) || [];
 
   console.error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
@@ -22,7 +31,7 @@ export async function cmdCheck(cadence) {
 
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
-  const roster = await getRoster(cadence);
+  const roster = await getRosterFn(cadence);
 
   const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
   const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
