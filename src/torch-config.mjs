@@ -21,9 +21,9 @@ function parsePositiveInteger(value) {
   return Math.floor(value);
 }
 
-function parseRelayList(value) {
+function parseStringList(value) {
   if (!Array.isArray(value)) return null;
-  const parsed = value.map((relay) => String(relay).trim()).filter(Boolean);
+  const parsed = value.map((item) => String(item).trim()).filter(Boolean);
   return parsed.length > 0 ? parsed : null;
 }
 
@@ -63,11 +63,6 @@ function normalizeStatus(value, fallback) {
   return normalized === 'active' || normalized === 'all' ? normalized : fallback;
 }
 
-function parseRoster(value) {
-  if (!Array.isArray(value)) return null;
-  const parsed = value.map((item) => String(item).trim()).filter(Boolean);
-  return parsed.length > 0 ? parsed : null;
-}
 
 export function getTorchConfigPath() {
   const explicitPath = (process.env.TORCH_CONFIG_PATH || '').trim();
@@ -94,10 +89,8 @@ export function parseTorchConfig(raw, configPath = null) {
     raw,
     nostrLock: {
       namespace: typeof nostrLock.namespace === 'string' ? nostrLock.namespace.trim() : null,
-      relays: Array.isArray(nostrLock.relays)
-        ? nostrLock.relays.map((relay) => String(relay).trim()).filter(Boolean)
-        : null,
-      relayFallbacks: parseRelayList(nostrLock.relayFallbacks),
+      relays: parseStringList(nostrLock.relays),
+      relayFallbacks: parseStringList(nostrLock.relayFallbacks),
       ttlSeconds: Number.isFinite(nostrLock.ttlSeconds) && nostrLock.ttlSeconds > 0
         ? Math.floor(nostrLock.ttlSeconds)
         : null,
@@ -105,15 +98,13 @@ export function parseTorchConfig(raw, configPath = null) {
       publishTimeoutMs: parsePositiveInteger(nostrLock.publishTimeoutMs),
       minSuccessfulRelayPublishes: parsePositiveInteger(nostrLock.minSuccessfulRelayPublishes),
       minActiveRelayPool: parsePositiveInteger(nostrLock.minActiveRelayPool),
-      dailyRoster: parseRoster(nostrLock.dailyRoster),
-      weeklyRoster: parseRoster(nostrLock.weeklyRoster),
+      dailyRoster: parseStringList(nostrLock.dailyRoster),
+      weeklyRoster: parseStringList(nostrLock.weeklyRoster),
     },
     dashboard: {
       defaultCadenceView: normalizeCadence(dashboard.defaultCadenceView, 'daily'),
       defaultStatusView: normalizeStatus(dashboard.defaultStatusView, 'active'),
-      relays: Array.isArray(dashboard.relays)
-        ? dashboard.relays.map((relay) => String(relay).trim()).filter(Boolean)
-        : null,
+      relays: parseStringList(dashboard.relays),
       namespace: typeof dashboard.namespace === 'string' ? dashboard.namespace.trim() : null,
       hashtag: typeof dashboard.hashtag === 'string' ? dashboard.hashtag.trim() : null,
       auth: typeof dashboard.auth === 'string' ? dashboard.auth.trim() : null,
@@ -124,8 +115,8 @@ export function parseTorchConfig(raw, configPath = null) {
         weekly: typeof firstPromptByCadence.weekly === 'string' ? firstPromptByCadence.weekly.trim() : null,
       },
       paused: {
-        daily: parseRoster(paused.daily) || [],
-        weekly: parseRoster(paused.weekly) || [],
+        daily: parseStringList(paused.daily) || [],
+        weekly: parseStringList(paused.weekly) || [],
       },
     },
   };
@@ -196,6 +187,18 @@ function parseEnvInteger(envValue, envName) {
   return parsed;
 }
 
+function resolveIntegerConfig(envKey, configValue, defaultValue, validator, configLabel) {
+  const envValue = process.env[envKey];
+  if (envValue) {
+    const parsed = parseEnvInteger(envValue, envKey);
+    validator(parsed, envKey);
+    return parsed;
+  }
+  const value = configValue || defaultValue;
+  validator(value, `effective ${configLabel}`);
+  return value;
+}
+
 export function getRelays() {
   const config = loadTorchConfig();
   const envRelays = process.env.NOSTR_LOCK_RELAYS;
@@ -241,54 +244,46 @@ export function getTtl() {
 
 export function getQueryTimeoutMs() {
   const config = loadTorchConfig();
-  const envValue = process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS;
-  if (envValue) {
-    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_QUERY_TIMEOUT_MS');
-    assertTimeoutInRange(parsed, 'NOSTR_LOCK_QUERY_TIMEOUT_MS');
-    return parsed;
-  }
-  const value = config.nostrLock.queryTimeoutMs || DEFAULT_QUERY_TIMEOUT_MS;
-  assertTimeoutInRange(value, 'effective query timeout');
-  return value;
+  return resolveIntegerConfig(
+    'NOSTR_LOCK_QUERY_TIMEOUT_MS',
+    config.nostrLock.queryTimeoutMs,
+    DEFAULT_QUERY_TIMEOUT_MS,
+    assertTimeoutInRange,
+    'query timeout',
+  );
 }
 
 export function getPublishTimeoutMs() {
   const config = loadTorchConfig();
-  const envValue = process.env.NOSTR_LOCK_PUBLISH_TIMEOUT_MS;
-  if (envValue) {
-    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_PUBLISH_TIMEOUT_MS');
-    assertTimeoutInRange(parsed, 'NOSTR_LOCK_PUBLISH_TIMEOUT_MS');
-    return parsed;
-  }
-  const value = config.nostrLock.publishTimeoutMs || DEFAULT_PUBLISH_TIMEOUT_MS;
-  assertTimeoutInRange(value, 'effective publish timeout');
-  return value;
+  return resolveIntegerConfig(
+    'NOSTR_LOCK_PUBLISH_TIMEOUT_MS',
+    config.nostrLock.publishTimeoutMs,
+    DEFAULT_PUBLISH_TIMEOUT_MS,
+    assertTimeoutInRange,
+    'publish timeout',
+  );
 }
 
 export function getMinSuccessfulRelayPublishes() {
   const config = loadTorchConfig();
-  const envValue = process.env.NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES;
-  if (envValue) {
-    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES');
-    assertPositiveCount(parsed, 'NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES');
-    return parsed;
-  }
-  const value = config.nostrLock.minSuccessfulRelayPublishes || DEFAULT_MIN_SUCCESSFUL_PUBLISHES;
-  assertPositiveCount(value, 'effective min successful relay publishes');
-  return value;
+  return resolveIntegerConfig(
+    'NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES',
+    config.nostrLock.minSuccessfulRelayPublishes,
+    DEFAULT_MIN_SUCCESSFUL_PUBLISHES,
+    assertPositiveCount,
+    'min successful relay publishes',
+  );
 }
 
 export function getMinActiveRelayPool() {
   const config = loadTorchConfig();
-  const envValue = process.env.NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL;
-  if (envValue) {
-    const parsed = parseEnvInteger(envValue, 'NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL');
-    assertPositiveCount(parsed, 'NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL');
-    return parsed;
-  }
-  const value = config.nostrLock.minActiveRelayPool || DEFAULT_MIN_ACTIVE_RELAY_POOL;
-  assertPositiveCount(value, 'effective min active relay pool');
-  return value;
+  return resolveIntegerConfig(
+    'NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL',
+    config.nostrLock.minActiveRelayPool,
+    DEFAULT_MIN_ACTIVE_RELAY_POOL,
+    assertPositiveCount,
+    'min active relay pool',
+  );
 }
 
 export function getHashtag() {
