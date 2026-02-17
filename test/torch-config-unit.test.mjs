@@ -68,4 +68,26 @@ describe('loadTorchConfig (Unit Tests with Mocked FS)', () => {
     assert.strictEqual(mockFs.existsSync.mock.calls.length, 1);
     assert.strictEqual(mockFs2.existsSync.mock.calls.length, 0);
   });
+
+  it('returns null for empty string lists (new consistent behavior)', () => {
+    const mockFs = {
+      existsSync: mock.fn(() => true),
+      readFileSync: mock.fn(() => JSON.stringify({
+        nostrLock: {
+          relays: [],
+          relayFallbacks: []
+        },
+        dashboard: {
+          relays: []
+        }
+      }))
+    };
+
+    const config = loadTorchConfig(mockFs);
+
+    // New behavior: all return null
+    assert.strictEqual(config.nostrLock.relays, null);
+    assert.strictEqual(config.dashboard.relays, null);
+    assert.strictEqual(config.nostrLock.relayFallbacks, null);
+  });
 });
