@@ -1,0 +1,20 @@
+{
+  "cadence": "daily",
+  "operation": "store",
+  "runId": "session-mlqtue5j",
+  "servicePath": "src/services/memory/index.js#ingestEvents",
+  "inputs": {
+    "agentId": "torch-garbage-collection-agent",
+    "promptPath": "src/prompts/daily/torch-garbage-collection-agent.md",
+    "promptIntent": "Required startup + artifacts + memory + issue capture",
+    "events": 1,
+    "sourceFile": "memory-updates/2026-02-17T16-37-11Z__torch-garbage-collection-agent.md"
+  },
+  "outputs": {
+    "storedCount": 1,
+    "summaries": [
+      "# Memory Update - Torch Garbage Collection Agent\n\nRun completed at 2026-02-17T16-37-11Z.\nNo stale log files or memory updates older than 14 days were found."
+    ]
+  },
+  "status": "ok"
+}
