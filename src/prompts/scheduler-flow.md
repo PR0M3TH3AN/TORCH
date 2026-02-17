@@ -20,8 +20,7 @@ Prompt authors: do not use legacy unprefixed paths (`context/`, `todo/`, `decisi
 Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this contract:
 
 1. **Read baseline policy files before implementation**:
-   - `AGENTS.md`
-   - `CLAUDE.md`
+   - `TORCH.md`
    - `KNOWN_ISSUES.md`
    - Canonical path note: active issues are tracked in root `KNOWN_ISSUES.md` (not `docs/KNOWN_ISSUES.md`)
    - `docs/agent-handoffs/README.md`
@@ -68,10 +67,10 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
    Goose Desktop note: `npm run lock:check:<cadence>` can emit large hermit wrapper logs. Use `--json --quiet` (as documented above). If the command still fails due to Goose hermit issues, apply the PATH workaround in `KNOWN_ISSUES.md` before rerunning.
 
-3. Read policy file(s) once before the run loop. This step is conditional: if `AGENTS.md` is missing, continue without failing.
+3. Read policy file(s) once before the run loop. This step is conditional: if `TORCH.md` is missing, continue without failing.
 
    ```bash
-   test -f AGENTS.md && cat AGENTS.md || echo "No AGENTS.md found; continuing"
+   test -f TORCH.md && cat TORCH.md || echo "No TORCH.md found; continuing"
    ```
 
 4. Bootstrap log directories before listing files:
