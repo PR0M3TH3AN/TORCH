@@ -222,5 +222,5 @@ test('renderPromptWithMemoryContext handles circular agentContext gracefully', a
   // The query should contain the string representation of the circular object.
   // String(circular) is "[object Object]"
   assert.ok(capturedQuery.includes('[object Object]'), 'Query should contain the stringified circular object fallback');
-  assert.ok(output.includes('Base prompt'), 'Output should contain the base prompt');
+  assert.match(output, /Base prompt/);
 });
