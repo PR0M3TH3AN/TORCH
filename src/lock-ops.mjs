@@ -306,11 +306,11 @@ export async function queryLocks(relays, cadence, dateStr, namespace, deps = {})
 
   const pool = poolFactory();
   const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
-  const queryTimeoutMs = getQueryTimeoutMsFn();
-  const fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
+  const queryTimeoutMs = await getQueryTimeoutMsFn();
+  const fallbackRelays = (await getRelayFallbacksFn()).filter((relay) => !relays.includes(relay));
   const healthConfig = buildRelayHealthConfig({
     ...deps,
-    minActiveRelayPool: getMinActiveRelayPoolFn(),
+    minActiveRelayPool: await getMinActiveRelayPoolFn(),
   });
 
   const runQuery = async (relaySet, phase) => {
@@ -419,13 +419,13 @@ export async function publishLock(relays, event, deps = {}) {
   const attemptId = diagnostics.attemptId || process.env.SCHEDULER_LOCK_ATTEMPT_ID || '1';
 
   const pool = poolFactory();
-  const publishTimeoutMs = getPublishTimeoutMsFn();
-  const minSuccesses = getMinSuccessfulRelayPublishesFn();
-  const fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
+  const publishTimeoutMs = await getPublishTimeoutMsFn();
+  const minSuccesses = await getMinSuccessfulRelayPublishesFn();
+  const fallbackRelays = (await getRelayFallbacksFn()).filter((relay) => !relays.includes(relay));
   const maxAttempts = Math.max(1, Math.floor(retryAttempts));
   const healthConfig = buildRelayHealthConfig({
     ...deps,
-    minActiveRelayPool: getMinActiveRelayPoolFn(),
+    minActiveRelayPool: await getMinActiveRelayPoolFn(),
   });
 
   const publishOnce = async () => {

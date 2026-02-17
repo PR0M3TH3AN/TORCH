@@ -7,83 +7,96 @@ describe('loadTorchConfig (Unit Tests with Mocked FS)', () => {
     _resetTorchConfigCache();
   });
 
-  it('loads valid config correctly', () => {
+  it('loads valid config correctly', async () => {
     const mockFs = {
       existsSync: mock.fn(() => true),
-      readFileSync: mock.fn(() => JSON.stringify({
-        nostrLock: { namespace: 'unit-test-ns' }
-      }))
+      promises: {
+        readFile: mock.fn(async () => JSON.stringify({
+          nostrLock: { namespace: 'unit-test-ns' }
+        }))
+      }
     };
 
-    const config = loadTorchConfig(mockFs);
+    const config = await loadTorchConfig(mockFs);
 
     assert.strictEqual(config.nostrLock.namespace, 'unit-test-ns');
-    assert.strictEqual(mockFs.existsSync.mock.calls.length, 1);
-    assert.strictEqual(mockFs.readFileSync.mock.calls.length, 1);
+    // loadTorchConfig no longer calls existsSync on the passed fs, only readFile (and catches ENOENT)
+    // Actually, getTorchConfigPath calls existsSync on REAL fs.
+    // So checking mockFs.existsSync is wrong if loadTorchConfig doesn't call it.
+    // In my change, loadTorchConfig calls await fileSystem.promises.readFile.
+    assert.strictEqual(mockFs.promises.readFile.mock.calls.length, 1);
   });
 
-  it('returns default config when file is missing', () => {
+  it('returns default config when file is missing', async () => {
     const mockFs = {
-      existsSync: mock.fn(() => false),
-      readFileSync: mock.fn()
+      promises: {
+        readFile: mock.fn(async () => {
+          const err = new Error('ENOENT');
+          err.code = 'ENOENT';
+          throw err;
+        })
+      }
     };
 
-    const config = loadTorchConfig(mockFs);
+    const config = await loadTorchConfig(mockFs);
 
     assert.strictEqual(config.nostrLock.namespace, null);
-    assert.strictEqual(mockFs.existsSync.mock.calls.length, 1);
-    assert.strictEqual(mockFs.readFileSync.mock.calls.length, 0);
+    assert.strictEqual(mockFs.promises.readFile.mock.calls.length, 1);
   });
 
-  it('throws error on malformed JSON', () => {
+  it('throws error on malformed JSON', async () => {
     const mockFs = {
-      existsSync: mock.fn(() => true),
-      readFileSync: mock.fn(() => '{ invalid json }')
+      promises: {
+        readFile: mock.fn(async () => '{ invalid json }')
+      }
     };
 
-    assert.throws(() => {
-      loadTorchConfig(mockFs);
+    await assert.rejects(async () => {
+      await loadTorchConfig(mockFs);
     }, /Failed to parse/);
   });
 
-  it('caches the config and ignores subsequent fs calls', () => {
+  it('caches the config and ignores subsequent fs calls', async () => {
     const mockFs = {
-      existsSync: mock.fn(() => true),
-      readFileSync: mock.fn(() => JSON.stringify({ nostrLock: { namespace: 'cached' } }))
+      promises: {
+        readFile: mock.fn(async () => JSON.stringify({ nostrLock: { namespace: 'cached' } }))
+      }
     };
 
-    const config1 = loadTorchConfig(mockFs);
+    const config1 = await loadTorchConfig(mockFs);
     assert.strictEqual(config1.nostrLock.namespace, 'cached');
 
     // Second call with a different "fs" (or same) should not trigger fs operations
     const mockFs2 = {
-      existsSync: mock.fn(() => true),
-      readFileSync: mock.fn(() => JSON.stringify({ nostrLock: { namespace: 'changed' } }))
+      promises: {
+        readFile: mock.fn(async () => JSON.stringify({ nostrLock: { namespace: 'changed' } }))
+      }
     };
 
-    const config2 = loadTorchConfig(mockFs2);
+    const config2 = await loadTorchConfig(mockFs2);
 
     assert.strictEqual(config2.nostrLock.namespace, 'cached');
     assert.strictEqual(config1, config2);
-    assert.strictEqual(mockFs.existsSync.mock.calls.length, 1);
-    assert.strictEqual(mockFs2.existsSync.mock.calls.length, 0);
+    assert.strictEqual(mockFs.promises.readFile.mock.calls.length, 1);
+    assert.strictEqual(mockFs2.promises.readFile.mock.calls.length, 0);
   });
 
-  it('returns null for empty string lists (new consistent behavior)', () => {
+  it('returns null for empty string lists (new consistent behavior)', async () => {
     const mockFs = {
-      existsSync: mock.fn(() => true),
-      readFileSync: mock.fn(() => JSON.stringify({
-        nostrLock: {
-          relays: [],
-          relayFallbacks: []
-        },
-        dashboard: {
-          relays: []
-        }
-      }))
+      promises: {
+        readFile: mock.fn(async () => JSON.stringify({
+          nostrLock: {
+            relays: [],
+            relayFallbacks: []
+          },
+          dashboard: {
+            relays: []
+          }
+        }))
+      }
     };
 
-    const config = loadTorchConfig(mockFs);
+    const config = await loadTorchConfig(mockFs);
 
     // New behavior: all return null
     assert.strictEqual(config.nostrLock.relays, null);

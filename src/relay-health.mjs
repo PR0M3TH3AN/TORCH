@@ -196,14 +196,21 @@ async function appendHistory(historyPath, entry) {
 export async function runRelayHealthCheck(options = {}) {
   const {
     cadence = 'daily',
-    relays = getRelays(),
-    namespace = getNamespace(),
     timeoutMs = 6000,
-    historyPath = path.resolve(process.cwd(), 'task-logs', 'relay-health', `${cadence}.jsonl`),
     allRelaysDownMinutes = 10,
     minSuccessRate = 0.7,
     windowMinutes = 60,
   } = options;
+
+  let {
+    relays,
+    namespace,
+    historyPath,
+  } = options;
+
+  if (!relays) relays = await getRelays();
+  if (!namespace) namespace = await getNamespace();
+  if (!historyPath) historyPath = path.resolve(process.cwd(), 'task-logs', 'relay-health', `${cadence}.jsonl`);
 
   const relayResults = [];
   for (const relay of relays) {
