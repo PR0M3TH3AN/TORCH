@@ -14,10 +14,10 @@ import { todayDateStr, nowUnix } from './utils.mjs';
 import { ExitError } from './errors.mjs';
 
 export async function cmdLock(agent, cadence, dryRun = false) {
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = todayDateStr();
-  const ttl = getTtl();
+  const ttl = await getTtl();
   const now = nowUnix();
   const expiresAt = now + ttl;
 
@@ -25,7 +25,7 @@ export async function cmdLock(agent, cadence, dryRun = false) {
   console.error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
   console.error(`Relays: ${relays.join(', ')}`);
 
-  const roster = getRoster(cadence);
+  const roster = await getRoster(cadence);
   if (!roster.includes(agent)) {
     console.error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
     console.error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
