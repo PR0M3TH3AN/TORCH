@@ -103,9 +103,9 @@ test('unpinMemory unpins the memory and clears the cache', async () => {
   assert.equal(listMemoriesCallCount, 1, 'Repository should NOT be queried on cache hit');
 
   // 3. Unpin memory
-  const unpinned = await unpinMemory('m1', { repository });
-  assert.ok(unpinned);
-  assert.equal(unpinned.pinned, false);
+  const updated = await unpinMemory('m1', { repository });
+  assert.ok(updated);
+  assert.equal(updated.pinned, false);
   assert.equal(records[0].pinned, false);
 
   // 4. Verify cache miss (cleared)
