@@ -297,5 +297,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "6a7b3ba4-d713-4f18-a98e-d16c0e0837eb",
+    {
+      "schema_version": 1,
+      "id": "6a7b3ba4-d713-4f18-a98e-d16c0e0837eb",
+      "agent_id": "todo-triage-agent",
+      "session_id": "2026-02-17T16-35-41Z",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771346141249,
+      "last_seen": 1771346141259,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "ae3f6a26-c753-4a96-b56f-c737a847cee5",
+    {
+      "schema_version": 1,
+      "id": "ae3f6a26-c753-4a96-b56f-c737a847cee5",
+      "agent_id": "todo-triage-agent",
+      "session_id": "2026-02-17T16-36-25Z",
+      "type": "batch_window",
+      "content": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
+      "summary": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771346312937,
+      "last_seen": 1771346312937,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
