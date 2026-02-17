@@ -193,3 +193,34 @@ test('renderPromptWithMemoryContext handles missing query or service', async () 
   const output = await renderPromptWithMemoryContext(params);
   assert.equal(output, 'Base prompt');
 });
+
+test('renderPromptWithMemoryContext handles circular agentContext gracefully', async () => {
+  const circular = {};
+  circular.self = circular;
+
+  let capturedQuery = '';
+  const memoryService = {
+    async getRelevantMemories({ query }) {
+      capturedQuery = query;
+      return [];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agentContext: circular,
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+
+  // It should not throw.
+  // The query should contain the string representation of the circular object.
+  // String(circular) is "[object Object]"
+  assert.ok(capturedQuery.includes('[object Object]'), 'Query should contain the stringified circular object fallback');
+  assert.match(output, /Base prompt/);
+});
