@@ -1,0 +1,32 @@
+[
+  {
+    "file": "dashboard/index.html",
+    "line": 816,
+    "pattern": "setInterval",
+    "snippet": "      refreshIntervalId = setInterval(() => {",
+    "risk": "Unbounded background DOM updates",
+    "trigger": "Page load",
+    "impact": "CPU usage when tab is hidden",
+    "priority": "P1"
+  },
+  {
+    "file": "dashboard/index.html",
+    "line": 799,
+    "pattern": "setTimeout",
+    "snippet": "          setTimeout(() => {",
+    "risk": "Delayed retry",
+    "trigger": "WebSocket close",
+    "impact": "Low",
+    "priority": "P3"
+  },
+  {
+    "file": "src/services/memory/scheduler.js",
+    "line": 33,
+    "pattern": "setInterval",
+    "snippet": "  const handle = setInterval(() => {",
+    "risk": "Background job loop",
+    "trigger": "Server start",
+    "impact": "Necessary backend process",
+    "priority": "P3"
+  }
+]
