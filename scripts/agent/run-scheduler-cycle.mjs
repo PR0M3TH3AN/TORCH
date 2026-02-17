@@ -371,22 +371,28 @@ async function getLatestFile(logDir) {
     .filter((filename) => isStrictSchedulerLogFilename(filename))
     .sort((a, b) => b.localeCompare(a));
 
+  const results = await Promise.all(
+    files.map(async (filename) => {
+      const filePath = path.join(logDir, filename);
+      const content = await fs.readFile(filePath, 'utf8').catch(() => '');
+      const createdAtMs = parseDateValue(parseFrontmatterCreatedAt(content));
+      const fileTimestampMs = parseTimestampFromFilename(filename);
+      const effectiveMs = createdAtMs ?? fileTimestampMs;
+
+      if (!effectiveMs) {
+        console.warn(`[scheduler] Ignoring invalid log timestamp in ${filename}; checking next candidate.`);
+        return null;
+      }
+      return { filename, effectiveMs };
+    }),
+  );
+
   let latest = null;
 
-  for (const filename of files) {
-    const filePath = path.join(logDir, filename);
-    const content = await fs.readFile(filePath, 'utf8').catch(() => '');
-    const createdAtMs = parseDateValue(parseFrontmatterCreatedAt(content));
-    const fileTimestampMs = parseTimestampFromFilename(filename);
-    const effectiveMs = createdAtMs ?? fileTimestampMs;
-
-    if (!effectiveMs) {
-      console.warn(`[scheduler] Ignoring invalid log timestamp in ${filename}; checking next candidate.`);
-      continue;
-    }
-
-    if (!latest || effectiveMs > latest.effectiveMs) {
-      latest = { filename, effectiveMs };
+  for (const result of results) {
+    if (!result) continue;
+    if (!latest || result.effectiveMs > latest.effectiveMs) {
+      latest = result;
     }
   }
 
