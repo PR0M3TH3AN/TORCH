@@ -152,36 +152,33 @@ async function interactiveInit(cwd) {
   }
 }
 
-export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = null) {
-  // Use interactive mode to get configuration unless mock answers are provided
-  let config;
+async function resolveConfiguration(cwd, mockAnswers) {
   if (mockAnswers) {
-    config = mockAnswers;
-  } else {
-    config = await interactiveInit(cwd);
+    return mockAnswers;
   }
-  const { installDir, namespace, relays } = config;
+  return await interactiveInit(cwd);
+}
 
-  const paths = getPaths(cwd, installDir);
-  console.log(`\nInitializing torch in ${paths.torchDir}...`);
-
-  // Check if directory exists and is not empty (unless force is used or we are installing to .)
+function ensureInstallDirectory(paths, force, installDir) {
   if (fs.existsSync(paths.torchDir) && !force) {
      const entries = fs.readdirSync(paths.torchDir);
      if (entries.length > 0 && installDir !== '.') {
          throw new Error(`Directory ${paths.torchDir} already exists and is not empty. Use --force to overwrite.`);
      }
   }
-
   ensureDir(paths.torchDir);
   ensureDir(paths.promptsDir);
+}
 
+function installAppAssets(torchDir, installDir) {
   // 1. Copy App Directories
-  syncAppDirectories(paths.torchDir, 'Copied');
+  syncAppDirectories(torchDir, 'Copied');
 
   // 2. Copy App Files
-  syncAppFiles(paths.torchDir, installDir, 'Copied');
+  syncAppFiles(torchDir, installDir, 'Copied');
+}
 
+function installTorchAssets(paths, installDir) {
   // 3. Copy Roster
   const srcRoster = path.join(SRC_PROMPTS_DIR, 'roster.json');
   if (fs.existsSync(srcRoster)) {
@@ -215,7 +212,9 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
       console.log(`Created ${files.length} files in ${path.relative(paths.root, destDir)}/`);
     }
   }
+}
 
+function configureTorch(cwd, paths, installDir, namespace, relays) {
   // 6. Create/Update torch-config.json
   const configPath = path.join(paths.root, 'torch-config.json');
 
@@ -268,12 +267,29 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
 
   fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
   console.log(`Saved configuration to ${path.relative(cwd, configPath)}`);
+}
 
+function injectHostScriptsIfNeeded(paths, installDir) {
   // 7. Inject Scripts into Host Package.json
   // If we are NOT installing to '.', the host package.json is in paths.root
   if (installDir !== '.') {
       injectScriptsIntoHost(paths.root, installDir);
   }
+}
+
+export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = null) {
+  const config = await resolveConfiguration(cwd, mockAnswers);
+  const { installDir, namespace, relays } = config;
+
+  const paths = getPaths(cwd, installDir);
+  console.log(`\nInitializing torch in ${paths.torchDir}...`);
+
+  ensureInstallDirectory(paths, force, installDir);
+
+  installAppAssets(paths.torchDir, installDir);
+  installTorchAssets(paths, installDir);
+  configureTorch(cwd, paths, installDir, namespace, relays);
+  injectHostScriptsIfNeeded(paths, installDir);
 
   console.log('\nInitialization complete.');
   console.log('You can now customize the files in ' + path.relative(cwd, paths.torchDir) + '/');

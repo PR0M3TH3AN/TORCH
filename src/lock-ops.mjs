@@ -1,3 +1,4 @@
+import { randomInt, randomUUID } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
@@ -6,7 +7,17 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { KIND_APP_DATA } from './constants.mjs';
+import {
+  KIND_APP_DATA,
+  DEFAULT_RETRY_ATTEMPTS,
+  DEFAULT_RETRY_BASE_DELAY_MS,
+  DEFAULT_RETRY_CAP_DELAY_MS,
+  DEFAULT_ROLLING_WINDOW_SIZE,
+  DEFAULT_FAILURE_THRESHOLD,
+  DEFAULT_QUARANTINE_COOLDOWN_MS,
+  DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
+  DEFAULT_SNAPSHOT_INTERVAL_MS,
+} from './constants.mjs';
 
 function nowUnix() {
   return Math.floor(Date.now() / 1000);
@@ -129,7 +140,13 @@ function isTransientPublishCategory(category) {
   ].includes(category);
 }
 
-function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = Math.random) {
+const MAX_RANDOM = 281474976710655; // 2**48 - 1
+
+function secureRandom() {
+  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
+}
+
+function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
   return Math.floor(randomFn() * maxDelay);
 }
@@ -290,11 +307,11 @@ export const defaultHealthManager = new RelayHealthManager();
 
 function buildRelayHealthConfig(deps) {
   return {
-    rollingWindowSize: deps.rollingWindowSize ?? 25,
-    failureThreshold: deps.failureThreshold ?? 3,
-    quarantineCooldownMs: deps.quarantineCooldownMs ?? 30_000,
-    maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? 5 * 60_000,
-    snapshotIntervalMs: deps.snapshotIntervalMs ?? 60_000,
+    rollingWindowSize: deps.rollingWindowSize ?? DEFAULT_ROLLING_WINDOW_SIZE,
+    failureThreshold: deps.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
+    quarantineCooldownMs: deps.quarantineCooldownMs ?? DEFAULT_QUARANTINE_COOLDOWN_MS,
+    maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
+    snapshotIntervalMs: deps.snapshotIntervalMs ?? DEFAULT_SNAPSHOT_INTERVAL_MS,
     minActiveRelayPool: Math.max(1, deps.minActiveRelayPool),
   };
 }
@@ -408,12 +425,31 @@ async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
   });
 }
 
-class LockPublisher {
-  constructor(relays, event, deps) {
+export class LockPublisher {
+  constructor(relays, event, deps = {}) {
     this.relays = relays;
     this.event = event;
     this.deps = deps;
+    this.pool = null;
+    this.healthConfig = null;
+    this.allRelays = [];
+    this.fallbackRelays = [];
+    this.publishTimeoutMs = 0;
+    this.minSuccesses = 0;
+    this.minActiveRelayPool = 0;
+    this.maxAttempts = 0;
+    this.retryBaseDelayMs = 0;
+    this.retryCapDelayMs = 0;
+    this.sleepFn = null;
+    this.randomFn = null;
+    this.telemetryLogger = null;
+    this.healthLogger = null;
+    this.healthManager = null;
+    this.correlationId = null;
+    this.attemptId = null;
+  }
 
+  async publish() {
     const {
       poolFactory = () => new SimplePool(),
       getPublishTimeoutMsFn = getPublishTimeoutMs,
@@ -448,14 +484,17 @@ class LockPublisher {
     this.randomFn = randomFn;
     this.telemetryLogger = telemetryLogger;
     this.healthLogger = healthLogger;
+    this.healthManager = healthManager;
+    this.correlationId = diagnostics.correlationId || randomUUID();
+    this.attemptId = diagnostics.attemptId || randomUUID();
 
-    this.correlationId = diagnostics.correlationId || process.env.SCHEDULER_LOCK_CORRELATION_ID || 'none';
-    this.attemptId = diagnostics.attemptId || process.env.SCHEDULER_LOCK_ATTEMPT_ID || '1';
+    this.healthConfig = buildRelayHealthConfig({
+        ...this.deps,
+        minActiveRelayPool: this.minActiveRelayPool
+    });
 
-    this.allRelays = mergeRelayList(relays, this.fallbackRelays);
-  }
+    this.allRelays = mergeRelayList(this.relays, this.fallbackRelays);
 
-  async publish() {
     try {
       this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
       let lastAttemptState = null;
@@ -663,3 +702,5 @@ export async function publishLock(relays, event, deps = {}) {
 export function _resetRelayHealthState() {
   defaultHealthManager.reset();
 }
+
+export const _secureRandom = secureRandom;
