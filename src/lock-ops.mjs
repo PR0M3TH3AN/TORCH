@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
@@ -129,7 +130,13 @@ function isTransientPublishCategory(category) {
   ].includes(category);
 }
 
-function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = Math.random) {
+const MAX_RANDOM = 281474976710655; // 2**48 - 1
+
+function secureRandom() {
+  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
+}
+
+function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
   return Math.floor(randomFn() * maxDelay);
 }
@@ -408,50 +415,22 @@ async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
   });
 }
 
-class LockPublisher {
-  constructor(relays, event, deps) {
-    this.relays = relays;
-    this.event = event;
-    this.deps = deps;
-
-    const {
-      poolFactory = () => new SimplePool(),
-      getPublishTimeoutMsFn = getPublishTimeoutMs,
-      getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
-      getRelayFallbacksFn = getRelayFallbacks,
-      getMinActiveRelayPoolFn = getMinActiveRelayPool,
-      retryAttempts = 4,
-      retryBaseDelayMs = 500,
-      retryCapDelayMs = 8_000,
-      sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-      randomFn = Math.random,
-      telemetryLogger = console.error,
-      healthLogger = console.error,
-      diagnostics = {},
-    } = deps;
-
-    this.pool = poolFactory();
-    this.publishTimeoutMs = getPublishTimeoutMsFn();
-    this.minSuccesses = getMinSuccessfulRelayPublishesFn();
-    this.fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
-    this.maxAttempts = Math.max(1, Math.floor(retryAttempts));
-    this.healthConfig = buildRelayHealthConfig({
-      ...deps,
-      minActiveRelayPool: getMinActiveRelayPoolFn(),
-    });
-
-    this.retryBaseDelayMs = retryBaseDelayMs;
-    this.retryCapDelayMs = retryCapDelayMs;
-    this.sleepFn = sleepFn;
-    this.randomFn = randomFn;
-    this.telemetryLogger = telemetryLogger;
-    this.healthLogger = healthLogger;
-
-    this.correlationId = diagnostics.correlationId || process.env.SCHEDULER_LOCK_CORRELATION_ID || 'none';
-    this.attemptId = diagnostics.attemptId || process.env.SCHEDULER_LOCK_ATTEMPT_ID || '1';
-
-    this.allRelays = mergeRelayList(relays, this.fallbackRelays);
-  }
+export async function publishLock(relays, event, deps = {}) {
+  const {
+    poolFactory = () => new SimplePool(),
+    getPublishTimeoutMsFn = getPublishTimeoutMs,
+    getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
+    getRelayFallbacksFn = getRelayFallbacks,
+    getMinActiveRelayPoolFn = getMinActiveRelayPool,
+    retryAttempts = 4,
+    retryBaseDelayMs = 500,
+    retryCapDelayMs = 8_000,
+    sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    randomFn = secureRandom,
+    telemetryLogger = console.error,
+    healthLogger = console.error,
+    diagnostics = {},
+  } = deps;
 
   async publish() {
     try {
@@ -639,3 +618,5 @@ export async function publishLock(relays, event, deps = {}) {
 export function _resetRelayHealthState() {
   defaultHealthManager.reset();
 }
+
+export const _secureRandom = secureRandom;
