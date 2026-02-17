@@ -7,7 +7,17 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { KIND_APP_DATA } from './constants.mjs';
+import {
+  KIND_APP_DATA,
+  DEFAULT_RETRY_ATTEMPTS,
+  DEFAULT_RETRY_BASE_DELAY_MS,
+  DEFAULT_RETRY_CAP_DELAY_MS,
+  DEFAULT_ROLLING_WINDOW_SIZE,
+  DEFAULT_FAILURE_THRESHOLD,
+  DEFAULT_QUARANTINE_COOLDOWN_MS,
+  DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
+  DEFAULT_SNAPSHOT_INTERVAL_MS,
+} from './constants.mjs';
 
 function nowUnix() {
   return Math.floor(Date.now() / 1000);
@@ -297,11 +307,11 @@ export const defaultHealthManager = new RelayHealthManager();
 
 function buildRelayHealthConfig(deps) {
   return {
-    rollingWindowSize: deps.rollingWindowSize ?? 25,
-    failureThreshold: deps.failureThreshold ?? 3,
-    quarantineCooldownMs: deps.quarantineCooldownMs ?? 30_000,
-    maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? 5 * 60_000,
-    snapshotIntervalMs: deps.snapshotIntervalMs ?? 60_000,
+    rollingWindowSize: deps.rollingWindowSize ?? DEFAULT_ROLLING_WINDOW_SIZE,
+    failureThreshold: deps.failureThreshold ?? DEFAULT_FAILURE_THRESHOLD,
+    quarantineCooldownMs: deps.quarantineCooldownMs ?? DEFAULT_QUARANTINE_COOLDOWN_MS,
+    maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
+    snapshotIntervalMs: deps.snapshotIntervalMs ?? DEFAULT_SNAPSHOT_INTERVAL_MS,
     minActiveRelayPool: Math.max(1, deps.minActiveRelayPool),
   };
 }
