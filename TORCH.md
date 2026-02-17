@@ -1,6 +1,135 @@
 # TORCH: Task Orchestration via Relay-Coordinated Handoff
 
-TORCH is a decentralized task-locking protocol for multi-agent software development.
+TORCH is a decentralized task-locking protocol for multi-agent software development. This document serves as the primary manual for both human operators and AI agents working within a TORCH-enabled repository.
+
+---
+
+## Agent Operating Guide
+
+This section defines how agents should work in this repository.
+
+### Purpose
+
+- Keep agent work predictable, auditable, and safe.
+- Minimize repeated discovery work across sessions.
+- Capture durable learnings so future agents can move faster.
+
+### Session startup checklist (run every session)
+
+1. **Read `TORCH.md`** (this file).
+2. Read `CONTRIBUTING.md` for commit and PR expectations.
+3. Read `KNOWN_ISSUES.md` for active blockers and workarounds.
+4. Read `docs/agent-handoffs/README.md`.
+5. Scan recent notes in:
+   - `docs/agent-handoffs/learnings/`
+   - `docs/agent-handoffs/incidents/`
+6. If present, review the current run artifacts in:
+   - `src/context/`
+   - `src/todo/`
+   - `src/decisions/`
+   - `src/test_logs/`
+   - `src/issues/`
+
+### Core operating principles
+
+- Default to generic guidance and neutral language.
+- Make the smallest safe change that satisfies the request.
+- Avoid unrelated refactors.
+- Preserve backward compatibility unless explicitly asked otherwise.
+- Prefer explicit commands and documented behavior over assumptions.
+- Record assumptions clearly in your final summary.
+
+### Validation policy
+
+- Run the most relevant checks for changed files (tests, lint, typecheck, build, or targeted scripts).
+- Never claim a check passed unless it was actually executed.
+- If a check cannot run, record:
+   - command attempted,
+   - why it could not complete,
+   - what fallback validation was performed.
+
+### Execution Workflow
+
+1. **Load baseline context** (see Session startup checklist above).
+2. **Clarify the task**
+   - Restate the requested outcome.
+   - Identify constraints, risks, and assumptions.
+3. **Plan minimal changes**
+   - Keep scope tight.
+   - Avoid touching unrelated files.
+4. **Implement**
+   - Apply small, reversible edits.
+   - Favor readability and maintainability.
+5. **Validate**
+   - Run relevant checks for impacted files.
+   - Capture exact commands and outcomes.
+6. **Document and hand off**
+   - Summarize what changed and why.
+   - Record reusable learnings/incidents when appropriate.
+
+### Working files for session state
+
+Use the following folders as lightweight coordination artifacts:
+
+- `src/context/` — Current objective, scope, constraints.
+- `src/todo/` — Task checklist and blockers.
+- `src/decisions/` — Important design/implementation choices.
+- `src/test_logs/` — Validation commands and results.
+- `src/issues/` — Investigations or audits that may become tracked issues.
+
+#### Content templates
+
+**Context note:** Goal, Scope, Constraints, Open questions.
+**Todo note:** Pending tasks, Completed tasks, Blocked tasks.
+**Decision note:** Decision, Alternatives considered, Rationale, Consequences/follow-ups.
+**Test log:** Command, Result (pass/fail/warn), Notes (environmental limits, retries, artifacts).
+
+### Knowledge-sharing protocol
+
+#### What belongs where
+
+- `KNOWN_ISSUES.md`: Active, reproducible issues only. Include status, impact, workaround, and last verification date.
+- `docs/agent-handoffs/learnings/`: Proven patterns, repeatable fixes, and successful implementation guidance.
+- `docs/agent-handoffs/incidents/`: Failures, root causes, mitigations, and prevention guidance.
+- `src/context/`, `src/todo/`, etc.: Ephemeral session state.
+
+#### Naming standard
+
+Use: `YYYY-MM-DD-short-topic.md` (e.g., `2026-02-14-validation-before-summary.md`).
+Keep names concise, descriptive, and neutral.
+
+#### Required sections for reusable notes
+
+1. Context
+2. Observation
+3. Action taken
+4. Validation performed
+5. Recommendation for next agents
+
+#### Update decision tree
+
+When you discover reusable context:
+1. Check if an existing note already covers it.
+2. If yes, update that note.
+3. If no, add a new note in `learnings/` or `incidents/`.
+4. If the issue is still active/reproducible, add or update `KNOWN_ISSUES.md`.
+
+### Quality checklist before completion
+
+- Scope matches request.
+- Documentation remains repository-agnostic unless explicitly needed.
+- No unsupported claims about testing.
+- Assumptions and limitations are called out.
+- Changes are easy to revert.
+
+### Anti-patterns to avoid
+
+- Embedding product/company-specific guidance in baseline docs.
+- Large refactors when a focused change is sufficient.
+- Skipping validation without recording why.
+- Creating duplicate notes when an update would suffice.
+
+---
 
 ## Dashboard & Protocol Overview
 

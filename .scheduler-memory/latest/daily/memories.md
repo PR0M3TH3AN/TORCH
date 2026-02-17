@@ -1,0 +1,1 @@
+- Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture

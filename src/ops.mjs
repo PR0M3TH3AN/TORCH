@@ -24,7 +24,7 @@ const EVOLVING_DIRS = ['daily', 'weekly'];
 
 // New constants for full application install
 const APP_DIRS = ['src', 'bin', 'dashboard', 'landing', 'assets', 'scripts'];
-const APP_FILES = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json'];
+const APP_FILES = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json', 'TORCH.md'];
 
 function getPaths(root, installDirName) {
     const torchDir = path.resolve(root, installDirName);
@@ -65,7 +65,8 @@ function transformContent(content, installDirName) {
     .replace(/src\/prompts\/daily\//g, `${prefix}prompts/daily/`)
     .replace(/src\/prompts\/weekly\//g, `${prefix}prompts/weekly/`)
     .replace(/src\/prompts\/roster\.json/g, `${prefix}roster.json`)
-    .replace(/src\/prompts\/scheduler-flow\.md/g, `${prefix}scheduler-flow.md`);
+    .replace(/src\/prompts\/scheduler-flow\.md/g, `${prefix}scheduler-flow.md`)
+    .replace(/TORCH\.md/g, `${prefix}TORCH.md`);
 }
 
 function copyFile(src, dest, transform = false, overwrite = true, installDirName = 'torch') {
