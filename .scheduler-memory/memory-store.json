@@ -297,5 +297,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "a1ee940b-8009-4748-8da6-1eac3c3cf9eb",
+    {
+      "schema_version": 1,
+      "id": "a1ee940b-8009-4748-8da6-1eac3c3cf9eb",
+      "agent_id": "torch-garbage-collection-agent",
+      "session_id": "session-mlqtsund",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771346214697,
+      "last_seen": 1771346214708,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "577da285-f530-4623-9272-3cc4b7574d50",
+    {
+      "schema_version": 1,
+      "id": "577da285-f530-4623-9272-3cc4b7574d50",
+      "agent_id": "torch-garbage-collection-agent",
+      "session_id": "session-mlqtue5j",
+      "type": "batch_window",
+      "content": "# Memory Update - Torch Garbage Collection Agent\n\nRun completed at 2026-02-17T16-37-11Z.\nNo stale log files or memory updates older than 14 days were found.",
+      "summary": "# Memory Update - Torch Garbage Collection Agent\n\nRun completed at 2026-02-17T16-37-11Z.\nNo stale log files or memory updates older than 14 days were found.",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771346286633,
+      "last_seen": 1771346286633,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
