@@ -22,9 +22,10 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
   // Resolve package root relative to this file (src/dashboard.mjs)
   // this file is in <root>/src/dashboard.mjs, so '..' goes to <root>
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const auth = getDashboardAuth();
+  const auth = await getDashboardAuth();
 
   const server = http.createServer(async (req, res) => {
+    try {
     // Basic Auth check
     if (auth) {
       const authHeader = req.headers.authorization;
@@ -181,20 +182,28 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
 
     res.writeHead(200, { 'Content-Type': contentType });
     fs.createReadStream(filePath).pipe(res);
-  });
-
-  server.listen(port, host, () => {
-    const listenUrl = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/dashboard/`;
-    console.log(`Dashboard running at ${listenUrl}`);
-    if (auth) {
-      console.log('Authentication: enabled (Basic Auth)');
-    } else {
-      console.warn('Authentication: DISABLED (Dashboard is public)');
+    } catch (err) {
+      console.error('Dashboard Server Error:', err);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end('Internal Server Error');
+      }
     }
-    console.log(`Serving files from ${packageRoot}`);
-    console.log(`Using configuration from ${process.cwd()}`);
   });
 
-  // Keep process alive
-  return server;
+  return new Promise((resolve, reject) => {
+    server.listen(port, host, () => {
+      const listenUrl = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/dashboard/`;
+      console.log(`Dashboard running at ${listenUrl}`);
+      if (auth) {
+        console.log('Authentication: enabled (Basic Auth)');
+      } else {
+        console.warn('Authentication: DISABLED (Dashboard is public)');
+      }
+      console.log(`Serving files from ${packageRoot}`);
+      console.log(`Using configuration from ${process.cwd()}`);
+      resolve(server);
+    });
+    server.on('error', reject);
+  });
 }

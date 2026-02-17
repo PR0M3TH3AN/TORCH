@@ -78,22 +78,22 @@ describe('torch-config', () => {
       _resetTorchConfigCache();
     });
 
-    it('throws fatal error for invalid relay URL', () => {
+    it('throws fatal error for invalid relay URL', async () => {
       fs.writeFileSync(tempConfigPath, JSON.stringify({ nostrLock: { relays: ['https://bad'] } }));
       process.env.TORCH_CONFIG_PATH = tempConfigPath;
-      assert.throws(() => loadTorchConfig(), /Invalid relay URL in nostrLock\.relays/);
+      await assert.rejects(() => loadTorchConfig(), /Invalid relay URL in nostrLock\.relays/);
     });
 
-    it('throws fatal error for invalid timeout range', () => {
+    it('throws fatal error for invalid timeout range', async () => {
       fs.writeFileSync(tempConfigPath, JSON.stringify({ nostrLock: { queryTimeoutMs: 50 } }));
       process.env.TORCH_CONFIG_PATH = tempConfigPath;
-      assert.throws(() => loadTorchConfig(), /Invalid nostrLock\.queryTimeoutMs/);
+      await assert.rejects(() => loadTorchConfig(), /Invalid nostrLock\.queryTimeoutMs/);
     });
 
-    it('throws error for malformed JSON', () => {
+    it('throws error for malformed JSON', async () => {
       fs.writeFileSync(badConfigPath, '{ invalid json }');
       process.env.TORCH_CONFIG_PATH = badConfigPath;
-      assert.throws(() => loadTorchConfig(), /Failed to parse/);
+      await assert.rejects(() => loadTorchConfig(), /Failed to parse/);
     });
   });
 
@@ -125,28 +125,28 @@ describe('torch-config', () => {
       _resetTorchConfigCache();
     });
 
-    it('returns default relays', () => {
-      assert.deepStrictEqual(getRelays(), DEFAULT_RELAYS);
+    it('returns default relays', async () => {
+      assert.deepStrictEqual(await getRelays(), DEFAULT_RELAYS);
     });
 
-    it('validates env knob values', () => {
+    it('validates env knob values', async () => {
       process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS = '99';
-      assert.throws(() => getQueryTimeoutMs(), /NOSTR_LOCK_QUERY_TIMEOUT_MS/);
+      await assert.rejects(() => getQueryTimeoutMs(), /NOSTR_LOCK_QUERY_TIMEOUT_MS/);
 
       process.env.NOSTR_LOCK_QUERY_TIMEOUT_MS = '5000';
       process.env.NOSTR_LOCK_PUBLISH_TIMEOUT_MS = 'abc';
-      assert.throws(() => getPublishTimeoutMs(), /NOSTR_LOCK_PUBLISH_TIMEOUT_MS/);
+      await assert.rejects(() => getPublishTimeoutMs(), /NOSTR_LOCK_PUBLISH_TIMEOUT_MS/);
 
       process.env.NOSTR_LOCK_PUBLISH_TIMEOUT_MS = '8000';
       process.env.NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES = '0';
-      assert.throws(() => getMinSuccessfulRelayPublishes(), /NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES/);
+      await assert.rejects(() => getMinSuccessfulRelayPublishes(), /NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES/);
 
       process.env.NOSTR_LOCK_RELAY_FALLBACKS = 'https://bad';
-      assert.throws(() => getRelayFallbacks(), /NOSTR_LOCK_RELAY_FALLBACKS/);
+      await assert.rejects(() => getRelayFallbacks(), /NOSTR_LOCK_RELAY_FALLBACKS/);
 
       process.env.NOSTR_LOCK_RELAY_FALLBACKS = '';
       process.env.NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL = '0';
-      assert.throws(() => getMinActiveRelayPool(), /NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL/);
+      await assert.rejects(() => getMinActiveRelayPool(), /NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL/);
     });
   });
 });
