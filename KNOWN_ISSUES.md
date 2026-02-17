@@ -65,3 +65,11 @@ Track only **active, reproducible, unresolved** issues.
 - **Related notes:** `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md`
 - **Last verified:** 2026-02-15
 
+### content-audit-agent targets missing /content directory
+- **Status:** Active
+- **Area:** Docs
+- **Symptom:** `content-audit-agent` fails to find `/content` directory.
+- **Trigger/Conditions:** Running `content-audit-agent`.
+- **Workaround:** None. Requires updating the agent prompt or repo structure.
+- **Impact:** Docs audit cannot be performed.
+- **Last verified:** 2026-02-17
