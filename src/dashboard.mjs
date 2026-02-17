@@ -90,6 +90,25 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
     let filePath = path.join(packageRoot, safePath);
 
+    // Security check: restrict access to allowed paths
+    const allowedPaths = [
+      path.join(packageRoot, 'dashboard'),
+      path.join(packageRoot, 'assets'),
+      path.join(packageRoot, 'src', 'docs'),
+      path.join(packageRoot, 'torch-config.json')
+    ];
+
+    const isAllowed = allowedPaths.some(allowedPath => {
+      const rel = path.relative(allowedPath, filePath);
+      return !rel.startsWith('..') && !path.isAbsolute(rel);
+    });
+
+    if (!isAllowed) {
+      res.writeHead(403);
+      res.end('Forbidden');
+      return;
+    }
+
     // If directory, try index.html
     let fileStat = await statSafe(filePath);
     if (fileStat && fileStat.isDirectory()) {
