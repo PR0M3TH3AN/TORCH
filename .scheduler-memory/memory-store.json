@@ -246,5 +246,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "40f6bf1a-9715-4906-82d1-8f68be78eb3f",
+    {
+      "schema_version": 1,
+      "id": "40f6bf1a-9715-4906-82d1-8f68be78eb3f",
+      "agent_id": "dead-code-agent",
+      "session_id": "1771338346",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771338346815,
+      "last_seen": 1771338346833,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "267412f9-9704-4739-8481-8317a89e6769",
+    {
+      "schema_version": 1,
+      "id": "267412f9-9704-4739-8481-8317a89e6769",
+      "agent_id": "dead-code-agent",
+      "session_id": "1771338501",
+      "type": "batch_window",
+      "content": "# Weekly Dead Code Analysis - 2026-02-17\n\n**Agent:** dead-code-agent\n**Cadence:** weekly\n**Status:** Completed\n\n## Summary\nExecuted a safety-first dead-code sweep.\n\n## Findings\n- Identified `scripts/fix-duplication.mjs` as an unused standalone script.\n- Identified `src/services/memory/db-adapter.js` as an unused module (exports `createMemoryRepository` but not imported anywhere).\n\n## Actions\n- Verified zero usage for both files using `grep`.\n- Deleted both files in branch `ai/dead-code-20260217`.\n- Verified deletions with `ls` and ran `npm run lint` and `npm run test:unit:lock-backend`.\n- Artifacts generated in `artifacts/dead-code-20260217/`.",
+      "summary": "# Weekly Dead Code Analysis - 2026-02-17\n\n**Agent:** dead-code-agent\n**Cadence:** weekly\n**Status:** Completed\n\n## Summary\nExecuted a safety-first dead-code sweep.\n\n## Findings\n- Identified `scripts/fix-duplication.mjs` as an unused standalone script.\n- Identified `src/services/…",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771338501891,
+      "last_seen": 1771338501891,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
