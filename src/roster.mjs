@@ -94,8 +94,8 @@ function parseEnvRoster(value) {
     .filter(Boolean);
 }
 
-export function getRoster(cadence) {
-  const config = loadTorchConfig();
+export async function getRoster(cadence) {
+  const config = await loadTorchConfig();
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
   const canonical = loadCanonicalRoster();
