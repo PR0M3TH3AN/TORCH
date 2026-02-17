@@ -428,16 +428,18 @@ class LockPublisher {
       telemetryLogger = console.error,
       healthLogger = console.error,
       diagnostics = {},
+      healthManager = defaultHealthManager,
     } = deps;
 
+    this.healthManager = healthManager;
     this.pool = poolFactory();
-    this.publishTimeoutMs = getPublishTimeoutMsFn();
-    this.minSuccesses = getMinSuccessfulRelayPublishesFn();
-    this.fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
+    this.publishTimeoutMs = deps.resolvedConfig?.publishTimeoutMs;
+    this.minSuccesses = deps.resolvedConfig?.minSuccesses;
+    this.fallbackRelays = (deps.resolvedConfig?.fallbackRelays || []).filter((relay) => !relays.includes(relay));
     this.maxAttempts = Math.max(1, Math.floor(retryAttempts));
     this.healthConfig = buildRelayHealthConfig({
       ...deps,
-      minActiveRelayPool: getMinActiveRelayPoolFn(),
+      minActiveRelayPool: deps.resolvedConfig?.minActiveRelayPool,
     });
 
     this.retryBaseDelayMs = retryBaseDelayMs;
@@ -455,7 +457,7 @@ class LockPublisher {
 
   async publish() {
     try {
-      maybeLogHealthSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
+      this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
       let lastAttemptState = null;
       const retryTimeline = [];
       const overallStartedAt = Date.now();
@@ -521,7 +523,7 @@ class LockPublisher {
 
   async attemptPhase(phaseRelays, phaseName, attempted, publishResults) {
     if (!phaseRelays.length) return;
-    const { prioritized } = prioritizeRelays(phaseRelays, this.healthConfig);
+    const { prioritized } = this.healthManager.prioritizeRelays(phaseRelays, this.healthConfig);
     if (!prioritized.length) return;
 
     console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${prioritized.join(', ')})...`);
@@ -534,7 +536,7 @@ class LockPublisher {
     const elapsedMs = Date.now() - startedAtMs;
     for (const result of phaseResults) {
       result.latencyMs = elapsedMs;
-      recordRelayOutcome(result.relay, result.success, result.message, elapsedMs, this.healthConfig);
+      this.healthManager.recordOutcome(result.relay, result.success, result.message, elapsedMs, this.healthConfig);
     }
     publishResults.push(...phaseResults);
   }
@@ -622,7 +624,7 @@ class LockPublisher {
       totalElapsedMs: Date.now() - overallStartedAt,
     }));
 
-    maybeLogHealthSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:failure', true);
+    this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:failure', true);
     throw new Error(
       `Failed relay publish quorum in publish phase: ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} successful `
       + `(required=${this.minSuccesses}, timeout=${this.publishTimeoutMs}ms, attempts=${this.maxAttempts}, attempt_id=${this.attemptId}, correlation_id=${this.correlationId}, error_category=${terminalFailureCategory}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
@@ -633,7 +635,29 @@ class LockPublisher {
 }
 
 export async function publishLock(relays, event, deps = {}) {
-  return new LockPublisher(relays, event, deps).publish();
+  const {
+    getPublishTimeoutMsFn = getPublishTimeoutMs,
+    getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
+    getRelayFallbacksFn = getRelayFallbacks,
+    getMinActiveRelayPoolFn = getMinActiveRelayPool,
+  } = deps;
+
+  const [publishTimeoutMs, minSuccesses, fallbackRelays, minActiveRelayPool] = await Promise.all([
+    getPublishTimeoutMsFn(),
+    getMinSuccessfulRelayPublishesFn(),
+    getRelayFallbacksFn(),
+    getMinActiveRelayPoolFn(),
+  ]);
+
+  return new LockPublisher(relays, event, {
+    ...deps,
+    resolvedConfig: {
+      publishTimeoutMs,
+      minSuccesses,
+      fallbackRelays,
+      minActiveRelayPool,
+    },
+  }).publish();
 }
 
 export function _resetRelayHealthState() {

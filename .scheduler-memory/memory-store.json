@@ -1,0 +1,53 @@
+[
+  [
+    "dc16f83d-c99b-4dc0-ac52-90bd36cf709b",
+    {
+      "schema_version": 1,
+      "id": "dc16f83d-c99b-4dc0-ac52-90bd36cf709b",
+      "agent_id": "ci-health-agent",
+      "session_id": "session-mlr07hyw",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771356975801,
+      "last_seen": 1771356975809,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "cf3230aa-9e00-48f4-809f-a54fee5a0637",
+    {
+      "schema_version": 1,
+      "id": "cf3230aa-9e00-48f4-809f-a54fee5a0637",
+      "agent_id": "ci-health-agent",
+      "session_id": "session-mlr0b3uh",
+      "type": "batch_window",
+      "content": "# CI Health Update\n- Fixed bug in `src/lock-ops.mjs`: `getRelayFallbacks` is async but was called synchronously in `LockPublisher` constructor.\n- Fixed bug in `src/lock-ops.mjs`: `LockPublisher` used `maybeLogHealthSnapshot` which was undefined; updated to use `healthManager`.\n- Fixed bug in `src/cmd-check.mjs`: `queryLocksFn` was undefined; updated to use injected `queryLocksFn` or default `queryLocks`.\n- Ran `npm run build` to fix `test/build_verification.test.mjs`.\n- All tests passed.",
+      "summary": "# CI Health Update\n- Fixed bug in `src/lock-ops.mjs`: `getRelayFallbacks` is async but was called synchronously in `LockPublisher` constructor.\n- Fixed bug in `src/lock-ops.mjs`: `LockPublisher` used `maybeLogHealthSnapshot` which was undefined; updated to use `healthManager`.\n-…",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771357144123,
+      "last_seen": 1771357144123,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ]
+]
