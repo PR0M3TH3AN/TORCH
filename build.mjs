@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +15,10 @@ const CONSTANTS_SRC = path.join(__dirname, 'src', 'constants.mjs');
 const PROMPTS_SRC = path.join(__dirname, 'src', 'prompts', 'META_PROMPTS.md');
 const CONFIG_SRC = path.join(__dirname, 'torch-config.json');
 const ASSETS_SRC = path.join(__dirname, 'assets');
+
+// Read package.json to get version and name
+const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+const tarballName = `${packageJson.name}-${packageJson.version}.tgz`;
 
 // Ensure clean slate
 if (fs.existsSync(DIST_DIR)) {
@@ -31,6 +36,9 @@ distHtml = distHtml.replace(/"\.\.\/dashboard\/styles\.css"/g, '"dashboard/style
 distHtml = distHtml.replace(/"\.\.\/dashboard\/"/g, '"dashboard/"'); // Link to dashboard
 distHtml = distHtml.replace(/'\.\.\/src\/docs\/TORCH\.md'/g, "'src/docs/TORCH.md'");
 distHtml = distHtml.replace(/"\.\.\/assets\//g, '"assets/');
+
+// Inject Offline Bundle Filename
+distHtml = distHtml.replace(/{{OFFLINE_BUNDLE_FILENAME}}/g, tarballName);
 
 fs.writeFileSync(path.join(DIST_DIR, 'index.html'), distHtml);
 
@@ -69,6 +77,20 @@ const distAssets = path.join(DIST_DIR, 'assets');
 if (fs.existsSync(ASSETS_SRC)) {
   fs.mkdirSync(distAssets, { recursive: true });
   fs.cpSync(ASSETS_SRC, distAssets, { recursive: true });
+}
+
+// 7. Generate NPM Pack Tarball
+console.log('Generating npm package tarball...');
+try {
+  execSync('npm pack', { stdio: 'inherit' });
+  if (fs.existsSync(tarballName)) {
+    fs.renameSync(tarballName, path.join(DIST_DIR, tarballName));
+    console.log(`Moved ${tarballName} to dist/`);
+  } else {
+    console.error(`Error: ${tarballName} not found after npm pack.`);
+  }
+} catch (error) {
+  console.error('Error packing npm module:', error);
 }
 
 console.log('Build complete! Output directory: dist/');
