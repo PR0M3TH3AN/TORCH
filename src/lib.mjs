@@ -14,10 +14,10 @@ import {
   getHashtag as _getHashtag,
 } from './torch-config.mjs';
 import {
-  DEFAULT_DASHBOARD_PORT,
   VALID_CADENCES,
   KIND_APP_DATA,
   RACE_CHECK_DELAY_MS,
+  USAGE_TEXT,
 } from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
 import { parseArgs } from './cli-parser.mjs';
@@ -492,49 +492,7 @@ export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps 
 }
 
 function usage() {
-  console.error(`Usage: torch-lock <command> [options]
-
-Commands:
-  check     --cadence <daily|weekly>               Check locked agents (JSON)
-  lock      --agent <name> --cadence <daily|weekly> Claim a lock
-  complete  --agent <name> --cadence <daily|weekly> Mark task as completed (permanent)
-  list      [--cadence <daily|weekly>]             Print active lock table
-  health    --cadence <daily|weekly>               Probe relay websocket + publish/read health
-  dashboard [--port <port>] [--host <host>]        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
-  init      [--force]                              Initialize torch/ directory in current project
-  update    [--force]                              Update torch/ configuration (backups, merges)
-
-  list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>] [--full]
-  inspect-memory          --id <memoryId>
-  pin-memory              --id <memoryId>
-  unpin-memory            --id <memoryId>
-  trigger-prune-dry-run   [--retention-ms <ms>]
-  memory-stats            [--window-ms <ms>]
-
-Options:
-  --dry-run       Build and sign the event but do not publish
-  --force         Overwrite existing files (for init) or all files (for update)
-  --log-dir       Path to task logs directory (default: task-logs)
-  --ignore-logs   Skip checking local logs for completed tasks
-  --json          Emit compact single-line JSON
-  --json-file     Write JSON output to a file path
-  --quiet         Suppress stderr progress logs (pairs well with --json)
-
-Environment:
-  NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
-  NOSTR_LOCK_RELAYS         Comma-separated relay WSS URLs
-  NOSTR_LOCK_TTL            Lock TTL in seconds (default: 7200)
-  NOSTR_LOCK_QUERY_TIMEOUT_MS   Relay query timeout in milliseconds (default: 15000)
-  NOSTR_LOCK_DAILY_ROSTER   Comma-separated daily roster (optional)
-  NOSTR_LOCK_WEEKLY_ROSTER  Comma-separated weekly roster (optional)
-  TORCH_CONFIG_PATH         Optional path to torch-config.json (default: ./torch-config.json)
-  AGENT_PLATFORM            Platform identifier (e.g., codex)
-
-Exit codes:
-  0  Success
-  1  Usage error
-  2  Relay/network error
-  3  Lock denied (already locked or race lost)`);
+  console.error(USAGE_TEXT);
 }
 
 /**
