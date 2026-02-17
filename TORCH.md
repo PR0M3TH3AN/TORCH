@@ -307,3 +307,35 @@ The lock CLI resolves roster names in this order:
 2. Stop memory maintenance scheduler processes.
 3. Preserve database state for post-incident analysis; do not drop or rewrite memory tables during rollback.
 4. Keep prune actions in `dry-run` (or disabled) until lifecycle policy and data integrity are revalidated.
+
+## Offline & Air-Gapped Installation
+
+TORCH is designed to operate in diverse environments, including high-security, air-gapped, or offline networks where direct access to the npm registry is restricted.
+
+### The Offline Bundle
+
+The "Offline Bundle" is a standard npm package tarball (`.tgz`) generated during the build process. It contains the complete source code and dependency definitions required to run TORCH.
+
+**Why use the bundle?**
+
+1.  **Security & Integrity:** You can verify the checksum of the tarball before installing it. It creates a frozen snapshot of the code that doesn't change.
+2.  **No Registry Dependency:** You can install it directly using `npm install ./torch-lock-0.1.0.tgz` without needing to connect to `registry.npmjs.org`.
+3.  **Project Integration:** Unlike a binary executable, the tarball installs TORCH as a standard dependency in your `package.json`. This ensures:
+    *   Scripts like `npm run lock:check` work natively.
+    *   TORCH versioning is managed alongside your other dependencies.
+    *   It works across all operating systems that support Node.js.
+
+### Installation Instructions
+
+1.  Download the tarball from the landing page or your internal artifact repository.
+2.  Place it in your project root or a `vendor/` directory.
+3.  Run the install command:
+    ```bash
+    npm install ./torch-lock-0.1.0.tgz
+    ```
+    *(Replace `0.1.0` with the actual version number)*
+
+4.  Initialize TORCH:
+    ```bash
+    npx torch-lock init
+    ```
