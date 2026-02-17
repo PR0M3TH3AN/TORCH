@@ -195,5 +195,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "3df7bccf-f3f1-45b9-ab15-88a1a30c6453",
+    {
+      "schema_version": 1,
+      "id": "3df7bccf-f3f1-45b9-ab15-88a1a30c6453",
+      "agent_id": "changelog-agent",
+      "session_id": "session-mlq51t0r",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771304642091,
+      "last_seen": 1771304642101,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "5b32be34-78f9-44ac-b7b1-e301e34f04d0",
+    {
+      "schema_version": 1,
+      "id": "5b32be34-78f9-44ac-b7b1-e301e34f04d0",
+      "agent_id": "changelog-agent",
+      "session_id": "session-mlq53the",
+      "type": "batch_window",
+      "content": "# Changelog Update - 2026-02-17\n\nGenerated draft release notes covering 212 commits.\nKey areas:\n- Scheduler automation improvements\n- Memory management features\n- Codebase modularization",
+      "summary": "# Changelog Update - 2026-02-17\n\nGenerated draft release notes covering 212 commits.\nKey areas:\n- Scheduler automation improvements\n- Memory management features\n- Codebase modularization",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771304736005,
+      "last_seen": 1771304736005,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
