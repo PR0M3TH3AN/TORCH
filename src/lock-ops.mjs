@@ -425,45 +425,70 @@ async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
   });
 }
 
-class LockPublisher {
+export class LockPublisher {
   constructor(relays, event, deps = {}) {
     this.relays = relays;
     this.event = event;
-    this.poolFactory = deps.poolFactory || (() => new SimplePool());
-    this.getPublishTimeoutMsFn = deps.getPublishTimeoutMsFn || getPublishTimeoutMs;
-    this.getMinSuccessfulRelayPublishesFn = deps.getMinSuccessfulRelayPublishesFn || getMinSuccessfulRelayPublishes;
-    this.getRelayFallbacksFn = deps.getRelayFallbacksFn || getRelayFallbacks;
-    this.getMinActiveRelayPoolFn = deps.getMinActiveRelayPoolFn || getMinActiveRelayPool;
-    this.retryAttempts = deps.retryAttempts || DEFAULT_RETRY_ATTEMPTS;
-    this.retryBaseDelayMs = deps.retryBaseDelayMs || DEFAULT_RETRY_BASE_DELAY_MS;
-    this.retryCapDelayMs = deps.retryCapDelayMs || DEFAULT_RETRY_CAP_DELAY_MS;
-    this.sleepFn = deps.sleepFn || ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
-    this.randomFn = deps.randomFn || secureRandom;
-    this.telemetryLogger = deps.telemetryLogger || console.error;
-    this.healthLogger = deps.healthLogger || console.error;
-    this.diagnostics = deps.diagnostics || {};
-    this.healthManager = deps.healthManager || defaultHealthManager;
-
-    // Derived values initialized later in async method
-    this.attemptId = deps.diagnostics?.attemptId || deps.attemptId || randomUUID();
-    this.correlationId = deps.diagnostics?.correlationId || deps.correlationId || randomUUID();
-
-    this.pool = this.poolFactory();
+    this.deps = deps;
+    this.pool = null;
+    this.healthConfig = null;
+    this.allRelays = [];
+    this.fallbackRelays = [];
+    this.publishTimeoutMs = 0;
+    this.minSuccesses = 0;
+    this.minActiveRelayPool = 0;
+    this.maxAttempts = 0;
+    this.retryBaseDelayMs = 0;
+    this.retryCapDelayMs = 0;
+    this.sleepFn = null;
+    this.randomFn = null;
+    this.telemetryLogger = null;
+    this.healthLogger = null;
+    this.healthManager = null;
+    this.correlationId = null;
+    this.attemptId = null;
   }
 
   async publish() {
-    this.publishTimeoutMs = await this.getPublishTimeoutMsFn();
-    this.minSuccesses = await this.getMinSuccessfulRelayPublishesFn();
-    this.fallbackRelays = (await this.getRelayFallbacksFn()).filter((relay) => !this.relays.includes(relay));
-    const minActive = await this.getMinActiveRelayPoolFn();
+    const {
+        poolFactory = () => new SimplePool(),
+        getPublishTimeoutMsFn = getPublishTimeoutMs,
+        getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
+        getRelayFallbacksFn = getRelayFallbacks,
+        getMinActiveRelayPoolFn = getMinActiveRelayPool,
+        retryAttempts = 4,
+        retryBaseDelayMs = 500,
+        retryCapDelayMs = 8_000,
+        sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+        randomFn = secureRandom,
+        telemetryLogger = console.error,
+        healthLogger = console.error,
+        healthManager = defaultHealthManager,
+        diagnostics = {},
+    } = this.deps;
+
+    this.pool = poolFactory();
+    this.publishTimeoutMs = await getPublishTimeoutMsFn();
+    this.minSuccesses = await getMinSuccessfulRelayPublishesFn();
+    this.fallbackRelays = await getRelayFallbacksFn();
+    this.minActiveRelayPool = await getMinActiveRelayPoolFn();
+    this.maxAttempts = retryAttempts;
+    this.retryBaseDelayMs = retryBaseDelayMs;
+    this.retryCapDelayMs = retryCapDelayMs;
+    this.sleepFn = sleepFn;
+    this.randomFn = randomFn;
+    this.telemetryLogger = telemetryLogger;
+    this.healthLogger = healthLogger;
+    this.healthManager = healthManager;
+    this.correlationId = diagnostics.correlationId || randomUUID();
+    this.attemptId = diagnostics.attemptId || randomUUID();
+
     this.healthConfig = buildRelayHealthConfig({
-      rollingWindowSize: DEFAULT_ROLLING_WINDOW_SIZE,
-      minActiveRelayPool: minActive,
-      ...this.diagnostics, // Assuming diagnostics might carry config overrides? Or better, just rely on defaults/config
+        ...this.deps,
+        minActiveRelayPool: this.minActiveRelayPool
     });
 
     this.allRelays = mergeRelayList(this.relays, this.fallbackRelays);
-    this.maxAttempts = this.retryAttempts;
 
     try {
       this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');

@@ -1,14 +1,14 @@
 [
   [
-    "b8fc8eef-facd-4632-a404-aefc94de033a",
+    "4ef68b6d-5d99-4b32-a275-596f5daee8a0",
     {
       "schema_version": 1,
-      "id": "b8fc8eef-facd-4632-a404-aefc94de033a",
-      "agent_id": "const-refactor-agent",
-      "session_id": "session-mlr0dhq6",
+      "id": "4ef68b6d-5d99-4b32-a275-596f5daee8a0",
+      "agent_id": "scheduler-memory-daily",
+      "session_id": "session-mlr0921p",
       "type": "batch_window",
-      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
-      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
       "tags": [
         "scheduler",
         "daily",
@@ -16,8 +16,8 @@
       ],
       "importance": 0.4,
       "embedding_id": null,
-      "created_at": 1771357255423,
-      "last_seen": 1771357255430,
+      "created_at": 1771357048477,
+      "last_seen": 1771357048488,
       "source": "scheduler-retrieve",
       "ttl_days": null,
       "merged_into": null,
@@ -25,26 +25,25 @@
     }
   ],
   [
-    "b6580c2a-2c32-4239-afd8-eb8cbca5449d",
+    "68f82e5f-11a4-4ea8-9e86-349ee14b62d4",
     {
       "schema_version": 1,
-      "id": "b6580c2a-2c32-4239-afd8-eb8cbca5449d",
-      "agent_id": "const-refactor-agent",
-      "session_id": "session-mlr0iplm",
+      "id": "68f82e5f-11a4-4ea8-9e86-349ee14b62d4",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlr0g2tv",
       "type": "batch_window",
-      "content": "# Memory Update: Constants Refactor\n\n- Discovered hardcoded constants in `src/lock-ops.mjs` duplicating defaults.\n- Extracted `DEFAULT_RETRY_ATTEMPTS`, `DEFAULT_RETRY_BASE_DELAY_MS`, etc. to `src/constants.mjs`.\n- Refactored `src/lock-ops.mjs` to use these constants.\n- Fixed a bug in `src/cmd-check.mjs` where `queryLocksFn` was undefined.\n- Verified with unit tests and lint.",
-      "summary": "# Memory Update: Constants Refactor\n\n- Discovered hardcoded constants in `src/lock-ops.mjs` duplicating defaults.\n- Extracted `DEFAULT_RETRY_ATTEMPTS`, `DEFAULT_RETRY_BASE_DELAY_MS`, etc. to `src/constants.mjs`.\n- Refactored `src/lock-ops.mjs` to use these constants.\n- Fixed a b…",
+      "content": "Store memory event A for weekly :: scheduler memory store\nStore memory event B for weekly :: scheduler memory store",
+      "summary": "Store memory event A for weekly :: scheduler memory store Store memory event B for weekly :: scheduler memory store",
       "tags": [
         "scheduler",
-        "daily",
-        "store",
-        "insight"
+        "weekly",
+        "store"
       ],
-      "importance": 0.8,
+      "importance": 0.55,
       "embedding_id": null,
-      "created_at": 1771357498907,
-      "last_seen": 1771357498907,
-      "source": "agent-output",
+      "created_at": 1771357376083,
+      "last_seen": 1771357376084,
+      "source": "scheduler-store",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
