@@ -79,11 +79,46 @@ function parseJsonEventsFromOutput(text) {
   return events;
 }
 
+const ALLOWED_ENV_KEYS = new Set([
+  'PATH', 'Path', // Windows compatibility
+  'HOME', 'USER', 'SHELL', 'TERM', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TZ',
+  'NODE_ENV', 'NODE_OPTIONS', 'NODE_PATH',
+  'APPDATA', 'LOCALAPPDATA', 'PROGRAMDATA', 'SystemRoot', 'windir', 'ComSpec', 'PATHEXT',
+  'TMPDIR', 'TEMP', 'TMP',
+  'EDITOR', 'VISUAL',
+  // CI variables
+  'CI', 'GITHUB_ACTIONS', 'GITHUB_REF', 'GITHUB_HEAD_REF', 'GITHUB_BASE_REF', 'GITHUB_EVENT_NAME', 'GITHUB_SHA',
+]);
+
+function getSafeEnv() {
+  const safeEnv = {};
+  for (const key in process.env) {
+    if (ALLOWED_ENV_KEYS.has(key) ||
+        key.startsWith('npm_') ||
+        key.startsWith('NOSTR_') ||
+        key.startsWith('TORCH_') ||
+        key.startsWith('SCHEDULER_') ||
+        key.startsWith('AGENT_')) {
+      safeEnv[key] = process.env[key];
+    }
+  }
+  return safeEnv;
+}
+
+/**
+ * Spawns a child process with a sanitized environment by default.
+ * @param {string} command
+ * @param {string[]} args
+ * @param {object} options
+ * @param {object} [options.env] - Additional environment variables to merge.
+ * @param {boolean} [options.inheritProcessEnv=false] - If true, use full process.env. If false (default), use sanitized env.
+ */
 async function runCommand(command, args = [], options = {}) {
+  const baseEnv = options.inheritProcessEnv ? process.env : getSafeEnv();
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       cwd: process.cwd(),
-      env: { ...process.env, ...(options.env || {}) },
+      env: { ...baseEnv, ...(options.env || {}) },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
