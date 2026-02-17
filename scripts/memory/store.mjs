@@ -1,5 +1,5 @@
 import { ingestEvents } from '../../src/services/memory/index.js';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 // Parse environment variables
@@ -29,33 +29,75 @@ if (promptPath) {
     }
 }
 
-const baseTs = Date.now();
-const events = [
-    {
-        agent_id: agentId,
-        content: `Store memory event A for ${cadence} :: ${promptIntent}`,
-        timestamp: baseTs,
-        tags: ['scheduler', cadence, 'store'],
-        metadata: {
-            session_id: runId,
-            source: 'scheduler-store',
-            importance: 0.55,
-            prompt_path: promptPath
-        }
-    },
-    {
-        agent_id: agentId,
-        content: `Store memory event B for ${cadence} :: ${promptIntent}`,
-        timestamp: baseTs + 1,
-        tags: ['scheduler', cadence, 'store'],
-        metadata: {
-            session_id: runId,
-            source: 'scheduler-store',
-            importance: 0.55,
-            prompt_path: promptPath
-        }
+// Check for memory input file
+let memoryContent = '';
+const cliArgs = process.argv.slice(2);
+const fileArgIndex = cliArgs.indexOf('--file');
+const explicitFile = fileArgIndex !== -1 ? cliArgs[fileArgIndex + 1] : null;
+const defaultFile = 'memory-update.md';
+
+if (explicitFile && existsSync(explicitFile)) {
+    try {
+        memoryContent = readFileSync(explicitFile, 'utf8').trim();
+        console.log(`Loaded memory content from ${explicitFile}`);
+    } catch (err) {
+        console.warn(`Failed to read memory file ${explicitFile}:`, err.message);
     }
-];
+} else if (!explicitFile && existsSync(defaultFile)) {
+    try {
+        memoryContent = readFileSync(defaultFile, 'utf8').trim();
+        console.log(`Loaded memory content from default file ${defaultFile}`);
+    } catch (err) {
+        console.warn(`Failed to read default memory file ${defaultFile}:`, err.message);
+    }
+}
+
+const baseTs = Date.now();
+let events = [];
+
+if (memoryContent) {
+    events.push({
+        agent_id: agentId,
+        content: memoryContent,
+        timestamp: baseTs,
+        tags: ['scheduler', cadence, 'store', 'insight'],
+        metadata: {
+            session_id: runId,
+            source: 'agent-output',
+            importance: 0.8, // User-provided memory is important
+            prompt_path: promptPath
+        }
+    });
+} else {
+    // Fallback if no file provided (preserve existing behavior for compatibility)
+    console.warn('No memory input found (checked --file or default memory-update.md). using fallback placeholder.');
+    events = [
+        {
+            agent_id: agentId,
+            content: `Store memory event A for ${cadence} :: ${promptIntent}`,
+            timestamp: baseTs,
+            tags: ['scheduler', cadence, 'store'],
+            metadata: {
+                session_id: runId,
+                source: 'scheduler-store',
+                importance: 0.55,
+                prompt_path: promptPath
+            }
+        },
+        {
+            agent_id: agentId,
+            content: `Store memory event B for ${cadence} :: ${promptIntent}`,
+            timestamp: baseTs + 1,
+            tags: ['scheduler', cadence, 'store'],
+            metadata: {
+                session_id: runId,
+                source: 'scheduler-store',
+                importance: 0.55,
+                prompt_path: promptPath
+            }
+        }
+    ];
+}
 
 try {
     // 1. Ingest events
@@ -77,7 +119,8 @@ try {
             agentId,
             promptPath,
             promptIntent,
-            events: events.length
+            events: events.length,
+            sourceFile: explicitFile || (memoryContent ? defaultFile : 'fallback')
         },
         outputs: {
             storedCount: stored.length,
