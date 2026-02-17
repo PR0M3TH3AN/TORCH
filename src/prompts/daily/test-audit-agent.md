@@ -55,27 +55,27 @@ DAILY WORKFLOW (run every day or as scheduled)
 1) **Discover the test runner**
    - Read `AGENTS.md` and `CLAUDE.md`.
    - Inspect `package.json`:
-     - `test` script (e.g., `jest`, `vitest`, `mocha`, `cypress`, `playwright`).
-     - Test-related devDependencies.
+     - Identify the **unit test command** (e.g., `test:unit`, `test:fast`, `jest`, `vitest`).
+     - Avoid composite scripts (e.g., `npm test` if it runs `lint && build && test`).
+     - If no specific unit test script exists, construct one (e.g., `npx jest`, `node --test test/*.test.js`).
    - Record the canonical test command in `src/test_logs/TEST_LOG_<timestamp>.md`. Example commands:
-     - Jest: `npm test -- --coverage` or `npx jest --coverage`
+     - Jest: `npx jest --coverage` (avoid `npm test` if it includes lint/build)
      - Vitest: `npx vitest run --coverage`
-     - Mocha + nyc: `npx nyc --reporter=lcov npm test`
-     - Playwright e2e: `npx playwright test --reporter=list`
-     - Cypress e2e: `npx cypress run`
+     - Node: `node --test test/*.test.mjs` (avoiding slow e2e/integration files)
    - Always include `--runInBand` / single-threaded option where it helps surface async/flaky behaviors.
 
 2) **Run tests with coverage (capture artifacts)**
-   - Run the unit suite with coverage and capture output:
-     - `npm test -- --coverage 2>&1 | tee test-audit/coverage-run.log`
+   - Run the **unit suite** with coverage and capture output:
+     - `npx jest --coverage 2>&1 | tee test-audit/coverage-run.log` (or equivalent runner)
      - If the repo has unit/integration/e2e separations, run them individually and capture outputs.
    - Collect coverage artifacts:
      - Common outputs: `coverage/lcov.info`, `coverage/coverage-final.json`, `coverage/coverage-summary.json`.
    - Save all logs and coverage files into `test-audit/` and note commands in `src/test_logs/TEST_LOG_<timestamp>.md`.
 
 3) **Flakiness detection**
-   - Re-run the whole test suite N times (default `N=5` or `N=10`) and produce a run matrix:
-     - Example loop (bash): `for i in $(seq 1 5); do npm test -- --runInBand --silent; done`
+   - Re-run the **unit test suite only** N times (default `N=5`) to detect flaky tests.
+   - **CRITICAL:** Do NOT run slow integration/e2e tests or composite scripts (lint/build) in this loop.
+   - Example loop (bash): `for i in $(seq 1 5); do node --test test/unit/*.test.js; done`
    - Record which tests change status across runs (pass/fail/skip). Save the matrix to `test-audit/flakiness-matrix.json`.
 
 4) **Static test analysis**
