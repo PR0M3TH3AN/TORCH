@@ -121,5 +121,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "a0ec45d9-5d92-4219-984e-c254489c8f75",
+    {
+      "schema_version": 1,
+      "id": "a0ec45d9-5d92-4219-984e-c254489c8f75",
+      "agent_id": "style-agent",
+      "session_id": "adffd02af53cf5fb38e640608155fae3aa10adac6249a4d3e462c8f5b56ac6b7",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771300943237,
+      "last_seen": 1771300943250,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "1805af64-656d-4582-bb63-bd80496ffc0d",
+    {
+      "schema_version": 1,
+      "id": "1805af64-656d-4582-bb63-bd80496ffc0d",
+      "agent_id": "style-agent",
+      "session_id": "adffd02af53cf5fb38e640608155fae3aa10adac6249a4d3e462c8f5b56ac6b7",
+      "type": "batch_window",
+      "content": "Lint passed, no changes needed.",
+      "summary": "Lint passed, no changes needed.",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771301075388,
+      "last_seen": 1771301075388,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
