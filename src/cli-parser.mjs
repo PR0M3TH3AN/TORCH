@@ -17,6 +17,7 @@ export function parseArgs(argv) {
     dryRun: false,
     force: false,
     port: DEFAULT_DASHBOARD_PORT,
+    host: null,
     logDir: 'task-logs',
     ignoreLogs: false,
     id: null,
@@ -65,6 +66,8 @@ export function parseArgs(argv) {
       args.force = true;
     } else if (arg === '--port') {
       args.port = parseInt(argv[++i], 10) || DEFAULT_DASHBOARD_PORT;
+    } else if (arg === '--host') {
+      args.host = argv[++i];
     } else if (arg === '--log-dir') {
       args.logDir = argv[++i];
     } else if (arg === '--ignore-logs') {

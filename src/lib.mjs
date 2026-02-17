@@ -500,7 +500,7 @@ Commands:
   complete  --agent <name> --cadence <daily|weekly> Mark task as completed (permanent)
   list      [--cadence <daily|weekly>]             Print active lock table
   health    --cadence <daily|weekly>               Probe relay websocket + publish/read health
-  dashboard [--port <port>]                        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
+  dashboard [--port <port>] [--host <host>]        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
 
@@ -632,7 +632,7 @@ export async function main(argv) {
       }
 
       case 'dashboard': {
-        await cmdDashboard(args.port);
+        await cmdDashboard(args.port, args.host);
         break;
       }
 
