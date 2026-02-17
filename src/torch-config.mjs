@@ -116,6 +116,7 @@ export function parseTorchConfig(raw, configPath = null) {
         : null,
       namespace: typeof dashboard.namespace === 'string' ? dashboard.namespace.trim() : null,
       hashtag: typeof dashboard.hashtag === 'string' ? dashboard.hashtag.trim() : null,
+      auth: typeof dashboard.auth === 'string' ? dashboard.auth.trim() : null,
     },
     scheduler: {
       firstPromptByCadence: {
@@ -301,4 +302,13 @@ export function getHashtag() {
   }
   const namespace = getNamespace();
   return `${namespace}-agent-lock`;
+}
+
+export function getDashboardAuth() {
+  const config = loadTorchConfig();
+  const envValue = process.env.TORCH_DASHBOARD_AUTH;
+  if (envValue) {
+    return envValue.trim();
+  }
+  return config.dashboard.auth;
 }
