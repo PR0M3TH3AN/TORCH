@@ -75,5 +75,124 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "8512327a-8ba7-4a49-9275-41860e38a2e0",
+    {
+      "schema_version": 1,
+      "id": "8512327a-8ba7-4a49-9275-41860e38a2e0",
+      "agent_id": "scheduler-memory-daily",
+      "session_id": "session-mlr7wt48",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771369913961,
+      "last_seen": 1771369913968,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "72f2cb07-62ab-4460-a994-4da196860e6c",
+    {
+      "schema_version": 1,
+      "id": "72f2cb07-62ab-4460-a994-4da196860e6c",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771370050385,
+      "last_seen": 1771370148086,
+      "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "ed46b70f-334d-4b41-984b-56e0415ffda2",
+    {
+      "schema_version": 1,
+      "id": "ed46b70f-334d-4b41-984b-56e0415ffda2",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771370084740,
+      "last_seen": 1771370148086,
+      "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "160c683e-c1b0-4b57-8b2a-58e01ecec0e2",
+    {
+      "schema_version": 1,
+      "id": "160c683e-c1b0-4b57-8b2a-58e01ecec0e2",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771370148079,
+      "last_seen": 1771370148086,
+      "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "38bb52c3-8262-4469-a15e-b46e11e92f9d",
+    {
+      "schema_version": 1,
+      "id": "38bb52c3-8262-4469-a15e-b46e11e92f9d",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlr82pk9",
+      "type": "batch_window",
+      "content": "Store memory event A for weekly :: scheduler memory store\nStore memory event B for weekly :: scheduler memory store",
+      "summary": "Store memory event A for weekly :: scheduler memory store Store memory event B for weekly :: scheduler memory store",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store"
+      ],
+      "importance": 0.55,
+      "embedding_id": null,
+      "created_at": 1771370189289,
+      "last_seen": 1771370189290,
+      "source": "scheduler-store",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]

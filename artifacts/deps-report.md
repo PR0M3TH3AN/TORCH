@@ -1,14 +1,17 @@
-# Dependency Report (2026-02-14)
+# Dependency Security Report
 
-## Summary
-- Vulnerabilities: 0
-- Outdated Packages: 1
+**Date:** 2026-02-17
 
 ## Vulnerabilities
-No vulnerabilities found.
+Found 4 moderate vulnerabilities in `eslint` stack.
+- `eslint`, `@eslint/js`, `ajv`, `@eslint-community/eslint-utils`.
+- **Note**: Current installed version is `^10.0.0`, which exceeds normal registry versions. Investigation needed.
 
 ## Outdated Packages
-- **nostr-tools**: Current `2.19.4` -> Latest `2.23.1` (Wanted: `2.19.4`)
+- **nostr-tools**:
+  - Current: 2.19.4
+  - Latest: 2.23.1
+  - **Action**: Skipped auto-upgrade (Protocol Library). Please review manually.
 
-## Recommendations
-- **nostr-tools**: This is a protocol library. Auto-upgrade is disabled. Recommend manual review for upgrade to 2.23.1.
+## Actions Taken
+- No automatic upgrades performed due to safety constraints.
