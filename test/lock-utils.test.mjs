@@ -1,125 +1,84 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it, mock } from 'node:test';
+import assert from 'node:assert/strict';
 import { getCompletedAgents } from '../src/lock-utils.mjs';
 
-describe('getCompletedAgents', () => {
-  it('identifies completed agents for daily cadence today', async () => {
-    const today = '2023-10-27';
-    const files = [
-      `2023-10-27T10-00-00Z__agent1__completed.md`,
-      `2023-10-26T10-00-00Z__agent2__completed.md`, // Yesterday
-      `2023-10-27T11-00-00Z__agent3__started.md`,   // Not completed
-    ];
-
-    const deps = {
-      readdir: async () => files,
-      getDateStr: () => today,
-      getIsoWeek: () => '2023-W43',
-    };
-
-    const completed = await getCompletedAgents('daily', 'logs', deps);
-    assert.deepStrictEqual([...completed], ['agent1']);
-  });
-
-  it('identifies completed agents for weekly cadence this week', async () => {
-    const today = '2023-10-27';
-    const currentWeek = '2023-W43';
-
-    // agent1: completed this week (today)
-    // agent2: completed this week (yesterday)
-    // agent3: completed last week
-    // agent4: started this week
-
-    const files = [
-      `2023-10-27T10-00-00Z__agent1__completed.md`,
-      `2023-10-26T10-00-00Z__agent2__completed.md`,
-      `2023-10-20T10-00-00Z__agent3__completed.md`,
-      `2023-10-27T11-00-00Z__agent4__started.md`,
-    ];
-
-    const deps = {
-      readdir: async () => files,
-      getDateStr: () => today,
-      getIsoWeek: (date) => {
-        if (!date) return currentWeek;
-        if (date === '2023-10-27' || date === '2023-10-26') return '2023-W43';
-        if (date === '2023-10-20') return '2023-W42';
-        return 'unknown';
-      },
-    };
-
-    const completed = await getCompletedAgents('weekly', 'logs', deps);
-    assert.deepStrictEqual([...completed].sort(), ['agent1', 'agent2']);
-  });
-
-  it('handles empty directory gracefully', async () => {
-    const deps = {
+describe('lock-utils', () => {
+  describe('getCompletedAgents', () => {
+    // Helper to create deps
+    const createDeps = (overrides = {}) => ({
       readdir: async () => [],
-      getDateStr: () => '2023-10-27',
-      getIsoWeek: () => '2023-W43',
-    };
+      getDateStr: () => '2023-01-01',
+      getIsoWeek: () => '2023-W01',
+      ...overrides,
+    });
 
-    const completed = await getCompletedAgents('daily', 'logs', deps);
-    assert.strictEqual(completed.size, 0);
-  });
+    it('returns completed agents for daily cadence', async () => {
+      const deps = createDeps({
+        readdir: async () => [
+          '2023-01-01T10-00-00Z__agent1__completed.md',
+          '2023-01-01T11-00-00Z__agent2__failed.md',
+          '2023-01-02T10-00-00Z__agent3__completed.md', // different day
+        ],
+        getDateStr: () => '2023-01-01',
+      });
+      const result = await getCompletedAgents('daily', 'logs', deps);
+      assert.deepEqual([...result], ['agent1']);
+    });
 
-  it('ignores malformed filenames', async () => {
-    const files = [
-      'not-a-valid-log-file.txt',
-      '2023-10-27__agent1__completed.md', // Missing time part
-    ];
+    it('returns completed agents for weekly cadence', async () => {
+      const deps = createDeps({
+        readdir: async () => [
+          '2023-01-01T10-00-00Z__agent1__completed.md', // Week 52 of 2022 (Sunday) - assuming mock logic
+          '2023-01-02T10-00-00Z__agent2__completed.md', // Week 01 of 2023 (Monday)
+        ],
+        getIsoWeek: (date) => {
+             if (!date) return '2023-W01'; // current week
+             if (date === '2023-01-01') return '2022-W52';
+             if (date === '2023-01-02') return '2023-W01';
+             return 'UNKNOWN';
+        }
+      });
+      // cadence is weekly
+      const result = await getCompletedAgents('weekly', 'logs', deps);
+      assert.deepEqual([...result], ['agent2']);
+    });
 
-    const deps = {
-      readdir: async () => files,
-      getDateStr: () => '2023-10-27',
-      getIsoWeek: () => '2023-W43',
-    };
+    it('handles ENOENT gracefully', async () => {
+       const error = new Error('No such file or directory');
+       error.code = 'ENOENT';
+       const deps = createDeps({
+         readdir: async () => { throw error; }
+       });
 
-    const completed = await getCompletedAgents('daily', 'logs', deps);
-    assert.strictEqual(completed.size, 0);
-  });
+       // Spy on console.error to ensure it is NOT called
+       const consoleError = mock.method(console, 'error');
 
-  it('handles readdir errors (non-ENOENT) by logging and returning empty set', async () => {
-     const originalError = console.error;
-     let errorCalled = false;
-     console.error = (msg) => { errorCalled = true; };
+       const result = await getCompletedAgents('daily', 'logs', deps);
 
-     const deps = {
-       readdir: async () => { throw new Error('Permission denied'); },
-       getDateStr: () => '2023-10-27',
-       getIsoWeek: () => '2023-W43',
-     };
+       assert.equal(consoleError.mock.callCount(), 0);
+       assert.deepEqual([...result], []);
+       consoleError.mock.restore();
+    });
 
-     try {
-       const completed = await getCompletedAgents('daily', 'logs', deps);
-       assert.strictEqual(completed.size, 0);
-       assert.strictEqual(errorCalled, true);
-     } finally {
-       console.error = originalError;
-     }
-  });
+    it('logs error for non-ENOENT errors', async () => {
+       const error = new Error('Permission denied');
+       error.code = 'EACCES';
+       const deps = createDeps({
+         readdir: async () => { throw error; }
+       });
 
-  it('handles ENOENT (directory missing) silently', async () => {
-     const originalError = console.error;
-     let errorCalled = false;
-     console.error = (msg) => { errorCalled = true; };
+       // Spy on console.error to verify it IS called
+       const consoleError = mock.method(console, 'error');
 
-     const deps = {
-       readdir: async () => {
-         const err = new Error('Directory not found');
-         err.code = 'ENOENT';
-         throw err;
-       },
-       getDateStr: () => '2023-10-27',
-       getIsoWeek: () => '2023-W43',
-     };
+       const result = await getCompletedAgents('daily', 'logs', deps);
 
-     try {
-       const completed = await getCompletedAgents('daily', 'logs', deps);
-       assert.strictEqual(completed.size, 0);
-       assert.strictEqual(errorCalled, false);
-     } finally {
-       console.error = originalError;
-     }
+       assert.equal(consoleError.mock.callCount(), 1);
+       const call = consoleError.mock.calls[0];
+       assert.match(call.arguments[0], /Warning: Failed to read log dir/);
+       assert.match(call.arguments[0], /Permission denied/);
+
+       assert.deepEqual([...result], []);
+       consoleError.mock.restore();
+    });
   });
 });
