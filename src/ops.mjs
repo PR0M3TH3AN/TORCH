@@ -166,7 +166,6 @@ function ensureInstallDirectory(paths, force, installDir) {
          throw new Error(`Directory ${paths.torchDir} already exists and is not empty. Use --force to overwrite.`);
      }
   }
-
   ensureDir(paths.torchDir);
   ensureDir(paths.promptsDir);
 }
@@ -279,7 +278,6 @@ function injectHostScriptsIfNeeded(paths, installDir) {
 }
 
 export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = null) {
-  // Use interactive mode to get configuration unless mock answers are provided
   const config = await resolveConfiguration(cwd, mockAnswers);
   const { installDir, namespace, relays } = config;
 
@@ -289,11 +287,8 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   ensureInstallDirectory(paths, force, installDir);
 
   installAppAssets(paths.torchDir, installDir);
-
   installTorchAssets(paths, installDir);
-
   configureTorch(cwd, paths, installDir, namespace, relays);
-
   injectHostScriptsIfNeeded(paths, installDir);
 
   console.log('\nInitialization complete.');
