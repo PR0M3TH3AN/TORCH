@@ -49,5 +49,31 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "a9bc3899-1685-4e50-80f5-ae4dc54de6bd",
+    {
+      "schema_version": 1,
+      "id": "a9bc3899-1685-4e50-80f5-ae4dc54de6bd",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlr4ba92",
+      "type": "batch_window",
+      "content": "# Learnings - 2026-02-17\n\n- The `content-audit-agent` is configured to audit the `/content` directory, but this directory does not exist in the repository root.\n- Added `content-audit-agent targets missing /content directory` to `KNOWN_ISSUES.md`.\n- No audit actions were performed.",
+      "summary": "# Learnings - 2026-02-17\n\n- The `content-audit-agent` is configured to audit the `/content` directory, but this directory does not exist in the repository root.\n- Added `content-audit-agent targets missing /content directory` to `KNOWN_ISSUES.md`.\n- No audit actions were perform…",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771363870888,
+      "last_seen": 1771363870888,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]

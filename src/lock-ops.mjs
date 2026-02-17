@@ -465,17 +465,17 @@ export class LockPublisher {
       healthLogger = console.error,
       diagnostics = {},
       healthManager = defaultHealthManager,
-    } = deps;
+    } = this.deps;
 
     this.healthManager = healthManager;
     this.pool = poolFactory();
-    this.publishTimeoutMs = deps.resolvedConfig?.publishTimeoutMs;
-    this.minSuccesses = deps.resolvedConfig?.minSuccesses;
-    this.fallbackRelays = (deps.resolvedConfig?.fallbackRelays || []).filter((relay) => !relays.includes(relay));
+    this.publishTimeoutMs = this.deps.resolvedConfig?.publishTimeoutMs;
+    this.minSuccesses = this.deps.resolvedConfig?.minSuccesses;
+    this.fallbackRelays = (this.deps.resolvedConfig?.fallbackRelays || []).filter((relay) => !this.relays.includes(relay));
     this.maxAttempts = Math.max(1, Math.floor(retryAttempts));
     this.healthConfig = buildRelayHealthConfig({
-      ...deps,
-      minActiveRelayPool: deps.resolvedConfig?.minActiveRelayPool,
+      ...this.deps,
+      minActiveRelayPool: this.deps.resolvedConfig?.minActiveRelayPool,
     });
 
     this.retryBaseDelayMs = retryBaseDelayMs;
@@ -487,11 +487,6 @@ export class LockPublisher {
     this.healthManager = healthManager;
     this.correlationId = diagnostics.correlationId || randomUUID();
     this.attemptId = diagnostics.attemptId || randomUUID();
-
-    this.healthConfig = buildRelayHealthConfig({
-        ...this.deps,
-        minActiveRelayPool: this.minActiveRelayPool
-    });
 
     this.allRelays = mergeRelayList(this.relays, this.fallbackRelays);
 
