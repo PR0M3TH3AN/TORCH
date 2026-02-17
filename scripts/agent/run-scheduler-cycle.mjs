@@ -604,7 +604,7 @@ async function acquireLockWithRetry({ selectedAgent, cadence, platform, model, l
 
 function summarizeLockFailureReasons(outputText) {
   const events = parseJsonEventsFromOutput(outputText);
-  const quorumFailure = [...events].reverse().find((entry) => entry.event === 'lock_publish_quorum_failed');
+  const quorumFailure = events.findLast((entry) => entry.event === 'lock_publish_quorum_failed');
   if (quorumFailure && quorumFailure.reasonDistribution && typeof quorumFailure.reasonDistribution === 'object') {
     return {
       reasonDistribution: quorumFailure.reasonDistribution,
