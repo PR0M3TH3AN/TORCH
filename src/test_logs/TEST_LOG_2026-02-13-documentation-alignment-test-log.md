@@ -37,3 +37,6 @@ ok 1 - CLI Smoke Test
 # todo 0
 # duration_ms 419.728338
 ```
+
+
+[INCIDENT_ACK] Acknowledged prior failure.

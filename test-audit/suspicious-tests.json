@@ -1,32 +1,21 @@
-[
-  {
-    "file": "test/memory-cache.test.mjs",
-    "issues": [
-      "Found setTimeout()"
-    ]
-  },
-  {
-    "file": "test/memory-scheduler.test.mjs",
-    "issues": [
-      "Found setTimeout()"
-    ]
-  },
-  {
-    "file": "test/relay-fanout-quorum.integration.test.mjs",
-    "issues": [
-      "Found setTimeout()"
-    ]
-  },
-  {
-    "file": "tests/fixtures/memory-fixtures.js",
-    "issues": [
-      "No obvious assertions"
-    ]
-  },
-  {
-    "file": "tests/memory.test.js",
-    "issues": [
-      "Found setTimeout()"
-    ]
-  }
-]
+{
+  "./test/relay-fanout-quorum.integration.test.mjs": [
+    "sleeps",
+    "network"
+  ],
+  "./test/run-scheduler-cycle-memory-policy.test.mjs": [
+    "console_usage"
+  ],
+  "./test/memory-scheduler.test.mjs": [
+    "sleeps"
+  ],
+  "./test/memory-cache.test.mjs": [
+    "sleeps"
+  ],
+  "./test/memory-schema.test.mjs": [
+    "console_usage"
+  ],
+  "./tests/memory.test.js": [
+    "sleeps"
+  ]
+}
