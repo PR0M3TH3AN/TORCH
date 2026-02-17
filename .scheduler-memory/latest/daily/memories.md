@@ -1,1 +1,1 @@
-- Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture
+- Memory retrieval seed for daily :: scheduler memory retrieval

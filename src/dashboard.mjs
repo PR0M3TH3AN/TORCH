@@ -136,6 +136,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
       path.join(packageRoot, 'dashboard'),
       path.join(packageRoot, 'assets'),
       path.join(packageRoot, 'src', 'docs'),
+      path.join(packageRoot, 'src', 'constants.mjs'),
       path.join(packageRoot, 'torch-config.json')
     ];
 

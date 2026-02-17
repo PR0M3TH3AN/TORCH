@@ -20,7 +20,7 @@ export async function cmdCheck(cadence) {
     console.error(`Paused agents: ${pausedAgents.join(', ')}`);
   }
 
-  const locks = await queryLocksFn(relays, cadence, dateStr, namespace);
+  const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = await getRoster(cadence);
 
