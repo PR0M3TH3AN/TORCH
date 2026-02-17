@@ -1,0 +1,7 @@
+
+> torch-lock@0.1.0 dashboard:serve
+> node bin/torch-lock.mjs dashboard
+
+Dashboard running at http://localhost:4173/dashboard/
+Serving files from /app
+Using configuration from /app
