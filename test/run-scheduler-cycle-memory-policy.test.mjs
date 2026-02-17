@@ -71,6 +71,8 @@ async function setupFixture({
   await fs.mkdir(binDir, { recursive: true });
 
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
   await fs.writeFile(
     path.join(scriptsDir, 'verify-run-artifacts.mjs'),
     '#!/usr/bin/env node\nprocess.exit(0);\n',
