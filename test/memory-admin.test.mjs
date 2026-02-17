@@ -6,6 +6,7 @@ import {
   ingestEvents,
   inspectMemory,
   listMemories,
+  markMemoryMerged,
   memoryStats,
   pinMemory,
   runPruneCycle,
@@ -132,4 +133,44 @@ test('runPruneCycle respects prune feature-flag modes', async () => {
   });
   assert.equal(offResult.mode, 'off');
   assert.equal(offResult.pruned.length, 0);
+});
+
+test('markMemoryMerged delegates to repository and clears cache', async () => {
+  let callCount = 0;
+  const repository = {
+    async markMerged(id, mergedInto) {
+      callCount++;
+      return id === 'exists';
+    }
+  };
+
+  const result1 = await markMemoryMerged('exists', 'target', { repository });
+  assert.equal(result1, true);
+  assert.equal(callCount, 1);
+
+  const result2 = await markMemoryMerged('missing', 'target', { repository });
+  assert.equal(result2, false);
+  assert.equal(callCount, 2);
+
+  // Verify cache clearing
+  const telemetry = [];
+  const emitTelemetry = (event, payload) => telemetry.push({ event, payload });
+
+  // 1. Populate cache
+  await getRelevantMemories({ agent_id: 'cache-test', emitTelemetry });
+  const hit1 = telemetry.findLast(t => t.event === 'memory:retrieved');
+  assert.equal(hit1.payload.cache_hit, false);
+
+  // 2. Hit cache
+  await getRelevantMemories({ agent_id: 'cache-test', emitTelemetry });
+  const hit2 = telemetry.findLast(t => t.event === 'memory:retrieved');
+  assert.equal(hit2.payload.cache_hit, true);
+
+  // 3. Clear cache via side-effect
+  await markMemoryMerged('exists', 'target', { repository });
+
+  // 4. Miss cache
+  await getRelevantMemories({ agent_id: 'cache-test', emitTelemetry });
+  const hit3 = telemetry.findLast(t => t.event === 'memory:retrieved');
+  assert.equal(hit3.payload.cache_hit, false);
 });

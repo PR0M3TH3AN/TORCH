@@ -336,8 +336,9 @@ export async function unpinMemory(id, options = {}) {
  * @param {string} id
  * @param {string} mergedInto
  */
-export async function markMemoryMerged(id, mergedInto) {
-  const merged = await memoryRepository.markMerged(id, mergedInto);
+export async function markMemoryMerged(id, mergedInto, options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const merged = await repository.markMerged(id, mergedInto);
   cache.clear();
   return merged;
 }
