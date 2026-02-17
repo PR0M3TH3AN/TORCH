@@ -214,7 +214,11 @@ export async function getRelevantMemories(params) {
     return cached;
   }
 
-  const ranked = await filterAndRankMemories([...memoryStore.values()], queryParams);
+  const source = typeof repository.listMemories === 'function'
+    ? await repository.listMemories(queryParams)
+    : [...memoryStore.values()];
+
+  const ranked = await filterAndRankMemories(source, queryParams);
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
   cache.set(cacheKey, ranked);
 
