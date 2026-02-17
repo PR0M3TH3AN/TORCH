@@ -6,8 +6,10 @@ import { startScheduler } from './scheduler.js';
 import { getMemoryPruneMode, isMemoryIngestEnabled } from './feature-flags.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import util from 'node:util';
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
+const debug = util.debuglog('torch-memory');
 
 function loadMemoryStore() {
   try {
@@ -113,7 +115,7 @@ function buildTelemetryEmitter(options = {}) {
   }
 
   return (event, payload) => {
-    console.log('memory_telemetry', {
+    debug('memory_telemetry', {
       event,
       payload: toSafeTelemetryPayload(payload),
       ts: Date.now(),
@@ -132,7 +134,7 @@ function emitMetric(options = {}, metric, payload) {
     return;
   }
 
-  console.log('memory_metric', { metric, payload, ts: Date.now() });
+  debug('memory_metric', { metric, payload, ts: Date.now() });
 }
 
 function applyMemoryFilters(memories, filters = {}) {
