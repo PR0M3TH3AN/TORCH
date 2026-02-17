@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
@@ -134,7 +135,13 @@ function isTransientPublishCategory(category) {
   ].includes(category);
 }
 
-function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = Math.random) {
+const MAX_RANDOM = 281474976710655; // 2**48 - 1
+
+function secureRandom() {
+  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
+}
+
+function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
   return Math.floor(randomFn() * maxDelay);
 }
@@ -409,7 +416,7 @@ export async function publishLock(relays, event, deps = {}) {
     retryBaseDelayMs = 500,
     retryCapDelayMs = 8_000,
     sleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-    randomFn = Math.random,
+    randomFn = secureRandom,
     telemetryLogger = console.error,
     healthLogger = console.error,
     diagnostics = {},
@@ -590,3 +597,5 @@ export function _resetRelayHealthState() {
   relayHealthState.metricsByRelay.clear();
   relayHealthState.lastSnapshotAt = 0;
 }
+
+export const _secureRandom = secureRandom;
