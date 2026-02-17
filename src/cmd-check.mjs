@@ -8,10 +8,10 @@ import { queryLocks } from './lock-ops.mjs';
 import { todayDateStr } from './utils.mjs';
 
 export async function cmdCheck(cadence) {
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = todayDateStr();
-  const config = loadTorchConfig();
+  const config = await loadTorchConfig();
   const pausedAgents = (cadence === 'daily' ? config.scheduler.paused.daily : config.scheduler.paused.weekly) || [];
 
   console.error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
@@ -20,9 +20,9 @@ export async function cmdCheck(cadence) {
     console.error(`Paused agents: ${pausedAgents.join(', ')}`);
   }
 
-  const locks = await queryLocks(relays, cadence, dateStr, namespace);
+  const locks = await queryLocksFn(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
-  const roster = getRoster(cadence);
+  const roster = await getRoster(cadence);
 
   const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
   const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));

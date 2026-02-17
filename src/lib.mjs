@@ -75,10 +75,10 @@ export async function cmdCheck(cadence, deps = {}) {
     quiet = false,
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = getDateStr();
-  const config = loadTorchConfig();
+  const config = await loadTorchConfig();
   const pausedAgents = config.scheduler.paused[cadence] || [];
 
   if (!quiet) {
@@ -99,7 +99,7 @@ export async function cmdCheck(cadence, deps = {}) {
 
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
-  const roster = getRoster(cadence);
+  const roster = await getRoster(cadence);
   const rosterSet = new Set(roster);
 
   const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents, ...completedAgents]);
@@ -180,11 +180,11 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
     error = console.error
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const hashtag = getHashtag();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
+  const hashtag = await getHashtag();
   const dateStr = getDateStr();
-  const ttl = getTtl();
+  const ttl = await getTtl();
   const now = nowUnix();
   const expiresAt = now + ttl;
 
@@ -193,7 +193,7 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
   error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
   error(`Relays: ${relays.join(', ')}`);
 
-  const roster = getRoster(cadence);
+  const roster = await getRoster(cadence);
   if (!roster.includes(agent)) {
     error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
     error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
@@ -319,8 +319,8 @@ export async function cmdList(cadence, deps = {}) {
     error = console.error
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = getDateStr();
   const cadences = cadence ? [cadence] : [...VALID_CADENCES];
 
@@ -365,7 +365,7 @@ export async function cmdList(cadence, deps = {}) {
       );
     }
 
-    const roster = getRoster(c);
+    const roster = await getRoster(c);
     const rosterSet = new Set(roster);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
     const unknownLockedAgents = [...lockedAgents].filter((agent) => !rosterSet.has(agent));
@@ -413,9 +413,9 @@ export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps 
     error = console.error
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const hashtag = getHashtag();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
+  const hashtag = await getHashtag();
   const dateStr = getDateStr();
   const now = nowUnix();
 
