@@ -138,6 +138,8 @@ async function probePublishRead(relayUrl, namespace, timeoutMs) {
       try {
         message = JSON.parse(raw.toString());
       } catch {
+        // Ignore malformed messages. The relay might be sending non-JSON data
+        // or we might have a protocol mismatch. We only care about valid JSON.
         return;
       }
       if (!Array.isArray(message) || message.length < 2) return;

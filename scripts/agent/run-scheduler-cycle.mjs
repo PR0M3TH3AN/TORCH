@@ -295,14 +295,8 @@ async function artifactExistsSince(filePath, sinceMs) {
 
 async function verifyMemoryStep({ name, markers, artifacts, outputText, sinceMs }) {
   const markerMatched = markers.some((marker) => outputText.includes(marker));
-  let artifactMatched = false;
-
-  for (const artifact of artifacts) {
-    if (await artifactExistsSince(artifact, sinceMs)) {
-      artifactMatched = true;
-      break;
-    }
-  }
+  const artifactResults = await Promise.all(artifacts.map((artifact) => artifactExistsSince(artifact, sinceMs)));
+  const artifactMatched = artifactResults.some(Boolean);
 
   return {
     name,
