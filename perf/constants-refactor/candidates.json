@@ -1,0 +1,1667 @@
+[
+  [
+    "0",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 24,
+        "context": "ary?.totalRelays || 0), 0);\n  const succe"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 24,
+        "context": ".totalRelays || 0), 0);\n  const successCo"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 25,
+        "context": "y?.healthyRelays || 0), 0);\n  const succe"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 25,
+        "context": "ealthyRelays || 0), 0);\n  const successRa"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 26,
+        "context": "= relayProbeCount > 0 ? successCount / re"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 29,
+        "context": "es.length - 1; i >= 0; i -= 1) {\n    if ("
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 30,
+        "context": "y?.healthyRelays || 0) > 0) {\n      lastH"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 30,
+        "context": "althyRelays || 0) > 0) {\n      lastHealth"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 38,
+        "context": "null\n    : Math.max(0, Math.floor((nowMs"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 61,
+        "context": "stats.sampleCount > 0 && stats.successRat"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 146,
+        "context": "onst type = message[0];\n\n      if (type ="
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 252,
+        "context": "y.healthyRelays === 0;\n\n  const result ="
+      },
+      {
+        "file": "src/roster.mjs",
+        "line": 75,
+        "context": "if (daily.length > 0 && weekly.length >"
+      },
+      {
+        "file": "src/roster.mjs",
+        "line": 75,
+        "context": "&& weekly.length > 0) {\n      cachedCano"
+      },
+      {
+        "file": "src/cmd-check.mjs",
+        "line": 19,
+        "context": "usedAgents.length > 0) {\n    console.erro"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 20,
+        "context": "(value) || value <= 0) return null;\n  ret"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 27,
+        "context": "urn parsed.length > 0 ? parsed : null;\n}"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 51,
+        "context": "(value) || value <= 0) {\n    throw new Er"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 94,
+        "context": "trLock.ttlSeconds > 0\n        ? Math.floo"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 239,
+        "context": "parsed) && parsed > 0) return parsed;\n  }"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 165,
+        "context": "f (entries.length > 0 && installDir !== '"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 424,
+        "context": ";\n      let added = 0;\n      let updated"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 425,
+        "context": "let updated = 0;\n      let skipped"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 426,
+        "context": "let skipped = 0;\n\n      for (const"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 38,
+        "context": "ull,\n  };\n  let i = 0;\n\n  if (argv.length"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 40,
+        "context": "if (argv.length > 0 && !argv[0].startsW"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 40,
+        "context": "length > 0 && !argv[0].startsWith('-')) {"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 41,
+        "context": "args.command = argv[0];\n    i = 1;\n  }"
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 56,
+        "context": "dex)\n\nExit codes:\n  0  Success\n  1  Usage"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 2,
+        "context": "toISOString().slice(0, 10);\n}\n\nexport fun"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 21,
+        "context": "the year\n  // day: 0 (Sun) -> 6 (Sat). W"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 25,
+        "context": "e.getUTCFullYear(), 0, 1));\n  const weekN"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 28,
+        "context": "eekNo).padStart(2, '0')}`;\n}\n\nexport func"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 87,
+        "context": "usedAgents.length > 0) {\n      error(`Pau"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 95,
+        "context": "pletedAgents.size > 0) {\n      error(`Com"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 207,
+        "context": "onflicting.length > 0) {\n    const earlie"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 208,
+        "context": "edAt - b.createdAt)[0];\n\n    // Check if"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 231,
+        "context": "pubkey: ${pk.slice(0, 16)}...`);\n\n  erro"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 277,
+        "context": "> 1 && racingLocks[0].eventId !== event."
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 278,
+        "context": "inner = racingLocks[0];\n      error("
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 341,
+        "context": "f (locks.length === 0) {\n      log('  (no"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 364,
+        "context": "lock.eventId?.slice(0, 12)}...`,\n      );"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 374,
+        "context": "ckedAgents.length > 0) {\n      log(`  War"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 620,
+        "context": "emory.content.slice(0, 200) + '... (trunc"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 39,
+        "context": "onflicting.length > 0) {\n    const earlie"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 40,
+        "context": "edAt - b.createdAt)[0];\n    console.error"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 54,
+        "context": "pubkey: ${pk.slice(0, 16)}...`);\n\n  cons"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 99,
+        "context": "> 1 && racingLocks[0].eventId !== event."
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 100,
+        "context": "inner = racingLocks[0];\n      console.err"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 17,
+        "context": ".tags.find((t) => t[0] === 'd')?.[1] ?? '"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 18,
+        "context": ".tags.find((t) => t[0] === 'expiration')?"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 136,
+        "context": "return randomInt(0, MAX_RANDOM) / MAX_"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 140,
+        "context": "Ms * (2 ** Math.max(0, attemptNumber - 1)"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 150,
+        "context": "ue) => sum + value, 0) / latencyEntries.l"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 152,
+        "context": "ccessRate = total > 0 ? successCount / to"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 153,
+        "context": "meoutRate = total > 0 ? timeoutCount / to"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 153,
+        "context": "eoutCount / total : 0;\n  const quarantine"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 154,
+        "context": "tineUntil - nowMs : 0;\n  return {\n    rel"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 162,
+        "context": "antineRemainingMs > 0,\n    quarantineRema"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 173,
+        "context": "y.quarantined ? 1 : 0;\n  return (summary."
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 180,
+        "context": "is.lastSnapshotAt = 0;\n  }\n\n  ensureMetri"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 189,
+        "context": "failureStreak: 0,\n        quarantine"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 190,
+        "context": "quarantineUntil: 0,\n        cooldownMs"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 234,
+        "context": "..quarantined.slice(0, additionalNeeded))"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 249,
+        "context": "centOutcomes.splice(0, metrics.recentOutc"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 255,
+        "context": "ics.failureStreak = 0;\n      if (metrics."
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 257,
+        "context": "s.quarantineUntil = 0;\n        metrics.co"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 292,
+        "context": "is.lastSnapshotAt = 0;\n  }\n}\n\nexport cons"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 335,
+        "context": "rioritized.length > 0) {\n      errorLogge"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 508,
+        "context": "backRelays.length > 0) {\n      await this"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 598,
+        "context": "result.category] || 0) + 1;\n        this."
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 29,
+        "context": "f (locks.length === 0) {\n      console.lo"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 46,
+        "context": "lock.eventId?.slice(0, 12)}...`,\n      );"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 55,
+        "context": "ckedAgents.length > 0) {\n      console.lo"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 38,
+        "context": "const type = parts[0];\n      const crede"
+      },
+      {
+        "file": "src/perf/benchmark-config-load.mjs",
+        "line": 22,
+        "context": "{\n    for (let i = 0; i < ITERATIONS; i+"
+      }
+    ]
+  ],
+  [
+    "1",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 26,
+        "context": "/ relayProbeCount : 1;\n\n  let lastHealthy"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 29,
+        "context": "oryEntries.length - 1; i >= 0; i -= 1) {"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 29,
+        "context": "h - 1; i >= 0; i -= 1) {\n    if ((history"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 133,
+        "context": "[event.id], limit: 1 }]));\n    });"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 148,
+        "context": "=== 'OK' && message[1] === event.id) {"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 156,
+        "context": "'EVENT' && message[1] === subId && messa"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 126,
+        "context": "');\n\n  try {\n    // 1. Install Directory"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 174,
+        "context": "installDir) {\n  // 1. Copy App Directori"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 369,
+        "context": "first.`);\n  }\n\n  // 1. Backup\n  const bac"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 42,
+        "context": "= argv[0];\n    i = 1;\n  }\n\n  for (; i <"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 56,
+        "context": "le = arg.split('=')[1];\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 60,
+        "context": "nt = arg.split('=')[1];\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 62,
+        "context": "ce = arg.split('=')[1];\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 78,
+        "context": "id = arg.split('=')[1];\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 82,
+        "context": "pe = arg.split('=')[1];\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 86,
+        "context": "ring(arg.split('=')[1]).split(',').map((t"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 91,
+        "context": "ring(arg.split('=')[1]).toLowerCase();"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 96,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 100,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 104,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 108,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 112,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 116,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 120,
+        "context": "loat(arg.split('=')[1]);\n    } else if (a"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 124,
+        "context": "eInt(arg.split('=')[1], 10);\n    } else i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 128,
+        "context": "rm = arg.split('=')[1];\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 132,
+        "context": "el = arg.split('=')[1];\n    }\n  }\n\n  retu"
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 12,
+        "context": "CESSFUL_PUBLISHES = 1;\nexport const DEFAU"
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 13,
+        "context": "ACTIVE_RELAY_POOL = 1;\nexport const VALID"
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 57,
+        "context": "des:\n  0  Success\n  1  Usage error\n  2  R"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 21,
+        "context": "-> 6 (Sat). We want 1 (Mon) -> 7 (Sun)"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 25,
+        "context": "etUTCFullYear(), 0, 1));\n  const weekNo ="
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 26,
+        "context": "tart) / 86400000) + 1) / 7);\n\n  return `$"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 51,
+        "context": "m three sources:\n * 1. Configuration (pau"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 149,
+        "context": "*\n * Algorithm:\n * 1. Validate agent aga"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 200,
+        "context": "throw new ExitError(1, 'Agent not in rost"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 203,
+        "context": "}\n\n  error('Step 1: Checking for exist"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 277,
+        "context": "acingLocks.length > 1 && racingLocks[0].e"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 388,
+        "context": "* This function:\n * 1. Verifies that the"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 425,
+        "context": "oin(', ')}`);\n\n  // 1. Find existing lock"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 432,
+        "context": "throw new ExitError(1, 'No active lock fo"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 444,
+        "context": "Iso;\n\n  error('Step 1: Generating complet"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 510,
+        "context": "throw new ExitError(1, 'No command specif"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 517,
+        "context": "throw new ExitError(1, 'Missing cadence')"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 532,
+        "context": "throw new ExitError(1, 'Missing agent');"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 536,
+        "context": "throw new ExitError(1, 'Missing cadence')"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 549,
+        "context": "throw new ExitError(1, 'Missing agent');"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 553,
+        "context": "throw new ExitError(1, 'Missing cadence')"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 566,
+        "context": "throw new ExitError(1, 'Invalid cadence')"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 575,
+        "context": "throw new ExitError(1, 'Missing cadence')"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 632,
+        "context": "throw new ExitError(1, 'Missing memory id"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 642,
+        "context": "throw new ExitError(1, 'Missing memory id"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 652,
+        "context": "throw new ExitError(1, 'Missing memory id"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 674,
+        "context": "throw new ExitError(1, 'Unknown command')"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 32,
+        "context": "throw new ExitError(1, 'Agent not in rost"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 35,
+        "context": "console.error('Step 1: Checking for exist"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 99,
+        "context": "acingLocks.length > 1 && racingLocks[0].e"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 17,
+        "context": "=> t[0] === 'd')?.[1] ?? '';\n  const exp"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 18,
+        "context": "=== 'expiration')?.[1];\n  const expiresAt"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 133,
+        "context": "6710655; // 2**48 - 1\n\nfunction secureRan"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 140,
+        "context": "(0, attemptNumber - 1)));\n  return Math.f"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 173,
+        "context": "mmary.quarantined ? 1 : 0;\n  return (summ"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 213,
+        "context": "mmary.quarantined ? 1 : -1;\n      if (a.s"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 213,
+        "context": ".quarantined ? 1 : -1;\n      if (a.summar"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 215,
+        "context": "Ms === null) return 1;\n        if (b.summ"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 216,
+        "context": "s === null) return -1;\n        return a.s"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 224,
+        "context": "inActive = Math.max(1, Math.min(config.mi"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 224,
+        "context": "l, relays.length || 1));\n    const ranked"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 263,
+        "context": "cs.failureStreak += 1;\n    if (metrics.fa"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 305,
+        "context": "RelayPool: Math.max(1, deps.minActiveRela"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 465,
+        "context": "let attemptNumber = 1; attemptNumber <= t"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 465,
+        "context": "s; attemptNumber += 1) {\n        const st"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 598,
+        "context": "t.category] || 0) + 1;\n        this.telem"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 39,
+        "context": "credentials = parts[1];\n      let isValid"
+      }
+    ]
+  ],
+  [
+    "2",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 101,
+        "context": ".toString(16).slice(2, 10)}`;\n  const pro"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 145,
+        "context": "|| message.length < 2) return;\n      cons"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 149,
+        "context": "k = Boolean(message[2]);\n        if (!okA"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 156,
+        "context": "== subId && message[2]?.id === event.id)"
+      },
+      {
+        "file": "src/cmd-check.mjs",
+        "line": 50,
+        "context": "ngify(result, null, 2));\n  return result;"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 135,
+        "context": "defaultDir;\n\n    // 2. Namespace\n    cons"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 177,
+        "context": "r, 'Copied');\n\n  // 2. Copy App Files\n  s"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 268,
+        "context": "y(configData, null, 2), 'utf8');\n  consol"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 330,
+        "context": "tringify(pkg, null, 2), 'utf8');"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 387,
+        "context": "true });\n  }\n\n  // 2. Update App Directo"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 6,
+        "context": "process.argv.slice(2)\n * @returns {Objec"
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 58,
+        "context": "1  Usage error\n  2  Relay/network erro"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 28,
+        "context": "ng(weekNo).padStart(2, '0')}`;\n}\n\nexport"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 52,
+        "context": "(paused agents)\n * 2. Local logs (comple"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 130,
+        "context": "ngify(result, null, 2);\n\n  if (jsonFile)"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 150,
+        "context": "inst the roster.\n * 2. Query relays for e"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 228,
+        "context": "}\n\n  error('Step 2: Generating ephemer"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 389,
+        "context": "ds a valid lock.\n * 2. Publishes a replac"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 441,
+        "context": "ventId };\n  }\n\n  // 2. Build completion e"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 477,
+        "context": ") {\n    error('Step 2: [DRY RUN] Skipping"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 479,
+        "context": "e {\n    error('Step 2: Publishing complet"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 502,
+        "context": "process.argv.slice(2)\n */\nexport async f"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 587,
+        "context": "ngify(result, null, 2));\n        if (!res"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 588,
+        "context": "throw new ExitError(2, 'Relay health chec"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 625,
+        "context": "ngify(result, null, 2));\n        break;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 635,
+        "context": "ngify(result, null, 2));\n        break;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 645,
+        "context": "ngify(result, null, 2));\n        break;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 655,
+        "context": "ngify(result, null, 2));\n        break;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 661,
+        "context": "ngify(result, null, 2));\n        break;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 667,
+        "context": "ngify(result, null, 2));\n        break;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 681,
+        "context": "process.exit(2);\n    }\n  }\n}"
+      },
+      {
+        "file": "src/lock-utils.mjs",
+        "line": 26,
+        "context": "e.match(/^(\\d{4}-\\d{2}-\\d{2})T.*__([a-zA-"
+      },
+      {
+        "file": "src/lock-utils.mjs",
+        "line": 26,
+        "context": "h(/^(\\d{4}-\\d{2}-\\d{2})T.*__([a-zA-Z0-9-_"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 51,
+        "context": "console.error('Step 2: Generating ephemer"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 133,
+        "context": "281474976710655; // 2**48 - 1\n\nfunction s"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 140,
+        "context": "in(capMs, baseMs * (2 ** Math.max(0, atte"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 115,
+        "context": "y(safeConfig, null, 2));\n          return"
+      },
+      {
+        "file": "src/perf/benchmark-config-load.mjs",
+        "line": 15,
+        "context": "s\"\n    }\n  }, null, 2));\n}\n\nconst ITERATI"
+      },
+      {
+        "file": "src/perf/benchmark-config-load.mjs",
+        "line": 36,
+        "context": "${duration.toFixed(2)}ms`);\n    console."
+      }
+    ]
+  ],
+  [
+    "10",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 101,
+        "context": "String(16).slice(2, 10)}`;\n  const probeTa"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 200,
+        "context": "RelaysDownMinutes = 10,\n    minSuccessRate"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 185,
+        "context": "parseInt(envValue, 10);\n  if (Number.isNa"
+      },
+      {
+        "file": "src/torch-config.mjs",
+        "line": 238,
+        "context": "= parseInt(envTtl, 10);\n    if (!Number.i"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 68,
+        "context": "parseInt(argv[++i], 10) || DEFAULT_DASHBOA"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 94,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 96,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 98,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 100,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 102,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 104,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 106,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 108,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 110,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 112,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 114,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 116,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 122,
+        "context": "parseInt(argv[++i], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/cli-parser.mjs",
+        "line": 124,
+        "context": "(arg.split('=')[1], 10);\n    } else if (ar"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 2,
+        "context": "SOString().slice(0, 10);\n}\n\nexport functio"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 19,
+        "context": "? parseInt(expTag, 10) : null;\n\n  let con"
+      }
+    ]
+  ],
+  [
+    "4",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 65,
+        "context": "successRate.toFixed(4)),\n      windowMinu"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 136,
+        "context": "crypto.randomBytes(4).toString('hex');"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 189,
+        "context": "ster)}`);\n  }\n\n  // 4. Copy Static Files"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 393,
+        "context": ", 'Updated');\n\n  // 4. Update Static File"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 23,
+        "context": "date.getUTCDate() + 4 - day);\n\n  const ye"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 152,
+        "context": "nt (kind 30078).\n * 4. Publish the lock e"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 263,
+        "context": ") {\n    error('Step 4: [DRY RUN] Skipping"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 266,
+        "context": "e {\n    error('Step 4: Publishing to rela"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 361,
+        "context": "ng(ageMin).padStart(4)}m  ` +\n          `"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 362,
+        "context": "remainMin).padStart(4)}  ` +\n          `p"
+      },
+      {
+        "file": "src/lock-utils.mjs",
+        "line": 26,
+        "context": "= file.match(/^(\\d{4}-\\d{2}-\\d{2})T.*__("
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 85,
+        "context": "console.error('Step 4: [DRY RUN] Skipping"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 88,
+        "context": "console.error('Step 4: Publishing to rela"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 274,
+        "context": "entry.score.toFixed(4)),\n      ...entry.s"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 427,
+        "context": "ps.retryAttempts || 4;\n    this.retryBase"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 43,
+        "context": "ng(ageMin).padStart(4)}m  ` +\n          `"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 44,
+        "context": "remainMin).padStart(4)}m  ` +\n          `"
+      },
+      {
+        "file": "src/perf/benchmark-config-load.mjs",
+        "line": 37,
+        "context": "ITERATIONS).toFixed(4)}ms per load`);"
+      }
+    ]
+  ],
+  [
+    "1000",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 100,
+        "context": ".floor(Date.now() / 1000);\n  const nonce = `"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 6,
+        "context": ".floor(Date.now() / 1000);\n}\n\nexport functio"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 193,
+        "context": "ew Date(expiresAt * 1000).toISOString()}`);"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 253,
+        "context": "dAt: new Date(now * 1000).toISOString(),"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 254,
+        "context": "ew Date(expiresAt * 1000).toISOString(),"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 299,
+        "context": "ew Date(expiresAt * 1000).toISOString()}`);"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 468,
+        "context": "dAt: new Date(now * 1000).toISOString(),"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 25,
+        "context": "ew Date(expiresAt * 1000).toISOString()}`);"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 75,
+        "context": "dAt: new Date(now * 1000).toISOString(),"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 76,
+        "context": "ew Date(expiresAt * 1000).toISOString(),"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 120,
+        "context": "ew Date(expiresAt * 1000).toISOString()}`);"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 13,
+        "context": ".floor(Date.now() / 1000);\n}\n\nexport functio"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 35,
+        "context": "(event.created_at * 1000).toISOString(),"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 37,
+        "context": "ew Date(expiresAt * 1000).toISOString() : nu"
+      },
+      {
+        "file": "src/perf/benchmark-config-load.mjs",
+        "line": 18,
+        "context": "const ITERATIONS = 1000;\nconst start = proc"
+      }
+    ]
+  ],
+  [
+    "3",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 151,
+        "context": "t: ${String(message[3] || 'unknown reason"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 141,
+        "context": "tNamespace;\n\n    // 3. Relays\n    console"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 182,
+        "context": "installDir) {\n  // 3. Copy Roster\n  cons"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 390,
+        "context": ", 'Updated');\n\n  // 3. Update App Files ("
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 59,
+        "context": "lay/network error\n  3  Lock denied (alrea"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 53,
+        "context": "ompleted agents)\n * 3. Nostr relays (curr"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 151,
+        "context": "for conflicts).\n * 3. Generate a new eph"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 215,
+        "context": "throw new ExitError(3, 'Task already comp"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 225,
+        "context": "throw new ExitError(3, 'Lock denied');"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 233,
+        "context": ".`);\n\n  error('Step 3: Building lock even"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 285,
+        "context": "throw new ExitError(3, 'Race check lost')"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 48,
+        "context": "throw new ExitError(3, 'Lock denied');"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 56,
+        "context": "console.error('Step 3: Building lock even"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 107,
+        "context": "throw new ExitError(3, 'Race check lost')"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 301,
+        "context": "failureThreshold ?? 3,\n    quarantineCool"
+      }
+    ]
+  ],
+  [
+    "60",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 21,
+        "context": "(), windowMinutes = 60 } = {}) {\n  const w"
+      },
+      {
+        "file": "src/relay-health.mjs",
+        "line": 202,
+        "context": "windowMinutes = 60,\n  } = options;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 349,
+        "context": "= Math.round(age / 60);\n\n      let remain"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 356,
+        "context": "h.round(remaining / 60);\n      }\n\n      lo"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 37,
+        "context": "= Math.round(age / 60);\n      const remai"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 39,
+        "context": "h.round(remaining / 60) : '?';\n\n      cons"
+      }
+    ]
+  ],
+  [
+    "5",
+    [
+      {
+        "file": "src/ops.mjs",
+        "line": 199,
+        "context": "`);\n    }\n  }\n\n  // 5. Copy Prompts\n  for"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 404,
+        "context": "`);\n    }\n  }\n\n  // 5. Update Roster (Pre"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 153,
+        "context": "event to relays.\n * 5. Wait for propagati"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 269,
+        "context": ");\n\n    error('Step 5: Race check...');"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 91,
+        "context": "console.error('Step 5: Race check...');"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 303,
+        "context": "antineCooldownMs ?? 5 * 60_000,\n    snaps"
+      }
+    ]
+  ],
+  [
+    "7",
+    [
+      {
+        "file": "src/ops.mjs",
+        "line": 273,
+        "context": "installDir) {\n  // 7. Inject Scripts int"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 21,
+        "context": "We want 1 (Mon) -> 7 (Sun)\n  const day ="
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 22,
+        "context": "date.getUTCDay() || 7;\n  date.setUTCDate("
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 26,
+        "context": "/ 86400000) + 1) / 7);\n\n  return `${date"
+      }
+    ]
+  ],
+  [
+    "72",
+    [
+      {
+        "file": "src/lib.mjs",
+        "line": 337,
+        "context": "log(`\\n${'='.repeat(72)}`);\n    log(`Activ"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 339,
+        "context": "log('='.repeat(72));\n\n    if (locks.l"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 25,
+        "context": "log(`\\n${'='.repeat(72)}`);\n    console.lo"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 27,
+        "context": "sole.log('='.repeat(72));\n\n    if (locks.l"
+      }
+    ]
+  ],
+  [
+    "200",
+    [
+      {
+        "file": "src/lib.mjs",
+        "line": 619,
+        "context": "ry.content.length > 200) {\n              me"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 620,
+        "context": "ry.content.slice(0, 200) + '... (truncated,"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 114,
+        "context": "res.writeHead(200, { 'Content-Type':"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 183,
+        "context": "res.writeHead(200, { 'Content-Type':"
+      }
+    ]
+  ],
+  [
+    "16",
+    [
+      {
+        "file": "src/relay-health.mjs",
+        "line": 101,
+        "context": "h.random().toString(16).slice(2, 10)}`;"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 231,
+        "context": "bkey: ${pk.slice(0, 16)}...`);\n\n  error('S"
+      },
+      {
+        "file": "src/cmd-lock.mjs",
+        "line": 54,
+        "context": "bkey: ${pk.slice(0, 16)}...`);\n\n  console."
+      }
+    ]
+  ],
+  [
+    "6",
+    [
+      {
+        "file": "src/ops.mjs",
+        "line": 218,
+        "context": "ace, relays) {\n  // 6. Create/Update torc"
+      },
+      {
+        "file": "src/ops.mjs",
+        "line": 415,
+        "context": "');\n    }\n  }\n\n  // 6. Update Prompts (Co"
+      },
+      {
+        "file": "src/utils.mjs",
+        "line": 21,
+        "context": "// day: 0 (Sun) -> 6 (Sat). We want 1 (M"
+      }
+    ]
+  ],
+  [
+    "500",
+    [
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 428,
+        "context": "retryBaseDelayMs || 500;\n    this.retryCapD"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 119,
+        "context": "res.writeHead(500);\n          res.end"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 188,
+        "context": "res.writeHead(500);\n        res.end('"
+      }
+    ]
+  ],
+  [
+    "7200",
+    [
+      {
+        "file": "src/constants.mjs",
+        "line": 8,
+        "context": "const DEFAULT_TTL = 7200;\nexport const DEFAU"
+      },
+      {
+        "file": "src/constants.mjs",
+        "line": 48,
+        "context": "n seconds (default: 7200)\n  NOSTR_LOCK_QUERY"
+      }
+    ]
+  ],
+  [
+    "30078",
+    [
+      {
+        "file": "src/constants.mjs",
+        "line": 15,
+        "context": "nst KIND_APP_DATA = 30078;\n\nexport const USAG"
+      },
+      {
+        "file": "src/lib.mjs",
+        "line": 151,
+        "context": "a lock event (kind 30078).\n * 4. Publish the"
+      }
+    ]
+  ],
+  [
+    "30",
+    [
+      {
+        "file": "src/lib.mjs",
+        "line": 360,
+        "context": "? 'unknown').padEnd(30)} ` +\n          `ag"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 42,
+        "context": "? 'unknown').padEnd(30)} ` +\n          `ag"
+      }
+    ]
+  ],
+  [
+    "12",
+    [
+      {
+        "file": "src/lib.mjs",
+        "line": 364,
+        "context": "k.eventId?.slice(0, 12)}...`,\n      );"
+      },
+      {
+        "file": "src/cmd-list.mjs",
+        "line": 46,
+        "context": "k.eventId?.slice(0, 12)}...`,\n      );"
+      }
+    ]
+  ],
+  [
+    "0.1",
+    [
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 171,
+        "context": "cyMs === null\n    ? 0.1\n    : Math.min(0.35"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 21,
+        "context": "PORT, host = '127.0.0.1') {\n  // Resolve pa"
+      }
+    ]
+  ],
+  [
+    "25",
+    [
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 300,
+        "context": "ollingWindowSize ?? 25,\n    failureThresho"
+      },
+      {
+        "file": "src/lock-ops.mjs",
+        "line": 450,
+        "context": "rollingWindowSize: 25,\n      minActiveRel"
+      }
+    ]
+  ],
+  [
+    "401",
+    [
+      {
+        "file": "src/dashboard.mjs",
+        "line": 33,
+        "context": "res.writeHead(401, { 'WWW-Authenticat"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 51,
+        "context": "res.writeHead(401, { 'WWW-Authenticat"
+      }
+    ]
+  ],
+  [
+    "404",
+    [
+      {
+        "file": "src/dashboard.mjs",
+        "line": 124,
+        "context": "res.writeHead(404);\n        res.end('"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 162,
+        "context": "res.writeHead(404);\n      res.end('No"
+      }
+    ]
+  ],
+  [
+    "0.0",
+    [
+      {
+        "file": "src/dashboard.mjs",
+        "line": 196,
+        "context": "`http://${host === '0.0.0.0' ? 'localhost'"
+      },
+      {
+        "file": "src/dashboard.mjs",
+        "line": 196,
+        "context": "p://${host === '0.0.0.0' ? 'localhost' : ho"
+      }
+    ]
+  ]
+]
