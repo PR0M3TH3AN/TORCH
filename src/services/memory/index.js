@@ -198,10 +198,15 @@ export async function ingestEvents(events, options = {}) {
  * @returns {Promise<import('./schema.js').MemoryRecord[]>} Sorted list of relevant memories.
  */
 export async function getRelevantMemories(params) {
-  const { repository = memoryRepository, ...queryParams } = params;
+  const {
+    repository = memoryRepository,
+    ranker = filterAndRankMemories,
+    cache: cacheProvider = cache,
+    ...queryParams
+  } = params;
   const telemetry = buildTelemetryEmitter(params);
   const cacheKey = JSON.stringify(queryParams);
-  const cached = cache.get(cacheKey);
+  const cached = cacheProvider.get(cacheKey);
   if (cached) {
     telemetry('memory:retrieved', {
       agent_id: queryParams.agent_id,
@@ -220,9 +225,9 @@ export async function getRelevantMemories(params) {
     ? await repository.listMemories(queryParams)
     : [...memoryStore.values()];
 
-  const ranked = await filterAndRankMemories(source, queryParams);
+  const ranked = await ranker(source, queryParams);
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
-  cache.set(cacheKey, ranked);
+  cacheProvider.set(cacheKey, ranked);
 
   telemetry('memory:retrieved', {
     agent_id: queryParams.agent_id,

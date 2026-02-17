@@ -7,8 +7,8 @@ import { queryLocks } from './lock-ops.mjs';
 import { todayDateStr, nowUnix } from './utils.mjs';
 
 export async function cmdList(cadence) {
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = todayDateStr();
   const cadences = cadence ? [cadence] : ['daily', 'weekly'];
 
@@ -47,7 +47,7 @@ export async function cmdList(cadence) {
       );
     }
 
-    const roster = getRoster(c);
+    const roster = await getRoster(c);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
     const unknownLockedAgents = [...lockedAgents].filter((agent) => !roster.includes(agent));
     const available = roster.filter((a) => !lockedAgents.has(a));

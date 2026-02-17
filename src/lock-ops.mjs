@@ -9,11 +9,6 @@ import {
 } from './torch-config.mjs';
 import { KIND_APP_DATA } from './constants.mjs';
 
-const relayHealthState = {
-  metricsByRelay: new Map(),
-  lastSnapshotAt: 0,
-};
-
 function nowUnix() {
   return Math.floor(Date.now() / 1000);
 }
@@ -146,23 +141,6 @@ function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secure
   return Math.floor(randomFn() * maxDelay);
 }
 
-function ensureRelayMetrics(relay, config) {
-  let metrics = relayHealthState.metricsByRelay.get(relay);
-  if (!metrics) {
-    metrics = {
-      relay,
-      recentOutcomes: [],
-      failureStreak: 0,
-      quarantineUntil: 0,
-      cooldownMs: config.quarantineCooldownMs,
-      lastLatencyMs: null,
-      lastResultAt: null,
-    };
-    relayHealthState.metricsByRelay.set(relay, metrics);
-  }
-  return metrics;
-}
-
 function summarizeRelayMetrics(metrics, nowMs) {
   const total = metrics.recentOutcomes.length;
   const successCount = metrics.recentOutcomes.filter((entry) => entry.success).length;
@@ -196,95 +174,126 @@ function computeRelayScore(summary) {
   return (summary.successRate * 1.4) - (summary.timeoutRate * 0.9) - latencyPenalty - quarantinePenalty;
 }
 
-function rankRelaysByHealth(relays, config, nowMs = Date.now()) {
-  const summaries = relays.map((relay) => {
-    const metrics = ensureRelayMetrics(relay, config);
-    const summary = summarizeRelayMetrics(metrics, nowMs);
+export class RelayHealthManager {
+  constructor() {
+    this.metricsByRelay = new Map();
+    this.lastSnapshotAt = 0;
+  }
+
+  ensureMetrics(relay, config) {
+    let metrics = this.metricsByRelay.get(relay);
+    if (!metrics) {
+      metrics = {
+        relay,
+        recentOutcomes: [],
+        failureStreak: 0,
+        quarantineUntil: 0,
+        cooldownMs: config.quarantineCooldownMs,
+        lastLatencyMs: null,
+        lastResultAt: null,
+      };
+      this.metricsByRelay.set(relay, metrics);
+    }
+    return metrics;
+  }
+
+  rankRelays(relays, config, nowMs = Date.now()) {
+    const summaries = relays.map((relay) => {
+      const metrics = this.ensureMetrics(relay, config);
+      const summary = summarizeRelayMetrics(metrics, nowMs);
+      return {
+        relay,
+        summary,
+        score: computeRelayScore(summary),
+      };
+    });
+
+    return summaries.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.summary.quarantined !== b.summary.quarantined) return a.summary.quarantined ? 1 : -1;
+      if (a.summary.averageLatencyMs !== b.summary.averageLatencyMs) {
+        if (a.summary.averageLatencyMs === null) return 1;
+        if (b.summary.averageLatencyMs === null) return -1;
+        return a.summary.averageLatencyMs - b.summary.averageLatencyMs;
+      }
+      return a.relay.localeCompare(b.relay);
+    });
+  }
+
+  prioritizeRelays(relays, config, nowMs = Date.now()) {
+    const minActive = Math.max(1, Math.min(config.minActiveRelayPool, relays.length || 1));
+    const ranked = this.rankRelays([...new Set(relays)], config, nowMs);
+    const active = ranked.filter((entry) => !entry.summary.quarantined);
+    const quarantined = ranked
+      .filter((entry) => entry.summary.quarantined)
+      .sort((a, b) => a.summary.quarantineRemainingMs - b.summary.quarantineRemainingMs);
+
+    const selected = [...active];
+    if (selected.length < minActive) {
+      const additionalNeeded = Math.min(minActive - selected.length, quarantined.length);
+      selected.push(...quarantined.slice(0, additionalNeeded));
+    }
+
     return {
-      relay,
-      summary,
-      score: computeRelayScore(summary),
+      prioritized: selected.map((entry) => entry.relay),
+      ranked,
     };
-  });
+  }
 
-  return summaries.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    if (a.summary.quarantined !== b.summary.quarantined) return a.summary.quarantined ? 1 : -1;
-    if (a.summary.averageLatencyMs !== b.summary.averageLatencyMs) {
-      if (a.summary.averageLatencyMs === null) return 1;
-      if (b.summary.averageLatencyMs === null) return -1;
-      return a.summary.averageLatencyMs - b.summary.averageLatencyMs;
+  recordOutcome(relay, success, errorMessage, latencyMs, config, nowMs = Date.now()) {
+    const metrics = this.ensureMetrics(relay, config);
+    const timedOut = String(errorMessage || '').toLowerCase().includes('timeout')
+      || String(errorMessage || '').toLowerCase().includes('timed out');
+    metrics.recentOutcomes.push({ success, timedOut, latencyMs, atMs: nowMs });
+    if (metrics.recentOutcomes.length > config.rollingWindowSize) {
+      metrics.recentOutcomes.splice(0, metrics.recentOutcomes.length - config.rollingWindowSize);
     }
-    return a.relay.localeCompare(b.relay);
-  });
-}
+    metrics.lastResultAt = nowMs;
+    metrics.lastLatencyMs = Number.isFinite(latencyMs) ? latencyMs : null;
 
-function prioritizeRelays(relays, config, nowMs = Date.now()) {
-  const minActive = Math.max(1, Math.min(config.minActiveRelayPool, relays.length || 1));
-  const ranked = rankRelaysByHealth([...new Set(relays)], config, nowMs);
-  const active = ranked.filter((entry) => !entry.summary.quarantined);
-  const quarantined = ranked
-    .filter((entry) => entry.summary.quarantined)
-    .sort((a, b) => a.summary.quarantineRemainingMs - b.summary.quarantineRemainingMs);
-
-  const selected = [...active];
-  if (selected.length < minActive) {
-    const additionalNeeded = Math.min(minActive - selected.length, quarantined.length);
-    selected.push(...quarantined.slice(0, additionalNeeded));
-  }
-
-  return {
-    prioritized: selected.map((entry) => entry.relay),
-    ranked,
-  };
-}
-
-function recordRelayOutcome(relay, success, errorMessage, latencyMs, config, nowMs = Date.now()) {
-  const metrics = ensureRelayMetrics(relay, config);
-  const timedOut = String(errorMessage || '').toLowerCase().includes('timeout')
-    || String(errorMessage || '').toLowerCase().includes('timed out');
-  metrics.recentOutcomes.push({ success, timedOut, latencyMs, atMs: nowMs });
-  if (metrics.recentOutcomes.length > config.rollingWindowSize) {
-    metrics.recentOutcomes.splice(0, metrics.recentOutcomes.length - config.rollingWindowSize);
-  }
-  metrics.lastResultAt = nowMs;
-  metrics.lastLatencyMs = Number.isFinite(latencyMs) ? latencyMs : null;
-
-  if (success) {
-    metrics.failureStreak = 0;
-    if (metrics.quarantineUntil > nowMs) {
-      metrics.quarantineUntil = 0;
-      metrics.cooldownMs = config.quarantineCooldownMs;
+    if (success) {
+      metrics.failureStreak = 0;
+      if (metrics.quarantineUntil > nowMs) {
+        metrics.quarantineUntil = 0;
+        metrics.cooldownMs = config.quarantineCooldownMs;
+      }
+      return;
     }
-    return;
+
+    metrics.failureStreak += 1;
+    if (metrics.failureStreak >= config.failureThreshold) {
+      metrics.quarantineUntil = nowMs + metrics.cooldownMs;
+      metrics.cooldownMs = Math.min(config.maxQuarantineCooldownMs, Math.floor(metrics.cooldownMs * 1.5));
+    }
   }
 
-  metrics.failureStreak += 1;
-  if (metrics.failureStreak >= config.failureThreshold) {
-    metrics.quarantineUntil = nowMs + metrics.cooldownMs;
-    metrics.cooldownMs = Math.min(config.maxQuarantineCooldownMs, Math.floor(metrics.cooldownMs * 1.5));
+  collectSnapshot(relays, config, nowMs = Date.now()) {
+    const uniqueRelays = [...new Set(relays)];
+    return this.rankRelays(uniqueRelays, config, nowMs).map((entry) => ({
+      relay: entry.relay,
+      score: Number(entry.score.toFixed(4)),
+      ...entry.summary,
+    }));
+  }
+
+  maybeLogSnapshot(relays, config, logger, reason, force = false, nowMs = Date.now()) {
+    const intervalReached = nowMs - this.lastSnapshotAt >= config.snapshotIntervalMs;
+    if (!force && !intervalReached) return;
+    this.lastSnapshotAt = nowMs;
+    logger(JSON.stringify({
+      event: 'relay_health_snapshot',
+      reason,
+      relays: this.collectSnapshot(relays, config, nowMs),
+    }));
+  }
+
+  reset() {
+    this.metricsByRelay.clear();
+    this.lastSnapshotAt = 0;
   }
 }
 
-function collectHealthSnapshot(relays, config, nowMs = Date.now()) {
-  const uniqueRelays = [...new Set(relays)];
-  return rankRelaysByHealth(uniqueRelays, config, nowMs).map((entry) => ({
-    relay: entry.relay,
-    score: Number(entry.score.toFixed(4)),
-    ...entry.summary,
-  }));
-}
-
-function maybeLogHealthSnapshot(relays, config, logger, reason, force = false, nowMs = Date.now()) {
-  const intervalReached = nowMs - relayHealthState.lastSnapshotAt >= config.snapshotIntervalMs;
-  if (!force && !intervalReached) return;
-  relayHealthState.lastSnapshotAt = nowMs;
-  logger(JSON.stringify({
-    event: 'relay_health_snapshot',
-    reason,
-    relays: collectHealthSnapshot(relays, config, nowMs),
-  }));
-}
+export const defaultHealthManager = new RelayHealthManager();
 
 function buildRelayHealthConfig(deps) {
   return {
@@ -309,19 +318,20 @@ export async function queryLocks(relays, cadence, dateStr, namespace, deps = {})
     getMinActiveRelayPoolFn = getMinActiveRelayPool,
     errorLogger = console.error,
     healthLogger = console.error,
+    healthManager = defaultHealthManager,
   } = deps;
 
   const pool = poolFactory();
   const tagFilter = `${namespace}-lock-${cadence}-${dateStr}`;
-  const queryTimeoutMs = getQueryTimeoutMsFn();
-  const fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
+  const queryTimeoutMs = await getQueryTimeoutMsFn();
+  const fallbackRelays = (await getRelayFallbacksFn()).filter((relay) => !relays.includes(relay));
   const healthConfig = buildRelayHealthConfig({
     ...deps,
-    minActiveRelayPool: getMinActiveRelayPoolFn(),
+    minActiveRelayPool: await getMinActiveRelayPoolFn(),
   });
 
   const runQuery = async (relaySet, phase) => {
-    const { prioritized } = prioritizeRelays(relaySet, healthConfig);
+    const { prioritized } = healthManager.prioritizeRelays(relaySet, healthConfig);
     if (prioritized.length > 0) {
       errorLogger(`[${phase}] Querying ${prioritized.length} relays (${relayListLabel(prioritized)})...`);
     }
@@ -338,14 +348,14 @@ export async function queryLocks(relays, cadence, dateStr, namespace, deps = {})
       );
       const elapsedMs = Date.now() - startedAtMs;
       for (const relay of prioritized) {
-        recordRelayOutcome(relay, true, null, elapsedMs, healthConfig);
+        healthManager.recordOutcome(relay, true, null, elapsedMs, healthConfig);
       }
       return filterActiveLocks(events.map(parseLockEvent));
     } catch (err) {
       const elapsedMs = Date.now() - startedAtMs;
       const message = err instanceof Error ? err.message : String(err);
       for (const relay of prioritized) {
-        recordRelayOutcome(relay, false, message, elapsedMs, healthConfig);
+        healthManager.recordOutcome(relay, false, message, elapsedMs, healthConfig);
       }
       throw new Error(
         `[${phase}] Relay query failed (timeout=${queryTimeoutMs}ms, relays=${relayListLabel(prioritized)}): ${message}`,
@@ -357,12 +367,12 @@ export async function queryLocks(relays, cadence, dateStr, namespace, deps = {})
   const allRelays = mergeRelayList(relays, fallbackRelays);
 
   try {
-    maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'query:periodic');
+    healthManager.maybeLogSnapshot(allRelays, healthConfig, healthLogger, 'query:periodic');
     try {
       return await runQuery(relays, 'query:primary');
     } catch (primaryErr) {
       if (!fallbackRelays.length) {
-        maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'query:failure', true);
+        healthManager.maybeLogSnapshot(allRelays, healthConfig, healthLogger, 'query:failure', true);
         throw primaryErr;
       }
       errorLogger(`WARN: ${primaryErr.message}`);
@@ -422,48 +432,59 @@ export async function publishLock(relays, event, deps = {}) {
     diagnostics = {},
   } = deps;
 
-  const correlationId = diagnostics.correlationId || process.env.SCHEDULER_LOCK_CORRELATION_ID || 'none';
-  const attemptId = diagnostics.attemptId || process.env.SCHEDULER_LOCK_ATTEMPT_ID || '1';
+  async publish() {
+    try {
+      maybeLogHealthSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
+      let lastAttemptState = null;
+      const retryTimeline = [];
+      const overallStartedAt = Date.now();
+      let terminalFailureCategory = 'relay_publish_non_retryable';
 
-  const pool = poolFactory();
-  const publishTimeoutMs = getPublishTimeoutMsFn();
-  const minSuccesses = getMinSuccessfulRelayPublishesFn();
-  const fallbackRelays = getRelayFallbacksFn().filter((relay) => !relays.includes(relay));
-  const maxAttempts = Math.max(1, Math.floor(retryAttempts));
-  const healthConfig = buildRelayHealthConfig({
-    ...deps,
-    minActiveRelayPool: getMinActiveRelayPoolFn(),
-  });
+      for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
+        const startedAtMs = Date.now();
+        lastAttemptState = await this.executePublishCycle();
+        const elapsedMs = Date.now() - startedAtMs;
+        retryTimeline.push({
+          publishAttempt: attemptNumber,
+          successCount: lastAttemptState.successCount,
+          relayAttemptedCount: lastAttemptState.attempted.size,
+          elapsedMs,
+        });
 
-  const publishOnce = async () => {
+        if (lastAttemptState.successCount >= this.minSuccesses) {
+          this.logSuccess(attemptNumber, lastAttemptState, retryTimeline, overallStartedAt);
+          return this.event;
+        }
+
+        const { hasTransientFailure, hasPermanentFailure } = this.analyzeFailures(lastAttemptState.failures);
+        const canRetry = attemptNumber < this.maxAttempts && hasTransientFailure && !hasPermanentFailure;
+
+        terminalFailureCategory = this.determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber);
+
+        if (!canRetry) {
+          break;
+        }
+
+        const nextDelayMs = calculateBackoffDelayMs(attemptNumber, this.retryBaseDelayMs, this.retryCapDelayMs, this.randomFn);
+        this.logRetry(attemptNumber, lastAttemptState.failures, elapsedMs, nextDelayMs);
+        await this.sleepFn(nextDelayMs);
+      }
+
+      this.handleFinalFailure(lastAttemptState, terminalFailureCategory, retryTimeline, overallStartedAt);
+    } finally {
+      this.pool.close(this.allRelays);
+    }
+  }
+
+  async executePublishCycle() {
     const attempted = new Set();
     const publishResults = [];
 
-    const attemptPhase = async (phaseRelays, phaseName) => {
-      if (!phaseRelays.length) return;
-      const { prioritized } = prioritizeRelays(phaseRelays, healthConfig);
-      if (!prioritized.length) return;
-
-      console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${prioritized.join(', ')})...`);
-
-      const startedAtMs = Date.now();
-      for (const relay of prioritized) {
-        attempted.add(relay);
-      }
-      const phaseResults = await publishToRelays(pool, prioritized, event, publishTimeoutMs, phaseName);
-      const elapsedMs = Date.now() - startedAtMs;
-      for (const result of phaseResults) {
-        result.latencyMs = elapsedMs;
-        recordRelayOutcome(result.relay, result.success, result.message, elapsedMs, healthConfig);
-      }
-      publishResults.push(...phaseResults);
-    };
-
-    await attemptPhase(relays, 'publish:primary');
+    await this.attemptPhase(this.relays, 'publish:primary', attempted, publishResults);
 
     let successCount = publishResults.filter((result) => result.success).length;
-    if (successCount < minSuccesses && fallbackRelays.length > 0) {
-      await attemptPhase(fallbackRelays, 'publish:fallback');
+    if (successCount < this.minSuccesses && this.fallbackRelays.length > 0) {
+      await this.attemptPhase(this.fallbackRelays, 'publish:fallback', attempted, publishResults);
       successCount = publishResults.filter((result) => result.success).length;
     }
 
@@ -475,89 +496,88 @@ export async function publishLock(relays, event, deps = {}) {
       }));
 
     return { attempted, publishResults, successCount, failures };
-  };
+  }
 
-  const allRelays = mergeRelayList(relays, fallbackRelays);
+  async attemptPhase(phaseRelays, phaseName, attempted, publishResults) {
+    if (!phaseRelays.length) return;
+    const { prioritized } = prioritizeRelays(phaseRelays, this.healthConfig);
+    if (!prioritized.length) return;
 
-  try {
-    maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'publish:periodic');
-    let lastAttemptState = null;
-    const retryTimeline = [];
-    const overallStartedAt = Date.now();
-    let terminalFailureCategory = 'relay_publish_non_retryable';
-    for (let attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber += 1) {
-      const startedAtMs = Date.now();
-      lastAttemptState = await publishOnce();
-      const elapsedMs = Date.now() - startedAtMs;
-      retryTimeline.push({
-        publishAttempt: attemptNumber,
-        successCount: lastAttemptState.successCount,
-        relayAttemptedCount: lastAttemptState.attempted.size,
-        elapsedMs,
-      });
+    console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${prioritized.join(', ')})...`);
 
-      if (lastAttemptState.successCount >= minSuccesses) {
-        telemetryLogger(JSON.stringify({
-          event: 'lock_publish_quorum_met',
-          correlationId,
-          attemptId,
-          publishAttempt: attemptNumber,
-          successCount: lastAttemptState.successCount,
-          relayAttemptedCount: lastAttemptState.attempted.size,
-          requiredSuccesses: minSuccesses,
-          timeoutMs: publishTimeoutMs,
-          retryTimeline,
-          totalElapsedMs: Date.now() - overallStartedAt,
-        }));
-        console.error(
-          `  Published to ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} relays `
-          + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms)`,
-        );
-        return event;
-      }
-
-      const hasTransientFailure = lastAttemptState.failures.some((failure) => isTransientPublishCategory(failure.category));
-      const hasPermanentFailure = lastAttemptState.failures.some((failure) => !isTransientPublishCategory(failure.category));
-      const canRetry = attemptNumber < maxAttempts && hasTransientFailure && !hasPermanentFailure;
-
-      if (hasTransientFailure && !hasPermanentFailure && attemptNumber >= maxAttempts) {
-        terminalFailureCategory = 'relay_publish_quorum_failure';
-      } else if (hasPermanentFailure) {
-        terminalFailureCategory = 'relay_publish_non_retryable';
-      } else {
-        terminalFailureCategory = 'relay_publish_quorum_failure';
-      }
-
-      if (!canRetry) {
-        break;
-      }
-
-      const nextDelayMs = calculateBackoffDelayMs(attemptNumber, retryBaseDelayMs, retryCapDelayMs, randomFn);
-      for (const failure of lastAttemptState.failures) {
-        if (!isTransientPublishCategory(failure.category)) continue;
-        telemetryLogger(JSON.stringify({
-          event: 'lock_publish_retry',
-          correlationId,
-          attemptId,
-          publishAttempt: attemptNumber,
-          relayUrl: failure.relay,
-          errorCategory: failure.category,
-          elapsedMs,
-          nextDelayMs,
-        }));
-      }
-
-      await sleepFn(nextDelayMs);
+    const startedAtMs = Date.now();
+    for (const relay of prioritized) {
+      attempted.add(relay);
     }
+    const phaseResults = await publishToRelays(this.pool, prioritized, this.event, this.publishTimeoutMs, phaseName);
+    const elapsedMs = Date.now() - startedAtMs;
+    for (const result of phaseResults) {
+      result.latencyMs = elapsedMs;
+      recordRelayOutcome(result.relay, result.success, result.message, elapsedMs, this.healthConfig);
+    }
+    publishResults.push(...phaseResults);
+  }
 
+  analyzeFailures(failures) {
+    const hasTransientFailure = failures.some((failure) => isTransientPublishCategory(failure.category));
+    const hasPermanentFailure = failures.some((failure) => !isTransientPublishCategory(failure.category));
+    return { hasTransientFailure, hasPermanentFailure };
+  }
+
+  determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber) {
+    if (hasTransientFailure && !hasPermanentFailure && attemptNumber >= this.maxAttempts) {
+      return 'relay_publish_quorum_failure';
+    } else if (hasPermanentFailure) {
+      return 'relay_publish_non_retryable';
+    } else {
+      return 'relay_publish_quorum_failure';
+    }
+  }
+
+  logSuccess(attemptNumber, lastAttemptState, retryTimeline, overallStartedAt) {
+    this.telemetryLogger(JSON.stringify({
+      event: 'lock_publish_quorum_met',
+      correlationId: this.correlationId,
+      attemptId: this.attemptId,
+      publishAttempt: attemptNumber,
+      successCount: lastAttemptState.successCount,
+      relayAttemptedCount: lastAttemptState.attempted.size,
+      requiredSuccesses: this.minSuccesses,
+      timeoutMs: this.publishTimeoutMs,
+      retryTimeline,
+      totalElapsedMs: Date.now() - overallStartedAt,
+    }));
+    console.error(
+      `  Published to ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} relays `
+      + `(required=${this.minSuccesses}, timeout=${this.publishTimeoutMs}ms)`,
+    );
+  }
+
+  logRetry(attemptNumber, failures, elapsedMs, nextDelayMs) {
+    for (const failure of failures) {
+      if (!isTransientPublishCategory(failure.category)) continue;
+      this.telemetryLogger(JSON.stringify({
+        event: 'lock_publish_retry',
+        correlationId: this.correlationId,
+        attemptId: this.attemptId,
+        publishAttempt: attemptNumber,
+        relayUrl: failure.relay,
+        errorCategory: failure.category,
+        elapsedMs,
+        nextDelayMs,
+      }));
+    }
+  }
+
+  handleFinalFailure(lastAttemptState, terminalFailureCategory, retryTimeline, overallStartedAt) {
     const reasonDistribution = {};
     const failureLines = lastAttemptState.failures
       .map((result) => {
         reasonDistribution[result.category] = (reasonDistribution[result.category] || 0) + 1;
-        telemetryLogger(JSON.stringify({
+        this.telemetryLogger(JSON.stringify({
           event: 'lock_publish_failure',
-          correlationId,
-          attemptId,
+          correlationId: this.correlationId,
+          attemptId: this.attemptId,
           relayUrl: result.relay,
           phase: result.phase,
           reason: result.category,
@@ -566,36 +586,37 @@ export async function publishLock(relays, event, deps = {}) {
         return `${result.relay} (${result.phase}, reason=${result.category}): ${result.message}`;
       });
 
-    telemetryLogger(JSON.stringify({
+    this.telemetryLogger(JSON.stringify({
       event: 'lock_publish_quorum_failed',
-      correlationId,
-      attemptId,
+      correlationId: this.correlationId,
+      attemptId: this.attemptId,
       errorCategory: terminalFailureCategory,
       successCount: lastAttemptState.successCount,
       relayAttemptedCount: lastAttemptState.attempted.size,
-      requiredSuccesses: minSuccesses,
-      timeoutMs: publishTimeoutMs,
-      attempts: maxAttempts,
+      requiredSuccesses: this.minSuccesses,
+      timeoutMs: this.publishTimeoutMs,
+      attempts: this.maxAttempts,
       reasonDistribution,
       retryTimeline,
       totalElapsedMs: Date.now() - overallStartedAt,
     }));
 
-    maybeLogHealthSnapshot(allRelays, healthConfig, healthLogger, 'publish:failure', true);
+    maybeLogHealthSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:failure', true);
     throw new Error(
       `Failed relay publish quorum in publish phase: ${lastAttemptState.successCount}/${lastAttemptState.attempted.size} successful `
-      + `(required=${minSuccesses}, timeout=${publishTimeoutMs}ms, attempts=${maxAttempts}, attempt_id=${attemptId}, correlation_id=${correlationId}, error_category=${terminalFailureCategory}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
+      + `(required=${this.minSuccesses}, timeout=${this.publishTimeoutMs}ms, attempts=${this.maxAttempts}, attempt_id=${this.attemptId}, correlation_id=${this.correlationId}, error_category=${terminalFailureCategory}, total_retry_timeline_ms=${Date.now() - overallStartedAt})\n`
       + `  retry timeline: ${retryTimeline.map((item) => `#${item.publishAttempt}:${item.elapsedMs}ms`).join(', ')}\n`
       + `  ${failureLines.join('\n  ')}`,
     );
-  } finally {
-    pool.close(allRelays);
   }
 }
 
+export async function publishLock(relays, event, deps = {}) {
+  return new LockPublisher(relays, event, deps).publish();
+}
+
 export function _resetRelayHealthState() {
-  relayHealthState.metricsByRelay.clear();
-  relayHealthState.lastSnapshotAt = 0;
+  defaultHealthManager.reset();
 }
 
 export const _secureRandom = secureRandom;
