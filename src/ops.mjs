@@ -81,6 +81,41 @@ function copyFile(src, dest, transform = false, overwrite = true, installDirName
   return true; // Copied/Overwritten
 }
 
+function syncAppDirectories(torchDir, verb = 'Copied') {
+  console.log(`${verb === 'Copied' ? 'Copying' : 'Updating'} application directories...`);
+  for (const dir of APP_DIRS) {
+    const src = path.join(PKG_ROOT, dir);
+    const dest = path.join(torchDir, dir);
+    if (fs.existsSync(src)) {
+      copyDir(src, dest);
+      console.log(`  ${verb} ${dir}/`);
+    }
+  }
+}
+
+function syncAppFiles(torchDir, installDir, verb = 'Copied') {
+  console.log(`${verb === 'Copied' ? 'Copying' : 'Updating'} application files...`);
+  for (const file of APP_FILES) {
+    const src = path.join(PKG_ROOT, file);
+    const dest = path.join(torchDir, file);
+    if (fs.existsSync(src)) {
+      if (installDir === '.' && file === 'package.json') {
+        if (verb === 'Copied' && fs.existsSync(dest)) {
+          console.warn('  Skipping package.json to avoid overwriting host package.json (installing to root).');
+          continue;
+        }
+        if (verb === 'Updated') {
+          console.log('  Skipping package.json update (installed in root).');
+          continue;
+        }
+      }
+
+      fs.copyFileSync(src, dest);
+      console.log(`  ${verb} ${file}`);
+    }
+  }
+}
+
 async function interactiveInit(cwd) {
   const rl = readline.createInterface({ input, output });
   const currentDirName = path.basename(cwd);
@@ -134,10 +169,7 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   if (fs.existsSync(paths.torchDir) && !force) {
      const entries = fs.readdirSync(paths.torchDir);
      if (entries.length > 0 && installDir !== '.') {
-         // If installing to current dir, we might expect some files, but warn anyway?
-         // Simpler: just throw if strictly not empty and not forced.
-         // But usually we don't want to fail if just re-running init.
-         console.warn(`Warning: ${paths.torchDir} already exists.`);
+         throw new Error(`Directory ${paths.torchDir} already exists and is not empty. Use --force to overwrite.`);
      }
   }
 
@@ -145,39 +177,10 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   ensureDir(paths.promptsDir);
 
   // 1. Copy App Directories
-  console.log('Copying application directories...');
-  for (const dir of APP_DIRS) {
-      const src = path.join(PKG_ROOT, dir);
-      const dest = path.join(paths.torchDir, dir);
-      // If installing to '.', src/bin maps to ./bin, which is fine.
-      if (fs.existsSync(src)) {
-          copyDir(src, dest);
-          console.log(`  Copied ${dir}/`);
-      }
-  }
+  syncAppDirectories(paths.torchDir, 'Copied');
 
   // 2. Copy App Files
-  console.log('Copying application files...');
-  for (const file of APP_FILES) {
-      const src = path.join(PKG_ROOT, file);
-      const dest = path.join(paths.torchDir, file);
-      if (fs.existsSync(src)) {
-          // Careful not to overwrite critical files if they exist in root?
-          // e.g. package.json.
-          // If installing to '.', we definitely don't want to overwrite package.json unless it's the torch one?
-          // But torch is "vendored", so it has its own package.json.
-          // If installing to '.', we are overwriting the USER's package.json?
-          // That is dangerous.
-
-          if (installDir === '.' && file === 'package.json' && fs.existsSync(dest)) {
-              console.warn('  Skipping package.json to avoid overwriting host package.json (installing to root).');
-              continue;
-          }
-
-          fs.copyFileSync(src, dest);
-          console.log(`  Copied ${file}`);
-      }
-  }
+  syncAppFiles(paths.torchDir, installDir, 'Copied');
 
   // 3. Copy Roster
   const srcRoster = path.join(SRC_PROMPTS_DIR, 'roster.json');
@@ -366,30 +369,10 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
   }
 
   // 2. Update App Directories (Overwrite)
-  console.log('Updating application directories...');
-  for (const dir of APP_DIRS) {
-      const src = path.join(PKG_ROOT, dir);
-      const dest = path.join(paths.torchDir, dir);
-      if (fs.existsSync(src)) {
-          copyDir(src, dest);
-          console.log(`  Updated ${dir}/`);
-      }
-  }
+  syncAppDirectories(paths.torchDir, 'Updated');
 
   // 3. Update App Files (Overwrite)
-  console.log('Updating application files...');
-  for (const file of APP_FILES) {
-      const src = path.join(PKG_ROOT, file);
-      const dest = path.join(paths.torchDir, file);
-      if (fs.existsSync(src)) {
-          if (installDirName === '.' && file === 'package.json') {
-             console.log('  Skipping package.json update (installed in root).');
-             continue;
-          }
-          fs.copyFileSync(src, dest);
-          console.log(`  Updated ${file}`);
-      }
-  }
+  syncAppFiles(paths.torchDir, installDirName, 'Updated');
 
   // 4. Update Static Files (Always Overwrite)
   console.log('Updating static files...');
