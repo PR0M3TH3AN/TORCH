@@ -117,7 +117,7 @@
       "importance": 0.25,
       "embedding_id": null,
       "created_at": 1771370050385,
-      "last_seen": 1771370148086,
+      "last_seen": 1771384958445,
       "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
@@ -140,7 +140,7 @@
       "importance": 0.25,
       "embedding_id": null,
       "created_at": 1771370084740,
-      "last_seen": 1771370148086,
+      "last_seen": 1771384958445,
       "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
@@ -163,7 +163,7 @@
       "importance": 0.25,
       "embedding_id": null,
       "created_at": 1771370148079,
-      "last_seen": 1771370148086,
+      "last_seen": 1771384958445,
       "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
@@ -240,6 +240,75 @@
       "created_at": 1771377168781,
       "last_seen": 1771377168782,
       "source": "scheduler-store",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "71791fc3-49a7-40f2-a8e5-c93e8b19f32b",
+    {
+      "schema_version": 1,
+      "id": "71791fc3-49a7-40f2-a8e5-c93e8b19f32b",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771384842151,
+      "last_seen": 1771384958445,
+      "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "ca60066d-1d01-43de-a597-573d9826d101",
+    {
+      "schema_version": 1,
+      "id": "ca60066d-1d01-43de-a597-573d9826d101",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771384870483,
+      "last_seen": 1771384958445,
+      "source": "ingest",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "b95b047e-6bc6-4342-a535-8d311ebc7f1a",
+    {
+      "schema_version": 1,
+      "id": "b95b047e-6bc6-4342-a535-8d311ebc7f1a",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
+      "type": "batch_window",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
+      "tags": [
+        "incident"
+      ],
+      "importance": 0.25,
+      "embedding_id": null,
+      "created_at": 1771384958439,
+      "last_seen": 1771384958445,
+      "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
