@@ -35,6 +35,44 @@ describe('lock-ops', () => {
       assert.strictEqual(result.agent, 'test-agent');
       assert.strictEqual(result.platform, 'test-platform');
     });
+
+    it('returns nulls when content is invalid JSON', () => {
+      const event = {
+        id: 'mock-id',
+        pubkey: 'mock-pubkey',
+        created_at: 1678886400,
+        tags: [],
+        content: 'invalid json',
+      };
+      const result = parseLockEvent(event);
+      assert.strictEqual(result.agent, null);
+      assert.strictEqual(result.cadence, null);
+    });
+
+    it('returns nulls when required content fields are missing', () => {
+      const event = {
+        id: 'mock-id',
+        pubkey: 'mock-pubkey',
+        created_at: 1678886400,
+        tags: [],
+        content: JSON.stringify({}),
+      };
+      const result = parseLockEvent(event);
+      assert.strictEqual(result.agent, null);
+      assert.strictEqual(result.cadence, null);
+    });
+
+    it('returns nulls when content is an array (not object)', () => {
+      const event = {
+        id: 'mock-id',
+        pubkey: 'mock-pubkey',
+        created_at: 1678886400,
+        tags: [],
+        content: JSON.stringify(['not', 'an', 'object']),
+      };
+      const result = parseLockEvent(event);
+      assert.strictEqual(result.agent, null);
+    });
   });
 
   describe('queryLocks', () => {
