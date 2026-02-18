@@ -195,3 +195,4 @@ Recommended cadence: run this at least weekly (or wire into your CI/cron schedul
 2. Stop memory maintenance scheduler processes.
 3. Preserve database state for post-incident analysis; do not drop or rewrite memory tables during rollback.
 4. Keep prune actions in `dry-run` (or disabled) until lifecycle policy and data integrity are revalidated.
+
