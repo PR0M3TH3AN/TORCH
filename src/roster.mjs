@@ -70,7 +70,7 @@ const FALLBACK_ROSTER = {
 
 let cachedCanonicalRoster = null;
 
-function loadCanonicalRoster() {
+function loadCanonicalRoster(fsModule = fs) {
   if (cachedCanonicalRoster) return cachedCanonicalRoster;
 
   let rosterPath = ROSTER_FILE;
@@ -120,7 +120,7 @@ export async function getRoster(cadence) {
   const config = await deps.loadTorchConfig();
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
-  const canonical = loadCanonicalRoster();
+  const canonical = loadCanonicalRoster(fsModule);
   const dailyFromConfig = config.nostrLock.dailyRoster;
   const weeklyFromConfig = config.nostrLock.weeklyRoster;
 
