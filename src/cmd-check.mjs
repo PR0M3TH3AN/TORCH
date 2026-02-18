@@ -33,9 +33,12 @@ export async function cmdCheck(cadence, deps = {}) {
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = await getRosterFn(cadence);
 
-  const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
-  const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
-  const available = roster.filter((a) => !excludedAgents.includes(a));
+  const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents]);
+  const excludedAgents = [...excludedAgentsSet];
+
+  const rosterSet = new Set(roster);
+  const unknownLockedAgents = lockedAgents.filter((agent) => !rosterSet.has(agent));
+  const available = roster.filter((a) => !excludedAgentsSet.has(a));
 
   const result = {
     namespace,
