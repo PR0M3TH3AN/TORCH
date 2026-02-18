@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
 import { getIsoWeekStr, todayDateStr, nowUnix } from '../src/utils.mjs';
 
@@ -53,6 +53,38 @@ describe('Date Utilities', () => {
 
     it('handles invalid input gracefully', () => {
       assert.strictEqual(getIsoWeekStr('invalid-date'), '');
+    });
+  });
+});
+
+describe('File Utilities', () => {
+  describe('ensureDir', () => {
+    const tempBase = fs.mkdtempSync(path.join(process.cwd(), 'test-utils-'));
+
+    after(() => {
+      fs.rmSync(tempBase, { recursive: true, force: true });
+    });
+
+    it('creates directory if it does not exist', () => {
+      const targetDir = path.join(tempBase, 'new-dir');
+      assert.strictEqual(fs.existsSync(targetDir), false);
+      ensureDir(targetDir);
+      assert.strictEqual(fs.existsSync(targetDir), true);
+    });
+
+    it('does nothing if directory already exists', () => {
+      const targetDir = path.join(tempBase, 'existing-dir');
+      fs.mkdirSync(targetDir);
+      assert.strictEqual(fs.existsSync(targetDir), true);
+      ensureDir(targetDir);
+      assert.strictEqual(fs.existsSync(targetDir), true);
+    });
+
+    it('creates nested directories recursively', () => {
+      const targetDir = path.join(tempBase, 'nested', 'deep', 'dir');
+      assert.strictEqual(fs.existsSync(targetDir), false);
+      ensureDir(targetDir);
+      assert.strictEqual(fs.existsSync(targetDir), true);
     });
   });
 });
