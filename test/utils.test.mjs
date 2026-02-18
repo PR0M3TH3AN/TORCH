@@ -1,10 +1,30 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
-import fs from 'node:fs';
-import path from 'node:path';
-import { getIsoWeekStr, ensureDir } from '../src/utils.mjs';
+import { getIsoWeekStr, todayDateStr, nowUnix } from '../src/utils.mjs';
 
 describe('Date Utilities', () => {
+  describe('todayDateStr', () => {
+    it('returns current date in YYYY-MM-DD format', (t) => {
+      t.mock.timers.enable({ apis: ['Date'] });
+      // 2023-10-25 12:00:00 UTC
+      const date = new Date('2023-10-25T12:00:00Z');
+      t.mock.timers.setTime(date.getTime());
+
+      assert.strictEqual(todayDateStr(), '2023-10-25');
+    });
+  });
+
+  describe('nowUnix', () => {
+    it('returns current unix timestamp', (t) => {
+      t.mock.timers.enable({ apis: ['Date'] });
+      const timeMs = 1700000000000;
+      t.mock.timers.setTime(timeMs);
+
+      // 1700000000000 / 1000 = 1700000000
+      assert.strictEqual(nowUnix(), 1700000000);
+    });
+  });
+
   describe('getIsoWeekStr', () => {
     it('returns correct ISO week for simple cases', () => {
       assert.strictEqual(getIsoWeekStr('2023-01-02'), '2023-W01'); // Mon
