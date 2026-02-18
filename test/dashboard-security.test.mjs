@@ -69,4 +69,36 @@ test('Dashboard File Access Security', async (t) => {
     // path.normalize collapses this to /package.json, which is then blocked
     assert.strictEqual(res.statusCode, 403);
   });
+
+  await t.test('responses include security headers', async () => {
+    const res = await get('/dashboard/index.html');
+    assert.strictEqual(res.statusCode, 200);
+
+    const headers = res.headers;
+
+    // Content-Security-Policy
+    assert.ok(headers['content-security-policy'], 'CSP header missing');
+    const csp = headers['content-security-policy'];
+    assert.match(csp, /default-src 'self'/, 'CSP: missing default-src self');
+    assert.match(csp, /script-src 'self' 'unsafe-inline' https:\/\/cdn\.jsdelivr\.net/, 'CSP: missing script-src');
+    assert.match(csp, /object-src 'none'/, 'CSP: missing object-src none');
+
+    // X-Content-Type-Options
+    assert.strictEqual(headers['x-content-type-options'], 'nosniff', 'X-Content-Type-Options mismatch');
+
+    // X-Frame-Options
+    assert.strictEqual(headers['x-frame-options'], 'DENY', 'X-Frame-Options mismatch');
+
+    // Referrer-Policy
+    assert.strictEqual(headers['referrer-policy'], 'strict-origin-when-cross-origin', 'Referrer-Policy mismatch');
+  });
+
+  await t.test('error responses include security headers', async () => {
+    const res = await get('/dashboard/nonexistent.html');
+    assert.strictEqual(res.statusCode, 404);
+
+    const headers = res.headers;
+    assert.strictEqual(headers['x-content-type-options'], 'nosniff');
+    assert.strictEqual(headers['x-frame-options'], 'DENY');
+  });
 });
