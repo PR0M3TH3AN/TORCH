@@ -12,7 +12,7 @@ const DASHBOARD_SRC = path.join(__dirname, 'dashboard');
 const DOCS_SRC = path.join(__dirname, 'docs');
 const TORCH_MD_SRC = path.join(__dirname, 'TORCH.md');
 const CONSTANTS_SRC = path.join(__dirname, 'src', 'constants.mjs');
-const PROMPTS_SRC = path.join(__dirname, 'src', 'prompts', 'META_PROMPTS.md');
+const PROMPTS_DIR_SRC = path.join(__dirname, 'src', 'prompts');
 const CONFIG_SRC = path.join(__dirname, 'torch-config.json');
 const ASSETS_SRC = path.join(__dirname, 'assets');
 
@@ -36,6 +36,7 @@ distHtml = distHtml.replace(/"\.\.\/dashboard\/styles\.css"/g, '"dashboard/style
 distHtml = distHtml.replace(/"\.\.\/dashboard\/"/g, '"dashboard/"'); // Link to dashboard
 distHtml = distHtml.replace(/'\.\.\/src\/docs\/TORCH\.md'/g, "'src/docs/TORCH.md'");
 distHtml = distHtml.replace(/"\.\.\/assets\//g, '"assets/');
+distHtml = distHtml.replace(/\.\.\/src\/prompts\//g, 'src/prompts/');
 
 // Inject Offline Bundle Filename
 distHtml = distHtml.replace(/{{OFFLINE_BUNDLE_FILENAME}}/g, tarballName);
@@ -60,11 +61,11 @@ if (fs.existsSync(TORCH_MD_SRC)) {
 // 3.5. Copy src/constants.mjs -> dist/src/constants.mjs
 fs.copyFileSync(CONSTANTS_SRC, path.join(DIST_DIR, 'src', 'constants.mjs'));
 
-// 4. Copy src/prompts/META_PROMPTS.md -> dist/src/prompts/META_PROMPTS.md
+// 4. Copy src/prompts/ -> dist/src/prompts/
 const distPromptsDir = path.join(DIST_DIR, 'src', 'prompts');
 fs.mkdirSync(distPromptsDir, { recursive: true });
-if (fs.existsSync(PROMPTS_SRC)) {
-  fs.copyFileSync(PROMPTS_SRC, path.join(distPromptsDir, 'META_PROMPTS.md'));
+if (fs.existsSync(PROMPTS_DIR_SRC)) {
+  fs.cpSync(PROMPTS_DIR_SRC, distPromptsDir, { recursive: true });
 }
 
 // 5. Copy torch-config.json -> dist/torch-config.json (optional config)
