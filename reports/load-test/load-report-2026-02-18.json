@@ -1,0 +1,22 @@
+{
+  "config": {
+    "clients": 10,
+    "durationSec": 10,
+    "rateEps": 5,
+    "mix": 0.1,
+    "dryRun": true
+  },
+  "results": {
+    "totalAttempts": 50,
+    "success": 50,
+    "failed": 0,
+    "throughputEps": 4.992511233150275,
+    "latency": {
+      "min": 5,
+      "max": 15,
+      "avg": 10
+    },
+    "errors": {}
+  },
+  "timestamp": "2026-02-18T21:05:05.310Z"
+}
