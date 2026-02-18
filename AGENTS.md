@@ -115,6 +115,22 @@ Its goal is “make the suite reflect reality and reject fake passes.”
 
 ---
 
+## File Organization & Cleanliness (Clean Repo Standard)
+
+Agents must keep the repository root clean. Do not create log files, temporary outputs, or artifacts in the root directory.
+
+**Standard Locations:**
+
+*   **Reports**: `reports/<category>/` (e.g., `reports/performance/`, `reports/audit/`). See [Report Location Standard](#report-location-standard).
+*   **Test Logs**: `test_logs/` (e.g., `test_logs/test_output_full.txt`).
+*   **Task Logs**: `task-logs/` (e.g., `task-logs/daily/`).
+*   **Artifacts**: `artifacts/` (for raw data, repros, or other artifacts).
+*   **General Logs**: `logs/` (if needed, otherwise `task-logs/`).
+
+**Prohibitions:**
+*   No `*.log`, `*.txt`, `*.json`, or `*.md` files in the root directory (except standard docs like `README.md`, `AGENTS.md`, `CLAUDE.md`, `KNOWN_ISSUES.md`).
+*   If a tool or script defaults to writing to root, redirect its output or configure it to write to one of the standard locations.
+
 ## Report Location Standard
 
 All agents that generate reports must adhere to the following directory structure. Reports must be placed in `reports/<category>/`.

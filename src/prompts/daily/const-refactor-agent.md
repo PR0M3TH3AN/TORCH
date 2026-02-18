@@ -176,7 +176,7 @@ DETAILED WORKFLOW (step-by-step)
 
 9) **Follow-up**
    - Track PR reviews and address comments.
-   - When merged, update `INITIAL_BASELINE.md` or a `perf/constants-refactor/history.md` to note the canonicalization for future audits.
+   - When merged, update `reports/performance/INITIAL_BASELINE.md` or a `reports/performance/constants-refactor/history.md` to note the canonicalization for future audits.
    - If any replacement surfaced ambiguous semantics that required a behavior change, document in `src/decisions/DECISIONS_<timestamp>.md` and open an Issue for broader discussion.
 
 - If no work is required, exit without making changes.
