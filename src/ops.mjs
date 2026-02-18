@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { DEFAULT_RELAYS } from './constants.mjs';
+import { ensureDir } from './utils.mjs';
 
 const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -34,12 +35,6 @@ function getPaths(root, installDirName) {
         promptsDir: path.join(torchDir, 'prompts'),
         roster: path.join(torchDir, 'roster.json'),
     };
-}
-
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
 }
 
 function copyDir(src, dest) {
@@ -152,11 +147,26 @@ async function interactiveInit(cwd) {
   }
 }
 
-async function resolveConfiguration(cwd, mockAnswers) {
-  if (mockAnswers) {
-    return mockAnswers;
+function validateInstallDir(dir) {
+  if (dir === '.') return;
+
+  // Strict validation to prevent command injection
+  // Only allow alphanumeric, hyphens, underscores, slashes, and periods.
+  if (!/^[a-zA-Z0-9_\-\/\.]+$/.test(dir)) {
+    throw new Error(`Invalid directory name: "${dir}". Only alphanumeric characters, hyphens, underscores, slashes, and periods are allowed.`);
   }
-  return await interactiveInit(cwd);
+}
+
+async function resolveConfiguration(cwd, mockAnswers) {
+  let config;
+  if (mockAnswers) {
+    config = mockAnswers;
+  } else {
+    config = await interactiveInit(cwd);
+  }
+
+  validateInstallDir(config.installDir);
+  return config;
 }
 
 function ensureInstallDirectory(paths, force, installDir) {
