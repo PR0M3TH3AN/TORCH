@@ -292,12 +292,12 @@
     }
   ],
   [
-    "65e6d5f8-74fe-48cb-b1ab-b9b3d5a4ae85",
+    "6a7b3ba4-d713-4f18-a98e-d16c0e0837eb",
     {
       "schema_version": 1,
-      "id": "65e6d5f8-74fe-48cb-b1ab-b9b3d5a4ae85",
-      "agent_id": "agent-telemetry",
-      "session_id": "s-telemetry",
+      "id": "6a7b3ba4-d713-4f18-a98e-d16c0e0837eb",
+      "agent_id": "todo-triage-agent",
+      "session_id": "2026-02-17T16-35-41Z",
       "type": "batch_window",
       "content": "customer token ABC123 secret",
       "summary": "customer token ABC123 secret",
@@ -306,32 +306,32 @@
       ],
       "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771385242873,
-      "last_seen": 1771385274968,
-      "source": "ingest",
+      "created_at": 1771346141249,
+      "last_seen": 1771346141259,
+      "source": "scheduler-retrieve",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
     }
   ],
   [
-    "f6c9edde-0629-4853-ab41-e90c9700dbc3",
+    "ae3f6a26-c753-4a96-b56f-c737a847cee5",
     {
       "schema_version": 1,
-      "id": "f6c9edde-0629-4853-ab41-e90c9700dbc3",
-      "agent_id": "agent-telemetry",
-      "session_id": "s-telemetry",
+      "id": "ae3f6a26-c753-4a96-b56f-c737a847cee5",
+      "agent_id": "todo-triage-agent",
+      "session_id": "2026-02-17T16-36-25Z",
       "type": "batch_window",
-      "content": "customer token ABC123 secret",
-      "summary": "customer token ABC123 secret",
+      "content": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
+      "summary": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
       "tags": [
         "incident"
       ],
       "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771385274962,
-      "last_seen": 1771385274968,
-      "source": "ingest",
+      "created_at": 1771346312937,
+      "last_seen": 1771346312937,
+      "source": "agent-output",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
