@@ -129,7 +129,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
           }
 
           res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(safeConfig, null, 2));
+          res.end(JSON.stringify(publicConfig, null, 2));
           return;
         } catch (err) {
           console.error('Error parsing torch-config.json:', err);
