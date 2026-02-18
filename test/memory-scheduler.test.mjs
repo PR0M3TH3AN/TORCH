@@ -1,12 +1,10 @@
-import { test } from 'node:test';
+import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
   createDbAdvisoryLockProvider,
   startMemoryMaintenanceScheduler,
 } from '../src/services/memory/scheduler.js';
-
-const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('createDbAdvisoryLockProvider acquires and releases postgres advisory locks', async () => {
   const calls = [];
@@ -32,6 +30,8 @@ test('createDbAdvisoryLockProvider acquires and releases postgres advisory locks
 });
 
 test('startMemoryMaintenanceScheduler runs all jobs and emits metrics including retries', async () => {
+  mock.timers.enable({ apis: ['Date', 'setTimeout', 'setInterval'] });
+
   const metrics = [];
   let ingestAttempts = 0;
 
@@ -71,8 +71,22 @@ test('startMemoryMaintenanceScheduler runs all jobs and emits metrics including 
     },
   });
 
-  await wait(25);
+  // Advance time to allow async jobs and retries to complete.
+  // We tick enough to cover the retryDelayMs (1ms).
+  // We also need to allow the promise microtask queue to drain between ticks
+  // if necessary, but tick() usually handles the timer callbacks.
+  // Since the scheduler logic uses await, we need to ensure those promises resolve.
+
+  // Tick time forward and yield to event loop to allow promise chains to progress.
+  // The job involves multiple async steps (lock, handler, retry wait, lock, handler).
+  // We tick multiple times to ensure the retry timer fires and subsequent microtasks run.
+  for (let i = 0; i < 10; i++) {
+    mock.timers.tick(5);
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+
   scheduler.stop();
+  mock.timers.reset();
 
   const byJob = metrics.reduce((acc, entry) => {
     const key = entry.payload.job;
@@ -81,7 +95,7 @@ test('startMemoryMaintenanceScheduler runs all jobs and emits metrics including 
     return acc;
   }, {});
 
-  assert.equal(byJob.ingestRecentRuntimeEvents.length, 1);
+  assert.equal(byJob.ingestRecentRuntimeEvents?.length, 1, 'Expected 1 ingest metric');
   assert.equal(byJob.ingestRecentRuntimeEvents[0].payload.status, 'success');
   assert.equal(byJob.ingestRecentRuntimeEvents[0].payload.itemCount, 3);
   assert.equal(byJob.ingestRecentRuntimeEvents[0].payload.retries, 1);
@@ -93,6 +107,8 @@ test('startMemoryMaintenanceScheduler runs all jobs and emits metrics including 
 
 
 test('startMemoryMaintenanceScheduler skips jobs when feature flags disable memory', async () => {
+  mock.timers.enable({ apis: ['Date', 'setTimeout', 'setInterval'] });
+
   const metrics = [];
   const called = [];
 
@@ -118,8 +134,11 @@ test('startMemoryMaintenanceScheduler skips jobs when feature flags disable memo
     },
   });
 
-  await wait(10);
+  mock.timers.tick(10);
+  await new Promise(resolve => setImmediate(resolve));
+
   scheduler.stop();
+  mock.timers.reset();
 
   assert.deepEqual(called, []);
   assert.ok(metrics.some((entry) => entry.payload.status === 'skipped_flag_disabled'));

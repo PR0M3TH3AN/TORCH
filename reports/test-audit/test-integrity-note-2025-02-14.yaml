@@ -1,0 +1,27 @@
+test_integrity_note:
+  change_type: ["refactor_tests", "new_tests", "spec_correction"]
+  scenarios:
+    - id: SCN-MEMORY-SCHEDULER-DETERMINISM
+      given: "A memory maintenance scheduler with retry logic"
+      when: "A job fails transiently and retries are scheduled"
+      then: "The scheduler waits exactly the retry delay without using real time sleep"
+    - id: SCN-LOCK-PARSE-MALFORMED
+      given: "A lock event with invalid JSON content or missing fields"
+      when: "The event is parsed"
+      then: "The parser returns a lock object with null content fields instead of throwing or returning partial data"
+    - id: SCN-DASHBOARD-CONFIG-SANITIZATION
+      given: "A dashboard configuration with sensitive fields (roster, auth)"
+      when: "The /torch-config.json endpoint is accessed"
+      then: "Sensitive fields are stripped from the response"
+  observable_outcomes:
+    - "Scheduler tests run deterministically using mock timers"
+    - "Lock parser handles garbage input gracefully"
+    - "Dashboard config endpoint does not leak sensitive roster data"
+  determinism_controls:
+    - "Replaced setTimeout/wait with node:test mock.timers"
+  anti_cheat_rationale:
+    prevents:
+      - "retry/sleep-based flake masking"
+      - "hard-coded return value (dashboard config fix)"
+  relaxation:
+    did_relax_any_assertion: false
