@@ -50,7 +50,9 @@ export async function getProposal(id) {
     let diff = '';
     try {
       diff = await fs.readFile(diffPath, 'utf8');
-    } catch {}
+    } catch {
+      // Ignore missing diff
+    }
 
     return {
       id,
@@ -60,7 +62,7 @@ export async function getProposal(id) {
       dir
     };
   } catch (e) {
-    throw new Error(`Proposal ${id} not found or invalid: ${e.message}`);
+    throw new Error(`Proposal ${id} not found or invalid: ${e.message}`, { cause: e });
   }
 }
 
@@ -281,6 +283,6 @@ export async function rollbackPrompt(target, hashOrStrategy = 'latest') {
       execSync(`git checkout "${commit}" -- "${target}"`);
       return { success: true, source: 'git', restored: commit };
   } catch (e) {
-      throw new Error(`Rollback failed: Local archive not found and git failed (${e.message})`);
+      throw new Error(`Rollback failed: Local archive not found and git failed (${e.message})`, { cause: e });
   }
 }
