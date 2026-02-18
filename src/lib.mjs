@@ -37,7 +37,11 @@ import { todayDateStr, nowUnix, detectPlatform } from './utils.mjs';
 import { runRelayHealthCheck } from './relay-health.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { execSync } from 'node:child_process';
 import { getCompletedAgents } from './lock-utils.mjs';
+import { cmdProposal } from './cmd-proposal.mjs';
+import { cmdRollback } from './cmd-rollback.mjs';
 
 useWebSocketImplementation(WebSocket);
 
@@ -188,10 +192,33 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
   const now = nowUnix();
   const expiresAt = now + ttl;
 
+  let gitCommit = null;
+  try {
+    gitCommit = execSync('git rev-parse HEAD', { stdio: 'pipe' }).toString().trim();
+  } catch {
+    // Ignore git errors (not a git repo, etc)
+  }
+
+  let promptHash = null;
+  let promptPath = null;
+  try {
+    // Attempt to locate the prompt file based on standard structure
+    // We assume the CWD is the project root or we are in a standard structure.
+    // If not found, we just omit the hash.
+    const potentialPath = path.join(process.cwd(), 'src', 'prompts', cadence, `${agent}.md`);
+    const content = await fs.readFile(potentialPath, 'utf8');
+    promptHash = createHash('sha256').update(content).digest('hex');
+    promptPath = `src/prompts/${cadence}/${agent}.md`;
+  } catch {
+    // Ignore missing prompt file
+  }
+
   error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
   error(`Hashtag: #${hashtag}`);
   error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
   error(`Relays: ${relays.join(', ')}`);
+  if (gitCommit) error(`Git Commit: ${gitCommit}`);
+  if (promptHash) error(`Prompt Hash: ${promptHash.slice(0, 12)}...`);
 
   const roster = await getRoster(cadence);
   if (!roster.includes(agent)) {
@@ -252,6 +279,9 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
         model: model || process.env.AGENT_MODEL || 'unknown',
         lockedAt: new Date(now * 1000).toISOString(),
         expiresAt: new Date(expiresAt * 1000).toISOString(),
+        gitCommit,
+        promptPath,
+        promptHash,
       }),
     },
     sk,
@@ -297,6 +327,8 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
   log(`LOCK_DATE=${dateStr}`);
   log(`LOCK_EXPIRES=${expiresAt}`);
   log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * 1000).toISOString()}`);
+  if (gitCommit) log(`LOCK_GIT_COMMIT=${gitCommit}`);
+  if (promptHash) log(`LOCK_PROMPT_HASH=${promptHash}`);
   return { status: 'ok', eventId: event.id };
 }
 
@@ -665,6 +697,27 @@ export async function main(argv) {
       case 'memory-stats': {
         const result = await memoryStats({ windowMs: args.windowMs ?? undefined });
         console.log(JSON.stringify(result, null, 2));
+        break;
+      }
+
+      case 'proposal': {
+        if (!args.subcommand) {
+          console.error('ERROR: Missing subcommand for proposal (create, list, apply, reject, show)');
+          throw new ExitError(1, 'Missing subcommand');
+        }
+        await cmdProposal(args.subcommand, {
+          agent: args.agent,
+          target: args.target,
+          contentFile: args.content,
+          reason: args.reason,
+          id: args.id,
+          status: args.status
+        });
+        break;
+      }
+
+      case 'rollback': {
+        await cmdRollback(args.target, args.strategy);
         break;
       }
 

@@ -34,12 +34,23 @@ export function parseArgs(argv) {
     windowMinutes: null,
     platform: null,
     model: null,
+    subcommand: null,
+    target: null,
+    content: null,
+    reason: null,
+    strategy: null,
+    status: null,
   };
   let i = 0;
 
   if (argv.length > 0 && !argv[0].startsWith('-')) {
     args.command = argv[0];
     i = 1;
+    // Support subcommands for 'proposal'
+    if (args.command === 'proposal' && argv.length > 1 && !argv[1].startsWith('-')) {
+      args.subcommand = argv[1];
+      i = 2;
+    }
   }
 
   for (; i < argv.length; i++) {
@@ -130,6 +141,26 @@ export function parseArgs(argv) {
       args.model = argv[++i];
     } else if (arg.startsWith('--model=')) {
       args.model = arg.split('=')[1];
+    } else if (arg === '--target') {
+      args.target = argv[++i];
+    } else if (arg.startsWith('--target=')) {
+      args.target = arg.split('=')[1];
+    } else if (arg === '--content') {
+      args.content = argv[++i];
+    } else if (arg.startsWith('--content=')) {
+      args.content = arg.split('=')[1];
+    } else if (arg === '--reason') {
+      args.reason = argv[++i];
+    } else if (arg.startsWith('--reason=')) {
+      args.reason = arg.split('=')[1];
+    } else if (arg === '--strategy') {
+      args.strategy = argv[++i];
+    } else if (arg.startsWith('--strategy=')) {
+      args.strategy = arg.split('=')[1];
+    } else if (arg === '--status') {
+      args.status = argv[++i];
+    } else if (arg.startsWith('--status=')) {
+      args.status = arg.split('=')[1];
     }
   }
 

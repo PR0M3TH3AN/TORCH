@@ -178,6 +178,18 @@ function ensureInstallDirectory(paths, force, installDir) {
   }
   ensureDir(paths.torchDir);
   ensureDir(paths.promptsDir);
+
+  // Ensure governance directories
+  // We assume standard structure src/proposals and .torch/prompt-history
+  // even if installed in a subdirectory, these are usually repo-level.
+  // But if installed in 'torch', maybe they should be in 'torch/src/proposals'?
+  // For now, we follow the pattern that prompts are managed where the scheduler expects them.
+  // If we are in this repo, it's src/prompts.
+  // If torch is initializing a new repo, it might put prompts in installDir/prompts.
+  // However, governance service currently hardcodes 'src/proposals'.
+  // So we ensure 'src/proposals' relative to root.
+  ensureDir(path.join(paths.root, 'src', 'proposals'));
+  ensureDir(path.join(paths.root, '.torch', 'prompt-history'));
 }
 
 function installAppAssets(torchDir, installDir) {
