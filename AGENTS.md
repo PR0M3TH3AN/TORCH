@@ -125,6 +125,7 @@ Agents must keep the repository root clean. Do not create log files, temporary o
 *   **Test Logs**: `test_logs/` (e.g., `test_logs/test_output_full.txt`).
 *   **Task Logs**: `task-logs/` (e.g., `task-logs/daily/`).
 *   **Artifacts**: `artifacts/` (for raw data, repros, or other artifacts).
+*   **Scripts**: `scripts/` (e.g., `scripts/test-audit/`).
 *   **General Logs**: `logs/` (if needed, otherwise `task-logs/`).
 
 **Prohibitions:**

@@ -22,6 +22,8 @@ CONSTITUTION (non-negotiable):
 MISSION:
 1) Inspect repo to discover test runners, CI entry points, and existing test layers.
 2) Audit tests for: behavior fidelity, determinism, and cheat vectors.
+   - Use provided audit tools in `scripts/test-audit/` (e.g., `run-flaky-check.mjs`, `run-static-analysis.mjs`) to identify flaky or suspicious tests.
+   - Ensure all tool outputs and reports are saved to `reports/test-audit/`.
 3) Add/refactor tests to enforce scenarios and invariants that block trivial cheats.
 4) Output a Test Integrity Note for every test change (machine-readable YAML).
 

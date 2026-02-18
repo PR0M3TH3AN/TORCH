@@ -1,4 +1,16 @@
 {
+  "scripts/agent/load-test.mjs": {
+    "pass": 0,
+    "fail": 5
+  },
+  "scripts/agent/smoke-test.mjs": {
+    "pass": 0,
+    "fail": 5
+  },
+  "Build artifacts verification": {
+    "pass": 5,
+    "fail": 0
+  },
   "parseArgs should parse basic command": {
     "pass": 5,
     "fail": 0
@@ -35,6 +47,38 @@
     "pass": 5,
     "fail": 0
   },
+  "cmdList": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Dashboard Authentication": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Dashboard Configuration Exposure Security": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Dashboard Configuration Security": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Dashboard Path Traversal Security Fix": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Dashboard File Access Security": {
+    "pass": 5,
+    "fail": 0
+  },
+  "test/fixtures/memory-fixtures.js": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdInit should validate install directory name": {
+    "pass": 5,
+    "fail": 0
+  },
   "src/lib.mjs": {
     "pass": 5,
     "fail": 0
@@ -51,6 +95,10 @@
     "pass": 5,
     "fail": 0
   },
+  "lock-utils": {
+    "pass": 5,
+    "fail": 0
+  },
   "listMemories, inspectMemory, pinMemory, and unpinMemory support admin hooks": {
     "pass": 5,
     "fail": 0
@@ -64,6 +112,10 @@
     "fail": 0
   },
   "runPruneCycle respects prune feature-flag modes": {
+    "pass": 5,
+    "fail": 0
+  },
+  "markMemoryMerged delegates to repository and clears cache": {
     "pass": 5,
     "fail": 0
   },
@@ -99,11 +151,127 @@
     "pass": 5,
     "fail": 0
   },
+  "estimateTokenCount returns heuristic count": {
+    "pass": 5,
+    "fail": 0
+  },
+  "formatMemoryBlock converts memory record to display block": {
+    "pass": 5,
+    "fail": 0
+  },
+  "formatMemoryBlock handles missing optional fields and default clamping": {
+    "pass": 5,
+    "fail": 0
+  },
+  "formatMemoryBlock respects custom clamping options": {
+    "pass": 5,
+    "fail": 0
+  },
+  "formatMemoryBlock handles edge cases for clamping": {
+    "pass": 5,
+    "fail": 0
+  },
+  "formatMemoriesForPrompt enforces token budget and k limit": {
+    "pass": 5,
+    "fail": 0
+  },
+  "formatMemoriesForPrompt handles aggressive budget fitting": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext injects context when enabled": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext returns base prompt when disabled": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles missing query or service": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles circular agentContext gracefully": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles agentContext as array of strings": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles agentContext as plain object": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles agentContext as primitives": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext calls updateMemoryUsage for retrieved memories": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles empty memories gracefully": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext handles null/undefined memories gracefully": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext respects TORCH_MEMORY_ENABLED=false": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext respects retrieval allowlist": {
+    "pass": 5,
+    "fail": 0
+  },
+  "renderPromptWithMemoryContext passes k and tokenBudget": {
+    "pass": 5,
+    "fail": 0
+  },
+  "getRelevantMemories uses cached results when available": {
+    "pass": 5,
+    "fail": 0
+  },
+  "getRelevantMemories calls ranker and updates cache on miss": {
+    "pass": 5,
+    "fail": 0
+  },
+  "getRelevantMemories passes correct parameters to ranker": {
+    "pass": 5,
+    "fail": 0
+  },
+  "getRelevantMemories triggers updateMemoryUsage on repository": {
+    "pass": 5,
+    "fail": 0
+  },
+  "ingestEvents": {
+    "pass": 5,
+    "fail": 0
+  },
   "ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, and emits telemetry": {
     "pass": 5,
     "fail": 0
   },
   "ingestMemoryWindow dedupes overlapping windows by hashed content + agent + timestamp bucket": {
+    "pass": 5,
+    "fail": 0
+  },
+  "pinMemory pins the memory and clears the cache": {
+    "pass": 5,
+    "fail": 0
+  },
+  "pinMemory returns null for non-existent ID but still clears cache": {
+    "pass": 5,
+    "fail": 0
+  },
+  "unpinMemory unpins the memory and clears the cache": {
+    "pass": 5,
+    "fail": 0
+  },
+  "unpinMemory returns null for non-existent ID but still clears cache": {
     "pass": 5,
     "fail": 0
   },
@@ -135,6 +303,22 @@
     "pass": 5,
     "fail": 0
   },
+  "runPruneCycle respects off mode": {
+    "pass": 5,
+    "fail": 0
+  },
+  "runPruneCycle respects dry-run mode": {
+    "pass": 5,
+    "fail": 0
+  },
+  "runPruneCycle removes stale unpinned memories in active mode": {
+    "pass": 5,
+    "fail": 0
+  },
+  "runPruneCycle starts scheduler if requested": {
+    "pass": 5,
+    "fail": 0
+  },
   "createDbAdvisoryLockProvider acquires and releases postgres advisory locks": {
     "pass": 5,
     "fail": 0
@@ -159,6 +343,26 @@
     "pass": 5,
     "fail": 0
   },
+  "memoryStats with empty repository returns zero counts and rates": {
+    "pass": 5,
+    "fail": 0
+  },
+  "memoryStats with populated repository returns correct counts and totals": {
+    "pass": 5,
+    "fail": 0
+  },
+  "memoryStats calculates ingest throughput based on window": {
+    "pass": 5,
+    "fail": 0
+  },
+  "memoryStats reflects deleted count from prune cycle": {
+    "pass": 5,
+    "fail": 0
+  },
+  "memoryStats handles windowMs parameter correctly": {
+    "pass": 5,
+    "fail": 0
+  },
   "loadMemoryPromptTemplates loads all memory prompt templates from disk": {
     "pass": 5,
     "fail": 0
@@ -168,6 +372,38 @@
     "fail": 0
   },
   "summarizeEvents falls back to deterministic minimal summary with conservative importance when parsing fails twice": {
+    "pass": 5,
+    "fail": 0
+  },
+  "telemetry should not log to stdout or stderr by default": {
+    "pass": 5,
+    "fail": 0
+  },
+  "telemetry should log to stderr when NODE_DEBUG=torch-memory is set": {
+    "pass": 5,
+    "fail": 0
+  },
+  "schema validation covers required fields, coercion, and rejection paths": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizer parser accepts valid json and recovers after malformed json response": {
+    "pass": 5,
+    "fail": 0
+  },
+  "ingest integration persists memory records and links embeddings from event batches": {
+    "pass": 5,
+    "fail": 0
+  },
+  "retrieval ranking blends semantic, importance, and recency signals": {
+    "pass": 5,
+    "fail": 0
+  },
+  "pruner policy protects pins, merges duplicates, and picks archive/delete outcomes": {
+    "pass": 5,
+    "fail": 0
+  },
+  "scheduler smoke test handles mocked clock and lock contention": {
     "pass": 5,
     "fail": 0
   },
@@ -207,11 +443,51 @@
     "pass": 5,
     "fail": 0
   },
-  "raises all-relays-down duration alert after threshold": {
+  "RelayHealthManager": {
     "pass": 5,
     "fail": 0
   },
-  "raises success-rate alert when rolling health falls below threshold": {
+  "evaluateAlertThresholds": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - basic statistics calculation": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - handles empty history": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - respects time window for stats": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - allDownDurationMinutes considers outside window entries": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - allDownDurationMinutes is null if never healthy": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - allDownDurationMinutes is 0 if currently healthy": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - handles malformed entries gracefully": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - handles valid timestamp but missing summary": {
+    "pass": 5,
+    "fail": 0
+  },
+  "summarizeHistory - healthy entry with invalid timestamp results in NaN duration": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Roster (Unit Tests with Dependency Injection)": {
     "pass": 5,
     "fail": 0
   },
@@ -311,6 +587,10 @@
     "pass": 5,
     "fail": 0
   },
+  "secureRandom": {
+    "pass": 5,
+    "fail": 0
+  },
   "summarizes recent lock reliability by platform/cadence/backend/relay": {
     "pass": 5,
     "fail": 0
@@ -327,6 +607,10 @@
     "pass": 5,
     "fail": 0
   },
+  "File Utilities": {
+    "pass": 5,
+    "fail": 0
+  },
   "passes when artifacts include metadata and failure IDs map to unresolved known issue entries": {
     "pass": 5,
     "fail": 0
@@ -336,30 +620,6 @@
     "fail": 0
   },
   "fails when failure identifiers are not cross-linked to known issues or incidents": {
-    "pass": 5,
-    "fail": 0
-  },
-  "schema validation covers required fields, coercion, and rejection paths": {
-    "pass": 5,
-    "fail": 0
-  },
-  "summarizer parser accepts valid json and recovers after malformed json response": {
-    "pass": 5,
-    "fail": 0
-  },
-  "ingest integration persists memory records and links embeddings from event batches": {
-    "pass": 5,
-    "fail": 0
-  },
-  "retrieval ranking blends semantic, importance, and recency signals": {
-    "pass": 5,
-    "fail": 0
-  },
-  "pruner policy protects pins, merges duplicates, and picks archive/delete outcomes": {
-    "pass": 5,
-    "fail": 0
-  },
-  "scheduler smoke test handles mocked clock and lock contention": {
     "pass": 5,
     "fail": 0
   }
