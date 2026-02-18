@@ -1,70 +1,59 @@
-# CONTRIBUTING.md — Generic Collaboration Guide
+# Contributing to TORCH
 
-This repository is designed for human and AI contributors. Keep contributions small, clear, and verifiable.
+Thank you for your interest in contributing to TORCH!
 
-## Contribution principles
+## Prerequisites
 
-- Prefer focused pull requests.
-- Avoid unrelated refactors.
-- Preserve existing behavior unless a change is explicitly requested.
-- Document assumptions and tradeoffs.
+- Node.js (v22+)
+- npm
 
-## Development Commands
+## Setup
 
-- **Install**: `npm install`
-- **Test**: `npm test`
-- **Lint**: `npm run lint`
-- **Build**: `npm run build`
+1.  Clone the repository.
+2.  Install dependencies:
 
-## Standard contribution flow
+    ```bash
+    npm install
+    ```
 
-1. Sync your branch with the target base branch.
-2. Read baseline guidance:
-   - `AGENTS.md`
-   - `CLAUDE.md`
-   - `KNOWN_ISSUES.md`
-3. Implement minimal changes required to solve the task.
-4. Run relevant validation checks.
-5. Update documentation if behavior or workflow changed.
-6. Commit with a clear message.
-7. Open a PR with complete context.
+## Development Workflow
 
-## Commit expectations
+### Building
 
-- Keep commits atomic and descriptive.
-- Use imperative commit subjects.
-- Separate mechanical renames from behavioral changes when possible.
+This project requires a build step for certain artifacts (e.g., distribution files, dashboard assets).
 
-## Pull request expectations
+```bash
+npm run build
+```
 
-Each PR should include:
+### Testing
 
-- **Summary**: what changed.
-- **Why**: motivation/problem solved.
-- **Files modified**: key files touched.
-- **Validation**: exact commands run and outcomes.
-- **Risks / rollback**: known risks and how to revert.
+Run the test suite to ensure your changes don't break existing functionality.
 
-## Validation expectations
+```bash
+npm test
+```
 
-- Run checks most relevant to changed files (tests, lint, typecheck, build, scripts).
-- If a check cannot run, include:
-  - command attempted,
-  - reason it failed or was unavailable,
-  - fallback verification performed.
+For faster feedback loop on unit tests (excluding integration):
 
-## Documentation and handoffs
+```bash
+npm run test:unit:lock-backend
+```
 
-When your work creates reusable knowledge:
+### Linting
 
-- Add/update `docs/agent-handoffs/learnings/` for successful patterns.
-- Add/update `docs/agent-handoffs/incidents/` for failure modes and mitigations.
-- Add/update `KNOWN_ISSUES.md` for active unresolved issues.
+Ensure your code follows the project's style guidelines.
 
-Use filename format: `YYYY-MM-DD-short-topic.md`.
+```bash
+npm run lint
+```
 
-## Security and privacy
+## Pull Requests
 
-- Never commit credentials, tokens, secrets, or personal data.
-- Redact sensitive values in logs and examples.
-- Prefer synthetic or anonymized examples in documentation.
+Please follow the repository conventions for Pull Requests.
+
+> **Note:** Detailed agent policies and conventions are normally documented in `AGENTS.md`. If this file is missing, please refer to existing patterns in the codebase or open an issue for clarification.
+
+## Reporting Issues
+
+If you encounter any bugs or have feature requests, please open an issue on GitHub.
