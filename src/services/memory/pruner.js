@@ -196,12 +196,13 @@ export async function createLifecyclePlan(memories, options) {
   });
 
   const templates = loadMemoryPromptTemplates({ templateDir: options.templateDir });
-  const condensedGroups = [];
+  const condensedGroups = await Promise.all(
+    groups.map((group) => condenseGroup(group, options.generateSummary, templates.condense))
+  );
+
   const mergedIntoMap = new Map();
 
-  for (const group of groups) {
-    const condensed = await condenseGroup(group, options.generateSummary, templates.condense);
-    condensedGroups.push(condensed);
+  for (const condensed of condensedGroups) {
     for (const mergedId of condensed.mergedIds) {
       mergedIntoMap.set(mergedId, condensed.merged.id);
     }
