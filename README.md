@@ -21,6 +21,18 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz
 
 > TORCH is distributed from GitHub tarballs and is not currently published to the npm registry.
 
+## Development
+
+For instructions on how to contribute to TORCH, including building, testing, and linting, please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Quick start:
+
+```bash
+npm install
+npm run build
+npm test
+```
+
 ## Usage
 
 ### CLI

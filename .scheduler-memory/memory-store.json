@@ -94,7 +94,7 @@
       "importance": 0.4,
       "embedding_id": null,
       "created_at": 1771369913961,
-      "last_seen": 1771369913968,
+      "last_seen": 1771377118848,
       "source": "scheduler-retrieve",
       "ttl_days": null,
       "merged_into": null,
@@ -189,6 +189,56 @@
       "embedding_id": null,
       "created_at": 1771370189289,
       "last_seen": 1771370189290,
+      "source": "scheduler-store",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "f8711702-8dc2-474b-9142-0798f41209f3",
+    {
+      "schema_version": 1,
+      "id": "f8711702-8dc2-474b-9142-0798f41209f3",
+      "agent_id": "scheduler-memory-daily",
+      "session_id": "session-mlrc78ft",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771377118841,
+      "last_seen": 1771377118848,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "782a835a-88d1-4307-8154-599a09bcdfb6",
+    {
+      "schema_version": 1,
+      "id": "782a835a-88d1-4307-8154-599a09bcdfb6",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlrc8az1",
+      "type": "batch_window",
+      "content": "Store memory event A for weekly :: scheduler memory store\nStore memory event B for weekly :: scheduler memory store",
+      "summary": "Store memory event A for weekly :: scheduler memory store Store memory event B for weekly :: scheduler memory store",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store"
+      ],
+      "importance": 0.55,
+      "embedding_id": null,
+      "created_at": 1771377168781,
+      "last_seen": 1771377168782,
       "source": "scheduler-store",
       "ttl_days": null,
       "merged_into": null,
