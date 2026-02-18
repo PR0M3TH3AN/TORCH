@@ -98,8 +98,8 @@ DAILY WORKFLOW (mandatory)
       - release channel expectations)
 
 1) Create run artifacts (only if repo conventions allow committing artifacts)
-  - Prefer a dated folder:
-      - `artifacts/known-issues/YYYY-MM-DD/`
+  - Use report folder:
+      - `reports/known-issues/`
   - If the repo does not commit artifacts, keep the report in the PR body or in
     `docs/` per repo conventions.
 
@@ -176,7 +176,7 @@ DAILY WORKFLOW (mandatory)
   - Remove dead links, fix paths, and clarify ambiguous instructions.
 
 8) Daily report (required)
-  Produce a short report (PR body or artifact) containing:
+  Produce a short report at `reports/known-issues/known-issues-report-YYYY-MM-DD.md` (and optional PR body) containing:
   - Headline: ✓ all verified / ⚠️ active issues remain
   - Table/list: each entry → status (Resolved/Active/Unknown), last checked date
   - PRs opened
@@ -221,4 +221,4 @@ Daily:
 - 0–1 small PR fixing a trivial, safe known issue (or none if nothing safe)
 - Updated `KNOWN_ISSUES.md` with last-checked notes and links
 - 0–N GitHub issues for medium/large/risky items
-- A short daily remediation report (artifact or PR body)
+- A short daily remediation report at `reports/known-issues/known-issues-report-YYYY-MM-DD.md`

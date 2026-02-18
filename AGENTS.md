@@ -112,3 +112,28 @@ Its goal is “make the suite reflect reality and reject fake passes.”
 * Proposed test diffs
 * Test Integrity Note
 * “Cheat vectors blocked” summary (what trivial implementations it prevents)
+
+---
+
+## Report Location Standard
+
+All agents that generate reports must adhere to the following directory structure. Reports must be placed in `reports/<category>/`.
+
+### Categories
+
+*   **Audit**: `reports/audit/` (e.g., `audit-report-YYYY-MM-DD.md`)
+*   **Design System**: `reports/design-system/`
+*   **Known Issues**: `reports/known-issues/`
+*   **Load Test**: `reports/load-test/`
+*   **Performance**: `reports/performance/` (e.g., `daily-perf-report-YYYY-MM-DD.md`)
+*   **Protocol**: `reports/protocol/` (e.g., `protocol-report-YYYY-MM-DD.md`)
+*   **Security**: `reports/security/`
+*   **Telemetry**: `reports/telemetry/`
+*   **Test Audit**: `reports/test-audit/`
+*   **Weekly Synthesis**: `reports/weekly-synthesis/`
+
+### Format
+
+*   Use Markdown (`.md`) for human-readable reports.
+*   Use JSON (`.json`) or Log (`.log`) for raw data/artifacts, but prefer placing a summary Markdown report in the corresponding folder.
+*   Naming convention: `<type>-report-YYYY-MM-DD.md` (e.g., `daily-perf-report-2024-01-01.md`).

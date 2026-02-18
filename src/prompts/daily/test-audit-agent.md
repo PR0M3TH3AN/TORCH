@@ -19,4 +19,4 @@ MISSION:
 
 STOP CONDITIONS:
 - If intended behavior is unclear, do not guess and do not weaken tests.
-  Produce a “Needs Spec Clarification” report + propose candidate scenarios.
+  Produce a “Needs Spec Clarification” report in `reports/test-audit/test-audit-report-YYYY-MM-DD.md` + propose candidate scenarios.
