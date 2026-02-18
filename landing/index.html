@@ -1183,6 +1183,18 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             'weekly-synthesis-agent': '🧠'
         };
 
+        const AGENT_CATEGORIES = {
+            'scheduler-update-agent': 'TORCH Maintenance & Agent Evolution',
+            'torch-garbage-collection-agent': 'TORCH Maintenance & Agent Evolution',
+            'repo-fit-agent': 'TORCH Maintenance & Agent Evolution',
+            'weekly-synthesis-agent': 'TORCH Maintenance & Agent Evolution',
+            'prompt-fixer-agent': 'TORCH Maintenance & Agent Evolution',
+            'prompt-gap-analysis-agent': 'TORCH Maintenance & Agent Evolution',
+            'prompt-maintenance-agent': 'TORCH Maintenance & Agent Evolution',
+            'prompt-safety-agent': 'TORCH Maintenance & Agent Evolution',
+            // Default: 'Repo Development'
+        };
+
         async function fetchAgents() {
             const container = document.getElementById('functional-agent-list');
             try {
@@ -1192,38 +1204,70 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
 
                 container.innerHTML = ''; // Clear loading state
 
-                for (const category of ['daily', 'weekly']) {
-                    if (!roster[category] || roster[category].length === 0) continue;
+                // Flatten roster into a single list with schedule info
+                const allAgents = [];
+                for (const schedule of ['daily', 'weekly']) {
+                    if (roster[schedule]) {
+                        for (const agentName of roster[schedule]) {
+                            allAgents.push({ agentName, schedule });
+                        }
+                    }
+                }
+
+                // Process all agents in parallel
+                const agentPromises = allAgents.map(async ({ agentName, schedule }) => {
+                    try {
+                        const mdResponse = await fetch(`../src/prompts/${schedule}/${agentName}.md`);
+                        if (!mdResponse.ok) return null;
+                        const content = await mdResponse.text();
+
+                        // Extract Metadata
+                        const meta = extractAgentMetadata(content, agentName);
+
+                        // Determine functional category
+                        const functionalCategory = AGENT_CATEGORIES[agentName] || 'Repo Development';
+
+                        return { ...meta, content, agentName, schedule, functionalCategory };
+                    } catch (e) {
+                        console.error(`Failed to load ${agentName}`, e);
+                        return null;
+                    }
+                });
+
+                const agents = (await Promise.all(agentPromises)).filter(Boolean);
+
+                // Group agents by functional category
+                const groups = {
+                    'TORCH Maintenance & Agent Evolution': [],
+                    'Repo Development': []
+                };
+
+                agents.forEach(agent => {
+                    if (!groups[agent.functionalCategory]) {
+                        groups[agent.functionalCategory] = [];
+                    }
+                    groups[agent.functionalCategory].push(agent);
+                });
+
+                // Render each group
+                for (const categoryName of Object.keys(groups)) {
+                    const categoryAgents = groups[categoryName];
+                    if (categoryAgents.length === 0) continue;
+
+                    // Sort alphabetically within category
+                    categoryAgents.sort((a, b) => a.agentName.localeCompare(b.agentName));
 
                     // Category Title
                     const categoryTitle = document.createElement('div');
                     categoryTitle.className = 'agent-category-title';
-                    categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1) + ' Agents';
+                    categoryTitle.textContent = categoryName;
                     container.appendChild(categoryTitle);
 
                     // Grid
                     const grid = document.createElement('div');
                     grid.className = 'functional-agent-grid';
 
-                    // Process agents in parallel
-                    const agentPromises = roster[category].map(async (agentName) => {
-                        try {
-                            const mdResponse = await fetch(`../src/prompts/${category}/${agentName}.md`);
-                            if (!mdResponse.ok) return null;
-                            const content = await mdResponse.text();
-
-                            // Extract Metadata
-                            const meta = extractAgentMetadata(content, agentName);
-                            return { ...meta, content, agentName, category };
-                        } catch (e) {
-                            console.error(`Failed to load ${agentName}`, e);
-                            return null;
-                        }
-                    });
-
-                    const agents = (await Promise.all(agentPromises)).filter(Boolean);
-
-                    agents.forEach(agent => {
+                    categoryAgents.forEach(agent => {
                         // Store in global map
                         window.agentData[agent.agentName] = agent;
 
@@ -1232,15 +1276,13 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         const card = document.createElement('div');
                         card.className = 'functional-agent-card';
 
-                        // Use data-agent-name attribute for safer handling if needed,
-                        // but passing string literal ID is safe here as agentName is strict.
                         card.innerHTML = `
                             <div class="functional-agent-header">
                                 <div class="functional-agent-title-group">
                                     <span class="functional-agent-icon">${icon}</span>
                                     <span class="functional-agent-title">${escapeHtml(agent.title)}</span>
                                 </div>
-                                <span class="functional-agent-schedule">${agent.category}</span>
+                                <span class="functional-agent-schedule">${agent.schedule}</span>
                             </div>
                             <div class="functional-agent-desc">${escapeHtml(agent.description)}</div>
                             <button class="view-prompt-btn" onclick="openAgentModal('${agent.agentName}')">View Prompt</button>
