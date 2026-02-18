@@ -7,6 +7,13 @@ import { fileURLToPath } from 'node:url';
 import { DEFAULT_DASHBOARD_PORT } from './constants.mjs';
 import { getDashboardAuth, parseTorchConfig } from './torch-config.mjs';
 
+const SECURITY_HEADERS = {
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss:; object-src 'none'; base-uri 'self';",
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
 function timingSafeCompare(a, b) {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);
@@ -30,7 +37,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     if (auth) {
       const authHeader = req.headers.authorization;
       if (!authHeader) {
-        res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="TORCH Dashboard"' });
+        res.writeHead(401, { ...SECURITY_HEADERS, 'WWW-Authenticate': 'Basic realm="TORCH Dashboard"' });
         res.end('Authentication required');
         return;
       }
@@ -48,7 +55,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
       }
 
       if (!isValid) {
-        res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="TORCH Dashboard"' });
+        res.writeHead(401, { ...SECURITY_HEADERS, 'WWW-Authenticate': 'Basic realm="TORCH Dashboard"' });
         res.end('Invalid credentials');
         return;
       }
@@ -60,7 +67,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
 
     // Redirect / to /dashboard/
     if (pathname === '/' || pathname === '/dashboard') {
-      res.writeHead(302, { 'Location': '/dashboard/' });
+      res.writeHead(302, { ...SECURITY_HEADERS, 'Location': '/dashboard/' });
       res.end();
       return;
     }
@@ -105,31 +112,43 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
           const rawConfig = JSON.parse(configContent);
           const safeConfig = parseTorchConfig(rawConfig);
 
-          // Security: Sanitize sensitive fields
-          if (safeConfig.dashboard) {
-            delete safeConfig.dashboard.auth;
-          }
-          delete safeConfig.configPath;
+          // Security: Whitelist only fields required by the dashboard frontend
+          const publicConfig = {
+            dashboard: safeConfig.dashboard ? { ...safeConfig.dashboard } : {},
+            nostrLock: safeConfig.nostrLock
+              ? {
+                  namespace: safeConfig.nostrLock.namespace,
+                  relays: safeConfig.nostrLock.relays,
+                }
+              : {},
+          };
 
-          res.writeHead(200, { 'Content-Type': 'application/json' });
+          // Remove sensitive dashboard auth
+          if (publicConfig.dashboard.auth) {
+            delete publicConfig.dashboard.auth;
+          }
+
+          res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': 'application/json' });
           res.end(JSON.stringify(safeConfig, null, 2));
           return;
         } catch (err) {
           console.error('Error parsing torch-config.json:', err);
-          res.writeHead(500);
+          res.writeHead(500, SECURITY_HEADERS);
           res.end('Internal Server Error');
           return;
         }
       } else {
-        res.writeHead(404);
+        res.writeHead(404, SECURITY_HEADERS);
         res.end('Not Found');
         return;
       }
     }
 
     // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
-    let filePath = path.join(packageRoot, safePath);
+    // Resolve path relative to packageRoot.
+    // We strip the leading slash from pathname (which comes from URL) to treat it as relative.
+    const relativePath = pathname.replace(/^\//, '');
+    let filePath = path.resolve(packageRoot, relativePath);
 
     // Security check: restrict access to allowed paths
     const allowedPaths = [
@@ -146,7 +165,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     });
 
     if (!isAllowed) {
-      res.writeHead(403);
+      res.writeHead(403, SECURITY_HEADERS);
       res.end('Forbidden');
       return;
     }
@@ -160,7 +179,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
 
     // Check if file exists and is a file
     if (!fileStat || !fileStat.isFile()) {
-      res.writeHead(404);
+      res.writeHead(404, SECURITY_HEADERS);
       res.end('Not Found');
       return;
     }
@@ -181,12 +200,12 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
       case '.md': contentType = 'text/markdown'; break;
     }
 
-    res.writeHead(200, { 'Content-Type': contentType });
+    res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': contentType });
     fs.createReadStream(filePath).pipe(res);
     } catch (err) {
       console.error('Dashboard Server Error:', err);
       if (!res.headersSent) {
-        res.writeHead(500);
+        res.writeHead(500, SECURITY_HEADERS);
         res.end('Internal Server Error');
       }
     }

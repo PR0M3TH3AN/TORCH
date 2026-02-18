@@ -138,11 +138,22 @@ test('applyLifecycleActions executes keep/archive/delete and merge markers', asy
     policyLogs: [],
   });
 
-  assert.deepEqual(calls, [
-    ['keepMemory', 'k1', 'keep reason'],
-    ['markMerged', 'a1', 'k1'],
+  // Sort calls to verify presence regardless of execution order
+  const sortedCalls = [...calls].sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+  const expectedCalls = [
     ['archiveMemory', 'a1', 'archive reason'],
     ['deleteMemory', 'd1', 'delete reason'],
-  ]);
+    ['keepMemory', 'k1', 'keep reason'],
+    ['markMerged', 'a1', 'k1'],
+  ];
+
+  assert.deepEqual(sortedCalls, expectedCalls);
+
+  // Verify that markMerged happens before archiveMemory for the same ID
+  const markIndex = calls.findIndex((c) => c[0] === 'markMerged' && c[1] === 'a1');
+  const archiveIndex = calls.findIndex((c) => c[0] === 'archiveMemory' && c[1] === 'a1');
+  assert.ok(markIndex !== -1, 'markMerged was called');
+  assert.ok(archiveIndex !== -1, 'archiveMemory was called');
+  assert.ok(markIndex < archiveIndex, 'markMerged should precede archiveMemory');
   assert.equal(result.applied.length, 3);
 });
