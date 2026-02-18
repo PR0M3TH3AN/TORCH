@@ -1,41 +1,77 @@
 import {
-  loadTorchConfig,
-  getRelays,
-  getNamespace,
+  loadTorchConfig as _loadTorchConfig,
+  getRelays as _getRelays,
+  getNamespace as _getNamespace,
 } from './torch-config.mjs';
-import { getRoster } from './roster.mjs';
-import { queryLocks } from './lock-ops.mjs';
+import { getRoster as _getRoster } from './roster.mjs';
+import { queryLocks as _queryLocks } from './lock-ops.mjs';
 import { todayDateStr } from './utils.mjs';
+import { getCompletedAgents } from './lock-utils.mjs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
+/**
+ * Checks the status of the repository locks for a given cadence.
+ *
+ * It aggregates data from three sources:
+ * 1. Configuration (paused agents)
+ * 2. Local logs (completed agents)
+ * 3. Nostr relays (current active locks)
+ *
+ * It outputs a JSON object describing the state (locked, available, excluded agents).
+ *
+ * @param {string} cadence - 'daily' or 'weekly'
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<Object>} - The check result object
+ */
 export async function cmdCheck(cadence, deps = {}) {
   const {
-    loadTorchConfigFn = loadTorchConfig,
-    getRelaysFn = getRelays,
-    getNamespaceFn = getNamespace,
-    getRosterFn = getRoster,
-    queryLocksFn = queryLocks,
-    todayDateStrFn = todayDateStr,
+    getRelays = _getRelays,
+    getNamespace = _getNamespace,
+    loadTorchConfig = _loadTorchConfig,
+    queryLocks = _queryLocks,
+    getRoster = _getRoster,
+    getDateStr = todayDateStr,
+    log = console.log,
+    error = console.error,
+    logDir = 'task-logs',
+    ignoreLogs = false,
+    json = false,
+    jsonFile = null,
+    quiet = false,
   } = deps;
 
-  const relays = await getRelaysFn();
-  const namespace = await getNamespaceFn();
-  const dateStr = todayDateStrFn();
-  const config = await loadTorchConfigFn();
-  const pausedAgents = (cadence === 'daily' ? config.scheduler.paused.daily : config.scheduler.paused.weekly) || [];
+  const relays = await getRelays();
+  const namespace = await getNamespace();
+  const dateStr = getDateStr();
+  const config = await loadTorchConfig();
+  const pausedAgents = config.scheduler.paused[cadence] || [];
 
-  console.error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
-  console.error(`Relays: ${relays.join(', ')}`);
-  if (pausedAgents.length > 0) {
-    console.error(`Paused agents: ${pausedAgents.join(', ')}`);
+  if (!quiet) {
+    error(`Checking locks: namespace=${namespace}, cadence=${cadence}, date=${dateStr}`);
+    error(`Relays: ${relays.join(', ')}`);
+    if (pausedAgents.length > 0) {
+      error(`Paused agents: ${pausedAgents.join(', ')}`);
+    }
   }
 
-  const locks = await queryLocksFn(relays, cadence, dateStr, namespace);
-  const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
-  const roster = await getRosterFn(cadence);
+  let completedAgents = new Set();
+  if (!ignoreLogs) {
+    completedAgents = await getCompletedAgents(cadence, logDir, deps);
+    if (!quiet && completedAgents.size > 0) {
+      error(`Completed agents (logs): ${[...completedAgents].join(', ')}`);
+    }
+  }
 
-  const excludedAgents = [...new Set([...lockedAgents, ...pausedAgents])];
-  const unknownLockedAgents = lockedAgents.filter((agent) => !roster.includes(agent));
-  const available = roster.filter((a) => !excludedAgents.includes(a));
+  const locks = await queryLocks(relays, cadence, dateStr, namespace);
+  const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
+  const roster = await getRoster(cadence);
+  const rosterSet = new Set(roster);
+
+  const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents, ...completedAgents]);
+  const excludedAgents = [...excludedAgentsSet];
+  const unknownLockedAgents = lockedAgents.filter((agent) => !rosterSet.has(agent));
+  const available = roster.filter((a) => !excludedAgentsSet.has(a));
 
   const result = {
     namespace,
@@ -43,6 +79,7 @@ export async function cmdCheck(cadence, deps = {}) {
     date: dateStr,
     locked: lockedAgents.sort(),
     paused: pausedAgents.sort(),
+    completed: [...completedAgents].sort(),
     excluded: excludedAgents.sort(),
     available: available.sort(),
     lockCount: locks.length,
@@ -56,6 +93,17 @@ export async function cmdCheck(cadence, deps = {}) {
     })),
   };
 
-  console.log(JSON.stringify(result, null, 2));
+  const output = json ? JSON.stringify(result) : JSON.stringify(result, null, 2);
+
+  if (jsonFile) {
+    const resolvedPath = path.resolve(process.cwd(), jsonFile);
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
+    await fs.writeFile(resolvedPath, `${output}\n`, 'utf8');
+  }
+
+  if (json || !quiet) {
+    log(output);
+  }
+
   return result;
 }

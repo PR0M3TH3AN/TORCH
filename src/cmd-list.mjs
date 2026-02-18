@@ -1,18 +1,37 @@
 import {
-  getRelays,
-  getNamespace,
+  getRelays as _getRelays,
+  getNamespace as _getNamespace,
 } from './torch-config.mjs';
-import { getRoster } from './roster.mjs';
-import { queryLocks } from './lock-ops.mjs';
+import { getRoster as _getRoster } from './roster.mjs';
+import { queryLocks as _queryLocks } from './lock-ops.mjs';
 import { todayDateStr, nowUnix } from './utils.mjs';
+import { VALID_CADENCES } from './constants.mjs';
 
-export async function cmdList(cadence) {
+/**
+ * Lists all active locks for the specified cadence (or all cadences if null).
+ * It prints a formatted table to stdout with lock age, TTL, and event ID.
+ *
+ * @param {string|null} cadence - Filter by cadence ('daily', 'weekly') or null for all
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<void>}
+ */
+export async function cmdList(cadence, deps = {}) {
+  const {
+    getRelays = _getRelays,
+    getNamespace = _getNamespace,
+    queryLocks = _queryLocks,
+    getRoster = _getRoster,
+    getDateStr = todayDateStr,
+    log = console.log,
+    error = console.error
+  } = deps;
+
   const relays = await getRelays();
   const namespace = await getNamespace();
-  const dateStr = todayDateStr();
-  const cadences = cadence ? [cadence] : ['daily', 'weekly'];
+  const dateStr = getDateStr();
+  const cadences = cadence ? [cadence] : [...VALID_CADENCES];
 
-  console.error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
+  error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
 
   const results = await Promise.all(
     cadences.map(async (c) => {
@@ -22,12 +41,12 @@ export async function cmdList(cadence) {
   );
 
   for (const { c, locks } of results) {
-    console.log(`\n${'='.repeat(72)}`);
-    console.log(`Active ${namespace} ${c} locks (${dateStr})`);
-    console.log('='.repeat(72));
+    log(`\n${'='.repeat(72)}`);
+    log(`Active ${namespace} ${c} locks (${dateStr})`);
+    log('='.repeat(72));
 
     if (locks.length === 0) {
-      console.log('  (no active locks)');
+      log('  (no active locks)');
       continue;
     }
 
@@ -35,28 +54,35 @@ export async function cmdList(cadence) {
     for (const lock of sorted) {
       const age = nowUnix() - lock.createdAt;
       const ageMin = Math.round(age / 60);
-      const remaining = lock.expiresAt ? lock.expiresAt - nowUnix() : null;
-      const remainMin = remaining ? Math.round(remaining / 60) : '?';
 
-      console.log(
+      let remainMin = '?';
+      if (lock.status === 'completed') {
+          remainMin = 'done';
+      } else if (lock.expiresAt) {
+          const remaining = lock.expiresAt - nowUnix();
+          remainMin = Math.round(remaining / 60);
+      }
+
+      log(
         `  ${(lock.agent ?? 'unknown').padEnd(30)} ` +
           `age: ${String(ageMin).padStart(4)}m  ` +
-          `ttl: ${String(remainMin).padStart(4)}m  ` +
+          `ttl: ${String(remainMin).padStart(4)}  ` +
           `platform: ${lock.platform ?? '?'}  ` +
           `event: ${lock.eventId?.slice(0, 12)}...`,
       );
     }
 
     const roster = await getRoster(c);
+    const rosterSet = new Set(roster);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
-    const unknownLockedAgents = [...lockedAgents].filter((agent) => !roster.includes(agent));
+    const unknownLockedAgents = [...lockedAgents].filter((agent) => !rosterSet.has(agent));
     const available = roster.filter((a) => !lockedAgents.has(a));
 
     if (unknownLockedAgents.length > 0) {
-      console.log(`  Warning: lock events found with non-roster agent names: ${unknownLockedAgents.join(', ')}`);
+      log(`  Warning: lock events found with non-roster agent names: ${unknownLockedAgents.join(', ')}`);
     }
 
-    console.log(`\n  Locked: ${lockedAgents.size}/${roster.length}`);
-    console.log(`  Available: ${available.join(', ') || '(none)'}`);
+    log(`\n  Locked: ${lockedAgents.size}/${roster.length}`);
+    log(`  Available: ${available.join(', ') || '(none)'}`);
   }
 }

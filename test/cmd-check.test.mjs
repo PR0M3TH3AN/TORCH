@@ -1,4 +1,4 @@
-import { describe, it, mock, afterEach, after } from 'node:test';
+import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert';
 import { cmdCheck } from '../src/cmd-check.mjs';
 
@@ -15,21 +15,9 @@ const mockGetRelays = mock.fn(() => ['wss://mock-relay']);
 const mockGetNamespace = mock.fn(() => 'mock-namespace');
 const mockGetRoster = mock.fn(() => []);
 const mockQueryLocks = mock.fn(async () => []);
-const mockTodayDateStr = mock.fn(() => '2023-10-27');
-
-const deps = {
-  loadTorchConfigFn: mockLoadTorchConfig,
-  getRelaysFn: mockGetRelays,
-  getNamespaceFn: mockGetNamespace,
-  getRosterFn: mockGetRoster,
-  queryLocksFn: mockQueryLocks,
-  todayDateStrFn: mockTodayDateStr,
-};
+const mockGetDateStr = mock.fn(() => '2023-10-27');
 
 describe('cmdCheck', () => {
-  // Capture console output
-  const originalConsoleLog = console.log;
-  const originalConsoleError = console.error;
   let consoleLogOutput = [];
   let consoleErrorOutput = [];
 
@@ -40,9 +28,16 @@ describe('cmdCheck', () => {
     consoleErrorOutput.push(msg);
   });
 
-  // Setup console mocks
-  console.log = mockConsoleLog;
-  console.error = mockConsoleError;
+  const deps = {
+    loadTorchConfig: mockLoadTorchConfig,
+    getRelays: mockGetRelays,
+    getNamespace: mockGetNamespace,
+    getRoster: mockGetRoster,
+    queryLocks: mockQueryLocks,
+    getDateStr: mockGetDateStr,
+    log: mockConsoleLog,
+    error: mockConsoleError,
+  };
 
   afterEach(() => {
     // Reset mocks
@@ -51,17 +46,13 @@ describe('cmdCheck', () => {
     mockGetNamespace.mock.resetCalls();
     mockGetRoster.mock.resetCalls();
     mockQueryLocks.mock.resetCalls();
-    mockTodayDateStr.mock.resetCalls();
+    mockGetDateStr.mock.resetCalls();
+    mockConsoleLog.mock.resetCalls();
+    mockConsoleError.mock.resetCalls();
 
     // Clear captured output
     consoleLogOutput = [];
     consoleErrorOutput = [];
-  });
-
-  // Restore console after all tests
-  after(() => {
-    console.log = originalConsoleLog;
-    console.error = originalConsoleError;
   });
 
   it('correctly reports available agents when no locks exist', async () => {
