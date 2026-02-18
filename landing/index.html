@@ -1030,11 +1030,15 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
 
                 // Configure marked options if needed (e.g., highlighting)
                 // Using simple rendering for now
+                // TRUSTED SOURCE: The content comes from a local file (../src/docs/TORCH.md) and is required to be rendered as HTML.
                 contentDiv.innerHTML = marked.parse(text);
                 docsLoaded = true;
             } catch (error) {
                 console.error(error);
-                contentDiv.innerHTML = `<p class="text-danger">Error loading documentation: ${error.message}</p>`;
+                const p = document.createElement('p');
+                p.className = 'text-danger';
+                p.textContent = `Error loading documentation: ${error.message}`;
+                contentDiv.replaceChildren(p);
             }
         }
 
@@ -1096,13 +1100,15 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
 
             const code = document.getElementById(elementId).textContent;
             navigator.clipboard.writeText(code).then(() => {
-                const originalContent = btn.innerHTML;
+                // Capture child nodes to avoid innerHTML
+                const originalChildren = Array.from(btn.childNodes).map(n => n.cloneNode(true));
+
                 btn.textContent = 'Copied!';
                 btn.style.borderColor = 'var(--success)';
                 btn.style.color = 'var(--success)';
 
                 setTimeout(() => {
-                    btn.innerHTML = originalContent;
+                    btn.replaceChildren(...originalChildren);
                     btn.style.borderColor = '';
                     btn.style.color = '';
                 }, 2000);
