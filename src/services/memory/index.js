@@ -7,6 +7,7 @@ import { getMemoryPruneMode, isMemoryIngestEnabled } from './feature-flags.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import util from 'node:util';
+import { ensureDir } from '../../utils.mjs';
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
 const debug = util.debuglog('torch-memory');
@@ -29,9 +30,7 @@ function loadMemoryStore() {
 function saveMemoryStore(store) {
   try {
     const dir = path.dirname(MEMORY_FILE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    ensureDir(dir);
     const entries = [...store.entries()];
     fs.writeFileSync(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
   } catch (err) {
@@ -198,10 +197,15 @@ export async function ingestEvents(events, options = {}) {
  * @returns {Promise<import('./schema.js').MemoryRecord[]>} Sorted list of relevant memories.
  */
 export async function getRelevantMemories(params) {
-  const { repository = memoryRepository, ...queryParams } = params;
+  const {
+    repository = memoryRepository,
+    ranker = filterAndRankMemories,
+    cache: cacheProvider = cache,
+    ...queryParams
+  } = params;
   const telemetry = buildTelemetryEmitter(params);
   const cacheKey = JSON.stringify(queryParams);
-  const cached = cache.get(cacheKey);
+  const cached = cacheProvider.get(cacheKey);
   if (cached) {
     telemetry('memory:retrieved', {
       agent_id: queryParams.agent_id,
@@ -220,9 +224,9 @@ export async function getRelevantMemories(params) {
     ? await repository.listMemories(queryParams)
     : [...memoryStore.values()];
 
-  const ranked = await filterAndRankMemories(source, queryParams);
+  const ranked = await ranker(source, queryParams);
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
-  cache.set(cacheKey, ranked);
+  cacheProvider.set(cacheKey, ranked);
 
   telemetry('memory:retrieved', {
     agent_id: queryParams.agent_id,

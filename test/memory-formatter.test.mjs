@@ -193,3 +193,249 @@ test('renderPromptWithMemoryContext handles missing query or service', async () 
   const output = await renderPromptWithMemoryContext(params);
   assert.equal(output, 'Base prompt');
 });
+
+test('renderPromptWithMemoryContext handles circular agentContext gracefully', async () => {
+  const circular = {};
+  circular.self = circular;
+
+  let capturedQuery = '';
+  const memoryService = {
+    async getRelevantMemories({ query }) {
+      capturedQuery = query;
+      return [];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agentContext: circular,
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+
+  // It should not throw.
+  // The query should contain the string representation of the circular object.
+  // String(circular) is "[object Object]"
+  assert.ok(capturedQuery.includes('[object Object]'), 'Query should contain the stringified circular object fallback');
+  assert.match(output, /Base prompt/);
+});
+
+// Added tests below
+
+test('renderPromptWithMemoryContext handles agentContext as array of strings', async () => {
+  let capturedQuery = '';
+  const memoryService = {
+    async getRelevantMemories({ query }) {
+      capturedQuery = query;
+      return [];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agentContext: ['context1', 'context2'],
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  await renderPromptWithMemoryContext(params);
+  assert.ok(capturedQuery.includes('context1'));
+  assert.ok(capturedQuery.includes('context2'));
+});
+
+test('renderPromptWithMemoryContext handles agentContext as plain object', async () => {
+  let capturedQuery = '';
+  const memoryService = {
+    async getRelevantMemories({ query }) {
+      capturedQuery = query;
+      return [];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agentContext: { key: 'value' },
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  await renderPromptWithMemoryContext(params);
+  assert.ok(capturedQuery.includes('{"key":"value"}'));
+});
+
+test('renderPromptWithMemoryContext handles agentContext as primitives', async () => {
+  let capturedQuery = '';
+  const memoryService = {
+    async getRelevantMemories({ query }) {
+      capturedQuery = query;
+      return [];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agentContext: 12345,
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  await renderPromptWithMemoryContext(params);
+  assert.ok(capturedQuery.includes('12345'));
+});
+
+test('renderPromptWithMemoryContext calls updateMemoryUsage for retrieved memories', async () => {
+  const updatedIds = [];
+  const memoryService = {
+    async getRelevantMemories() {
+      return [
+        createMemory({ id: 'm1' }),
+        createMemory({ id: 'm2' })
+      ];
+    },
+    async updateMemoryUsage(id) {
+      updatedIds.push(id);
+    }
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  await renderPromptWithMemoryContext(params);
+  assert.deepEqual(updatedIds, ['m1', 'm2']);
+});
+
+test('renderPromptWithMemoryContext handles empty memories gracefully', async () => {
+  const memoryService = {
+    async getRelevantMemories() {
+      return [];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+  assert.equal(output, 'Base prompt');
+});
+
+test('renderPromptWithMemoryContext handles null/undefined memories gracefully', async () => {
+  const memoryService = {
+    async getRelevantMemories() {
+      return null;
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agent_id: 'agent-1',
+    memoryService,
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+  assert.equal(output, 'Base prompt');
+});
+
+test('renderPromptWithMemoryContext respects TORCH_MEMORY_ENABLED=false', async () => {
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agent_id: 'agent-1',
+    memoryService: {},
+    env: {
+      TORCH_MEMORY_ENABLED: 'false',
+      TORCH_MEMORY_RETRIEVAL_ENABLED: 'true'
+    }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+  assert.equal(output, 'Base prompt');
+});
+
+test('renderPromptWithMemoryContext respects retrieval allowlist', async () => {
+  const memoryService = {
+      async getRelevantMemories() { return [createMemory({summary: 'Should not see'})]; }
+  };
+
+  // agent-2 is not in the allowlist
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agent_id: 'agent-2',
+    memoryService,
+    env: {
+      TORCH_MEMORY_ENABLED: 'true',
+      TORCH_MEMORY_RETRIEVAL_ENABLED: 'agent-1'
+    }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+  assert.equal(output, 'Base prompt');
+
+  // agent-1 is in the allowlist
+  const paramsAllowed = {
+    ...params,
+    agent_id: 'agent-1'
+  };
+  const outputAllowed = await renderPromptWithMemoryContext(paramsAllowed);
+  assert.match(outputAllowed, /\[CONTEXT — Relevant memories\]/);
+});
+
+test('renderPromptWithMemoryContext passes k and tokenBudget', async () => {
+  const memoryService = {
+    async getRelevantMemories({ k }) {
+      assert.equal(k, 3, 'Should pass k=3');
+      // Return more memories than k to verify formatter truncation if needed,
+      // but getRelevantMemories is responsible for limiting too.
+      // Here we just check if it gets called with k.
+      return [
+          createMemory({id: 'm1'}),
+          createMemory({id: 'm2'}),
+          createMemory({id: 'm3'}),
+          createMemory({id: 'm4'}),
+      ];
+    },
+    async updateMemoryUsage() {}
+  };
+
+  const params = {
+    basePrompt: 'Base prompt',
+    userRequest: 'Hello',
+    agent_id: 'agent-1',
+    memoryService,
+    retrievalK: 3,
+    tokenBudget: 50, // Small budget
+    env: { TORCH_MEMORY_RETRIEVAL_ENABLED: 'true' }
+  };
+
+  const output = await renderPromptWithMemoryContext(params);
+  // With small budget, it might truncate m3 or m2.
+  assert.match(output, /m1/);
+});

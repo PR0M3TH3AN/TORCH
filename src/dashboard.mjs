@@ -22,9 +22,10 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
   // Resolve package root relative to this file (src/dashboard.mjs)
   // this file is in <root>/src/dashboard.mjs, so '..' goes to <root>
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  const auth = getDashboardAuth();
+  const auth = await getDashboardAuth();
 
   const server = http.createServer(async (req, res) => {
+    try {
     // Basic Auth check
     if (auth) {
       const authHeader = req.headers.authorization;
@@ -104,14 +105,24 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
           const rawConfig = JSON.parse(configContent);
           const safeConfig = parseTorchConfig(rawConfig);
 
-          // Security: Sanitize sensitive fields
-          if (safeConfig.dashboard) {
-            delete safeConfig.dashboard.auth;
+          // Security: Whitelist only fields required by the dashboard frontend
+          const publicConfig = {
+            dashboard: safeConfig.dashboard ? { ...safeConfig.dashboard } : {},
+            nostrLock: safeConfig.nostrLock
+              ? {
+                  namespace: safeConfig.nostrLock.namespace,
+                  relays: safeConfig.nostrLock.relays,
+                }
+              : {},
+          };
+
+          // Remove sensitive dashboard auth
+          if (publicConfig.dashboard.auth) {
+            delete publicConfig.dashboard.auth;
           }
-          delete safeConfig.configPath;
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(safeConfig, null, 2));
+          res.end(JSON.stringify(publicConfig, null, 2));
           return;
         } catch (err) {
           console.error('Error parsing torch-config.json:', err);
@@ -127,14 +138,17 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     }
 
     // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
-    let filePath = path.join(packageRoot, safePath);
+    // Resolve path relative to packageRoot.
+    // We strip the leading slash from pathname (which comes from URL) to treat it as relative.
+    const relativePath = pathname.replace(/^\//, '');
+    let filePath = path.resolve(packageRoot, relativePath);
 
     // Security check: restrict access to allowed paths
     const allowedPaths = [
       path.join(packageRoot, 'dashboard'),
       path.join(packageRoot, 'assets'),
       path.join(packageRoot, 'src', 'docs'),
+      path.join(packageRoot, 'src', 'constants.mjs'),
       path.join(packageRoot, 'torch-config.json')
     ];
 
@@ -181,20 +195,28 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
 
     res.writeHead(200, { 'Content-Type': contentType });
     fs.createReadStream(filePath).pipe(res);
-  });
-
-  server.listen(port, host, () => {
-    const listenUrl = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/dashboard/`;
-    console.log(`Dashboard running at ${listenUrl}`);
-    if (auth) {
-      console.log('Authentication: enabled (Basic Auth)');
-    } else {
-      console.warn('Authentication: DISABLED (Dashboard is public)');
+    } catch (err) {
+      console.error('Dashboard Server Error:', err);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end('Internal Server Error');
+      }
     }
-    console.log(`Serving files from ${packageRoot}`);
-    console.log(`Using configuration from ${process.cwd()}`);
   });
 
-  // Keep process alive
-  return server;
+  return new Promise((resolve, reject) => {
+    server.listen(port, host, () => {
+      const listenUrl = `http://${host === '0.0.0.0' ? 'localhost' : host}:${port}/dashboard/`;
+      console.log(`Dashboard running at ${listenUrl}`);
+      if (auth) {
+        console.log('Authentication: enabled (Basic Auth)');
+      } else {
+        console.warn('Authentication: DISABLED (Dashboard is public)');
+      }
+      console.log(`Serving files from ${packageRoot}`);
+      console.log(`Using configuration from ${process.cwd()}`);
+      resolve(server);
+    });
+    server.on('error', reject);
+  });
 }

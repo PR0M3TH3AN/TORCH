@@ -5,15 +5,17 @@ import http from 'node:http';
 import { cmdDashboard } from '../src/dashboard.mjs';
 
 test('Dashboard File Access Security', async (t) => {
-  const testPort = 4175;
+  let testPort = 0;
   let server;
 
   t.beforeEach(async () => {
-    server = await cmdDashboard(testPort);
+    server = await cmdDashboard(0);
+    testPort = server.address().port;
   });
 
-  t.afterEach(() => {
-    if (server) server.close();
+  t.afterEach((done) => {
+    if (server) server.close(done);
+    else done();
   });
 
   function get(path) {

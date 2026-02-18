@@ -14,10 +14,10 @@ import {
   getHashtag as _getHashtag,
 } from './torch-config.mjs';
 import {
-  DEFAULT_DASHBOARD_PORT,
   VALID_CADENCES,
   KIND_APP_DATA,
   RACE_CHECK_DELAY_MS,
+  USAGE_TEXT,
 } from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
 import { parseArgs } from './cli-parser.mjs';
@@ -75,10 +75,10 @@ export async function cmdCheck(cadence, deps = {}) {
     quiet = false,
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = getDateStr();
-  const config = loadTorchConfig();
+  const config = await loadTorchConfig();
   const pausedAgents = config.scheduler.paused[cadence] || [];
 
   if (!quiet) {
@@ -99,7 +99,7 @@ export async function cmdCheck(cadence, deps = {}) {
 
   const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
-  const roster = getRoster(cadence);
+  const roster = await getRoster(cadence);
   const rosterSet = new Set(roster);
 
   const excludedAgentsSet = new Set([...lockedAgents, ...pausedAgents, ...completedAgents]);
@@ -180,11 +180,11 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
     error = console.error
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const hashtag = getHashtag();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
+  const hashtag = await getHashtag();
   const dateStr = getDateStr();
-  const ttl = getTtl();
+  const ttl = await getTtl();
   const now = nowUnix();
   const expiresAt = now + ttl;
 
@@ -193,7 +193,7 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
   error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
   error(`Relays: ${relays.join(', ')}`);
 
-  const roster = getRoster(cadence);
+  const roster = await getRoster(cadence);
   if (!roster.includes(agent)) {
     error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
     error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
@@ -319,8 +319,8 @@ export async function cmdList(cadence, deps = {}) {
     error = console.error
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
   const dateStr = getDateStr();
   const cadences = cadence ? [cadence] : [...VALID_CADENCES];
 
@@ -365,7 +365,7 @@ export async function cmdList(cadence, deps = {}) {
       );
     }
 
-    const roster = getRoster(c);
+    const roster = await getRoster(c);
     const rosterSet = new Set(roster);
     const lockedAgents = new Set(locks.map((l) => l.agent).filter(Boolean));
     const unknownLockedAgents = [...lockedAgents].filter((agent) => !rosterSet.has(agent));
@@ -413,9 +413,9 @@ export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps 
     error = console.error
   } = deps;
 
-  const relays = getRelays();
-  const namespace = getNamespace();
-  const hashtag = getHashtag();
+  const relays = await getRelays();
+  const namespace = await getNamespace();
+  const hashtag = await getHashtag();
   const dateStr = getDateStr();
   const now = nowUnix();
 
@@ -492,49 +492,7 @@ export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps 
 }
 
 function usage() {
-  console.error(`Usage: torch-lock <command> [options]
-
-Commands:
-  check     --cadence <daily|weekly>               Check locked agents (JSON)
-  lock      --agent <name> --cadence <daily|weekly> Claim a lock
-  complete  --agent <name> --cadence <daily|weekly> Mark task as completed (permanent)
-  list      [--cadence <daily|weekly>]             Print active lock table
-  health    --cadence <daily|weekly>               Probe relay websocket + publish/read health
-  dashboard [--port <port>] [--host <host>]        Serve the dashboard (default: ${DEFAULT_DASHBOARD_PORT})
-  init      [--force]                              Initialize torch/ directory in current project
-  update    [--force]                              Update torch/ configuration (backups, merges)
-
-  list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>] [--full]
-  inspect-memory          --id <memoryId>
-  pin-memory              --id <memoryId>
-  unpin-memory            --id <memoryId>
-  trigger-prune-dry-run   [--retention-ms <ms>]
-  memory-stats            [--window-ms <ms>]
-
-Options:
-  --dry-run       Build and sign the event but do not publish
-  --force         Overwrite existing files (for init) or all files (for update)
-  --log-dir       Path to task logs directory (default: task-logs)
-  --ignore-logs   Skip checking local logs for completed tasks
-  --json          Emit compact single-line JSON
-  --json-file     Write JSON output to a file path
-  --quiet         Suppress stderr progress logs (pairs well with --json)
-
-Environment:
-  NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
-  NOSTR_LOCK_RELAYS         Comma-separated relay WSS URLs
-  NOSTR_LOCK_TTL            Lock TTL in seconds (default: 7200)
-  NOSTR_LOCK_QUERY_TIMEOUT_MS   Relay query timeout in milliseconds (default: 15000)
-  NOSTR_LOCK_DAILY_ROSTER   Comma-separated daily roster (optional)
-  NOSTR_LOCK_WEEKLY_ROSTER  Comma-separated weekly roster (optional)
-  TORCH_CONFIG_PATH         Optional path to torch-config.json (default: ./torch-config.json)
-  AGENT_PLATFORM            Platform identifier (e.g., codex)
-
-Exit codes:
-  0  Success
-  1  Usage error
-  2  Relay/network error
-  3  Lock denied (already locked or race lost)`);
+  console.error(USAGE_TEXT);
 }
 
 /**

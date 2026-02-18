@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+
 export function todayDateStr() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -33,4 +35,10 @@ export function detectPlatform() {
   if (process.env.CODEX_API_KEY || process.env.CODEX_SESSION_ID) return 'codex';
   if (process.env.GOOSE_API_KEY || process.env.GOOSE_SESSION_ID) return 'goose';
   return null;
+}
+
+export function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 }
