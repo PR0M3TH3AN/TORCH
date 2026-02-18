@@ -27,15 +27,43 @@ function loadMemoryStore() {
   return new Map();
 }
 
-function saveMemoryStore(store) {
+let currentSavePromise = null;
+let pendingSavePromise = null;
+let pendingSaveResolve = null;
+
+async function performSave(store) {
   try {
     const dir = path.dirname(MEMORY_FILE_PATH);
-    ensureDir(dir);
+    await fs.promises.mkdir(dir, { recursive: true });
     const entries = [...store.entries()];
-    fs.writeFileSync(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
+    await fs.promises.writeFile(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
   } catch (err) {
     console.error('Failed to save memory store:', err);
+  } finally {
+    currentSavePromise = null;
+    if (pendingSavePromise) {
+      const resolve = pendingSaveResolve;
+      pendingSavePromise = null;
+      pendingSaveResolve = null;
+      currentSavePromise = performSave(store).then(() => resolve());
+    }
   }
+}
+
+async function saveMemoryStore(store) {
+  if (pendingSavePromise) {
+    return pendingSavePromise;
+  }
+
+  if (currentSavePromise) {
+    pendingSavePromise = new Promise((resolve) => {
+      pendingSaveResolve = resolve;
+    });
+    return pendingSavePromise;
+  }
+
+  currentSavePromise = performSave(store);
+  return currentSavePromise;
 }
 
 const memoryStore = loadMemoryStore();
@@ -44,7 +72,7 @@ const cache = createMemoryCache();
 const memoryRepository = {
   async insertMemory(memory) {
     memoryStore.set(memory.id, memory);
-    saveMemoryStore(memoryStore);
+    await saveMemoryStore(memoryStore);
     return memory;
   },
   async updateMemoryUsage(id, lastSeen = Date.now()) {
@@ -52,7 +80,7 @@ const memoryRepository = {
     if (!existing) return null;
     const updated = { ...existing, last_seen: lastSeen };
     memoryStore.set(id, updated);
-    saveMemoryStore(memoryStore);
+    await saveMemoryStore(memoryStore);
     return updated;
   },
   async listPruneCandidates({ cutoff }) {
@@ -62,7 +90,7 @@ const memoryRepository = {
     const existing = memoryStore.get(id);
     if (!existing) return false;
     memoryStore.set(id, { ...existing, merged_into: mergedInto, last_seen: Date.now() });
-    saveMemoryStore(memoryStore);
+    await saveMemoryStore(memoryStore);
     return true;
   },
   async setPinned(id, pinned) {
@@ -70,7 +98,7 @@ const memoryRepository = {
     if (!existing) return null;
     const updated = { ...existing, pinned, last_seen: Date.now() };
     memoryStore.set(id, updated);
-    saveMemoryStore(memoryStore);
+    await saveMemoryStore(memoryStore);
     return updated;
   },
   async getMemoryById(id) {
@@ -285,7 +313,7 @@ export async function runPruneCycle(options = {}) {
   }
 
   if (prunable.length > 0) {
-    saveMemoryStore(memoryStore);
+    await saveMemoryStore(memoryStore);
   }
 
   memoryStatsState.deleted += prunable.length;
