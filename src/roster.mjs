@@ -3,6 +3,23 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadTorchConfig } from './torch-config.mjs';
 
+const defaultDeps = {
+  fs,
+  loadTorchConfig,
+};
+
+const deps = { ...defaultDeps };
+
+/** @internal */
+export function _setRosterDependencies(overrides) {
+  Object.assign(deps, overrides);
+}
+
+/** @internal */
+export function _restoreRosterDependencies() {
+  Object.assign(deps, defaultDeps);
+}
+
 const ROSTER_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'prompts/roster.json');
 const USER_ROSTER_FILE = path.resolve(process.cwd(), 'torch/roster.json');
 const CWD_ROSTER_FILE = path.resolve(process.cwd(), 'roster.json');
@@ -59,14 +76,14 @@ function loadCanonicalRoster(fsModule = fs) {
   let rosterPath = ROSTER_FILE;
 
   // Prefer user-managed roster if present
-  if (fsModule.existsSync(USER_ROSTER_FILE)) {
+  if (deps.fs.existsSync(USER_ROSTER_FILE)) {
     rosterPath = USER_ROSTER_FILE;
-  } else if (fsModule.existsSync(CWD_ROSTER_FILE)) {
+  } else if (deps.fs.existsSync(CWD_ROSTER_FILE)) {
     rosterPath = CWD_ROSTER_FILE;
   }
 
   try {
-    const parsed = JSON.parse(fsModule.readFileSync(rosterPath, 'utf8'));
+    const parsed = JSON.parse(deps.fs.readFileSync(rosterPath, 'utf8'));
     const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
     const weekly = Array.isArray(parsed.weekly)
       ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
@@ -99,13 +116,8 @@ function parseEnvRoster(value) {
     .filter(Boolean);
 }
 
-export async function getRoster(cadence, deps = {}) {
-  const {
-    loadTorchConfig: loadTorchConfigFn = loadTorchConfig,
-    fs: fsModule = fs,
-  } = deps;
-
-  const config = await loadTorchConfigFn();
+export async function getRoster(cadence) {
+  const config = await deps.loadTorchConfig();
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
   const canonical = loadCanonicalRoster(fsModule);
