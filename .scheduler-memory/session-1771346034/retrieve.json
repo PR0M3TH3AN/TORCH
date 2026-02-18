@@ -1,0 +1,18 @@
+{
+  "cadence": "weekly",
+  "operation": "retrieve",
+  "runId": "session-1771346034",
+  "servicePath": "src/services/memory/index.js#getRelevantMemories",
+  "inputs": {
+    "agentId": "feature-proposer-agent",
+    "promptPath": "src/prompts/weekly/feature-proposer-agent.md",
+    "promptIntent": "Required startup + artifacts + memory + issue capture",
+    "query": "scheduler | weekly | agent | feature-proposer-agent | intent | Required startup + artifacts + memory + issue capture",
+    "events": 1
+  },
+  "outputs": {
+    "ingestedCount": 1,
+    "retrievedCount": 1
+  },
+  "status": "ok"
+}

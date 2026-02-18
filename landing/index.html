@@ -620,7 +620,7 @@
         </section>
 
         <div class="install-container">
-            <h2 style="font-size: 2rem; margin-bottom: 2rem; color: var(--text-strong);">Choose Your Agent</h2>
+            <h2 class="mb-8 text-text-strong" style="font-size: 2rem;">Choose Your Agent</h2>
 
             <div class="agent-selector">
                 <a href="https://jules.google/" target="_blank" class="agent-card active">
@@ -662,11 +662,11 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 </button>
             </div>
 
-            <div style="margin-top: 4rem; text-align: center; width: 100%; max-width: 600px; padding-top: 2rem; border-top: 1px solid var(--border);">
-                <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-strong);">Running Offline or Air-Gapped?</h3>
-                <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Download the standalone bundle and install it directly without registry access.</p>
+            <div class="text-center w-full border-t border-border" style="margin-top: 4rem; padding-top: 2rem; max-width: 600px;">
+                <h3 class="mb-2 text-text-strong" style="font-size: 1.25rem;">Running Offline or Air-Gapped?</h3>
+                <p class="text-muted mb-6" style="font-size: 0.95rem;">Download the standalone bundle and install it directly without registry access.</p>
 
-                <a href="{{OFFLINE_BUNDLE_FILENAME}}" download class="cta-button secondary" style="margin-bottom: 1.5rem;">
+                <a href="{{OFFLINE_BUNDLE_FILENAME}}" download class="cta-button secondary mb-6">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
@@ -675,7 +675,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                     Download Bundle
                 </a>
 
-                <div class="install-code-wrapper" style="margin: 0 auto; max-width: 450px;">
+                <div class="install-code-wrapper mx-auto" style="max-width: 450px;">
                     <code id="offline-cmd">npm install ./{{OFFLINE_BUNDLE_FILENAME}}</code>
                     <button class="copy-install-btn" onclick="copyToClipboard('offline-cmd', this)">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

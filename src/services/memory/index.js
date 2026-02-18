@@ -6,8 +6,11 @@ import { startScheduler } from './scheduler.js';
 import { getMemoryPruneMode, isMemoryIngestEnabled } from './feature-flags.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import util from 'node:util';
+import { ensureDir } from '../../utils.mjs';
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
+const debug = util.debuglog('torch-memory');
 
 function loadMemoryStore() {
   try {
@@ -27,9 +30,7 @@ function loadMemoryStore() {
 function saveMemoryStore(store) {
   try {
     const dir = path.dirname(MEMORY_FILE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    ensureDir(dir);
     const entries = [...store.entries()];
     fs.writeFileSync(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
   } catch (err) {
@@ -113,7 +114,7 @@ function buildTelemetryEmitter(options = {}) {
   }
 
   return (event, payload) => {
-    console.log('memory_telemetry', {
+    debug('memory_telemetry', {
       event,
       payload: toSafeTelemetryPayload(payload),
       ts: Date.now(),
@@ -132,7 +133,7 @@ function emitMetric(options = {}, metric, payload) {
     return;
   }
 
-  console.log('memory_metric', { metric, payload, ts: Date.now() });
+  debug('memory_metric', { metric, payload, ts: Date.now() });
 }
 
 function applyMemoryFilters(memories, filters = {}) {
@@ -196,10 +197,15 @@ export async function ingestEvents(events, options = {}) {
  * @returns {Promise<import('./schema.js').MemoryRecord[]>} Sorted list of relevant memories.
  */
 export async function getRelevantMemories(params) {
-  const { repository = memoryRepository, ...queryParams } = params;
+  const {
+    repository = memoryRepository,
+    ranker = filterAndRankMemories,
+    cache: cacheProvider = cache,
+    ...queryParams
+  } = params;
   const telemetry = buildTelemetryEmitter(params);
   const cacheKey = JSON.stringify(queryParams);
-  const cached = cache.get(cacheKey);
+  const cached = cacheProvider.get(cacheKey);
   if (cached) {
     telemetry('memory:retrieved', {
       agent_id: queryParams.agent_id,
@@ -214,9 +220,13 @@ export async function getRelevantMemories(params) {
     return cached;
   }
 
-  const ranked = await filterAndRankMemories([...memoryStore.values()], queryParams);
+  const source = typeof repository.listMemories === 'function'
+    ? await repository.listMemories(queryParams)
+    : [...memoryStore.values()];
+
+  const ranked = await ranker(source, queryParams);
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
-  cache.set(cacheKey, ranked);
+  cacheProvider.set(cacheKey, ranked);
 
   telemetry('memory:retrieved', {
     agent_id: queryParams.agent_id,
@@ -330,8 +340,9 @@ export async function unpinMemory(id, options = {}) {
  * @param {string} id
  * @param {string} mergedInto
  */
-export async function markMemoryMerged(id, mergedInto) {
-  const merged = await memoryRepository.markMerged(id, mergedInto);
+export async function markMemoryMerged(id, mergedInto, options = {}) {
+  const repository = options.repository ?? memoryRepository;
+  const merged = await repository.markMerged(id, mergedInto);
   cache.clear();
   return merged;
 }

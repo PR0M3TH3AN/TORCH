@@ -53,20 +53,20 @@ const FALLBACK_ROSTER = {
 
 let cachedCanonicalRoster = null;
 
-function loadCanonicalRoster() {
+function loadCanonicalRoster(fsModule = fs) {
   if (cachedCanonicalRoster) return cachedCanonicalRoster;
 
   let rosterPath = ROSTER_FILE;
 
   // Prefer user-managed roster if present
-  if (fs.existsSync(USER_ROSTER_FILE)) {
+  if (fsModule.existsSync(USER_ROSTER_FILE)) {
     rosterPath = USER_ROSTER_FILE;
-  } else if (fs.existsSync(CWD_ROSTER_FILE)) {
+  } else if (fsModule.existsSync(CWD_ROSTER_FILE)) {
     rosterPath = CWD_ROSTER_FILE;
   }
 
   try {
-    const parsed = JSON.parse(fs.readFileSync(rosterPath, 'utf8'));
+    const parsed = JSON.parse(fsModule.readFileSync(rosterPath, 'utf8'));
     const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
     const weekly = Array.isArray(parsed.weekly)
       ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
@@ -86,6 +86,11 @@ function loadCanonicalRoster() {
   return cachedCanonicalRoster;
 }
 
+/** @internal */
+export function _resetRosterCache() {
+  cachedCanonicalRoster = null;
+}
+
 function parseEnvRoster(value) {
   if (!value) return null;
   return value
@@ -94,11 +99,16 @@ function parseEnvRoster(value) {
     .filter(Boolean);
 }
 
-export function getRoster(cadence) {
-  const config = loadTorchConfig();
+export async function getRoster(cadence, deps = {}) {
+  const {
+    loadTorchConfig: loadTorchConfigFn = loadTorchConfig,
+    fs: fsModule = fs,
+  } = deps;
+
+  const config = await loadTorchConfigFn();
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
-  const canonical = loadCanonicalRoster();
+  const canonical = loadCanonicalRoster(fsModule);
   const dailyFromConfig = config.nostrLock.dailyRoster;
   const weeklyFromConfig = config.nostrLock.weeklyRoster;
 

@@ -150,9 +150,9 @@ describe('Scheduler cycle ordering guarantees', () => {
   it('includes lock backend failure metadata and classifier checkpoints', async () => {
     const { readFile } = await import('node:fs/promises');
     const source = await readFile(new URL('../scripts/agent/run-scheduler-cycle.mjs', import.meta.url), 'utf8');
+    const lockSource = await readFile(new URL('../scripts/agent/scheduler-lock.mjs', import.meta.url), 'utf8');
 
     const requiredSnippets = [
-      'function classifyLockBackendError(outputText)',
       "backend_category: backendCategory",
       "lock_command: lockCommand",
       "lock_stderr_excerpt: stderrExcerpt || '(empty)'",
@@ -163,6 +163,8 @@ describe('Scheduler cycle ordering guarantees', () => {
     for (const snippet of requiredSnippets) {
       assert.ok(source.includes(snippet), `Expected scheduler snippet not found: ${snippet}`);
     }
+
+    assert.ok(lockSource.includes('function classifyLockBackendError(outputText)'), 'Expected classifyLockBackendError in scheduler-lock.mjs');
   });
 
 });

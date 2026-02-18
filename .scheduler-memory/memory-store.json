@@ -1,86 +1,11 @@
 [
   [
-    "638c2d47-3218-42f5-bc2d-e3adeb4626d0",
+    "dc16f83d-c99b-4dc0-ac52-90bd36cf709b",
     {
       "schema_version": 1,
-      "id": "638c2d47-3218-42f5-bc2d-e3adeb4626d0",
-      "agent_id": "test-agent",
-      "session_id": "test-run",
-      "type": "batch_window",
-      "content": "Store memory event A for daily :: scheduler memory store\nStore memory event B for daily :: scheduler memory store",
-      "summary": "Store memory event A for daily :: scheduler memory store Store memory event B for daily :: scheduler memory store",
-      "tags": [
-        "scheduler",
-        "daily",
-        "store"
-      ],
-      "importance": 0.55,
-      "embedding_id": null,
-      "created_at": 1771295950236,
-      "last_seen": 1771295958659,
-      "source": "scheduler-store",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "5c458e0c-8239-46f9-99d1-b61cf05acc34",
-    {
-      "schema_version": 1,
-      "id": "5c458e0c-8239-46f9-99d1-b61cf05acc34",
-      "agent_id": "test-agent",
-      "session_id": "test-run-2",
-      "type": "batch_window",
-      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
-      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
-      "tags": [
-        "scheduler",
-        "daily",
-        "retrieve"
-      ],
-      "importance": 0.4,
-      "embedding_id": null,
-      "created_at": 1771295958645,
-      "last_seen": 1771295958659,
-      "source": "scheduler-retrieve",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "2e9129bd-c366-4d82-ac2b-7e50574532a9",
-    {
-      "schema_version": 1,
-      "id": "2e9129bd-c366-4d82-ac2b-7e50574532a9",
-      "agent_id": "onboarding-audit-agent",
-      "session_id": "initial-seed",
-      "type": "batch_window",
-      "content": "Store memory event A for daily :: Required startup + artifacts + memory + issue capture\nStore memory event B for daily :: Required startup + artifacts + memory + issue capture",
-      "summary": "Store memory event A for daily :: Required startup + artifacts + memory + issue capture Store memory event B for daily :: Required startup + artifacts + memory + issue capture",
-      "tags": [
-        "scheduler",
-        "daily",
-        "store"
-      ],
-      "importance": 0.55,
-      "embedding_id": null,
-      "created_at": 1771296574057,
-      "last_seen": 1771296574172,
-      "source": "scheduler-store",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "2612b9ce-1aa7-4731-acb2-c3a852eeaac6",
-    {
-      "schema_version": 1,
-      "id": "2612b9ce-1aa7-4731-acb2-c3a852eeaac6",
-      "agent_id": "onboarding-audit-agent",
-      "session_id": "initial-seed",
+      "id": "dc16f83d-c99b-4dc0-ac52-90bd36cf709b",
+      "agent_id": "ci-health-agent",
+      "session_id": "session-mlr07hyw",
       "type": "batch_window",
       "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
       "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
@@ -91,8 +16,8 @@
       ],
       "importance": 0.4,
       "embedding_id": null,
-      "created_at": 1771296574158,
-      "last_seen": 1771296574172,
+      "created_at": 1771356975801,
+      "last_seen": 1771356975809,
       "source": "scheduler-retrieve",
       "ttl_days": null,
       "merged_into": null,
@@ -100,10 +25,87 @@
     }
   ],
   [
-    "facf005a-dad0-4066-921c-49a8e408665c",
+    "cf3230aa-9e00-48f4-809f-a54fee5a0637",
     {
       "schema_version": 1,
-      "id": "facf005a-dad0-4066-921c-49a8e408665c",
+      "id": "cf3230aa-9e00-48f4-809f-a54fee5a0637",
+      "agent_id": "ci-health-agent",
+      "session_id": "session-mlr0b3uh",
+      "type": "batch_window",
+      "content": "# CI Health Update\n- Fixed bug in `src/lock-ops.mjs`: `getRelayFallbacks` is async but was called synchronously in `LockPublisher` constructor.\n- Fixed bug in `src/lock-ops.mjs`: `LockPublisher` used `maybeLogHealthSnapshot` which was undefined; updated to use `healthManager`.\n- Fixed bug in `src/cmd-check.mjs`: `queryLocksFn` was undefined; updated to use injected `queryLocksFn` or default `queryLocks`.\n- Ran `npm run build` to fix `test/build_verification.test.mjs`.\n- All tests passed.",
+      "summary": "# CI Health Update\n- Fixed bug in `src/lock-ops.mjs`: `getRelayFallbacks` is async but was called synchronously in `LockPublisher` constructor.\n- Fixed bug in `src/lock-ops.mjs`: `LockPublisher` used `maybeLogHealthSnapshot` which was undefined; updated to use `healthManager`.\n-…",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771357144123,
+      "last_seen": 1771357144123,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "a9bc3899-1685-4e50-80f5-ae4dc54de6bd",
+    {
+      "schema_version": 1,
+      "id": "a9bc3899-1685-4e50-80f5-ae4dc54de6bd",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlr4ba92",
+      "type": "batch_window",
+      "content": "# Learnings - 2026-02-17\n\n- The `content-audit-agent` is configured to audit the `/content` directory, but this directory does not exist in the repository root.\n- Added `content-audit-agent targets missing /content directory` to `KNOWN_ISSUES.md`.\n- No audit actions were performed.",
+      "summary": "# Learnings - 2026-02-17\n\n- The `content-audit-agent` is configured to audit the `/content` directory, but this directory does not exist in the repository root.\n- Added `content-audit-agent targets missing /content directory` to `KNOWN_ISSUES.md`.\n- No audit actions were perform…",
+      "tags": [
+        "scheduler",
+        "weekly",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771363870888,
+      "last_seen": 1771363870888,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "8512327a-8ba7-4a49-9275-41860e38a2e0",
+    {
+      "schema_version": 1,
+      "id": "8512327a-8ba7-4a49-9275-41860e38a2e0",
+      "agent_id": "scheduler-memory-daily",
+      "session_id": "session-mlr7wt48",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771369913961,
+      "last_seen": 1771377118848,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "72f2cb07-62ab-4460-a994-4da196860e6c",
+    {
+      "schema_version": 1,
+      "id": "72f2cb07-62ab-4460-a994-4da196860e6c",
       "agent_id": "agent-telemetry",
       "session_id": "s-telemetry",
       "type": "batch_window",
@@ -114,8 +116,8 @@
       ],
       "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771296636016,
-      "last_seen": 1771301051605,
+      "created_at": 1771370050385,
+      "last_seen": 1771385274968,
       "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
@@ -123,35 +125,10 @@
     }
   ],
   [
-    "19ef312e-a725-4544-850e-651713e2d9dc",
+    "ed46b70f-334d-4b41-984b-56e0415ffda2",
     {
       "schema_version": 1,
-      "id": "19ef312e-a725-4544-850e-651713e2d9dc",
-      "agent_id": "bug-reproducer-agent",
-      "session_id": "session-mlq2vq5p",
-      "type": "batch_window",
-      "content": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
-      "summary": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
-      "tags": [
-        "scheduler",
-        "weekly",
-        "retrieve"
-      ],
-      "importance": 0.4,
-      "embedding_id": null,
-      "created_at": 1771300999213,
-      "last_seen": 1771300999222,
-      "source": "scheduler-retrieve",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "bfbb3c6e-095d-4ccd-ad5a-140b6927421c",
-    {
-      "schema_version": 1,
-      "id": "bfbb3c6e-095d-4ccd-ad5a-140b6927421c",
+      "id": "ed46b70f-334d-4b41-984b-56e0415ffda2",
       "agent_id": "agent-telemetry",
       "session_id": "s-telemetry",
       "type": "batch_window",
@@ -162,8 +139,8 @@
       ],
       "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771301051598,
-      "last_seen": 1771301051605,
+      "created_at": 1771370084740,
+      "last_seen": 1771385274968,
       "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
@@ -171,50 +148,72 @@
     }
   ],
   [
-    "d74e3e34-6cf1-465e-b4a8-64acd0a8d803",
+    "160c683e-c1b0-4b57-8b2a-58e01ecec0e2",
     {
       "schema_version": 1,
-      "id": "d74e3e34-6cf1-465e-b4a8-64acd0a8d803",
-      "agent_id": "bug-reproducer-agent",
-      "session_id": "session-mlq2ysd2",
+      "id": "160c683e-c1b0-4b57-8b2a-58e01ecec0e2",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
       "type": "batch_window",
-      "content": "Reproduced npm test timeout issue. Created reproduction script in artifacts/reproducers/npm-test-timeout/. Confirmed that `npm test` hangs/times out as expected.",
-      "summary": "Reproduced npm test timeout issue. Created reproduction script in artifacts/reproducers/npm-test-timeout/. Confirmed that `npm test` hangs/times out as expected.",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
       "tags": [
-        "scheduler",
-        "weekly",
-        "store",
-        "insight"
+        "incident"
       ],
-      "importance": 0.8,
+      "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771301142040,
-      "last_seen": 1771301142040,
-      "source": "agent-output",
+      "created_at": 1771370148079,
+      "last_seen": 1771385274968,
+      "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
     }
   ],
   [
-    "3df7bccf-f3f1-45b9-ab15-88a1a30c6453",
+    "38bb52c3-8262-4469-a15e-b46e11e92f9d",
     {
       "schema_version": 1,
-      "id": "3df7bccf-f3f1-45b9-ab15-88a1a30c6453",
-      "agent_id": "changelog-agent",
-      "session_id": "session-mlq51t0r",
+      "id": "38bb52c3-8262-4469-a15e-b46e11e92f9d",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlr82pk9",
       "type": "batch_window",
-      "content": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
-      "summary": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "content": "Store memory event A for weekly :: scheduler memory store\nStore memory event B for weekly :: scheduler memory store",
+      "summary": "Store memory event A for weekly :: scheduler memory store Store memory event B for weekly :: scheduler memory store",
       "tags": [
         "scheduler",
         "weekly",
+        "store"
+      ],
+      "importance": 0.55,
+      "embedding_id": null,
+      "created_at": 1771370189289,
+      "last_seen": 1771370189290,
+      "source": "scheduler-store",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "f8711702-8dc2-474b-9142-0798f41209f3",
+    {
+      "schema_version": 1,
+      "id": "f8711702-8dc2-474b-9142-0798f41209f3",
+      "agent_id": "scheduler-memory-daily",
+      "session_id": "session-mlrc78ft",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "tags": [
+        "scheduler",
+        "daily",
         "retrieve"
       ],
       "importance": 0.4,
       "embedding_id": null,
-      "created_at": 1771304642091,
-      "last_seen": 1771304642101,
+      "created_at": 1771377118841,
+      "last_seen": 1771377118848,
       "source": "scheduler-retrieve",
       "ttl_days": null,
       "merged_into": null,
@@ -222,77 +221,71 @@
     }
   ],
   [
-    "5b32be34-78f9-44ac-b7b1-e301e34f04d0",
+    "782a835a-88d1-4307-8154-599a09bcdfb6",
     {
       "schema_version": 1,
-      "id": "5b32be34-78f9-44ac-b7b1-e301e34f04d0",
-      "agent_id": "changelog-agent",
-      "session_id": "session-mlq53the",
+      "id": "782a835a-88d1-4307-8154-599a09bcdfb6",
+      "agent_id": "scheduler-memory-weekly",
+      "session_id": "session-mlrc8az1",
       "type": "batch_window",
-      "content": "# Changelog Update - 2026-02-17\n\nGenerated draft release notes covering 212 commits.\nKey areas:\n- Scheduler automation improvements\n- Memory management features\n- Codebase modularization",
-      "summary": "# Changelog Update - 2026-02-17\n\nGenerated draft release notes covering 212 commits.\nKey areas:\n- Scheduler automation improvements\n- Memory management features\n- Codebase modularization",
+      "content": "Store memory event A for weekly :: scheduler memory store\nStore memory event B for weekly :: scheduler memory store",
+      "summary": "Store memory event A for weekly :: scheduler memory store Store memory event B for weekly :: scheduler memory store",
       "tags": [
         "scheduler",
         "weekly",
-        "store",
-        "insight"
+        "store"
       ],
-      "importance": 0.8,
+      "importance": 0.55,
       "embedding_id": null,
-      "created_at": 1771304736005,
-      "last_seen": 1771304736005,
-      "source": "agent-output",
+      "created_at": 1771377168781,
+      "last_seen": 1771377168782,
+      "source": "scheduler-store",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
     }
   ],
   [
-    "40f6bf1a-9715-4906-82d1-8f68be78eb3f",
+    "0c0f8d8f-b1c5-4b4f-bd15-4a53462f3a31",
     {
       "schema_version": 1,
-      "id": "40f6bf1a-9715-4906-82d1-8f68be78eb3f",
-      "agent_id": "dead-code-agent",
-      "session_id": "1771338346",
+      "id": "0c0f8d8f-b1c5-4b4f-bd15-4a53462f3a31",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
       "type": "batch_window",
-      "content": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
-      "summary": "Memory retrieval seed for weekly :: Required startup + artifacts + memory + issue capture",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
       "tags": [
-        "scheduler",
-        "weekly",
-        "retrieve"
+        "incident"
       ],
-      "importance": 0.4,
+      "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771338346815,
-      "last_seen": 1771338346833,
-      "source": "scheduler-retrieve",
+      "created_at": 1771385166452,
+      "last_seen": 1771385274968,
+      "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
     }
   ],
   [
-    "267412f9-9704-4739-8481-8317a89e6769",
+    "5c3af7fa-cab8-4bcf-b1dc-fc845d611026",
     {
       "schema_version": 1,
-      "id": "267412f9-9704-4739-8481-8317a89e6769",
-      "agent_id": "dead-code-agent",
-      "session_id": "1771338501",
+      "id": "5c3af7fa-cab8-4bcf-b1dc-fc845d611026",
+      "agent_id": "agent-telemetry",
+      "session_id": "s-telemetry",
       "type": "batch_window",
-      "content": "# Weekly Dead Code Analysis - 2026-02-17\n\n**Agent:** dead-code-agent\n**Cadence:** weekly\n**Status:** Completed\n\n## Summary\nExecuted a safety-first dead-code sweep.\n\n## Findings\n- Identified `scripts/fix-duplication.mjs` as an unused standalone script.\n- Identified `src/services/memory/db-adapter.js` as an unused module (exports `createMemoryRepository` but not imported anywhere).\n\n## Actions\n- Verified zero usage for both files using `grep`.\n- Deleted both files in branch `ai/dead-code-20260217`.\n- Verified deletions with `ls` and ran `npm run lint` and `npm run test:unit:lock-backend`.\n- Artifacts generated in `artifacts/dead-code-20260217/`.",
-      "summary": "# Weekly Dead Code Analysis - 2026-02-17\n\n**Agent:** dead-code-agent\n**Cadence:** weekly\n**Status:** Completed\n\n## Summary\nExecuted a safety-first dead-code sweep.\n\n## Findings\n- Identified `scripts/fix-duplication.mjs` as an unused standalone script.\n- Identified `src/services/…",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
       "tags": [
-        "scheduler",
-        "weekly",
-        "store",
-        "insight"
+        "incident"
       ],
-      "importance": 0.8,
+      "importance": 0.25,
       "embedding_id": null,
-      "created_at": 1771338501891,
-      "last_seen": 1771338501891,
-      "source": "agent-output",
+      "created_at": 1771385220726,
+      "last_seen": 1771385274968,
+      "source": "ingest",
       "ttl_days": null,
       "merged_into": null,
       "pinned": false
@@ -306,14 +299,12 @@
       "agent_id": "todo-triage-agent",
       "session_id": "2026-02-17T16-35-41Z",
       "type": "batch_window",
-      "content": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
-      "summary": "Memory retrieval seed for daily :: Required startup + artifacts + memory + issue capture",
+      "content": "customer token ABC123 secret",
+      "summary": "customer token ABC123 secret",
       "tags": [
-        "scheduler",
-        "daily",
-        "retrieve"
+        "incident"
       ],
-      "importance": 0.4,
+      "importance": 0.25,
       "embedding_id": null,
       "created_at": 1771346141249,
       "last_seen": 1771346141259,
@@ -334,12 +325,9 @@
       "content": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
       "summary": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
       "tags": [
-        "scheduler",
-        "daily",
-        "store",
-        "insight"
+        "incident"
       ],
-      "importance": 0.8,
+      "importance": 0.25,
       "embedding_id": null,
       "created_at": 1771346312937,
       "last_seen": 1771346312937,
