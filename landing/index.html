@@ -652,6 +652,17 @@
             font-size: 1.1rem;
         }
 
+        .functional-agent-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .functional-agent-icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
         .functional-agent-schedule {
             font-size: 0.7rem;
             text-transform: uppercase;
@@ -1126,6 +1137,52 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
         // Store agent data globally
         window.agentData = {};
 
+        const AGENT_ICONS = {
+            'audit-agent': '🕵️',
+            'ci-health-agent': '🏥',
+            'const-refactor-agent': '🧹',
+            'content-audit-agent': '📝',
+            'decompose-agent': '🧩',
+            'deps-security-agent': '🛡️',
+            'design-system-audit-agent': '🎨',
+            'docs-agent': '📚',
+            'docs-alignment-agent': '📐',
+            'docs-code-investigator': '🧐',
+            'innerhtml-migration-agent': '🔐',
+            'known-issues-agent': '📋',
+            'load-test-agent': '🏋️',
+            'log-fixer-agent': '📜',
+            'onboarding-audit-agent': '🧭',
+            'perf-agent': '🚀',
+            'protocol-research-agent': '🔬',
+            'scheduler-update-agent': '⏰',
+            'style-agent': '💅',
+            'test-audit-agent': '🧪',
+            'todo-triage-agent': '📥',
+            'torch-garbage-collection-agent': '♻️',
+            'bug-reproducer-agent': '🕷️',
+            'changelog-agent': '📰',
+            'dead-code-agent': '⚰️',
+            'feature-proposer-agent': '💡',
+            'frontend-console-debug-agent': '🕹️',
+            'fuzz-agent': '🎲',
+            'perf-deepdive-agent': '🤿',
+            'perf-optimization-agent': '🏎️',
+            'pr-review-agent': '👓',
+            'prompt-fixer-agent': '✏️',
+            'prompt-gap-analysis-agent': '🗺️',
+            'prompt-maintenance-agent': '🧼',
+            'prompt-safety-agent': '🦺',
+            'race-condition-agent': '🏁',
+            'refactor-agent': '🔨',
+            'repo-fit-agent': '🧘',
+            'smoke-agent': '💨',
+            'telemetry-agent': '📡',
+            'test-coverage-agent': '☔',
+            'ui-ux-agent': '🖼️',
+            'weekly-synthesis-agent': '🧠'
+        };
+
         async function fetchAgents() {
             const container = document.getElementById('functional-agent-list');
             try {
@@ -1170,6 +1227,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         // Store in global map
                         window.agentData[agent.agentName] = agent;
 
+                        const icon = AGENT_ICONS[agent.agentName] || '🤖';
+
                         const card = document.createElement('div');
                         card.className = 'functional-agent-card';
 
@@ -1177,7 +1236,10 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         // but passing string literal ID is safe here as agentName is strict.
                         card.innerHTML = `
                             <div class="functional-agent-header">
-                                <span class="functional-agent-title">${escapeHtml(agent.title)}</span>
+                                <div class="functional-agent-title-group">
+                                    <span class="functional-agent-icon">${icon}</span>
+                                    <span class="functional-agent-title">${escapeHtml(agent.title)}</span>
+                                </div>
                                 <span class="functional-agent-schedule">${agent.category}</span>
                             </div>
                             <div class="functional-agent-desc">${escapeHtml(agent.description)}</div>
