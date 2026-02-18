@@ -272,9 +272,7 @@ export async function createLifecyclePlan(memories, options) {
  * @param {Awaited<ReturnType<typeof createLifecyclePlan>>} plan
  */
 export async function applyLifecycleActions(repository, plan) {
-  const results = [];
-
-  for (const decision of plan.actions) {
+  const results = await Promise.all(plan.actions.map(async (decision) => {
     if (decision.merged_into && typeof repository.markMerged === 'function') {
       await repository.markMerged(decision.id, decision.merged_into);
     }
@@ -287,8 +285,8 @@ export async function applyLifecycleActions(repository, plan) {
       await repository.keepMemory?.(decision.id, decision.reason);
     }
 
-    results.push(decision);
-  }
+    return decision;
+  }));
 
   return {
     applied: results,
