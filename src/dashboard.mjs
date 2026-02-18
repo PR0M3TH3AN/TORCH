@@ -138,8 +138,10 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     }
 
     // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
-    let filePath = path.join(packageRoot, safePath);
+    // Resolve path relative to packageRoot.
+    // We strip the leading slash from pathname (which comes from URL) to treat it as relative.
+    const relativePath = pathname.replace(/^\//, '');
+    let filePath = path.resolve(packageRoot, relativePath);
 
     // Security check: restrict access to allowed paths
     const allowedPaths = [
