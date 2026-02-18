@@ -1,66 +1,100 @@
-import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools/pure';
+import { generateSecretKey as _generateSecretKey, getPublicKey as _getPublicKey, finalizeEvent as _finalizeEvent } from 'nostr-tools/pure';
 import {
-  getRelays,
-  getNamespace,
-  getTtl,
+  getRelays as _getRelays,
+  getNamespace as _getNamespace,
+  getTtl as _getTtl,
+  getHashtag as _getHashtag,
 } from './torch-config.mjs';
 import {
   RACE_CHECK_DELAY_MS,
   KIND_APP_DATA,
 } from './constants.mjs';
-import { getRoster } from './roster.mjs';
-import { queryLocks, publishLock } from './lock-ops.mjs';
-import { todayDateStr, nowUnix } from './utils.mjs';
+import { getRoster as _getRoster } from './roster.mjs';
+import { queryLocks as _queryLocks, publishLock as _publishLock } from './lock-ops.mjs';
+import { todayDateStr as _todayDateStr, nowUnix as _nowUnix, detectPlatform as _detectPlatform } from './utils.mjs';
 import { ExitError } from './errors.mjs';
 
-export async function cmdLock(agent, cadence, dryRun = false) {
+export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}) {
+  const options = typeof optionsOrDryRun === 'object' ? optionsOrDryRun : { dryRun: !!optionsOrDryRun };
+  const { dryRun = false, platform = null, model = null } = options;
+
+  const {
+    getRelays = _getRelays,
+    getNamespace = _getNamespace,
+    getHashtag = _getHashtag,
+    getTtl = _getTtl,
+    queryLocks = _queryLocks,
+    getRoster = _getRoster,
+    publishLock = _publishLock,
+    generateSecretKey = _generateSecretKey,
+    getPublicKey = _getPublicKey,
+    finalizeEvent = _finalizeEvent,
+    raceCheckDelayMs = RACE_CHECK_DELAY_MS,
+    getDateStr = _todayDateStr,
+    nowUnix = _nowUnix,
+    detectPlatform = _detectPlatform,
+    log = console.log,
+    error = console.error
+  } = deps;
+
   const relays = await getRelays();
   const namespace = await getNamespace();
-  const dateStr = todayDateStr();
+  const hashtag = await getHashtag();
+  const dateStr = getDateStr();
   const ttl = await getTtl();
   const now = nowUnix();
   const expiresAt = now + ttl;
 
-  console.error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
-  console.error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
-  console.error(`Relays: ${relays.join(', ')}`);
+  error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
+  error(`Hashtag: #${hashtag}`);
+  error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
+  error(`Relays: ${relays.join(', ')}`);
 
   const roster = await getRoster(cadence);
   if (!roster.includes(agent)) {
-    console.error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
-    console.error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
+    error(`ERROR: agent "${agent}" is not in the ${cadence} roster`);
+    error(`Allowed ${cadence} agents: ${roster.join(', ')}`);
     throw new ExitError(1, 'Agent not in roster');
   }
 
-  console.error('Step 1: Checking for existing locks...');
+  error('Step 1: Checking for existing locks...');
   const existingLocks = await queryLocks(relays, cadence, dateStr, namespace);
   const conflicting = existingLocks.filter((l) => l.agent === agent);
 
   if (conflicting.length > 0) {
     const earliest = conflicting.sort((a, b) => a.createdAt - b.createdAt)[0];
-    console.error(
+
+    // Check if it is a completed task
+    if (earliest.status === 'completed') {
+       error(`LOCK DENIED: Task already completed by event ${earliest.eventId}`);
+       log('LOCK_STATUS=denied');
+       log('LOCK_REASON=already_completed');
+       throw new ExitError(3, 'Task already completed');
+    }
+
+    error(
       `LOCK DENIED: ${agent} already locked by event ${earliest.eventId} ` +
         `(created ${earliest.createdAtIso}, platform: ${earliest.platform})`,
     );
-    console.log('LOCK_STATUS=denied');
-    console.log('LOCK_REASON=already_locked');
-    console.log(`LOCK_EXISTING_EVENT=${earliest.eventId}`);
+    log('LOCK_STATUS=denied');
+    log('LOCK_REASON=already_locked');
+    log(`LOCK_EXISTING_EVENT=${earliest.eventId}`);
     throw new ExitError(3, 'Lock denied');
   }
 
-  console.error('Step 2: Generating ephemeral keypair...');
+  error('Step 2: Generating ephemeral keypair...');
   const sk = generateSecretKey();
   const pk = getPublicKey(sk);
-  console.error(`  Ephemeral pubkey: ${pk.slice(0, 16)}...`);
+  error(`  Ephemeral pubkey: ${pk.slice(0, 16)}...`);
 
-  console.error('Step 3: Building lock event...');
+  error('Step 3: Building lock event...');
   const event = finalizeEvent(
     {
       kind: KIND_APP_DATA,
       created_at: now,
       tags: [
         ['d', `${namespace}-lock/${cadence}/${agent}/${dateStr}`],
-        ['t', `${namespace}-agent-lock`],
+        ['t', hashtag],
         ['t', `${namespace}-lock-${cadence}`],
         ['t', `${namespace}-lock-${cadence}-${dateStr}`],
         ['expiration', String(expiresAt)],
@@ -71,7 +105,8 @@ export async function cmdLock(agent, cadence, dryRun = false) {
         status: 'started',
         namespace,
         date: dateStr,
-        platform: process.env.AGENT_PLATFORM || 'unknown',
+        platform: platform || process.env.AGENT_PLATFORM || detectPlatform() || 'unknown',
+        model: model || process.env.AGENT_MODEL || 'unknown',
         lockedAt: new Date(now * 1000).toISOString(),
         expiresAt: new Date(expiresAt * 1000).toISOString(),
       }),
@@ -79,44 +114,45 @@ export async function cmdLock(agent, cadence, dryRun = false) {
     sk,
   );
 
-  console.error(`  Event ID: ${event.id}`);
+  error(`  Event ID: ${event.id}`);
 
   if (dryRun) {
-    console.error('Step 4: [DRY RUN] Skipping publish — event built but not sent');
-    console.error('RACE CHECK: won (dry run — no real contention possible)');
+    error('Step 4: [DRY RUN] Skipping publish — event built but not sent');
+    error('RACE CHECK: won (dry run — no real contention possible)');
   } else {
-    console.error('Step 4: Publishing to relays...');
+    error('Step 4: Publishing to relays...');
     await publishLock(relays, event);
 
-    console.error('Step 5: Race check...');
-    await new Promise((resolve) => setTimeout(resolve, RACE_CHECK_DELAY_MS));
+    error('Step 5: Race check...');
+    await new Promise((resolve) => setTimeout(resolve, raceCheckDelayMs));
 
     const postLocks = await queryLocks(relays, cadence, dateStr, namespace);
     const racingLocks = postLocks
       .filter((l) => l.agent === agent)
-      .sort((a, b) => a.createdAt - b.createdAt);
+      .sort((a, b) => (a.createdAt - b.createdAt) || String(a.eventId).localeCompare(String(b.eventId)));
 
     if (racingLocks.length > 1 && racingLocks[0].eventId !== event.id) {
       const winner = racingLocks[0];
-      console.error(
+      error(
         `RACE CHECK: lost (earlier lock by event ${winner.eventId}, created ${winner.createdAtIso})`,
       );
-      console.log('LOCK_STATUS=race_lost');
-      console.log('LOCK_REASON=earlier_claim_exists');
-      console.log(`LOCK_WINNER_EVENT=${winner.eventId}`);
+      log('LOCK_STATUS=race_lost');
+      log('LOCK_REASON=earlier_claim_exists');
+      log(`LOCK_WINNER_EVENT=${winner.eventId}`);
       throw new ExitError(3, 'Race check lost');
     }
 
-    console.error('RACE CHECK: won');
+    error('RACE CHECK: won');
   }
 
-  console.log('LOCK_STATUS=ok');
-  console.log(`LOCK_EVENT_ID=${event.id}`);
-  console.log(`LOCK_PUBKEY=${pk}`);
-  console.log(`LOCK_AGENT=${agent}`);
-  console.log(`LOCK_CADENCE=${cadence}`);
-  console.log(`LOCK_DATE=${dateStr}`);
-  console.log(`LOCK_EXPIRES=${expiresAt}`);
-  console.log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * 1000).toISOString()}`);
+  log('LOCK_STATUS=ok');
+  log(`LOCK_EVENT_ID=${event.id}`);
+  log(`LOCK_PUBKEY=${pk}`);
+  log(`LOCK_AGENT=${agent}`);
+  log(`LOCK_CADENCE=${cadence}`);
+  log(`LOCK_HASHTAG=${hashtag}`);
+  log(`LOCK_DATE=${dateStr}`);
+  log(`LOCK_EXPIRES=${expiresAt}`);
+  log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * 1000).toISOString()}`);
   return { status: 'ok', eventId: event.id };
 }
