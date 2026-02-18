@@ -152,7 +152,7 @@ test('lock preflight e2e: successful lock writes completed status snapshot', { c
       cadence: 'daily',
       agent: 'agent-a',
       status: 'completed',
-      platform: detectPlatform() || 'codex',
+      platform: detectPlatform() || 'unknown',
     },
   );
 });
