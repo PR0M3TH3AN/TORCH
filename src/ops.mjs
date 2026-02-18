@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { DEFAULT_RELAYS } from './constants.mjs';
+import { ensureDir } from './utils.mjs';
 
 const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -34,12 +35,6 @@ function getPaths(root, installDirName) {
         promptsDir: path.join(torchDir, 'prompts'),
         roster: path.join(torchDir, 'roster.json'),
     };
-}
-
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
 }
 
 function copyDir(src, dest) {
