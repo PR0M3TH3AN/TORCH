@@ -37,13 +37,13 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-15
 
 ### `npm test` fails due to prompt contract violations
-- **Status:** Active
+- **Status:** Resolved
 - **Area:** Tooling
 - **Symptom:** `npm test` fails with multiple `[prompt-contract]` errors for missing `lock:complete` tokens in daily/weekly agent prompts.
 - **Trigger/Conditions:** Running `npm test`.
 - **Workaround:** Run `npm run validate:scheduler` separately and inspect output, or ignore errors for now.
 - **Impact:** CI/local testing blocked.
-- **Last verified:** 2026-02-14
+- **Last verified:** 2026-02-18
 
 ### `npm test` hangs/times out in full suite run
 - **Status:** Active
@@ -66,10 +66,10 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-15
 
 ### content-audit-agent targets missing /content directory
-- **Status:** Active
+- **Status:** Resolved
 - **Area:** Docs
 - **Symptom:** `content-audit-agent` fails to find `/content` directory.
 - **Trigger/Conditions:** Running `content-audit-agent`.
-- **Workaround:** None. Requires updating the agent prompt or repo structure.
+- **Workaround:** None. Prompt updated to target `docs/` instead of `/content`.
 - **Impact:** Docs audit cannot be performed.
-- **Last verified:** 2026-02-17
+- **Last verified:** 2026-02-18
