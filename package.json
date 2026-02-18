@@ -2,33 +2,50 @@
   "name": "torch-lock",
   "version": "0.1.0",
   "type": "module",
-  "description": "TORCH standalone lock CLI and dashboard",
+  "description": "TORCH — portable Nostr-based task locking toolkit for multi-agent coordination",
   "main": "src/lib.mjs",
+  "exports": {
+    ".": "./src/lib.mjs",
+    "./constants": "./src/constants.mjs",
+    "./lock-ops": "./src/lock-ops.mjs"
+  },
   "bin": {
     "torch-lock": "./bin/torch-lock.mjs"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PR0M3TH3AN/TORCH.git"
+  },
+  "keywords": [
+    "nostr",
+    "task-locking",
+    "multi-agent",
+    "coordination",
+    "scheduler",
+    "cli"
+  ],
+  "license": "MIT",
   "files": [
     "bin/",
-    "src/lib.mjs",
-    "src/constants.mjs",
-    "src/lock-ops.mjs",
-    "src/ops.mjs",
-    "src/dashboard.mjs",
-    "src/roster.mjs",
-    "src/torch-config.mjs",
-    "src/relay-health.mjs",
+    "src/*.mjs",
+    "src/services/",
     "src/prompts/",
     "src/docs/",
     "scripts/check-file-size.mjs",
     "scripts/check-innerhtml.mjs",
     "scripts/test-audit/",
     "scripts/memory/",
+    "migrations/",
     "skills/",
     "dashboard/",
     "assets/",
     "torch-config.example.json",
     "README.md",
-    "TORCH.md"
+    "TORCH.md",
+    "LICENSE"
   ],
   "scripts": {
     "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test test/*.test.mjs test/*.test.js",
