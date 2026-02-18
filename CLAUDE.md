@@ -74,3 +74,9 @@ Prefer boundary-level service virtualization (“digital twins” / behavioral c
 * not rate-limited / not flaky
 
 (StrongDM’s “Digital Twin Universe” is the reference pattern.) ([factory.strongdm.ai][2])
+
+### Clean Repo Standard
+
+*   **No Root Clutter**: Do not create logs, artifacts, or temporary files in the repository root.
+*   **Structured Output**: Use `reports/`, `test_logs/`, `task-logs/`, or `artifacts/` as appropriate.
+*   **Redirect Output**: If a command writes to root, redirect it (e.g., `cmd > test_logs/output.txt`).

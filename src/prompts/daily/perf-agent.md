@@ -50,7 +50,7 @@ Commit early and often:
 - `src/todo/TODO_<timestamp>.md` — tasks (Done / Blocked).
 - `src/decisions/DECISIONS_<timestamp>.md` — design choices & rationale.
 - `src/test_logs/TEST_LOG_<timestamp>.md` — commands, env, outputs, failures.
-- `INITIAL_BASELINE.md` — baseline metrics (login time, decrypt queue size, relay latencies, webtorrent count).
+- `reports/performance/INITIAL_BASELINE.md` — baseline metrics (login time, decrypt queue size, relay latencies, webtorrent count).
 - `perf/` (optional) — scripts and small helpers.
 
 Read `AGENTS.md` and `KNOWN_ISSUES.md` before edits.
@@ -175,7 +175,7 @@ ESCALATION & RISK POLICY
 
 -------------------------------------------------------------------------------
 FIRST-RUN CHECKLIST (execute now)
-1. Commit files in `src/context/`, `src/todo/`, `src/decisions/`, `src/test_logs/`, `INITIAL_BASELINE.md`.
+- Commit files in `src/context/`, `src/todo/`, `src/decisions/`, `src/test_logs/`, `reports/performance/INITIAL_BASELINE.md`.
 2. Run Search Patterns across repo and save `reports/performance/hits-YYYY-MM-DD.json`.
 3. Prioritize P0 findings, open at most 1–3 small PRs (bounded concurrency, worker queue limits, visibility gating).
 4. Audit `/content` upload pages: inventory claims → map to code → verify → open docs PR or issue.

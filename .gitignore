@@ -1,3 +1,27 @@
 node_modules
 dist/
 .scheduler-memory/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test logs
+test_logs/*.log
+test_logs/*.txt
+
+# Task logs
+task-logs/*.log
+
+# Artifacts and temporary files
+artifacts/
+reports/performance/hits-*.json
+reports/performance/hits-*.txt
+reports/performance/benchmark-*.txt
+
+# Root clutter prevention
+test_output_full.txt
+benchmark-after.txt
+benchmark-baseline.txt
