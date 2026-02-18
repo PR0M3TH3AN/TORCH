@@ -21,11 +21,13 @@
     "src/docs/",
     "scripts/check-file-size.mjs",
     "scripts/check-innerhtml.mjs",
+    "scripts/memory/",
     "skills/",
     "dashboard/",
     "assets/",
     "torch-config.example.json",
-    "README.md"
+    "README.md",
+    "TORCH.md"
   ],
   "scripts": {
     "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test test/*.test.mjs tests/*.test.js",

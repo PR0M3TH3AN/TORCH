@@ -260,19 +260,24 @@ function configureTorch(cwd, paths, installDir, namespace, relays) {
     configData.scheduler.memoryPolicyByCadence = {};
   }
 
-  // Populate daily/weekly if missing
+  // Populate or update daily/weekly memory policy
+  // We force update the command paths to match the install directory,
+  // while preserving other settings if they exist.
   ['daily', 'weekly'].forEach(cadence => {
     if (!configData.scheduler.memoryPolicyByCadence[cadence]) {
       configData.scheduler.memoryPolicyByCadence[cadence] = {
         mode: "required",
-        retrieveCommand: `node ${scriptPrefix}scripts/memory/retrieve.mjs`,
-        storeCommand: `node ${scriptPrefix}scripts/memory/store.mjs`,
         retrieveSuccessMarkers: ["MEMORY_RETRIEVED"],
         storeSuccessMarkers: ["MEMORY_STORED"],
         retrieveArtifacts: [`.scheduler-memory/latest/${cadence}/retrieve.ok`],
         storeArtifacts: [`.scheduler-memory/latest/${cadence}/store.ok`]
       };
     }
+
+    // Always ensure commands point to the correct script location
+    const policy = configData.scheduler.memoryPolicyByCadence[cadence];
+    policy.retrieveCommand = `node ${scriptPrefix}scripts/memory/retrieve.mjs`;
+    policy.storeCommand = `node ${scriptPrefix}scripts/memory/store.mjs`;
   });
 
   fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');

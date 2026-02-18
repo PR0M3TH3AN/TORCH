@@ -144,7 +144,7 @@ The lock CLI resolves roster names in this order:
 ## Included Resources
 
 - `src/lib.mjs` — Core library logic (can be imported in scripts)
-- `src/docs/TORCH.md` — Protocol summary and usage
+- `TORCH.md` — Protocol summary and usage
 - `src/prompts/` — Generic scheduler prompts and flow
 - `skills/` — Repository-local skill guides for agent onboarding and repeatable workflows
 - `dashboard/` — Static lock dashboard assets
