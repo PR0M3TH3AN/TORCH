@@ -1,13 +1,29 @@
 import { spawn } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const RUNS = 5;
 const results = {};
 
+// Parse arguments to separate our flags from test runner args
+const args = process.argv.slice(2);
+let outputDir = 'reports/test-audit';
+const testArgs = [];
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--output-dir') {
+    outputDir = args[i + 1];
+    i++; // Skip next arg
+  } else {
+    testArgs.push(args[i]);
+  }
+}
+
 async function runTests(i) {
   console.log(`Run ${i + 1}/${RUNS}...`);
   return new Promise((resolve) => {
-    const child = spawn('node', ['--test', ...process.argv.slice(2)], {
+    // Pass strictly the test args to the child process
+    const child = spawn('node', ['--test', ...testArgs], {
       stdio: ['ignore', 'pipe', 'pipe']
     });
 
@@ -38,8 +54,12 @@ async function main() {
     await runTests(i);
   }
 
-  writeFileSync('test-audit/flakiness-matrix.json', JSON.stringify(results, null, 2));
-  console.log('Flakiness matrix written.');
+  // Ensure output directory exists
+  mkdirSync(outputDir, { recursive: true });
+
+  const outputPath = join(outputDir, 'flakiness-matrix.json');
+  writeFileSync(outputPath, JSON.stringify(results, null, 2));
+  console.log(`Flakiness matrix written to ${outputPath}.`);
 }
 
 main();

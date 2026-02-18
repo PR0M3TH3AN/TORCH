@@ -21,6 +21,7 @@
     "src/docs/",
     "scripts/check-file-size.mjs",
     "scripts/check-innerhtml.mjs",
+    "scripts/test-audit/",
     "scripts/memory/",
     "skills/",
     "dashboard/",
@@ -30,7 +31,7 @@
     "TORCH.md"
   ],
   "scripts": {
-    "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test test/*.test.mjs tests/*.test.js",
+    "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test test/*.test.mjs test/*.test.js",
     "test:unit:lock-backend": "node --test test/lock-ops.test.mjs test/lock-ops-publish-retry.test.mjs",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",

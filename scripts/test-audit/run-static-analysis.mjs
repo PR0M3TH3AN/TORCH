@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 function getFiles(dir, files = []) {
@@ -18,7 +18,19 @@ function getFiles(dir, files = []) {
   return files;
 }
 
-const testFiles = [...getFiles('test'), ...getFiles('tests')];
+// Parse arguments
+const args = process.argv.slice(2);
+let outputDir = 'reports/test-audit';
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--output-dir') {
+    outputDir = args[i + 1];
+    i++;
+  }
+}
+
+// Only scan test/ directory now, as tests/ was consolidated
+const testFiles = [...getFiles('test')];
 const suspicious = [];
 
 for (const file of testFiles) {
@@ -45,5 +57,10 @@ for (const file of testFiles) {
   }
 }
 
-writeFileSync('test-audit/suspicious-tests.json', JSON.stringify(suspicious, null, 2));
+// Ensure output directory exists
+mkdirSync(outputDir, { recursive: true });
+
+const outputPath = join(outputDir, 'suspicious-tests.json');
+writeFileSync(outputPath, JSON.stringify(suspicious, null, 2));
 console.log(`Found ${suspicious.length} suspicious files.`);
+console.log(`Report written to ${outputPath}.`);
