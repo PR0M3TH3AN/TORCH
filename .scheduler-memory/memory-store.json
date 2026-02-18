@@ -194,5 +194,56 @@
       "merged_into": null,
       "pinned": false
     }
+  ],
+  [
+    "dacc99c5-1ba1-438f-87d3-cbc39ca7f899",
+    {
+      "schema_version": 1,
+      "id": "dacc99c5-1ba1-438f-87d3-cbc39ca7f899",
+      "agent_id": "design-system-audit-agent",
+      "session_id": "session-mlrf4pzf",
+      "type": "batch_window",
+      "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
+      "tags": [
+        "scheduler",
+        "daily",
+        "retrieve"
+      ],
+      "importance": 0.4,
+      "embedding_id": null,
+      "created_at": 1771382040459,
+      "last_seen": 1771382040466,
+      "source": "scheduler-retrieve",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
+  ],
+  [
+    "c683cf59-af31-49e5-98c5-41994c8ffc93",
+    {
+      "schema_version": 1,
+      "id": "c683cf59-af31-49e5-98c5-41994c8ffc93",
+      "agent_id": "design-system-audit-agent",
+      "session_id": "session-mlrf7alk",
+      "type": "batch_window",
+      "content": "# Design System Audit Report\n\nDate: 2026-02-18T02:34:58.298Z\n\n## 1. Inline Styles\nFound 8 instances.\n### Top Offending Files\n- landing/index.html: 8\n\n### Sample Snippets\n- `style=\"font-size: 2rem; margin-bottom: 2rem; color: var(--text-strong);\"` in landing/index.html\n- `style=\"margin-top: 1rem;\"` in landing/index.html\n- `style=\"margin-top: 4rem; text-align: center; width: 100%; max-width: 600px; padding-top: 2rem; border-top: 1px solid var(--border);\"` in landing/index.html\n- `style=\"font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-strong);\"` in landing/index.html\n- `style=\"color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem;\"` in landing/index.html\n\n## 2. Unsanctioned Hex Colors\nFound 6 instances.\n### Top Offending Colors\n- #039: 1\n- #0d1117: 1\n- #e6edf3: 1\n- #a5d6ff: 1\n- #ff4d4d: 1\n- #ef4444: 1\n\n### Sample Locations\n- #039 in dashboard/domUtils.js\n- #0d1117 in landing/index.html\n- #e6edf3 in landing/index.html\n- #a5d6ff in landing/index.html\n- #ff4d4d in landing/index.html\n\n## 3. Raw Lengths\n(Skipped: requires AST parsing)\n\n## Next Steps\n- Review unsanctioned colors and replace with tokens.\n- Refactor inline styles to CSS classes.",
+      "summary": "# Design System Audit Report\n\nDate: 2026-02-18T02:34:58.298Z\n\n## 1. Inline Styles\nFound 8 instances.\n### Top Offending Files\n- landing/index.html: 8\n\n### Sample Snippets\n- `style=\"font-size: 2rem; margin-bottom: 2rem; color: var(--text-strong);\"` in landing/index.html\n- `style=\"…",
+      "tags": [
+        "scheduler",
+        "daily",
+        "store",
+        "insight"
+      ],
+      "importance": 0.8,
+      "embedding_id": null,
+      "created_at": 1771382160489,
+      "last_seen": 1771382160489,
+      "source": "agent-output",
+      "ttl_days": null,
+      "merged_into": null,
+      "pinned": false
+    }
   ]
 ]
