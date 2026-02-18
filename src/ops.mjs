@@ -152,11 +152,26 @@ async function interactiveInit(cwd) {
   }
 }
 
-async function resolveConfiguration(cwd, mockAnswers) {
-  if (mockAnswers) {
-    return mockAnswers;
+function validateInstallDir(dir) {
+  if (dir === '.') return;
+
+  // Strict validation to prevent command injection
+  // Only allow alphanumeric, hyphens, underscores, slashes, and periods.
+  if (!/^[a-zA-Z0-9_\-\/\.]+$/.test(dir)) {
+    throw new Error(`Invalid directory name: "${dir}". Only alphanumeric characters, hyphens, underscores, slashes, and periods are allowed.`);
   }
-  return await interactiveInit(cwd);
+}
+
+async function resolveConfiguration(cwd, mockAnswers) {
+  let config;
+  if (mockAnswers) {
+    config = mockAnswers;
+  } else {
+    config = await interactiveInit(cwd);
+  }
+
+  validateInstallDir(config.installDir);
+  return config;
 }
 
 function ensureInstallDirectory(paths, force, installDir) {
