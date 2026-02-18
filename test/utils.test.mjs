@@ -1,6 +1,8 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
-import { getIsoWeekStr, todayDateStr, nowUnix } from '../src/utils.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir } from '../src/utils.mjs';
 
 describe('Date Utilities', () => {
   describe('todayDateStr', () => {

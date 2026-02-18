@@ -152,7 +152,7 @@ function validateInstallDir(dir) {
 
   // Strict validation to prevent command injection
   // Only allow alphanumeric, hyphens, underscores, slashes, and periods.
-  if (!/^[a-zA-Z0-9_\-\/\.]+$/.test(dir)) {
+  if (!/^[a-zA-Z0-9_\-./]+$/.test(dir)) {
     throw new Error(`Invalid directory name: "${dir}". Only alphanumeric characters, hyphens, underscores, slashes, and periods are allowed.`);
   }
 }
