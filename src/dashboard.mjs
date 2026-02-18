@@ -112,11 +112,21 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
           const rawConfig = JSON.parse(configContent);
           const safeConfig = parseTorchConfig(rawConfig);
 
-          // Security: Sanitize sensitive fields
-          if (safeConfig.dashboard) {
-            delete safeConfig.dashboard.auth;
+          // Security: Whitelist only fields required by the dashboard frontend
+          const publicConfig = {
+            dashboard: safeConfig.dashboard ? { ...safeConfig.dashboard } : {},
+            nostrLock: safeConfig.nostrLock
+              ? {
+                  namespace: safeConfig.nostrLock.namespace,
+                  relays: safeConfig.nostrLock.relays,
+                }
+              : {},
+          };
+
+          // Remove sensitive dashboard auth
+          if (publicConfig.dashboard.auth) {
+            delete publicConfig.dashboard.auth;
           }
-          delete safeConfig.configPath;
 
           res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': 'application/json' });
           res.end(JSON.stringify(safeConfig, null, 2));
@@ -135,8 +145,10 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     }
 
     // Security check: prevent directory traversal
-    const safePath = path.normalize(pathname).replace(new RegExp('^(\\.\\.[\\/\\\\])+'), '');
-    let filePath = path.join(packageRoot, safePath);
+    // Resolve path relative to packageRoot.
+    // We strip the leading slash from pathname (which comes from URL) to treat it as relative.
+    const relativePath = pathname.replace(/^\//, '');
+    let filePath = path.resolve(packageRoot, relativePath);
 
     // Security check: restrict access to allowed paths
     const allowedPaths = [
