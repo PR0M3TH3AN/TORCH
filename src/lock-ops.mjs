@@ -449,7 +449,7 @@ export class LockPublisher {
     this.attemptId = null;
   }
 
-  async publish() {
+  initialize() {
     const {
       poolFactory = () => new SimplePool(),
       getPublishTimeoutMsFn = getPublishTimeoutMs,
@@ -489,45 +489,53 @@ export class LockPublisher {
     this.attemptId = diagnostics.attemptId || randomUUID();
 
     this.allRelays = mergeRelayList(this.relays, this.fallbackRelays);
+  }
+
+  async runRetryLoop() {
+    let lastAttemptState = null;
+    const retryTimeline = [];
+    const overallStartedAt = Date.now();
+    let terminalFailureCategory = 'relay_publish_non_retryable';
+
+    for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
+      const startedAtMs = Date.now();
+      lastAttemptState = await this.executePublishCycle();
+      const elapsedMs = Date.now() - startedAtMs;
+      retryTimeline.push({
+        publishAttempt: attemptNumber,
+        successCount: lastAttemptState.successCount,
+        relayAttemptedCount: lastAttemptState.attempted.size,
+        elapsedMs,
+      });
+
+      if (lastAttemptState.successCount >= this.minSuccesses) {
+        this.logSuccess(attemptNumber, lastAttemptState, retryTimeline, overallStartedAt);
+        return this.event;
+      }
+
+      const { hasTransientFailure, hasPermanentFailure } = this.analyzeFailures(lastAttemptState.failures);
+      const canRetry = attemptNumber < this.maxAttempts && hasTransientFailure && !hasPermanentFailure;
+
+      terminalFailureCategory = this.determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber);
+
+      if (!canRetry) {
+        break;
+      }
+
+      const nextDelayMs = calculateBackoffDelayMs(attemptNumber, this.retryBaseDelayMs, this.retryCapDelayMs, this.randomFn);
+      this.logRetry(attemptNumber, lastAttemptState.failures, elapsedMs, nextDelayMs);
+      await this.sleepFn(nextDelayMs);
+    }
+
+    this.handleFinalFailure(lastAttemptState, terminalFailureCategory, retryTimeline, overallStartedAt);
+  }
+
+  async publish() {
+    this.initialize();
 
     try {
       this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
-      let lastAttemptState = null;
-      const retryTimeline = [];
-      const overallStartedAt = Date.now();
-      let terminalFailureCategory = 'relay_publish_non_retryable';
-
-      for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
-        const startedAtMs = Date.now();
-        lastAttemptState = await this.executePublishCycle();
-        const elapsedMs = Date.now() - startedAtMs;
-        retryTimeline.push({
-          publishAttempt: attemptNumber,
-          successCount: lastAttemptState.successCount,
-          relayAttemptedCount: lastAttemptState.attempted.size,
-          elapsedMs,
-        });
-
-        if (lastAttemptState.successCount >= this.minSuccesses) {
-          this.logSuccess(attemptNumber, lastAttemptState, retryTimeline, overallStartedAt);
-          return this.event;
-        }
-
-        const { hasTransientFailure, hasPermanentFailure } = this.analyzeFailures(lastAttemptState.failures);
-        const canRetry = attemptNumber < this.maxAttempts && hasTransientFailure && !hasPermanentFailure;
-
-        terminalFailureCategory = this.determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber);
-
-        if (!canRetry) {
-          break;
-        }
-
-        const nextDelayMs = calculateBackoffDelayMs(attemptNumber, this.retryBaseDelayMs, this.retryCapDelayMs, this.randomFn);
-        this.logRetry(attemptNumber, lastAttemptState.failures, elapsedMs, nextDelayMs);
-        await this.sleepFn(nextDelayMs);
-      }
-
-      this.handleFinalFailure(lastAttemptState, terminalFailureCategory, retryTimeline, overallStartedAt);
+      return await this.runRetryLoop();
     } finally {
       this.pool.close(this.allRelays);
     }
