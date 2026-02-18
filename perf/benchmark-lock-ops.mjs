@@ -5,7 +5,7 @@ const healthManager = new RelayHealthManager();
 
 // Setup mock relays
 const relays = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 1000; i++) {
   relays.push(`wss://relay-${i}.example.com`);
 }
 
@@ -26,16 +26,20 @@ for (const relay of relays) {
   }
 }
 
-// Benchmark rankRelays
+// Ensure all are cached
+healthManager.rankRelays(relays, config);
+
+// Benchmark rankRelays with a small subset
 const start = performance.now();
 const iterations = 10000;
+const subset = relays.slice(0, 5); // Requesting only 5 relays out of 1000
 
 for (let i = 0; i < iterations; i++) {
-  healthManager.rankRelays(relays, config);
+  healthManager.rankRelays(subset, config);
 }
 
 const end = performance.now();
 const duration = end - start;
 
-console.log(`RankRelays x ${iterations}: ${duration.toFixed(2)}ms`);
+console.log(`RankRelays (Subset 5/1000) x ${iterations}: ${duration.toFixed(2)}ms`);
 console.log(`Average per call: ${(duration / iterations).toFixed(4)}ms`);

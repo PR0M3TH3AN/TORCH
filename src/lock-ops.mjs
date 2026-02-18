@@ -285,7 +285,7 @@ export class RelayHealthManager {
       }
 
       // Sort by score (desc), then quarantine status, then latency (asc), then name
-      entries.sort((a, b) => {
+      const comparator = (a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         if (a.summary.quarantined !== b.summary.quarantined) return a.summary.quarantined ? 1 : -1;
         if (a.summary.averageLatencyMs !== b.summary.averageLatencyMs) {
@@ -294,13 +294,45 @@ export class RelayHealthManager {
           return a.summary.averageLatencyMs - b.summary.averageLatencyMs;
         }
         return a.relay.localeCompare(b.relay);
-      });
+      };
+      entries.sort(comparator);
 
       this._sortedCache = {
         version: this._metricsVersion,
         validUntil: minQuarantineUntil,
         entries,
+        byRelay: new Map(entries.map((e) => [e.relay, e])),
+        comparator,
       };
+    }
+
+    // Optimization: if requesting a small subset of total known relays,
+    // look them up directly instead of filtering the entire list.
+    // Threshold: if requested set is smaller than 50% of cached entries.
+    if (relays.length > 0 && relays.length * 2 < this._sortedCache.entries.length) {
+      const subset = [];
+      for (const relay of relays) {
+        const entry = this._sortedCache.byRelay.get(relay);
+        if (entry) {
+          subset.push(entry);
+        }
+      }
+      // Re-sort the subset to maintain ranking order
+      subset.sort(this._sortedCache.comparator);
+
+      return subset.map((entry) => {
+        const quarantineRemainingMs = entry.metrics.quarantineUntil > nowMs
+          ? entry.metrics.quarantineUntil - nowMs
+          : 0;
+        return {
+          relay: entry.relay,
+          score: entry.score,
+          summary: {
+            ...entry.summary,
+            quarantineRemainingMs,
+          },
+        };
+      });
     }
 
     const requestedSet = new Set(relays);
@@ -425,7 +457,7 @@ function buildRelayHealthConfig(deps) {
     quarantineCooldownMs: deps.quarantineCooldownMs ?? DEFAULT_QUARANTINE_COOLDOWN_MS,
     maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
     snapshotIntervalMs: deps.snapshotIntervalMs ?? DEFAULT_SNAPSHOT_INTERVAL_MS,
-    minActiveRelayPool: Math.max(1, deps.minActiveRelayPool),
+    minActiveRelayPool: Math.max(1, deps.minActiveRelayPool ?? 1),
   };
 }
 
