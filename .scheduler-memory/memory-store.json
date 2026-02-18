@@ -196,12 +196,12 @@
     }
   ],
   [
-    "f8711702-8dc2-474b-9142-0798f41209f3",
+    "dacc99c5-1ba1-438f-87d3-cbc39ca7f899",
     {
       "schema_version": 1,
-      "id": "f8711702-8dc2-474b-9142-0798f41209f3",
-      "agent_id": "scheduler-memory-daily",
-      "session_id": "session-mlrc78ft",
+      "id": "dacc99c5-1ba1-438f-87d3-cbc39ca7f899",
+      "agent_id": "design-system-audit-agent",
+      "session_id": "session-mlrf4pzf",
       "type": "batch_window",
       "content": "Memory retrieval seed for daily :: scheduler memory retrieval",
       "summary": "Memory retrieval seed for daily :: scheduler memory retrieval",
@@ -212,8 +212,8 @@
       ],
       "importance": 0.4,
       "embedding_id": null,
-      "created_at": 1771377118841,
-      "last_seen": 1771377118848,
+      "created_at": 1771382040459,
+      "last_seen": 1771382040466,
       "source": "scheduler-retrieve",
       "ttl_days": null,
       "merged_into": null,
@@ -221,116 +221,25 @@
     }
   ],
   [
-    "782a835a-88d1-4307-8154-599a09bcdfb6",
+    "c683cf59-af31-49e5-98c5-41994c8ffc93",
     {
       "schema_version": 1,
-      "id": "782a835a-88d1-4307-8154-599a09bcdfb6",
-      "agent_id": "scheduler-memory-weekly",
-      "session_id": "session-mlrc8az1",
+      "id": "c683cf59-af31-49e5-98c5-41994c8ffc93",
+      "agent_id": "design-system-audit-agent",
+      "session_id": "session-mlrf7alk",
       "type": "batch_window",
-      "content": "Store memory event A for weekly :: scheduler memory store\nStore memory event B for weekly :: scheduler memory store",
-      "summary": "Store memory event A for weekly :: scheduler memory store Store memory event B for weekly :: scheduler memory store",
+      "content": "# Design System Audit Report\n\nDate: 2026-02-18T02:34:58.298Z\n\n## 1. Inline Styles\nFound 8 instances.\n### Top Offending Files\n- landing/index.html: 8\n\n### Sample Snippets\n- `style=\"font-size: 2rem; margin-bottom: 2rem; color: var(--text-strong);\"` in landing/index.html\n- `style=\"margin-top: 1rem;\"` in landing/index.html\n- `style=\"margin-top: 4rem; text-align: center; width: 100%; max-width: 600px; padding-top: 2rem; border-top: 1px solid var(--border);\"` in landing/index.html\n- `style=\"font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-strong);\"` in landing/index.html\n- `style=\"color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem;\"` in landing/index.html\n\n## 2. Unsanctioned Hex Colors\nFound 6 instances.\n### Top Offending Colors\n- #039: 1\n- #0d1117: 1\n- #e6edf3: 1\n- #a5d6ff: 1\n- #ff4d4d: 1\n- #ef4444: 1\n\n### Sample Locations\n- #039 in dashboard/domUtils.js\n- #0d1117 in landing/index.html\n- #e6edf3 in landing/index.html\n- #a5d6ff in landing/index.html\n- #ff4d4d in landing/index.html\n\n## 3. Raw Lengths\n(Skipped: requires AST parsing)\n\n## Next Steps\n- Review unsanctioned colors and replace with tokens.\n- Refactor inline styles to CSS classes.",
+      "summary": "# Design System Audit Report\n\nDate: 2026-02-18T02:34:58.298Z\n\n## 1. Inline Styles\nFound 8 instances.\n### Top Offending Files\n- landing/index.html: 8\n\n### Sample Snippets\n- `style=\"font-size: 2rem; margin-bottom: 2rem; color: var(--text-strong);\"` in landing/index.html\n- `style=\"…",
       "tags": [
         "scheduler",
-        "weekly",
-        "store"
+        "daily",
+        "store",
+        "insight"
       ],
-      "importance": 0.55,
+      "importance": 0.8,
       "embedding_id": null,
-      "created_at": 1771377168781,
-      "last_seen": 1771377168782,
-      "source": "scheduler-store",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "0c0f8d8f-b1c5-4b4f-bd15-4a53462f3a31",
-    {
-      "schema_version": 1,
-      "id": "0c0f8d8f-b1c5-4b4f-bd15-4a53462f3a31",
-      "agent_id": "agent-telemetry",
-      "session_id": "s-telemetry",
-      "type": "batch_window",
-      "content": "customer token ABC123 secret",
-      "summary": "customer token ABC123 secret",
-      "tags": [
-        "incident"
-      ],
-      "importance": 0.25,
-      "embedding_id": null,
-      "created_at": 1771385166452,
-      "last_seen": 1771385274968,
-      "source": "ingest",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "5c3af7fa-cab8-4bcf-b1dc-fc845d611026",
-    {
-      "schema_version": 1,
-      "id": "5c3af7fa-cab8-4bcf-b1dc-fc845d611026",
-      "agent_id": "agent-telemetry",
-      "session_id": "s-telemetry",
-      "type": "batch_window",
-      "content": "customer token ABC123 secret",
-      "summary": "customer token ABC123 secret",
-      "tags": [
-        "incident"
-      ],
-      "importance": 0.25,
-      "embedding_id": null,
-      "created_at": 1771385220726,
-      "last_seen": 1771385274968,
-      "source": "ingest",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "6a7b3ba4-d713-4f18-a98e-d16c0e0837eb",
-    {
-      "schema_version": 1,
-      "id": "6a7b3ba4-d713-4f18-a98e-d16c0e0837eb",
-      "agent_id": "todo-triage-agent",
-      "session_id": "2026-02-17T16-35-41Z",
-      "type": "batch_window",
-      "content": "customer token ABC123 secret",
-      "summary": "customer token ABC123 secret",
-      "tags": [
-        "incident"
-      ],
-      "importance": 0.25,
-      "embedding_id": null,
-      "created_at": 1771346141249,
-      "last_seen": 1771346141259,
-      "source": "scheduler-retrieve",
-      "ttl_days": null,
-      "merged_into": null,
-      "pinned": false
-    }
-  ],
-  [
-    "ae3f6a26-c753-4a96-b56f-c737a847cee5",
-    {
-      "schema_version": 1,
-      "id": "ae3f6a26-c753-4a96-b56f-c737a847cee5",
-      "agent_id": "todo-triage-agent",
-      "session_id": "2026-02-17T16-36-25Z",
-      "type": "batch_window",
-      "content": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
-      "summary": "# Memory Update - 2026-02-17T16-36-25Z\n\nRun at 2026-02-17T16-36-25Z. Scanned codebase for TODO/FIXME/XXX. Found 0 actionable items. False positives in mktemp usage and documentation.",
-      "tags": [
-        "incident"
-      ],
-      "importance": 0.25,
-      "embedding_id": null,
-      "created_at": 1771346312937,
-      "last_seen": 1771346312937,
+      "created_at": 1771382160489,
+      "last_seen": 1771382160489,
       "source": "agent-output",
       "ttl_days": null,
       "merged_into": null,
