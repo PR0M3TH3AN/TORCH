@@ -23,6 +23,13 @@ function nowUnix() {
   return Math.floor(Date.now() / 1000);
 }
 
+/**
+ * Parses a raw Nostr event into a structured lock object.
+ * Extracts metadata from tags (d-tag, expiration) and parses the JSON content.
+ *
+ * @param {Object} event - The raw Nostr event object.
+ * @returns {Object} A structured lock object containing event metadata and parsed content.
+ */
 export function parseLockEvent(event) {
   const dTag = event.tags.find((t) => t[0] === 'd')?.[1] ?? '';
   const expTag = event.tags.find((t) => t[0] === 'expiration')?.[1];
@@ -90,6 +97,13 @@ const PUBLISH_FAILURE_CATEGORIES = {
   NON_RETRYABLE: 'relay_publish_non_retryable',
 };
 
+/**
+ * Classifies a raw error message into a standardized publication error code.
+ * Used to determine if a failure is transient (retryable) or permanent.
+ *
+ * @param {string|Error} message - The error message or object to classify.
+ * @returns {string} One of the PUBLISH_ERROR_CODES constants.
+ */
 function classifyPublishError(message) {
   const normalized = String(message || '').toLowerCase();
   if (normalized.includes('publish timed out after') || normalized.includes('publish timeout')) {
@@ -201,6 +215,11 @@ function computeRelayScore(summary) {
   return (summary.successRate * 1.4) - (summary.timeoutRate * 0.9) - latencyPenalty - quarantinePenalty;
 }
 
+/**
+ * Manages health metrics, scoring, and prioritization for Nostr relays.
+ * Tracks success rates, timeouts, and latency to optimize relay selection.
+ * Implements a quarantine mechanism for failing relays.
+ */
 export class RelayHealthManager {
   constructor() {
     this.metricsByRelay = new Map();
@@ -227,11 +246,21 @@ export class RelayHealthManager {
     return metrics;
   }
 
+  /**
+   * Ranks a list of relays based on their health scores.
+   * Utilizes a cached sort order to avoid re-sorting on every call if metrics haven't changed.
+   *
+   * @param {string[]} relays - List of relay URLs to rank.
+   * @param {Object} config - Health configuration.
+   * @param {number} [nowMs] - Current timestamp.
+   * @returns {Array} List of ranked relay entries with scores and summaries.
+   */
   rankRelays(relays, config, nowMs = Date.now()) {
     for (const relay of relays) {
       this.ensureMetrics(relay, config);
     }
 
+    // Check if the cached sort order is still valid
     if (
       !this._sortedCache
       || this._sortedCache.version !== this._metricsVersion
@@ -240,6 +269,7 @@ export class RelayHealthManager {
       let minQuarantineUntil = Infinity;
       const entries = [];
 
+      // Re-evaluate scores for all tracked relays
       for (const metrics of this.metricsByRelay.values()) {
         const summary = summarizeRelayMetrics(metrics, nowMs);
         const score = computeRelayScore(summary);
@@ -254,6 +284,7 @@ export class RelayHealthManager {
         });
       }
 
+      // Sort by score (desc), then quarantine status, then latency (asc), then name
       entries.sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
         if (a.summary.quarantined !== b.summary.quarantined) return a.summary.quarantined ? 1 : -1;
@@ -290,6 +321,15 @@ export class RelayHealthManager {
       });
   }
 
+  /**
+   * Selects a subset of relays for immediate use, prioritizing healthy ones.
+   * May include quarantined relays if the number of healthy relays is below `minActiveRelayPool`.
+   *
+   * @param {string[]} relays - Candidate relays.
+   * @param {Object} config - Health configuration.
+   * @param {number} [nowMs] - Current timestamp.
+   * @returns {Object} An object containing `prioritized` (list of selected relay URLs) and `ranked` (full ranking details).
+   */
   prioritizeRelays(relays, config, nowMs = Date.now()) {
     const minActive = Math.max(1, Math.min(config.minActiveRelayPool, relays.length || 1));
     const ranked = this.rankRelays([...new Set(relays)], config, nowMs);
@@ -310,6 +350,16 @@ export class RelayHealthManager {
     };
   }
 
+  /**
+   * Updates health metrics for a relay based on the outcome of an operation.
+   *
+   * @param {string} relay - The relay URL.
+   * @param {boolean} success - Whether the operation succeeded.
+   * @param {string} errorMessage - Error message if failed.
+   * @param {number} latencyMs - Duration of the operation.
+   * @param {Object} config - Health configuration.
+   * @param {number} [nowMs] - Current timestamp.
+   */
   recordOutcome(relay, success, errorMessage, latencyMs, config, nowMs = Date.now()) {
     const metrics = this.ensureMetrics(relay, config);
     const timedOut = String(errorMessage || '').toLowerCase().includes('timeout')
@@ -383,6 +433,18 @@ function mergeRelayList(primaryRelays, fallbackRelays) {
   return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
+/**
+ * Queries relays for active lock events matching the criteria.
+ * Uses a tiered approach: tries primary relays first, then falls back to others if needed.
+ *
+ * @param {string[]} relays - List of primary relay URLs.
+ * @param {string} cadence - The cadence (e.g., 'daily', 'weekly').
+ * @param {string} dateStr - The date string (e.g., '2023-10-27').
+ * @param {string} namespace - The lock namespace (e.g., 'torch').
+ * @param {Object} [deps] - Dependencies and configuration overrides.
+ * @returns {Promise<Array>} A promise resolving to an array of active lock objects.
+ * @throws {Error} If the query fails on all attempted relays (primary + fallback).
+ */
 export async function queryLocks(relays, cadence, dateStr, namespace, deps = {}) {
   const {
     poolFactory = () => new SimplePool(),
@@ -488,7 +550,22 @@ async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
   });
 }
 
+/**
+ * Orchestrates the publication of a lock event to multiple relays.
+ * Handles retries, fallback relays, and health-based relay prioritization.
+ *
+ * Cycle:
+ * 1. Attempt to publish to primary relays.
+ * 2. If quorum not met, attempt fallback relays.
+ * 3. If still failing, retry with backoff (if errors are transient).
+ * 4. Report final success or failure.
+ */
 export class LockPublisher {
+  /**
+   * @param {string[]} relays - Target primary relays.
+   * @param {Object} event - The lock event to publish.
+   * @param {Object} [deps] - Dependencies and configuration.
+   */
   constructor(relays, event, deps = {}) {
     this.relays = relays;
     this.event = event;
@@ -512,6 +589,12 @@ export class LockPublisher {
     this.attemptId = null;
   }
 
+  /**
+   * Executes the publication process with retries.
+   *
+   * @returns {Promise<Object>} The published event if successful.
+   * @throws {Error} If publication quorum is not met after all attempts.
+   */
   async publish() {
     const {
       poolFactory = () => new SimplePool(),
@@ -560,6 +643,7 @@ export class LockPublisher {
       const overallStartedAt = Date.now();
       let terminalFailureCategory = PUBLISH_FAILURE_CATEGORIES.NON_RETRYABLE;
 
+      // Retry loop: attempts publication until success or max attempts reached
       for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
         const startedAtMs = Date.now();
         lastAttemptState = await this.executePublishCycle();
@@ -731,6 +815,15 @@ export class LockPublisher {
   }
 }
 
+/**
+ * High-level function to publish a lock event.
+ * Initializes a LockPublisher and triggers the publication process.
+ *
+ * @param {string[]} relays - Target relays.
+ * @param {Object} event - Lock event to publish.
+ * @param {Object} [deps] - Dependencies.
+ * @returns {Promise<Object>} The published event.
+ */
 export async function publishLock(relays, event, deps = {}) {
   const {
     getPublishTimeoutMsFn = getPublishTimeoutMs,
