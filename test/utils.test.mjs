@@ -2,7 +2,7 @@ import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir } from '../src/utils.mjs';
+import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform } from '../src/utils.mjs';
 
 describe('Date Utilities', () => {
   describe('todayDateStr', () => {
@@ -55,6 +55,64 @@ describe('Date Utilities', () => {
 
     it('handles invalid input gracefully', () => {
       assert.strictEqual(getIsoWeekStr('invalid-date'), '');
+    });
+  });
+});
+
+describe('Platform Utilities', () => {
+  describe('detectPlatform', () => {
+    const originalEnv = { ...process.env };
+
+    // Helper to clear relevant env vars
+    const clearEnv = () => {
+      delete process.env.JULES_SESSION_ID;
+      delete process.env.JULES_API_KEY;
+      delete process.env.CODEX_SESSION_ID;
+      delete process.env.CODEX_API_KEY;
+      delete process.env.GOOSE_SESSION_ID;
+      delete process.env.GOOSE_API_KEY;
+      delete process.env.CLAUDE_SESSION_ID;
+      delete process.env.CLAUDE_API_KEY;
+      delete process.env.ANTHROPIC_API_KEY;
+    };
+
+    after(() => {
+      process.env = originalEnv;
+    });
+
+    it('detects jules', () => {
+      clearEnv();
+      process.env.JULES_SESSION_ID = 'test';
+      assert.strictEqual(detectPlatform(), 'jules');
+    });
+
+    it('detects codex', () => {
+      clearEnv();
+      process.env.CODEX_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'codex');
+    });
+
+    it('detects goose', () => {
+      clearEnv();
+      process.env.GOOSE_SESSION_ID = 'test';
+      assert.strictEqual(detectPlatform(), 'goose');
+    });
+
+    it('detects claude via CLAUDE_API_KEY', () => {
+      clearEnv();
+      process.env.CLAUDE_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'claude');
+    });
+
+    it('detects claude via ANTHROPIC_API_KEY', () => {
+      clearEnv();
+      process.env.ANTHROPIC_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'claude');
+    });
+
+    it('returns null if no platform detected', () => {
+      clearEnv();
+      assert.strictEqual(detectPlatform(), null);
     });
   });
 });

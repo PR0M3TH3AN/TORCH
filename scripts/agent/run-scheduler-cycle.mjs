@@ -25,6 +25,8 @@ import {
   summarizeLockFailureReasons,
 } from './scheduler-lock.mjs';
 
+import { detectPlatform } from '../../src/utils.mjs';
+
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 const ALL_EXCLUDED_REASON = 'All roster tasks currently claimed by other agents';
 const FAILURE_CATEGORY = {
@@ -35,7 +37,7 @@ const FAILURE_CATEGORY = {
 };
 
 function parseArgs(argv) {
-  const args = { cadence: null, platform: process.env.AGENT_PLATFORM || 'codex', model: process.env.AGENT_MODEL || null };
+  const args = { cadence: null, platform: process.env.AGENT_PLATFORM || detectPlatform() || 'unknown', model: process.env.AGENT_MODEL || null };
   for (let i = 0; i < argv.length; i += 1) {
     const value = argv[i];
     if (!value.startsWith('--') && !args.cadence) {

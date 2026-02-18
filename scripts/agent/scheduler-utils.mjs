@@ -20,7 +20,12 @@ export function getSafeEnv() {
         key.startsWith('NOSTR_') ||
         key.startsWith('TORCH_') ||
         key.startsWith('SCHEDULER_') ||
-        key.startsWith('AGENT_')) {
+        key.startsWith('AGENT_') ||
+        key.startsWith('JULES_') ||
+        key.startsWith('CODEX_') ||
+        key.startsWith('CLAUDE_') ||
+        key.startsWith('ANTHROPIC_') ||
+        key.startsWith('GOOSE_')) {
       safeEnv[key] = process.env[key];
     }
   }
