@@ -9,9 +9,6 @@ import {
 } from './torch-config.mjs';
 import {
   KIND_APP_DATA,
-  DEFAULT_RETRY_ATTEMPTS,
-  DEFAULT_RETRY_BASE_DELAY_MS,
-  DEFAULT_RETRY_CAP_DELAY_MS,
   DEFAULT_ROLLING_WINDOW_SIZE,
   DEFAULT_FAILURE_THRESHOLD,
   DEFAULT_QUARANTINE_COOLDOWN_MS,
@@ -312,7 +309,7 @@ function buildRelayHealthConfig(deps) {
     quarantineCooldownMs: deps.quarantineCooldownMs ?? DEFAULT_QUARANTINE_COOLDOWN_MS,
     maxQuarantineCooldownMs: deps.maxQuarantineCooldownMs ?? DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
     snapshotIntervalMs: deps.snapshotIntervalMs ?? DEFAULT_SNAPSHOT_INTERVAL_MS,
-    minActiveRelayPool: Math.max(1, deps.minActiveRelayPool),
+    minActiveRelayPool: Math.max(1, deps.minActiveRelayPool ?? deps.resolvedConfig?.minActiveRelayPool),
   };
 }
 
@@ -452,10 +449,6 @@ export class LockPublisher {
   async publish() {
     const {
       poolFactory = () => new SimplePool(),
-      getPublishTimeoutMsFn = getPublishTimeoutMs,
-      getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
-      getRelayFallbacksFn = getRelayFallbacks,
-      getMinActiveRelayPoolFn = getMinActiveRelayPool,
       retryAttempts = 4,
       retryBaseDelayMs = 500,
       retryCapDelayMs = 8_000,
@@ -473,10 +466,7 @@ export class LockPublisher {
     this.minSuccesses = this.deps.resolvedConfig?.minSuccesses;
     this.fallbackRelays = (this.deps.resolvedConfig?.fallbackRelays || []).filter((relay) => !this.relays.includes(relay));
     this.maxAttempts = Math.max(1, Math.floor(retryAttempts));
-    this.healthConfig = buildRelayHealthConfig({
-      ...this.deps,
-      minActiveRelayPool: this.deps.resolvedConfig?.minActiveRelayPool,
-    });
+    this.healthConfig = buildRelayHealthConfig(this.deps);
 
     this.retryBaseDelayMs = retryBaseDelayMs;
     this.retryCapDelayMs = retryCapDelayMs;
@@ -484,7 +474,6 @@ export class LockPublisher {
     this.randomFn = randomFn;
     this.telemetryLogger = telemetryLogger;
     this.healthLogger = healthLogger;
-    this.healthManager = healthManager;
     this.correlationId = diagnostics.correlationId || randomUUID();
     this.attemptId = diagnostics.attemptId || randomUUID();
 
