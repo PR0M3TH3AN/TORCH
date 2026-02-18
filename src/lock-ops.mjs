@@ -73,10 +73,27 @@ function relayListLabel(relays) {
   return relays.join(', ');
 }
 
+const PUBLISH_ERROR_CODES = {
+  TIMEOUT: 'publish_timeout',
+  DNS: 'dns_resolution',
+  TCP: 'tcp_connect_timeout',
+  TLS: 'tls_handshake',
+  WEBSOCKET: 'websocket_open_failure',
+  NETWORK: 'network_timeout',
+  CONNECTION_RESET: 'connection_reset',
+  RELAY_UNAVAILABLE: 'relay_unavailable',
+  PERMANENT: 'permanent_validation_error',
+};
+
+const PUBLISH_FAILURE_CATEGORIES = {
+  QUORUM_FAILURE: 'relay_publish_quorum_failure',
+  NON_RETRYABLE: 'relay_publish_non_retryable',
+};
+
 function classifyPublishError(message) {
   const normalized = String(message || '').toLowerCase();
   if (normalized.includes('publish timed out after') || normalized.includes('publish timeout')) {
-    return 'publish_timeout';
+    return PUBLISH_ERROR_CODES.TIMEOUT;
   }
   if (
     normalized.includes('enotfound')
@@ -84,14 +101,14 @@ function classifyPublishError(message) {
     || normalized.includes('getaddrinfo')
     || (normalized.includes('dns') && normalized.includes('websocket'))
   ) {
-    return 'dns_resolution';
+    return PUBLISH_ERROR_CODES.DNS;
   }
   if (
     normalized.includes('connect etimedout')
     || normalized.includes('tcp connect timed out')
     || normalized.includes('connect timeout')
   ) {
-    return 'tcp_connect_timeout';
+    return PUBLISH_ERROR_CODES.TCP;
   }
   if (
     normalized.includes('tls')
@@ -99,20 +116,20 @@ function classifyPublishError(message) {
     || normalized.includes('certificate')
     || normalized.includes('handshake')
   ) {
-    return 'tls_handshake';
+    return PUBLISH_ERROR_CODES.TLS;
   }
   if (
     normalized.includes('websocket')
     || normalized.includes('bad response')
     || normalized.includes('unexpected server response')
   ) {
-    return 'websocket_open_failure';
+    return PUBLISH_ERROR_CODES.WEBSOCKET;
   }
   if (normalized.includes('timed out') || normalized.includes('timeout') || normalized.includes('etimedout')) {
-    return 'network_timeout';
+    return PUBLISH_ERROR_CODES.NETWORK;
   }
   if (normalized.includes('econnreset') || normalized.includes('connection reset') || normalized.includes('socket hang up')) {
-    return 'connection_reset';
+    return PUBLISH_ERROR_CODES.CONNECTION_RESET;
   }
   if (
     normalized.includes('unavailable')
@@ -122,21 +139,21 @@ function classifyPublishError(message) {
     || normalized.includes('enotfound')
     || normalized.includes('503')
   ) {
-    return 'relay_unavailable';
+    return PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE;
   }
-  return 'permanent_validation_error';
+  return PUBLISH_ERROR_CODES.PERMANENT;
 }
 
 function isTransientPublishCategory(category) {
   return [
-    'publish_timeout',
-    'dns_resolution',
-    'tcp_connect_timeout',
-    'tls_handshake',
-    'websocket_open_failure',
-    'network_timeout',
-    'connection_reset',
-    'relay_unavailable',
+    PUBLISH_ERROR_CODES.TIMEOUT,
+    PUBLISH_ERROR_CODES.DNS,
+    PUBLISH_ERROR_CODES.TCP,
+    PUBLISH_ERROR_CODES.TLS,
+    PUBLISH_ERROR_CODES.WEBSOCKET,
+    PUBLISH_ERROR_CODES.NETWORK,
+    PUBLISH_ERROR_CODES.CONNECTION_RESET,
+    PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE,
   ].includes(category);
 }
 
@@ -495,7 +512,7 @@ export class LockPublisher {
       let lastAttemptState = null;
       const retryTimeline = [];
       const overallStartedAt = Date.now();
-      let terminalFailureCategory = 'relay_publish_non_retryable';
+      let terminalFailureCategory = PUBLISH_FAILURE_CATEGORIES.NON_RETRYABLE;
 
       for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
         const startedAtMs = Date.now();
@@ -583,11 +600,11 @@ export class LockPublisher {
 
   determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber) {
     if (hasTransientFailure && !hasPermanentFailure && attemptNumber >= this.maxAttempts) {
-      return 'relay_publish_quorum_failure';
+      return PUBLISH_FAILURE_CATEGORIES.QUORUM_FAILURE;
     } else if (hasPermanentFailure) {
-      return 'relay_publish_non_retryable';
+      return PUBLISH_FAILURE_CATEGORIES.NON_RETRYABLE;
     } else {
-      return 'relay_publish_quorum_failure';
+      return PUBLISH_FAILURE_CATEGORIES.QUORUM_FAILURE;
     }
   }
 
