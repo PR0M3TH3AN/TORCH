@@ -2,122 +2,132 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { summarizeHistory } from '../src/relay-health.mjs';
 
-function entry(timestamp, healthyRelays, totalRelays = 3) {
+function createEntry(timestamp, healthyRelays, totalRelays = 3) {
   return {
     timestamp,
     summary: {
       healthyRelays,
       totalRelays,
-      allRelaysUnhealthy: healthyRelays === 0,
     },
   };
 }
 
-test('summarizeHistory', async (t) => {
-  const now = Date.parse('2026-02-15T12:00:00Z');
-  const minute = 60_000;
+test('summarizeHistory - basic statistics calculation', () => {
+  const now = Date.parse('2024-01-01T12:00:00Z');
+  const history = [
+    // Chronological order (oldest to newest)
+    createEntry('2024-01-01T11:45:00Z', 0, 3), // 0% healthy
+    createEntry('2024-01-01T11:50:00Z', 1, 3), // 33% healthy
+    createEntry('2024-01-01T11:55:00Z', 3, 3), // 100% healthy
+  ];
 
-  await t.test('calculates correct success rate within window', () => {
-    const history = [
-      entry(new Date(now - 10 * minute).toISOString(), 3, 3), // 100%
-      entry(new Date(now - 20 * minute).toISOString(), 0, 3), // 0%
-    ];
-    // Total probes: 6, Healthy: 3. Rate: 0.5
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.sampleCount, 2);
-    assert.equal(result.successRate, 0.5);
-  });
+  assert.equal(result.sampleCount, 3);
+  // Total probes: 9, Total healthy: 4. Rate: 4/9
+  assert.equal(result.successRate, 4 / 9);
 
-  await t.test('filters out old entries for success rate', () => {
-    const history = [
-      entry(new Date(now - 10 * minute).toISOString(), 3, 3),
-      entry(new Date(now - 90 * minute).toISOString(), 0, 3), // Outside 60m window
-    ];
+  // Last healthy was at 11:55 (5 minutes ago)
+  assert.equal(result.allDownDurationMinutes, 5);
+});
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.sampleCount, 1);
-    assert.equal(result.successRate, 1); // 3/3 = 1
-  });
+test('summarizeHistory - handles empty history', () => {
+  const result = summarizeHistory([], { nowMs: Date.now() });
+  assert.equal(result.sampleCount, 0);
+  assert.equal(result.successRate, 1); // Default when sampleCount is 0
+  assert.equal(result.allDownDurationMinutes, null);
+});
 
-  await t.test('calculates allDownDurationMinutes correctly', () => {
-    // Last healthy was 30 mins ago
-    const history = [
-      entry(new Date(now - 30 * minute).toISOString(), 3, 3),
-      entry(new Date(now - 10 * minute).toISOString(), 0, 3),
-    ];
+test('summarizeHistory - respects time window for stats', () => {
+  const now = Date.parse('2024-01-01T12:00:00Z');
+  const history = [
+    // Chronological order
+    createEntry('2024-01-01T10:00:00Z', 0, 3), // Outside 60m window (120m ago)
+    createEntry('2024-01-01T11:55:00Z', 3, 3), // Inside 60m window (5m ago)
+  ];
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.allDownDurationMinutes, 30);
-  });
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
 
-  await t.test('allDownDurationMinutes considers entries outside window', () => {
-    // Last healthy was 90 mins ago (outside window)
-    const history = [
-      entry(new Date(now - 90 * minute).toISOString(), 3, 3),
-      entry(new Date(now - 10 * minute).toISOString(), 0, 3),
-    ];
+  assert.equal(result.sampleCount, 1);
+  assert.equal(result.successRate, 1); // Only the recent healthy entry counts
+});
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.allDownDurationMinutes, 90);
-  });
+test('summarizeHistory - allDownDurationMinutes considers outside window entries', () => {
+  const now = Date.parse('2024-01-01T12:00:00Z');
+  const history = [
+    // Chronological order
+    createEntry('2024-01-01T10:00:00Z', 3, 3), // Outside window, healthy
+    createEntry('2024-01-01T11:55:00Z', 0, 3), // Inside window, unhealthy
+  ];
 
-  await t.test('returns null allDownDurationMinutes if never healthy', () => {
-    const history = [
-      entry(new Date(now - 90 * minute).toISOString(), 0, 3),
-      entry(new Date(now - 10 * minute).toISOString(), 0, 3),
-    ];
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.allDownDurationMinutes, null);
-  });
+  assert.equal(result.sampleCount, 1); // Only recent one counted
+  assert.equal(result.successRate, 0); // 0/3 = 0
 
-  await t.test('returns 0 allDownDurationMinutes if currently healthy', () => {
-    const history = [
-      entry(new Date(now).toISOString(), 3, 3),
-    ];
+  // Last healthy was at 10:00 (120 minutes ago)
+  assert.equal(result.allDownDurationMinutes, 120);
+});
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.allDownDurationMinutes, 0);
-  });
+test('summarizeHistory - allDownDurationMinutes is null if never healthy', () => {
+  const now = Date.parse('2024-01-01T12:00:00Z');
+  const history = [
+    createEntry('2024-01-01T11:55:00Z', 0, 3),
+    createEntry('2024-01-01T10:00:00Z', 0, 3),
+  ];
 
-  await t.test('handles empty history', () => {
-    const result = summarizeHistory([], { nowMs: now, windowMinutes: 60 });
-    assert.equal(result.sampleCount, 0);
-    assert.equal(result.successRate, 1);
-    assert.equal(result.allDownDurationMinutes, null);
-  });
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
+  assert.equal(result.allDownDurationMinutes, null);
+});
 
-  await t.test('handles malformed entries gracefully', () => {
-    const history = [
-        {}, // No summary, no timestamp
-        { timestamp: new Date(now - 10 * minute).toISOString() }, // No summary
-        { summary: { totalRelays: 3 } } // No timestamp
-    ];
+test('summarizeHistory - allDownDurationMinutes is 0 if currently healthy', () => {
+  const now = Date.parse('2024-01-01T12:00:00Z');
+  const history = [
+    createEntry('2024-01-01T12:00:00Z', 3, 3),
+  ];
 
-    const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
+  assert.equal(result.allDownDurationMinutes, 0);
+});
 
-    // Entry 1: timestamp is undefined -> NaN. NaN >= windowStartMs is false. Skipped.
-    // Entry 2: timestamp valid (10 mins ago). No summary.
-    //          summary?.totalRelays || 0 -> 0.
-    //          summary?.healthyRelays || 0 -> 0.
-    // Entry 3: timestamp undefined -> NaN. Skipped.
+test('summarizeHistory - handles malformed entries gracefully', () => {
+  const now = Date.now();
+  const history = [
+    {}, // Missing everything
+    { timestamp: 'invalid-date' },
+    { timestamp: new Date(now).toISOString(), summary: null },
+  ];
 
-    // recent = [Entry 2]
-    // relayProbeCount = 0 + 0 = 0.
-    // successCount = 0 + 0 = 0.
-    // successRate = 0 > 0 ? ... : 1 -> 1.
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
 
-    assert.equal(result.sampleCount, 1);
-    assert.equal(result.successRate, 1);
+  // Should calculate stats safely (ignoring malformed or treating as 0)
+  assert.equal(typeof result.successRate, 'number');
+  assert.equal(result.sampleCount, 1); // Only the valid timestamp one is counted in 'recent'
+  // That one has summary: null, so totalRelays=0, healthyRelays=0.
+  // relayProbeCount = 0. So successRate = 1.
+  assert.equal(result.successRate, 1);
+});
 
-    // lastHealthyAtMs check:
-    // Entry 3: healthyRelays undefined -> 0. Not > 0.
-    // Entry 2: healthyRelays undefined -> 0. Not > 0.
-    // Entry 1: healthyRelays undefined -> 0. Not > 0.
-    // Loop finishes. lastHealthyAtMs = null.
-    // allDownDurationMinutes = null.
+test('summarizeHistory - handles valid timestamp but missing summary', () => {
+  const now = Date.parse('2024-01-01T12:00:00Z');
+  const history = [
+    { timestamp: '2024-01-01T11:55:00Z' } // Missing summary
+  ];
 
-    assert.equal(result.allDownDurationMinutes, null);
-  });
+  const result = summarizeHistory(history, { nowMs: now, windowMinutes: 60 });
+
+  assert.equal(result.sampleCount, 1);
+  assert.equal(result.successRate, 1); // totalRelays defaults to 0 -> relayProbeCount=0 -> rate=1
+  assert.equal(result.allDownDurationMinutes, null); // healthyRelays defaults to 0 -> never healthy
+});
+
+test('summarizeHistory - healthy entry with invalid timestamp results in NaN duration', () => {
+  const now = Date.now();
+  const history = [
+    { timestamp: 'invalid-date', summary: { healthyRelays: 1 } }
+  ];
+
+  const result = summarizeHistory(history, { nowMs: now });
+
+  assert.equal(Number.isNaN(result.allDownDurationMinutes), true);
 });

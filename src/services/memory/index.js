@@ -7,6 +7,7 @@ import { getMemoryPruneMode, isMemoryIngestEnabled } from './feature-flags.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import util from 'node:util';
+import { ensureDir } from '../../utils.mjs';
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
 const debug = util.debuglog('torch-memory');
@@ -29,9 +30,7 @@ function loadMemoryStore() {
 function saveMemoryStore(store) {
   try {
     const dir = path.dirname(MEMORY_FILE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    ensureDir(dir);
     const entries = [...store.entries()];
     fs.writeFileSync(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
   } catch (err) {
