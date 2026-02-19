@@ -67,6 +67,7 @@ async function setupFixture({
 
   await fs.mkdir(path.join(root, 'src', 'prompts'), { recursive: true });
   await fs.mkdir(path.join(root, 'src', 'prompts', 'daily'), { recursive: true });
+  await fs.copyFile(path.resolve('src/utils.mjs'), path.join(root, 'src', 'utils.mjs'));
   await fs.mkdir(scriptsDir, { recursive: true });
   await fs.mkdir(binDir, { recursive: true });
 
