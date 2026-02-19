@@ -816,6 +816,14 @@
                     </div>
                     <p class="agent-desc">Long-context understanding and safety. (CLI Required)</p>
                 </div>
+
+                <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;">
+                    <div class="agent-header">
+                        <span class="agent-name">Antigravity IDE</span>
+                        <span class="agent-status">Active</span>
+                    </div>
+                    <p class="agent-desc">The autonomous Python IDE.</p>
+                </div>
             </div>
 
             <p class="install-label" style="margin-top: 1rem;">Copy this prompt to onboard TORCH:</p>
@@ -902,14 +910,6 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             </div>
         </section>
 
-        <section class="agent-showcase" id="agent-showcase">
-            <h2>Functional Agents</h2>
-            <div id="functional-agent-list">
-                <!-- Populated by JS -->
-                <p class="text-center text-muted">Loading agents...</p>
-            </div>
-        </section>
-
         <section class="meta-prompts">
             <h2>Scheduler Meta Prompts</h2>
             <div class="prompts-grid">
@@ -931,6 +931,14 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         <pre><code id="weekly-code">Loading...</code></pre>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="agent-showcase" id="agent-showcase">
+            <h2>Functional Agents</h2>
+            <div id="functional-agent-list">
+                <!-- Populated by JS -->
+                <p class="text-center text-muted">Loading agents...</p>
             </div>
         </section>
 
@@ -1374,6 +1382,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'claude') {
                 promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'antigravity') {
+                promptText = "Hey Antigravity, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             }
 
             if (installCmd) {
