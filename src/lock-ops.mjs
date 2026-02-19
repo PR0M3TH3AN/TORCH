@@ -14,6 +14,7 @@ import {
   DEFAULT_QUARANTINE_COOLDOWN_MS,
   DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
   DEFAULT_SNAPSHOT_INTERVAL_MS,
+  MS_PER_SECOND,
 } from './constants.mjs';
 import { nowUnix } from './utils.mjs';
 
@@ -43,9 +44,9 @@ export function parseLockEvent(event) {
     eventId: event.id,
     pubkey: event.pubkey,
     createdAt: event.created_at,
-    createdAtIso: new Date(event.created_at * 1000).toISOString(),
+    createdAtIso: new Date(event.created_at * MS_PER_SECOND).toISOString(),
     expiresAt,
-    expiresAtIso: expiresAt ? new Date(expiresAt * 1000).toISOString() : null,
+    expiresAtIso: expiresAt ? new Date(expiresAt * MS_PER_SECOND).toISOString() : null,
     dTag,
     agent: content.agent ?? null,
     cadence: content.cadence ?? null,
