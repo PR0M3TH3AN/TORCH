@@ -71,7 +71,7 @@
     "torch:memory:inspect": "node bin/torch-lock.mjs inspect-memory"
   },
   "dependencies": {
-    "nostr-tools": "2.19.4",
+    "nostr-tools": "2.23.1",
     "ws": "8.19.0"
   },
   "devDependencies": {
