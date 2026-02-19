@@ -383,6 +383,21 @@ const PLATFORM_COLORS = {
     text: 'text-success',
     label: 'Codex',
   },
+  goose: {
+    bg: 'bg-purple/10',
+    text: 'text-purple',
+    label: 'Goose',
+  },
+  gemini: {
+    bg: 'bg-accent/10',
+    text: 'text-accent',
+    label: 'Gemini CLI',
+  },
+  antigravity: {
+    bg: 'bg-pink/10',
+    text: 'text-pink',
+    label: 'Antigravity IDE',
+  },
   unknown: { bg: 'bg-muted/10', text: 'text-muted', label: 'Unknown' },
 };
 

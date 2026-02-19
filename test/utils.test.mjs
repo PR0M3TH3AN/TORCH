@@ -74,6 +74,10 @@ describe('Platform Utilities', () => {
       delete process.env.CLAUDE_SESSION_ID;
       delete process.env.CLAUDE_API_KEY;
       delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.GEMINI_API_KEY;
+      delete process.env.GOOGLE_API_KEY;
+      delete process.env.ANTIGRAVITY_API_KEY;
+      delete process.env.ANTIGRAVITY_SESSION_ID;
     };
 
     after(() => {
@@ -108,6 +112,30 @@ describe('Platform Utilities', () => {
       clearEnv();
       process.env.ANTHROPIC_API_KEY = 'test';
       assert.strictEqual(detectPlatform(), 'claude');
+    });
+
+    it('detects gemini via GEMINI_API_KEY', () => {
+      clearEnv();
+      process.env.GEMINI_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'gemini');
+    });
+
+    it('detects gemini via GOOGLE_API_KEY', () => {
+      clearEnv();
+      process.env.GOOGLE_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'gemini');
+    });
+
+    it('detects antigravity via ANTIGRAVITY_API_KEY', () => {
+      clearEnv();
+      process.env.ANTIGRAVITY_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'antigravity');
+    });
+
+    it('detects antigravity via ANTIGRAVITY_SESSION_ID', () => {
+      clearEnv();
+      process.env.ANTIGRAVITY_SESSION_ID = 'test';
+      assert.strictEqual(detectPlatform(), 'antigravity');
     });
 
     it('returns null if no platform detected', () => {
