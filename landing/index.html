@@ -155,6 +155,12 @@
             width: 100%;
         }
 
+        @media (max-width: 640px) {
+            .meta-prompts {
+                padding: 0 1rem;
+            }
+        }
+
         .meta-prompts h2 {
             text-align: center;
             font-size: 2rem;
@@ -164,7 +170,7 @@
 
         .prompts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
         }
 
@@ -743,6 +749,8 @@
             color: #e6edf3;
             line-height: 1.5;
             white-space: pre-wrap;
+            word-break: break-all;
+            overflow-wrap: break-word;
         }
 
         #promptModal .close-prompt {
