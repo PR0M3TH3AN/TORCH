@@ -80,7 +80,7 @@ test('Dashboard File Access Security', async (t) => {
     assert.ok(headers['content-security-policy'], 'CSP header missing');
     const csp = headers['content-security-policy'];
     assert.match(csp, /default-src 'self'/, 'CSP: missing default-src self');
-    assert.match(csp, /script-src 'self' 'unsafe-inline' https:\/\/cdn\.jsdelivr\.net/, 'CSP: missing script-src');
+    assert.match(csp, /script-src 'self' https:\/\/cdn\.jsdelivr\.net/, 'CSP: missing script-src');
     assert.match(csp, /object-src 'none'/, 'CSP: missing object-src none');
 
     // X-Content-Type-Options

@@ -110,7 +110,7 @@ test('getRelevantMemories passes correct parameters to ranker', async (t) => {
   await getRelevantMemories(params);
 
   assert.equal(ranker.mock.callCount(), 1);
-  const [_, queryParams] = ranker.mock.calls[0].arguments;
+  const [, queryParams] = ranker.mock.calls[0].arguments;
 
   assert.equal(queryParams.agent_id, 'agent-1');
   assert.equal(queryParams.query, 'my query');

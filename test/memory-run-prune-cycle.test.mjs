@@ -42,8 +42,7 @@ test.before(async () => {
   await fs.mkdir(memDir, { recursive: true });
 
   // Create initial state
-  const now = 200_000;
-  // retentionMs will be 100,000
+  // now = 200_000, retentionMs will be 100,000
   // cutoff = 100,000
 
   const memories = [

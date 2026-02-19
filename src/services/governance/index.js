@@ -30,7 +30,7 @@ export async function listProposals() {
           id: entry.name,
           ...meta
         });
-      } catch (e) {
+      } catch (_e) {
         // Ignore invalid proposals
       }
     }
@@ -107,7 +107,7 @@ export async function createProposal({ agent, target, newContent, reason }) {
           console.error('Diff generation failed:', e.message);
       }
     }
-  } catch (err) {
+  } catch (_err) {
     diff = '(New File)';
   }
 
@@ -187,7 +187,7 @@ export async function applyProposal(id) {
     // User requested <path>/<hash>.md.
     const archivePath = path.join(archiveDir, `${path.basename(meta.target, '.md')}_${hash}.md`);
     await fs.writeFile(archivePath, oldContent);
-  } catch (e) {
+  } catch (_e) {
     // If file didn't exist, nothing to archive
   }
 
@@ -265,7 +265,7 @@ export async function rollbackPrompt(target, hashOrStrategy = 'latest') {
             sourceContent = await fs.readFile(path.join(archiveDir, match), 'utf8');
         }
     }
-  } catch (e) {
+  } catch (_e) {
       // Archive lookup failed
   }
 

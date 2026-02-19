@@ -9,19 +9,13 @@ import {
 } from './torch-config.mjs';
 import {
   KIND_APP_DATA,
-  DEFAULT_RETRY_ATTEMPTS,
-  DEFAULT_RETRY_BASE_DELAY_MS,
-  DEFAULT_RETRY_CAP_DELAY_MS,
   DEFAULT_ROLLING_WINDOW_SIZE,
   DEFAULT_FAILURE_THRESHOLD,
   DEFAULT_QUARANTINE_COOLDOWN_MS,
   DEFAULT_MAX_QUARANTINE_COOLDOWN_MS,
   DEFAULT_SNAPSHOT_INTERVAL_MS,
 } from './constants.mjs';
-
-function nowUnix() {
-  return Math.floor(Date.now() / 1000);
-}
+import { nowUnix } from './utils.mjs';
 
 /**
  * Parses a raw Nostr event into a structured lock object.
@@ -630,10 +624,6 @@ export class LockPublisher {
   async publish() {
     const {
       poolFactory = () => new SimplePool(),
-      getPublishTimeoutMsFn = getPublishTimeoutMs,
-      getMinSuccessfulRelayPublishesFn = getMinSuccessfulRelayPublishes,
-      getRelayFallbacksFn = getRelayFallbacks,
-      getMinActiveRelayPoolFn = getMinActiveRelayPool,
       retryAttempts = 4,
       retryBaseDelayMs = 500,
       retryCapDelayMs = 8_000,

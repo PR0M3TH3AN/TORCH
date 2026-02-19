@@ -23,15 +23,24 @@ test('stores runtime events in signer/session namespace and clears scope', () =>
   assert.equal(cache.getRecentRuntimeEvents({ signer_id: 'alice', session_id: 's2' }).length, 1);
 });
 
-test('expires runtime events and records expiration metrics', async () => {
-  const cache = createMemoryCache();
-  cache.setRuntimeEvent({ signer_id: 'alice', session_id: 's1' }, { id: 1 }, 1);
+test('expires runtime events and records expiration metrics', () => {
+  const originalNow = Date.now;
+  try {
+    const start = originalNow.call(Date);
+    Date.now = () => start;
 
-  await new Promise((resolve) => setTimeout(resolve, 10));
+    const cache = createMemoryCache();
+    cache.setRuntimeEvent({ signer_id: 'alice', session_id: 's1' }, { id: 1 }, 1);
 
-  assert.equal(cache.getRecentRuntimeEvents({ signer_id: 'alice', session_id: 's1' }).length, 0);
-  const metrics = cache.getMetrics();
-  assert.equal(metrics.runtime_events_expired, 1);
+    // Advance mocked clock past the 1ms TTL
+    Date.now = () => start + 10;
+
+    assert.equal(cache.getRecentRuntimeEvents({ signer_id: 'alice', session_id: 's1' }).length, 0);
+    const metrics = cache.getMetrics();
+    assert.equal(metrics.runtime_events_expired, 1);
+  } finally {
+    Date.now = originalNow;
+  }
 });
 
 test('enforces LRU bounds and tracks eviction metrics', () => {

@@ -138,7 +138,7 @@ test('runPruneCycle respects prune feature-flag modes', async () => {
 test('markMemoryMerged delegates to repository and clears cache', async () => {
   let callCount = 0;
   const repository = {
-    async markMerged(id, mergedInto) {
+    async markMerged(id, _mergedInto) {
       callCount++;
       return id === 'exists';
     }

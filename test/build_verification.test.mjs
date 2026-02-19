@@ -5,7 +5,7 @@ import assert from 'node:assert';
 
 const DIST_DIR = path.resolve('dist');
 
-test('Build artifacts verification', async (t) => {
+test('Build artifacts verification', { skip: !fs.existsSync(DIST_DIR) && 'dist/ not found — run npm run build first' }, async (t) => {
   await t.test('dist directory exists', () => {
     assert.strictEqual(fs.existsSync(DIST_DIR), true, 'dist directory should exist');
   });

@@ -1,4 +1,4 @@
-import { test, describe, beforeEach, afterEach } from 'node:test';
+import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { ingestEvents, getRelevantMemories } from '../src/services/memory/index.js';
 
@@ -11,7 +11,7 @@ describe('ingestEvents', () => {
   let linkedEmbeddings = new Map();
 
   const mockOptions = {
-    embedText: async (text) => Array(128).fill(0.1), // Deterministic embedding
+    embedText: async (_text) => Array(128).fill(0.1), // Deterministic embedding
     emitTelemetry: (event, payload) => telemetryEvents.push({ event, payload }),
     metrics: {
       emit: (metric, payload) => metricsEvents.push({ metric, payload }),
