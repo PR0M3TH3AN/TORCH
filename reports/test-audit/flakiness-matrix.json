@@ -1,15 +1,7 @@
 {
-  "scripts/agent/load-test.mjs": {
-    "pass": 0,
-    "fail": 5
-  },
-  "scripts/agent/smoke-test.mjs": {
-    "pass": 0,
-    "fail": 5
-  },
   "Build artifacts verification": {
-    "pass": 5,
-    "fail": 0
+    "pass": 0,
+    "fail": 5
   },
   "parseArgs should parse basic command": {
     "pass": 5,
@@ -68,10 +60,6 @@
     "fail": 0
   },
   "Dashboard File Access Security": {
-    "pass": 5,
-    "fail": 0
-  },
-  "test/fixtures/memory-fixtures.js": {
     "pass": 5,
     "fail": 0
   },
@@ -604,6 +592,10 @@
     "fail": 0
   },
   "Date Utilities": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Platform Utilities": {
     "pass": 5,
     "fail": 0
   },
