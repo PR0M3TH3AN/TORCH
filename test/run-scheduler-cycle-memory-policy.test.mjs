@@ -70,9 +70,21 @@ async function setupFixture({
   await fs.mkdir(scriptsDir, { recursive: true });
   await fs.mkdir(binDir, { recursive: true });
 
+  try {
+    await fs.symlink(path.resolve('node_modules'), path.join(root, 'node_modules'));
+  } catch (err) {
+    // Ignore if symlink fails (e.g. if node_modules doesn't exist in test env, though it should)
+    console.error('Warning: Failed to symlink node_modules:', err.message);
+  }
+
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
+  await fs.copyFile(path.resolve('src/utils.mjs'), path.join(root, 'src', 'utils.mjs'));
+  await fs.copyFile(path.resolve('src/torch-config.mjs'), path.join(root, 'src', 'torch-config.mjs'));
+  await fs.copyFile(path.resolve('src/constants.mjs'), path.join(root, 'src', 'constants.mjs'));
+  await fs.copyFile(path.resolve('src/relay-health.mjs'), path.join(root, 'src', 'relay-health.mjs'));
+  await fs.copyFile(path.resolve('src/lock-ops.mjs'), path.join(root, 'src', 'lock-ops.mjs'));
   await fs.writeFile(
     path.join(scriptsDir, 'verify-run-artifacts.mjs'),
     '#!/usr/bin/env node\nprocess.exit(0);\n',
