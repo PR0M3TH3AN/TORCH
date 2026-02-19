@@ -15,7 +15,12 @@ import {
   SYNTHETIC_EVENTS,
 } from './fixtures/memory-fixtures.js';
 
-const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+/** Drain the async job queue without wall-clock dependency. */
+const flushAsync = async () => {
+  for (let i = 0; i < 10; i++) {
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+};
 
 const withMockedNow = async (now, run) => {
   const originalNow = Date.now;
@@ -265,7 +270,7 @@ test('scheduler smoke test handles mocked clock and lock contention', async () =
       },
     });
 
-    await wait(30);
+    await flushAsync();
     scheduler.stop();
   });
 

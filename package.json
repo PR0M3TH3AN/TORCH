@@ -48,7 +48,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test test/*.test.mjs test/*.test.js",
+    "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test --test-timeout=30000 test/*.test.mjs test/*.test.js",
     "test:unit:lock-backend": "node --test test/lock-ops.test.mjs test/lock-ops-publish-retry.test.mjs",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
@@ -76,7 +76,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.58.2",
     "eslint": "^10.0.0",
     "globals": "^17.3.0"
   }
