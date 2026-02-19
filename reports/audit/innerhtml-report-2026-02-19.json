@@ -1,0 +1,14 @@
+{
+  "date": "2026-02-19",
+  "branch": "main",
+  "commit": "aa53554b06f985614a872662a3b9cf8bb451f3c9",
+  "total_innerHTML_assignments": 6,
+  "files": [
+    { "path": "dashboard/index.html", "assignments": 2 },
+    { "path": "landing/index.html", "assignments": 4 }
+  ],
+  "top_offenders": [
+    { "path": "landing/index.html", "assignments": 4 },
+    { "path": "dashboard/index.html", "assignments": 2 }
+  ]
+}
