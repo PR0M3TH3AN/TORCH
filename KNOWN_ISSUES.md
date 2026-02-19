@@ -46,14 +46,13 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-18
 
 ### `npm test` hangs/times out in full suite run
-- **Status:** Active
+- **Status:** Resolved
 - **Area:** Test
 - **Symptom:** `npm test` times out after 400s when running all tests together.
 - **Trigger/Conditions:** Running `npm test` in CI/Sandbox.
-- **Workaround:** Run individual test files or subsets (`npm run validate:scheduler`, `npm run test:integration:e2e`, then specific unit tests).
-- **Impact:** Cannot verify all tests in a single pass.
-- **Related notes:** `docs/agent-handoffs/incidents/2026-02-16-npm-test-timeout.md`
-- **Last verified:** 2026-02-16
+- **Fix:** Fixed blocking \`spawnSync\` in \`nostr-lock.test.mjs\`, removed real network calls in smoke tests, and switched dashboard tests to dynamic ports.
+- **Impact:** Test suite duration reduced from 400s+ to <10s.
+- **Last verified:** 2026-02-19
 
 ### Recurring scheduler lock backend failures in recent task logs
 - **Status:** Monitoring

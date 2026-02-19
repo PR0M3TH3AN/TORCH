@@ -5,13 +5,25 @@ import { cmdDashboard } from '../src/dashboard.mjs';
 import { _resetTorchConfigCache } from '../src/torch-config.mjs';
 
 test('Dashboard Authentication', async (t) => {
-  const testPort = 4174;
+  let testPort = 0;
+  let server;
+
+  t.beforeEach(async () => {
+    // We don't start server here because some tests need env vars set BEFORE starting
+  });
+
+  t.afterEach((done) => {
+    if (server) server.close(done);
+    else done();
+    server = null;
+  });
 
   await t.test('returns 401 when auth is required but missing', async () => {
     process.env.TORCH_DASHBOARD_AUTH = 'admin:password';
     _resetTorchConfigCache();
 
-    const server = await cmdDashboard(testPort);
+    server = await cmdDashboard(0);
+    testPort = server.address().port;
 
     try {
       const res = await new Promise((resolve) => {
@@ -21,7 +33,6 @@ test('Dashboard Authentication', async (t) => {
       assert.strictEqual(res.statusCode, 401);
       assert.strictEqual(res.headers['www-authenticate'], 'Basic realm="TORCH Dashboard"');
     } finally {
-      server.close();
       delete process.env.TORCH_DASHBOARD_AUTH;
       _resetTorchConfigCache();
     }
@@ -31,7 +42,8 @@ test('Dashboard Authentication', async (t) => {
     process.env.TORCH_DASHBOARD_AUTH = 'admin:password';
     _resetTorchConfigCache();
 
-    const server = await cmdDashboard(testPort);
+    server = await cmdDashboard(0);
+    testPort = server.address().port;
 
     try {
       const res = await new Promise((resolve) => {
@@ -45,7 +57,6 @@ test('Dashboard Authentication', async (t) => {
 
       assert.strictEqual(res.statusCode, 401);
     } finally {
-      server.close();
       delete process.env.TORCH_DASHBOARD_AUTH;
       _resetTorchConfigCache();
     }
@@ -55,7 +66,8 @@ test('Dashboard Authentication', async (t) => {
     process.env.TORCH_DASHBOARD_AUTH = 'admin:password';
     _resetTorchConfigCache();
 
-    const server = await cmdDashboard(testPort);
+    server = await cmdDashboard(0);
+    testPort = server.address().port;
 
     try {
       const auth = Buffer.from('admin:password').toString('base64');
@@ -71,7 +83,6 @@ test('Dashboard Authentication', async (t) => {
       // We expect 200 (if dashboard/index.html exists) or 404 (if not), but not 401
       assert.notStrictEqual(res.statusCode, 401);
     } finally {
-      server.close();
       delete process.env.TORCH_DASHBOARD_AUTH;
       _resetTorchConfigCache();
     }
@@ -81,7 +92,8 @@ test('Dashboard Authentication', async (t) => {
     delete process.env.TORCH_DASHBOARD_AUTH;
     _resetTorchConfigCache();
 
-    const server = await cmdDashboard(testPort);
+    server = await cmdDashboard(0);
+    testPort = server.address().port;
 
     try {
       const res = await new Promise((resolve) => {
@@ -90,7 +102,6 @@ test('Dashboard Authentication', async (t) => {
 
       assert.notStrictEqual(res.statusCode, 401);
     } finally {
-      server.close();
       _resetTorchConfigCache();
     }
   });
