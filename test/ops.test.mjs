@@ -8,6 +8,7 @@ import { cmdInit, cmdUpdate } from '../src/ops.mjs';
 const MOCK_CONFIG = {
   installDir: 'torch',
   namespace: 'test-namespace',
+  hashtag: 'test-hashtag',
   relays: ['wss://relay.damus.io']
 };
 
@@ -32,6 +33,14 @@ test('cmdInit creates directory structure and files', async () => {
   // Check content transformation
   const metaPrompts = fs.readFileSync(path.join(torchDir, 'META_PROMPTS.md'), 'utf8');
   assert.ok(metaPrompts.includes('torch/prompts/daily/'), 'paths replaced in META_PROMPTS');
+
+  // Check Dashboard file
+  const dashboardPath = path.join(torchDir, 'TORCH_DASHBOARD.md');
+  assert.ok(fs.existsSync(dashboardPath), 'TORCH_DASHBOARD.md created');
+  const dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
+  assert.ok(dashboardContent.includes('test-hashtag'), 'Dashboard content contains hashtag');
+  assert.ok(dashboardContent.includes('test-namespace'), 'Dashboard content contains namespace');
+  assert.ok(dashboardContent.includes('https://torch.thepr0m3th3an.net/dashboard/'), 'Dashboard content contains link');
 });
 
 test('cmdInit fails if directory exists without force', async () => {
@@ -152,4 +161,5 @@ test('cmdInit creates torch-config.json with random namespace', async () => {
 
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   assert.strictEqual(config.nostrLock.namespace, 'test-namespace', 'Namespace should match mock');
+  assert.strictEqual(config.dashboard.hashtag, 'test-hashtag', 'Hashtag should match mock');
 });
