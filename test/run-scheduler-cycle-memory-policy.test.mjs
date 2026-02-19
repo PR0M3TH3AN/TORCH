@@ -67,6 +67,7 @@ async function setupFixture({
 
   await fs.mkdir(path.join(root, 'src', 'prompts'), { recursive: true });
   await fs.mkdir(path.join(root, 'src', 'prompts', 'daily'), { recursive: true });
+  await fs.copyFile(path.resolve('src/utils.mjs'), path.join(root, 'src', 'utils.mjs'));
   await fs.mkdir(scriptsDir, { recursive: true });
   await fs.mkdir(binDir, { recursive: true });
 
@@ -194,7 +195,7 @@ test('accepts required memory policy when markers or artifacts are produced', { 
 
   const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
     cwd: fixture.root,
-    env: fixture.env,
+    env: { ...fixture.env, AGENT_PLATFORM: 'codex' },
   });
 
   assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
@@ -219,7 +220,7 @@ test('records backend failure metadata when lock command exits with code 2', { c
 
   const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
     cwd: fixture.root,
-    env: fixture.env,
+    env: { ...fixture.env, AGENT_PLATFORM: 'codex' },
   });
 
   assert.equal(result.code, 2, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
