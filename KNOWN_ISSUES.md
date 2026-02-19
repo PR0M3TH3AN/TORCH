@@ -65,6 +65,17 @@ Track only **active, reproducible, unresolved** issues.
 - **Related notes:** `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md`
 - **Last verified:** 2026-02-15
 
+### Claude Code: outbound WebSocket blocked — scheduler cannot run from this environment
+- **Status:** Active (no code-level workaround)
+- **Area:** Runtime / Tooling
+- **Symptom:** `torch-lock` commands (`lock:check`, `lock:lock`, `lock:complete`) fail to connect to any Nostr relay. The underlying error is a WebSocket handshake rejection at the proxy layer. In Node.js the symptom is `getaddrinfo ENOTFOUND` (empty `/etc/resolv.conf`) or a connection hang/timeout for `wss://` URLs.
+- **Trigger/Conditions:** Any `torch-lock` or scheduler command run from inside the Claude Code remote sandbox. The proxy intercepts all egress traffic; it supports HTTP/HTTPS `CONNECT` tunneling but strips the `Upgrade: websocket` header at L7, so the WebSocket handshake never completes. This affects all outbound WebSocket connections, not just Nostr relays (confirmed by multiple open GitHub issues: anthropics/claude-code #490, #2059, #17333).
+- **Workaround (attempted and rejected):** A local relay on `ws://127.0.0.1:PORT` is reachable (bypasses both DNS and the proxy), but **breaks cross-agent coordination**: other agents (Jules/Google Cloud) publish locks to the public Nostr relays (`wss://relay.damus.io`, `wss://nos.lol`, `wss://relay.primal.net`). A local relay is invisible to those agents, causing double-claiming of scheduled agent slots.
+- **Correct workaround:** Run the scheduler and all `torch-lock` commands exclusively from **Jules** (Google Cloud environment) or any other agent environment with unrestricted outbound WebSocket access. Do not attempt to run `lock:lock` / `lock:complete` from Claude Code sessions.
+- **Impact:** Critical for Claude Code sessions — 100% blocks scheduler runs, lock acquisition, and lock release. No impact on Jules-initiated runs.
+- **Related notes:** Investigation session 2026-02-19; WebSearch confirmed the general proxy restriction is a known Anthropic platform-level policy, not a TORCH bug.
+- **Last verified:** 2026-02-19
+
 ### content-audit-agent targets missing /content directory
 - **Status:** Resolved
 - **Area:** Docs
