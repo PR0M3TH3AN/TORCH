@@ -817,6 +817,14 @@
                     <p class="agent-desc">Long-context understanding and safety. (CLI Required)</p>
                 </div>
 
+                <div id="card-gemini" onclick="selectAgent('gemini')" class="agent-card" style="cursor: pointer;">
+                    <div class="agent-header">
+                        <span class="agent-name">Gemini CLI</span>
+                        <span class="agent-status">Active</span>
+                    </div>
+                    <p class="agent-desc">Google's multimodal AI model. (CLI Required)</p>
+                </div>
+
                 <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;">
                     <div class="agent-header">
                         <span class="agent-name">Antigravity IDE</span>
@@ -1382,6 +1390,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'claude') {
                 promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'gemini') {
+                promptText = "Hey Gemini, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'antigravity') {
                 promptText = "Hey Antigravity, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             }
