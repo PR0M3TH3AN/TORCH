@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { detectPlatform } from '../src/utils.mjs';
 
 const SOURCE_SCRIPT = path.resolve('scripts/agent/run-scheduler-cycle.mjs');
 
@@ -44,6 +45,7 @@ async function setupFixture({ lockShellBody = ':', schedulerPolicy = {} }) {
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
+  await fs.copyFile(path.resolve('src/utils.mjs'), path.join(root, 'src', 'utils.mjs'));
   await fs.writeFile(
     path.join(scriptsDir, 'verify-run-artifacts.mjs'),
     '#!/usr/bin/env node\nprocess.exit(0);\n',
@@ -150,7 +152,7 @@ test('lock preflight e2e: successful lock writes completed status snapshot', { c
       cadence: 'daily',
       agent: 'agent-a',
       status: 'completed',
-      platform: 'codex',
+      platform: detectPlatform() || 'unknown',
     },
   );
 });
