@@ -1,0 +1,43 @@
+{
+  "date": "2026-02-19",
+  "branch": "main",
+  "commit": "aa53554b06f985614a872662a3b9cf8bb451f3c9",
+  "lint_exit_code": 0,
+  "total_problems": 42,
+  "total_errors": 0,
+  "total_warnings": 42,
+  "files_with_warnings": 24,
+  "dominant_rule": "no-unused-vars",
+  "files": [
+    { "path": "perf/benchmark-pruner.mjs", "warnings": 1, "errors": 0 },
+    { "path": "scripts/agent/smoke-test.mjs", "warnings": 2, "errors": 0 },
+    { "path": "scripts/benchmark-dashboard.mjs", "warnings": 2, "errors": 0 },
+    { "path": "scripts/benchmark-pruner.mjs", "warnings": 1, "errors": 0 },
+    { "path": "scripts/test-audit/run-flaky-check.mjs", "warnings": 1, "errors": 0 },
+    { "path": "scripts/test-audit/run-static-analysis.mjs", "warnings": 1, "errors": 0 },
+    { "path": "src/cmd-proposal.mjs", "warnings": 2, "errors": 0 },
+    { "path": "src/lock-ops.mjs", "warnings": 7, "errors": 0 },
+    { "path": "src/lock-utils.mjs", "warnings": 1, "errors": 0 },
+    { "path": "src/ops.mjs", "warnings": 1, "errors": 0 },
+    { "path": "src/perf/benchmark-config-load.mjs", "warnings": 1, "errors": 0 },
+    { "path": "src/services/governance/index.js", "warnings": 4, "errors": 0 },
+    { "path": "src/services/memory/embedder.js", "warnings": 1, "errors": 0 },
+    { "path": "src/services/memory/index.js", "warnings": 1, "errors": 0 },
+    { "path": "test/cmd-list.test.mjs", "warnings": 1, "errors": 0 },
+    { "path": "test/dashboard-config-exposure.test.mjs", "warnings": 2, "errors": 0 },
+    { "path": "test/lib.test.mjs", "warnings": 2, "errors": 0 },
+    { "path": "test/memory-admin.test.mjs", "warnings": 1, "errors": 0 },
+    { "path": "test/memory-formatter.test.mjs", "warnings": 1, "errors": 0 },
+    { "path": "test/memory-index.test.mjs", "warnings": 1, "errors": 0 },
+    { "path": "test/memory-ingest.test.mjs", "warnings": 2, "errors": 0 },
+    { "path": "test/memory-pinning.test.mjs", "warnings": 4, "errors": 0 },
+    { "path": "test/memory-run-prune-cycle.test.mjs", "warnings": 1, "errors": 0 },
+    { "path": "test/nostr-lock.test.mjs", "warnings": 1, "errors": 0 }
+  ],
+  "sample_warnings": [
+    "src/lock-ops.mjs:12 — 'DEFAULT_RETRY_ATTEMPTS' is defined but never used",
+    "src/lock-ops.mjs:633 — 'getPublishTimeoutMsFn' is assigned a value but never used",
+    "src/services/governance/index.js:33 — 'e' is defined but never used",
+    "landing/index.html — not scanned by ESLint (HTML file)"
+  ]
+}

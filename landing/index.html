@@ -779,9 +779,9 @@
 
     <main>
         <section class="hero">
-            <h1>The Operating System for Your AI Workforce.</h1>
+            <h1>A Simple Round-Robin Agent Scheduler.</h1>
             <p>
-                A simple drag-and-drop folder that grants every project autonomous AI agents that learn, adapt, and evolve over time.
+                A lightweight, drop-in folder that rotates through autonomous agents to maintain and improve your codebase. No complex pipelines—just simple, effective orchestration.
             </p>
             <div class="actions">
                 <a href="../dashboard/" class="cta-button primary">Launch Dashboard</a>
@@ -793,15 +793,15 @@
             <h2 class="mb-8 text-text-strong" style="font-size: 2rem;">Choose Your Agent</h2>
 
             <div class="agent-selector">
-                <a href="https://jules.google/" target="_blank" class="agent-card active">
+                <div id="card-jules" onclick="selectAgent('jules')" class="agent-card active" style="cursor: pointer;">
                     <div class="agent-header">
                         <span class="agent-name">Jules</span>
                         <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Optimized for Google's latest coding agent. Click to learn more.</p>
-                </a>
+                    <p class="agent-desc">Optimized for Google's latest coding agent. <a href="https://jules.google/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
+                </div>
 
-                <div class="agent-card disabled">
+                <div id="card-codex" class="agent-card disabled">
                     <div class="agent-header">
                         <span class="agent-name">Codex</span>
                         <span class="agent-status">Coming Soon</span>
@@ -809,12 +809,20 @@
                     <p class="agent-desc">Advanced reasoning for complex tasks.</p>
                 </div>
 
-                <div class="agent-card disabled">
+                <div id="card-claude" onclick="selectAgent('claude')" class="agent-card" style="cursor: pointer;">
                     <div class="agent-header">
-                        <span class="agent-name">Claude</span>
-                        <span class="agent-status">Coming Soon</span>
+                        <span class="agent-name">Claude Code CLI</span>
+                        <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Long-context understanding and safety.</p>
+                    <p class="agent-desc">Long-context understanding and safety. (CLI Required)</p>
+                </div>
+
+                <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;">
+                    <div class="agent-header">
+                        <span class="agent-name">Antigravity IDE</span>
+                        <span class="agent-status">Active</span>
+                    </div>
+                    <p class="agent-desc">The autonomous Python IDE.</p>
                 </div>
             </div>
 
@@ -866,7 +874,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🤖</div>
-                <div class="feature-title">Self-Evolving Agents</div>
+                <div class="feature-title">Adaptive Agents</div>
                 <div class="feature-desc">Agents automatically adapt to your codebase and workflow patterns.</div>
             </div>
             <div class="feature-card">
@@ -881,8 +889,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             <div class="capability-grid">
                 <div class="capability-card">
                     <div class="cap-icon">🧠</div>
-                    <h3>Drop-in Divinity</h3>
-                    <p>Transform any LLM session into a project manager. Just paste a meta-prompt, and watch it coordinate tasks autonomously.</p>
+                    <h3>Drop-in Orchestration</h3>
+                    <p>Transform any LLM session into a productive workforce. Just paste a meta-prompt, and watch it coordinate tasks autonomously.</p>
                 </div>
                 <div class="capability-card">
                     <div class="cap-icon">✅</div>
@@ -899,14 +907,6 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                     <h3>Persistent Memory</h3>
                     <p>Agents that remember. TORCH maintains a semantic history of decisions, preventing loops and regressions.</p>
                 </div>
-            </div>
-        </section>
-
-        <section class="agent-showcase" id="agent-showcase">
-            <h2>Functional Agents</h2>
-            <div id="functional-agent-list">
-                <!-- Populated by JS -->
-                <p class="text-center text-muted">Loading agents...</p>
             </div>
         </section>
 
@@ -931,6 +931,14 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         <pre><code id="weekly-code">Loading...</code></pre>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="agent-showcase" id="agent-showcase">
+            <h2>Functional Agents</h2>
+            <div id="functional-agent-list">
+                <!-- Populated by JS -->
+                <p class="text-center text-muted">Loading agents...</p>
             </div>
         </section>
 
@@ -1354,6 +1362,33 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                  .replace(/>/g, "&gt;")
                  .replace(/"/g, "&quot;")
                  .replace(/'/g, "&#039;");
+        }
+
+        function selectAgent(agent) {
+            // Remove active class from all cards
+            document.querySelectorAll('.agent-card').forEach(card => card.classList.remove('active'));
+
+            // Add active class to selected card
+            const selectedCard = document.getElementById('card-' + agent);
+            if (selectedCard) {
+                selectedCard.classList.add('active');
+            }
+
+            // Update prompt text
+            const installCmd = document.getElementById('install-cmd');
+            let promptText = '';
+
+            if (agent === 'jules') {
+                promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'claude') {
+                promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'antigravity') {
+                promptText = "Hey Antigravity, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            }
+
+            if (installCmd) {
+                installCmd.textContent = promptText;
+            }
         }
     </script>
 </body>
