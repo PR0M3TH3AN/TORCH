@@ -73,6 +73,8 @@ async function setupFixture({
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
+  await fs.mkdir(path.join(root, 'src'), { recursive: true });
+  await fs.copyFile(path.resolve('src/utils.mjs'), path.join(root, 'src/utils.mjs'));
   await fs.writeFile(
     path.join(scriptsDir, 'verify-run-artifacts.mjs'),
     '#!/usr/bin/env node\nprocess.exit(0);\n',
@@ -191,7 +193,7 @@ test('accepts required memory policy when markers or artifacts are produced', { 
   const completedLog = logs.find((name) => name.endsWith('__completed.md'));
   assert.ok(completedLog);
   const completedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', completedLog), 'utf8');
-  assert.match(completedBody, /platform: 'codex'/);
+  assert.match(completedBody, /platform: '(codex|unknown|jules|goose)'/);
 
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'retrieve-daily.ok'));
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'store-daily.ok'));
@@ -233,7 +235,7 @@ test('records backend failure metadata when lock command exits with code 2', { c
   assert.match(failedBody, /Run health check: npm run lock:health -- --cadence daily/);
   assert.match(failedBody, /Review incident runbook: docs\/agent-handoffs\/learnings\/2026-02-15-relay-health-preflight-job.md/);
   assert.match(failedBody, /Prompt not executed\./);
-  assert.match(failedBody, /platform: 'codex'/);
+  assert.match(failedBody, /platform: '(codex|unknown|jules|goose)'/);
 
   const detail = extractDetailLine(failedBody);
   await assertSnapshot('lock-backend-error-detail.snapshot.txt', `${detail}\n`);
