@@ -518,6 +518,40 @@
         /* Define danger color if not exists in dashboard/styles.css */
         :root {
             --danger: #ef4444;
+            /* Warm Accent Colors */
+            --warm-primary: #ff6b6b;
+            --warm-secondary: #fbbf24;
+            --warm-glow: rgba(255, 107, 107, 0.15);
+        }
+
+        /* Ambient Background */
+        .background-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .background-decoration svg {
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+        }
+
+        /* Scroll Animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Core Capabilities Section */
@@ -767,6 +801,38 @@
 </head>
 <body>
 
+    <div class="background-decoration">
+        <svg viewBox="0 0 1440 1024" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <linearGradient id="warmGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="var(--accent)" stop-opacity="0" />
+                    <stop offset="50%" stop-color="var(--warm-primary)" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="var(--warm-secondary)" stop-opacity="0" />
+                </linearGradient>
+            </defs>
+            <path d="M-100 600 C 200 400, 600 800, 1540 500" stroke="url(#warmGradient)" stroke-width="2" fill="none" opacity="0.5">
+                <animate attributeName="d"
+                         values="M-100 600 C 200 400, 600 800, 1540 500; M-100 600 C 200 500, 600 700, 1540 500; M-100 600 C 200 400, 600 800, 1540 500"
+                         dur="20s" repeatCount="indefinite" />
+            </path>
+            <path d="M-100 300 C 400 500, 800 100, 1540 400" stroke="url(#warmGradient)" stroke-width="1.5" fill="none" opacity="0.3">
+                 <animate attributeName="d"
+                         values="M-100 300 C 400 500, 800 100, 1540 400; M-100 300 C 400 400, 800 200, 1540 400; M-100 300 C 400 500, 800 100, 1540 400"
+                         dur="25s" repeatCount="indefinite" />
+            </path>
+            <circle cx="200" cy="400" r="4" fill="var(--warm-primary)" opacity="0.2">
+                <animate attributeName="opacity" values="0.2;0.8;0.2" dur="4s" repeatCount="indefinite" />
+                <animate attributeName="cx" values="200;220;200" dur="10s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="800" cy="100" r="3" fill="var(--info)" opacity="0.3">
+                <animate attributeName="opacity" values="0.2;0.6;0.2" dur="3s" repeatCount="indefinite" />
+            </circle>
+             <circle cx="1200" cy="700" r="2" fill="var(--warm-secondary)" opacity="0.4">
+                <animate attributeName="cy" values="700;720;700" dur="8s" repeatCount="indefinite" />
+            </circle>
+        </svg>
+    </div>
+
     <header>
         <div class="logo-container">
             <img src="../assets/logo.svg" alt="TORCH Logo" width="32" height="32">
@@ -778,7 +844,7 @@
     </header>
 
     <main>
-        <section class="hero">
+        <section class="hero scroll-reveal">
             <h1>A Simple Round-Robin Agent Scheduler.</h1>
             <p>
                 A lightweight, drop-in folder that rotates through autonomous agents to maintain and improve your codebase. No complex pipelines—just simple, effective orchestration.
@@ -789,7 +855,7 @@
             </div>
         </section>
 
-        <div class="install-container">
+        <div class="install-container scroll-reveal">
             <h2 class="mb-8 text-text-strong" style="font-size: 2rem;">Choose Your Agent</h2>
 
             <div class="agent-selector">
@@ -874,7 +940,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             </div>
         </div>
 
-        <section class="features">
+        <section class="features scroll-reveal">
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
                 <div class="feature-title">Instant Setup</div>
@@ -892,7 +958,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             </div>
         </section>
 
-        <section class="core-capabilities">
+        <section class="core-capabilities scroll-reveal">
             <h2>Why Run TORCH?</h2>
             <div class="capability-grid">
                 <div class="capability-card">
@@ -918,7 +984,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             </div>
         </section>
 
-        <section class="meta-prompts">
+        <section class="meta-prompts scroll-reveal">
             <h2>Scheduler Meta Prompts</h2>
             <div class="prompts-grid">
                 <div class="prompt-card">
@@ -942,7 +1008,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             </div>
         </section>
 
-        <section class="agent-showcase" id="agent-showcase">
+        <section class="agent-showcase scroll-reveal" id="agent-showcase">
             <h2>Functional Agents</h2>
             <div id="functional-agent-list">
                 <!-- Populated by JS -->
@@ -1007,6 +1073,17 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
     </div>
 
     <script>
+        // Scroll Reveal
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => scrollObserver.observe(el));
+
         // Modal Logic
         const modal = document.getElementById("docsModal");
         const btn = document.getElementById("openDocs");
