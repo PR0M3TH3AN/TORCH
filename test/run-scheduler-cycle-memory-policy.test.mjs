@@ -184,7 +184,7 @@ test('accepts required memory policy when markers or artifacts are produced', { 
 
   const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
     cwd: fixture.root,
-    env: fixture.env,
+    env: { ...fixture.env, AGENT_PLATFORM: 'codex' },
   });
 
   assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
@@ -209,7 +209,7 @@ test('records backend failure metadata when lock command exits with code 2', { c
 
   const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
     cwd: fixture.root,
-    env: fixture.env,
+    env: { ...fixture.env, AGENT_PLATFORM: 'codex' },
   });
 
   assert.equal(result.code, 2, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
