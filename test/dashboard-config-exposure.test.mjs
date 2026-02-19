@@ -40,8 +40,6 @@ test('Dashboard Configuration Exposure Security', async (t) => {
 
   // Override env to use this config
   const originalEnvPath = process.env.TORCH_CONFIG_PATH;
-  const originalAuth = process.env.TORCH_DASHBOARD_AUTH;
-
   process.env.TORCH_CONFIG_PATH = tempConfigPath;
   // Disable auth via env so we can access the endpoint without credentials
   // The vulnerability is about exposure of *other* fields.
@@ -93,7 +91,7 @@ test('Dashboard Configuration Exposure Security', async (t) => {
   let exposedConfig;
   try {
       exposedConfig = JSON.parse(responseBody);
-  } catch (e) {
+  } catch (_e) {
       assert.fail(`Failed to parse JSON response: ${responseBody}`);
   }
 

@@ -6,7 +6,6 @@ import {
   formatMemoryBlock,
   formatMemoriesForPrompt,
   renderPromptWithMemoryContext,
-  isMemoryRetrievalEnabled
 } from '../src/services/memory/formatter.js';
 
 function createMemory(overrides = {}) {

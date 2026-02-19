@@ -16,7 +16,7 @@ export default [
       sourceType: "module",
     },
     rules: {
-      "no-unused-vars": "warn",
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }],
       "no-console": "off",
     },
   },

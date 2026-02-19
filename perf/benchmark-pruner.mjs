@@ -1,5 +1,5 @@
 import { createLifecyclePlan } from '../src/services/memory/pruner.js';
-import crypto from 'node:crypto';
+
 
 const COUNT = 30000;
 const DUPLICATE_WINDOW_MS = 1000 * 60 * 60; // 1 hour

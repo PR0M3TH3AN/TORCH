@@ -26,7 +26,7 @@ export async function getCompletedAgents(cadence, logDir, deps) {
       const match = file.match(/^(\d{4}-\d{2}-\d{2})T.*__([a-zA-Z0-9-_]+)__(.*)\.md$/);
       if (!match) continue;
 
-      const [_, datePart, agent, status] = match;
+      const [, datePart, agent, status] = match;
 
       if (status === 'completed') {
         if (cadence === 'daily' && datePart === today) {

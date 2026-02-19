@@ -1,5 +1,6 @@
+/* global marked */
 import { KIND_APP_DATA } from '../src/constants.mjs';
-import { createElement, escapeHtml } from './domUtils.js';
+import { createElement } from './domUtils.js';
 
 // -----------------------------------------------------------------------
 // Modal Logic
@@ -168,7 +169,7 @@ function parseDashboardConfig(torchConfig = {}) {
   let localPrefs = {};
   try {
     localPrefs = JSON.parse(localStorage.getItem('torch_dashboard_prefs')) || {};
-  } catch {}
+  } catch { /* ignore malformed localStorage */ }
 
   const dashboardConfig = torchConfig.dashboard || {};
   const lockConfig = torchConfig.nostrLock || {};
@@ -218,8 +219,6 @@ function parseDashboardConfig(torchConfig = {}) {
 let DASHBOARD_CONFIG = parseDashboardConfig({});
 
 let RELAYS = DASHBOARD_CONFIG.relays;
-let D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
-
 const LOCK_EVENT_KIND = KIND_APP_DATA;
 let HASHTAG = DASHBOARD_CONFIG.hashtag;
 
@@ -787,7 +786,6 @@ async function bootstrap() {
   const torchConfig = await loadTorchConfigFile();
   DASHBOARD_CONFIG = parseDashboardConfig(torchConfig);
   RELAYS = DASHBOARD_CONFIG.relays;
-  D_TAG_PREFIX = `${DASHBOARD_CONFIG.namespace}-lock/`;
   HASHTAG = DASHBOARD_CONFIG.hashtag;
 
   cadenceFilter.value = DASHBOARD_CONFIG.defaultCadenceView;

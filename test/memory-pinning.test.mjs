@@ -52,7 +52,7 @@ test('pinMemory returns null for non-existent ID but still clears cache', async 
       listMemoriesCallCount++;
       return records;
     },
-    async setPinned(id, pinned) {
+    async setPinned(_id, _pinned) {
       return null;
     },
     async updateMemoryUsage() { return null; }
@@ -121,7 +121,7 @@ test('unpinMemory returns null for non-existent ID but still clears cache', asyn
       listMemoriesCallCount++;
       return records;
     },
-    async setPinned(id, pinned) {
+    async setPinned(_id, _pinned) {
       return null;
     },
     async updateMemoryUsage() { return null; }

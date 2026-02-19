@@ -381,7 +381,7 @@ export function cmdUpdate(force = false, cwd = process.cwd()) {
           if (pkg.name === 'torch-lock') {
               installDirName = '.';
           }
-      } catch (e) {
+      } catch (_e) {
           // Ignore error if package.json is missing or invalid
       }
   }

@@ -99,7 +99,6 @@ describe('src/lib.mjs', () => {
   });
 
   describe('cmdLock', () => {
-    const mockPublishLock = async () => {};
     const mockGenerateSecretKey = () => new Uint8Array(32);
     const mockGetPublicKey = () => 'mock-pubkey';
     const mockFinalizeEvent = (t) => ({ ...t, id: 'mock-id', sig: 'mock-sig' });
@@ -353,7 +352,6 @@ describe('src/lib.mjs', () => {
   });
 
   describe('cmdComplete', () => {
-    const mockPublishLock = async () => {};
     const mockGenerateSecretKey = () => new Uint8Array(32);
     const mockGetPublicKey = () => 'mock-pubkey';
     const mockFinalizeEvent = (t) => ({ ...t, id: 'mock-id-complete' });
