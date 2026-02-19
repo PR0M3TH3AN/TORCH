@@ -21,6 +21,7 @@ export const DEFAULT_MAX_QUARANTINE_COOLDOWN_MS = 300_000;
 export const DEFAULT_SNAPSHOT_INTERVAL_MS = 60_000;
 export const VALID_CADENCES = new Set(['daily', 'weekly']);
 export const KIND_APP_DATA = 30078;
+export const MS_PER_SECOND = 1000;
 
 export const USAGE_TEXT = `Usage: torch-lock <command> [options]
 

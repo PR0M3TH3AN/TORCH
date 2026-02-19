@@ -18,6 +18,7 @@ import {
   KIND_APP_DATA,
   RACE_CHECK_DELAY_MS,
   USAGE_TEXT,
+  MS_PER_SECOND,
 } from './constants.mjs';
 import { cmdInit, cmdUpdate } from './ops.mjs';
 import { parseArgs } from './cli-parser.mjs';
@@ -215,7 +216,7 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
 
   error(`Locking: namespace=${namespace}, agent=${agent}, cadence=${cadence}, date=${dateStr}`);
   error(`Hashtag: #${hashtag}`);
-  error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * 1000).toISOString()}`);
+  error(`TTL: ${ttl}s, expires: ${new Date(expiresAt * MS_PER_SECOND).toISOString()}`);
   error(`Relays: ${relays.join(', ')}`);
   if (gitCommit) error(`Git Commit: ${gitCommit}`);
   if (promptHash) error(`Prompt Hash: ${promptHash.slice(0, 12)}...`);
@@ -277,8 +278,8 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
         date: dateStr,
         platform: platform || process.env.AGENT_PLATFORM || detectPlatform() || 'unknown',
         model: model || process.env.AGENT_MODEL || 'unknown',
-        lockedAt: new Date(now * 1000).toISOString(),
-        expiresAt: new Date(expiresAt * 1000).toISOString(),
+        lockedAt: new Date(now * MS_PER_SECOND).toISOString(),
+        expiresAt: new Date(expiresAt * MS_PER_SECOND).toISOString(),
         gitCommit,
         promptPath,
         promptHash,
@@ -326,7 +327,7 @@ export async function cmdLock(agent, cadence, optionsOrDryRun = false, deps = {}
   log(`LOCK_CADENCE=${cadence}`);
   log(`LOCK_DATE=${dateStr}`);
   log(`LOCK_EXPIRES=${expiresAt}`);
-  log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * 1000).toISOString()}`);
+  log(`LOCK_EXPIRES_ISO=${new Date(expiresAt * MS_PER_SECOND).toISOString()}`);
   if (gitCommit) log(`LOCK_GIT_COMMIT=${gitCommit}`);
   if (promptHash) log(`LOCK_PROMPT_HASH=${promptHash}`);
   return { status: 'ok', eventId: event.id };
@@ -497,7 +498,7 @@ export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps 
         platform: platform || process.env.AGENT_PLATFORM || detectPlatform() || 'unknown',
         model: model || process.env.AGENT_MODEL || 'unknown',
         startedAt: startedAtIso,
-        completedAt: new Date(now * 1000).toISOString(),
+        completedAt: new Date(now * MS_PER_SECOND).toISOString(),
       }),
     },
     sk,
