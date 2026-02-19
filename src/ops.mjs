@@ -133,7 +133,12 @@ async function interactiveInit(cwd) {
     const namespaceAnswer = await rl.question(`Nostr Namespace (default: ${defaultNamespace}): `);
     const namespace = namespaceAnswer.trim() || defaultNamespace;
 
-    // 3. Relays
+    // 3. Hashtag
+    const defaultHashtag = `${namespace}-agent-lock`;
+    const hashtagAnswer = await rl.question(`Nostr Hashtag (default: ${defaultHashtag}): `);
+    const hashtag = hashtagAnswer.trim() || defaultHashtag;
+
+    // 4. Relays
     console.log(`\nDefault Relays:\n  ${DEFAULT_RELAYS.join('\n  ')}`);
     const relaysAnswer = await rl.question('Enter relays (comma-separated) or press Enter to use defaults: ');
     let relays = DEFAULT_RELAYS;
@@ -141,7 +146,7 @@ async function interactiveInit(cwd) {
       relays = relaysAnswer.split(',').map(r => r.trim()).filter(Boolean);
     }
 
-    return { installDir, namespace, relays };
+    return { installDir, namespace, hashtag, relays };
   } finally {
     rl.close();
   }
@@ -236,7 +241,7 @@ function installTorchAssets(paths, installDir) {
   }
 }
 
-function configureTorch(cwd, paths, installDir, namespace, relays) {
+function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
   // 6. Create/Update torch-config.json
   const configPath = path.join(paths.root, 'torch-config.json');
 
@@ -261,6 +266,9 @@ function configureTorch(cwd, paths, installDir, namespace, relays) {
   if (!configData.nostrLock) configData.nostrLock = {};
   configData.nostrLock.namespace = namespace;
   configData.nostrLock.relays = relays;
+
+  if (!configData.dashboard) configData.dashboard = {};
+  configData.dashboard.hashtag = hashtag;
 
   // Configure memory policy with correct paths
   if (!configData.scheduler) configData.scheduler = {};
@@ -308,6 +316,10 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   const config = await resolveConfiguration(cwd, mockAnswers);
   const { installDir, namespace, relays } = config;
 
+  // For backward compatibility with mocks that might not provide hashtag yet,
+  // we derive a default if missing.
+  const hashtag = config.hashtag || `${namespace}-agent-lock`;
+
   const paths = getPaths(cwd, installDir);
   console.log(`\nInitializing torch in ${paths.torchDir}...`);
 
@@ -315,11 +327,37 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
 
   installAppAssets(paths.torchDir, installDir);
   installTorchAssets(paths, installDir);
-  configureTorch(cwd, paths, installDir, namespace, relays);
+  configureTorch(cwd, paths, installDir, namespace, relays, hashtag);
+  createDashboardLinkFile(paths, namespace, relays, hashtag);
   injectHostScriptsIfNeeded(paths, installDir);
 
   console.log('\nInitialization complete.');
   console.log('You can now customize the files in ' + path.relative(cwd, paths.torchDir) + '/');
+}
+
+function createDashboardLinkFile(paths, namespace, relays, hashtag) {
+  const encodedRelays = relays.map(r => encodeURIComponent(r)).join('%2C');
+  const dashboardUrl = `https://torch.thepr0m3th3an.net/dashboard/?hashtag=${hashtag}&namespace=${namespace}&relays=${encodedRelays}`;
+
+  const content = `# TORCH Dashboard
+
+You can view the live status of your agent locks here:
+
+[Open Dashboard](${dashboardUrl})
+
+---
+**Configuration**
+This link is generated based on your \`torch-config.json\`:
+- **Namespace**: \`${namespace}\`
+- **Hashtag**: \`#${hashtag}\`
+- **Relays**: ${relays.join(', ')}
+
+To change these settings, edit \`torch-config.json\` in your project root.
+`;
+
+  const filePath = path.join(paths.torchDir, 'TORCH_DASHBOARD.md');
+  fs.writeFileSync(filePath, content, 'utf8');
+  console.log(`Created ${path.relative(paths.root, filePath)}`);
 }
 
 function injectScriptsIntoHost(hostRoot, installDirName) {
