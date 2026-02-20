@@ -50,10 +50,18 @@
             font-size: 3.5rem;
             line-height: 1.1;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--text-strong) 0%, var(--info) 100%);
+            background: linear-gradient(to right, var(--text-strong) 0%, var(--info) 30%, var(--accent) 50%, var(--info) 70%, var(--text-strong) 100%);
+            background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.03em;
+            animation: textShine 5s linear infinite;
+        }
+
+        @keyframes textShine {
+            to {
+                background-position: 200% center;
+            }
         }
 
         .hero p {
@@ -809,7 +817,15 @@
                     <stop offset="50%" stop-color="var(--warm-primary)" stop-opacity="0.6" />
                     <stop offset="100%" stop-color="var(--warm-secondary)" stop-opacity="0" />
                 </linearGradient>
+                <radialGradient id="heroGlow">
+                    <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+                </radialGradient>
             </defs>
+            <circle cx="720" cy="200" r="400" fill="url(#heroGlow)">
+                <animate attributeName="opacity" values="0.4;0.8;0.4" dur="4s" repeatCount="indefinite" />
+                <animate attributeName="r" values="350;450;350" dur="10s" repeatCount="indefinite" />
+            </circle>
             <path d="M-100 600 C 200 400, 600 800, 1540 500" stroke="url(#warmGradient)" stroke-width="2" fill="none" opacity="0.5">
                 <animate attributeName="d"
                          values="M-100 600 C 200 400, 600 800, 1540 500; M-100 600 C 200 500, 600 700, 1540 500; M-100 600 C 200 400, 600 800, 1540 500"
