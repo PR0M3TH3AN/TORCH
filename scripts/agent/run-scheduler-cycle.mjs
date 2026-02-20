@@ -1,4 +1,43 @@
 #!/usr/bin/env node
+/**
+ * run-scheduler-cycle.mjs — TORCH Agent Scheduler
+ *
+ * Orchestrates one full scheduling cycle for a given cadence (daily|weekly).
+ * Selects the next eligible agent from the roster, acquires a distributed Nostr
+ * lock, executes the agent's prompt via a configured handoff command, verifies
+ * required artifacts and memory evidence, then publishes completion.
+ *
+ * This script owns the full lifecycle for a single agent slot per invocation:
+ * lock acquisition → prompt execution → artifact verification → lock:complete.
+ * Spawned agents MUST NOT call lock:complete themselves.
+ *
+ * Main flow (mirrors src/prompts/scheduler-flow.md numbered MUST steps):
+ *  1. Parse cadence (daily|weekly), platform, and model from CLI args.
+ *  2. Load roster from src/prompts/roster.json.
+ *  3. Read AGENTS.md policy file (best-effort, non-fatal if missing).
+ *  4. [loop] Read cadence run-state (deferral tracking for the current UTC day).
+ *  5. [loop] Optional lock health preflight — fail/defer if all relays unhealthy.
+ *  6. [loop] Run lock:check to build the exclusion set (locked + paused + completed).
+ *  7. [loop] Apply local time-window guard (24 h daily / 7 d weekly) to exclusion set.
+ *  8. [loop] Round-robin select next eligible agent from roster minus exclusion set.
+ *  9. [loop] If no agent eligible → exit (cycle-saturated or all-excluded).
+ * 10. [loop] Acquire lock with retry. exit 3 → back to step 4; exit 2 → defer or fail.
+ * 11. [loop] Validate prompt file (readable, correct format).
+ * 12. [loop] Clear deferral state. Run memory retrieve command (if configured).
+ * 13. [loop] Run handoff command — hard fail if missing or exits non-zero.
+ * 14. [loop] Run memory store command (if configured).
+ * 15. [loop] Verify memory evidence (markers/artifact files).
+ * 16. [loop] Verify run artifacts via verify-run-artifacts.mjs.
+ * 17. [loop] Run validation commands (default: npm run lint).
+ * 18. [loop] Publish lock:complete — hard fail if relay error.
+ * 19. [loop] Write completed task log and print run summary. Exit 0.
+ *
+ * Key invariants:
+ *  - lock:complete is called ONLY after all validation gates pass (step 18 is last gate).
+ *  - Completed task log is written ONLY after lock:complete succeeds.
+ *  - Lock exit code 3 (race lost) causes a loop restart to pick the next agent.
+ *  - Memory mode 'required' turns missing evidence into a hard failure.
+ */
 // Source of truth: numbered MUST steps 2 and 4-16 in src/prompts/scheduler-flow.md are
 // implemented by this script; step 3 (policy-file read) is best-effort and non-fatal.
 import fs from 'node:fs/promises';
@@ -43,6 +82,14 @@ const FAILURE_CATEGORY = {
   EXECUTION: 'execution_error',
 };
 
+/**
+ * Parses CLI arguments into a structured options object.
+ * Supports both positional cadence (`daily`|`weekly`) and named flags.
+ * Falls back to AGENT_PLATFORM env var or auto-detected platform for platform.
+ *
+ * @param {string[]} argv - process.argv slice (args after the script name)
+ * @returns {{ cadence: string|null, platform: string, model: string|null }}
+ */
 function parseArgs(argv) {
   const args = { cadence: null, platform: process.env.AGENT_PLATFORM || detectPlatform() || 'unknown', model: process.env.AGENT_MODEL || null };
   for (let i = 0; i < argv.length; i += 1) {
@@ -68,10 +115,25 @@ function parseArgs(argv) {
   return args;
 }
 
+/**
+ * Returns an ISO 8601 timestamp string safe for use as a filename component.
+ * Colons are replaced with dashes and milliseconds are stripped.
+ * Example output: `2026-02-20T07-00-00Z`
+ *
+ * @returns {string}
+ */
 function ts() {
   return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '-');
 }
 
+/**
+ * Builds a metadata object that includes a standardized `failure_category` field.
+ * Used by writeLog() to attach structured failure classification to task logs.
+ *
+ * @param {string} failureCategory - One of FAILURE_CATEGORY values (e.g. 'lock_backend_error').
+ * @param {Object} [extraMetadata={}] - Additional key/value pairs to merge.
+ * @returns {Object}
+ */
 function categorizeFailureMetadata(failureCategory, extraMetadata = {}) {
   return {
     failure_category: failureCategory,
@@ -79,6 +141,16 @@ function categorizeFailureMetadata(failureCategory, extraMetadata = {}) {
   };
 }
 
+/**
+ * Validates that a prompt file is readable and contains a valid markdown heading
+ * or blockquote as its first non-empty line.
+ *
+ * This is a lightweight schema check — it does not parse frontmatter or validate
+ * the full prompt contract (that is handled by validate-prompt-contract.mjs).
+ *
+ * @param {string} promptPath - Absolute path to the prompt markdown file.
+ * @returns {Promise<{ok: true}|{ok: false, category: string, reason: string, detail: string}>}
+ */
 async function validatePromptFile(promptPath) {
   let content;
   try {
@@ -106,6 +178,14 @@ async function validatePromptFile(promptPath) {
   return { ok: true };
 }
 
+/**
+ * Checks whether a file exists and was modified at or after `sinceMs`.
+ * Used to verify that memory evidence artifacts were produced during the current run.
+ *
+ * @param {string|null} filePath - Relative or absolute path to check.
+ * @param {number} sinceMs - Epoch milliseconds threshold (run start time).
+ * @returns {Promise<boolean>}
+ */
 async function artifactExistsSince(filePath, sinceMs) {
   if (!filePath) return false;
   const resolved = path.isAbsolute(filePath)
@@ -119,6 +199,19 @@ async function artifactExistsSince(filePath, sinceMs) {
   }
 }
 
+/**
+ * Verifies that a memory pipeline step (retrieve or store) produced observable evidence.
+ * Evidence can be either a deterministic output marker string OR a qualifying artifact file.
+ * A step is considered complete when either form of evidence is present.
+ *
+ * @param {Object} params
+ * @param {string} params.name - Step name ('retrieve'|'store') for logging.
+ * @param {string[]} params.markers - Substrings to search for in combined command output.
+ * @param {string[]} params.artifacts - Relative paths of artifact files to check.
+ * @param {string} params.outputText - Combined stdout+stderr from all commands this run.
+ * @param {number} params.sinceMs - Run start epoch ms; artifact files must be newer.
+ * @returns {Promise<{name: string, markerMatched: boolean, artifactMatched: boolean, complete: boolean}>}
+ */
 async function verifyMemoryStep({ name, markers, artifacts, outputText, sinceMs }) {
   const markerMatched = markers.some((marker) => outputText.includes(marker));
   const artifactResults = await Promise.all(artifacts.map((artifact) => artifactExistsSince(artifact, sinceMs)));
@@ -133,6 +226,17 @@ async function verifyMemoryStep({ name, markers, artifacts, outputText, sinceMs 
 }
 
 
+/**
+ * Finds the most recent valid scheduler task log file in `logDir`.
+ * "Valid" means the filename passes isStrictSchedulerLogFilename() AND the file
+ * contains a parseable timestamp (from frontmatter created_at or the filename itself).
+ *
+ * Files with unparseable timestamps are skipped with a console warning.
+ * The effective timestamp for sorting is derived from frontmatter first, then filename.
+ *
+ * @param {string} logDir - Absolute path to the cadence log directory (e.g. task-logs/daily/).
+ * @returns {Promise<string|null>} Filename (not path) of the latest log, or null if none.
+ */
 async function getLatestFile(logDir) {
   await fs.mkdir(logDir, { recursive: true });
   const entries = await fs.readdir(logDir, { withFileTypes: true });
@@ -170,6 +274,22 @@ async function getLatestFile(logDir) {
   return latest?.filename || null;
 }
 
+/**
+ * Selects the next eligible agent from the roster using round-robin scheduling.
+ *
+ * Selection algorithm:
+ *  - If `previousAgent` is in the roster, start scanning from the next index (wrap-around).
+ *  - Otherwise, start from `firstPrompt` index (if configured) or index 0.
+ *  - Returns the first candidate not present in `excludedSet`.
+ *  - Returns null if every roster agent is excluded.
+ *
+ * @param {Object} params
+ * @param {string[]} params.roster - Ordered array of agent names for this cadence.
+ * @param {Set<string>} params.excludedSet - Agents to skip (locked, paused, completed, time-excluded).
+ * @param {string|null} params.previousAgent - Agent that ran most recently (from latest log).
+ * @param {string|null} params.firstPrompt - Configured first-run starting agent name.
+ * @returns {string|null} Selected agent name, or null if roster is fully excluded.
+ */
 function selectNextAgent({ roster, excludedSet, previousAgent, firstPrompt }) {
   const previousIndex = roster.indexOf(previousAgent);
   const firstIndex = roster.indexOf(firstPrompt);
@@ -186,6 +306,27 @@ function selectNextAgent({ roster, excludedSet, previousAgent, firstPrompt }) {
   return null;
 }
 
+/**
+ * Loads and normalizes scheduler configuration for the given cadence.
+ * Merges torch-config.json settings with environment variable overrides.
+ *
+ * Configuration covers:
+ *  - handoffCommand: shell command to execute the selected agent's prompt.
+ *  - validationCommands: commands that must pass before lock:complete (default: npm run lint).
+ *  - lockRetry: maxRetries, backoffMs, jitterMs for lock acquisition retries.
+ *  - lockHealthPreflight: whether to probe relay health before lock acquisition.
+ *  - lockFailurePolicy: strictLock, degradedLockRetryWindowMs, maxDeferrals.
+ *  - memoryPolicy: mode (required|optional), retrieve/store commands, markers, artifacts.
+ *
+ * Environment variable overrides (all optional):
+ *  SCHEDULER_LOCK_MAX_RETRIES, SCHEDULER_LOCK_BACKOFF_MS, SCHEDULER_LOCK_JITTER_MS,
+ *  SCHEDULER_LOCK_HEALTH_PREFLIGHT, SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT,
+ *  SCHEDULER_STRICT_LOCK, SCHEDULER_DEGRADED_LOCK_RETRY_WINDOW_MS, SCHEDULER_MAX_DEFERRALS
+ *
+ * @param {string} cadence - 'daily'|'weekly'
+ * @param {{ isInteractive: boolean }} options
+ * @returns {Promise<Object>} Normalized scheduler config object.
+ */
 async function getSchedulerConfig(cadence, { isInteractive }) {
   const cfg = await readJson(path.resolve(process.cwd(), 'torch-config.json'), {});
   const scheduler = cfg.scheduler || {};
@@ -262,6 +403,17 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
   };
 }
 
+/**
+ * Reads persisted scheduler run-state for the current UTC day.
+ * Run-state is used to track lock deferral metadata across multiple invocations
+ * within the same day (e.g., retry window tracking for non-strict lock failures).
+ *
+ * If the state file is missing, unreadable, or belongs to a previous day, returns
+ * a fresh default state. State is keyed by `run_date` (YYYY-MM-DD UTC).
+ *
+ * @param {string} cadence - 'daily'|'weekly'
+ * @returns {Promise<{ statePath: string, state: { run_date: string, lock_deferral: Object|null } }>}
+ */
 async function readRunState(cadence) {
   const statePath = path.resolve(process.cwd(), 'task-logs', cadence, '.scheduler-run-state.json');
   const fallback = { run_date: getRunDateKey(), lock_deferral: null };
@@ -283,15 +435,45 @@ async function readRunState(cadence) {
   };
 }
 
+/**
+ * Persists scheduler run-state to disk (JSON file).
+ * Creates parent directories if they do not exist.
+ *
+ * @param {string} statePath - Absolute path to the state file.
+ * @param {Object} state - State object to serialize.
+ * @returns {Promise<void>}
+ */
 async function writeRunState(statePath, state) {
   await fs.mkdir(path.dirname(statePath), { recursive: true });
   await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 }
 
+/**
+ * Generates a unique idempotency key for a deferred lock attempt.
+ * The key is stable across retries for the same agent/cadence/date combination
+ * by being stored in run-state and reused on subsequent invocations.
+ *
+ * @param {{ cadence: string, selectedAgent: string, runDate: string }} params
+ * @returns {string}
+ */
 function createIdempotencyKey({ cadence, selectedAgent, runDate }) {
   return `${cadence}:${selectedAgent}:${runDate}:${randomUUID()}`;
 }
 
+/**
+ * Writes a task log file to `task-logs/<cadence>/` with YAML frontmatter.
+ * File naming: `<ts>__<agent>__<status>.md`
+ *
+ * The frontmatter includes cadence, agent, status, reason, created_at, platform,
+ * and any additional metadata fields. The file body repeats key fields as bullets
+ * for human readability.
+ *
+ * These files are read by getLatestFile(), cmdCheck(), and the dashboard.
+ *
+ * @param {{ cadence: string, agent: string, status: string, reason: string,
+ *           detail?: string, platform?: string, metadata?: Object }} params
+ * @returns {Promise<string>} The filename (not full path) of the written log.
+ */
 async function writeLog({ cadence, agent, status, reason, detail, platform, metadata = {} }) {
   const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
   await fs.mkdir(logDir, { recursive: true });
@@ -328,6 +510,15 @@ async function writeLog({ cadence, agent, status, reason, detail, platform, meta
   return file;
 }
 
+/**
+ * Prints a human-readable run summary to stdout.
+ * Includes status, agent, prompt path, platform, reason, and the contents of
+ * the memory update file (up to 2000 characters, truncated if longer).
+ *
+ * @param {{ status: string, agent: string, promptPath: string|null, reason: string,
+ *           detail?: string, memoryFile?: string, platform: string }} params
+ * @returns {Promise<void>}
+ */
 async function printRunSummary({ status, agent, promptPath, reason, detail, memoryFile, platform }) {
   let learnings = 'No learnings recorded.';
   if (memoryFile) {
@@ -360,6 +551,15 @@ async function printRunSummary({ status, agent, promptPath, reason, detail, memo
   process.stdout.write('================================================================================\n\n');
 }
 
+/**
+ * Prints the run summary then terminates the process with the given exit code.
+ * All normal and failure exit paths in main() go through this function to ensure
+ * a summary is always printed before exit.
+ *
+ * @param {number} code - Exit code (0 = success, 1 = general failure, 2 = backend error).
+ * @param {Object|null} summaryData - Data passed to printRunSummary, or null to skip.
+ * @returns {Promise<never>}
+ */
 async function exitWithSummary(code, summaryData) {
   if (summaryData) {
     await printRunSummary(summaryData);
@@ -433,6 +633,8 @@ async function main() {
       }
     }
 
+    // Step 6: Build exclusion set from relay state. Prefer the top-level `excluded`
+    // field (computed by cmdCheck), falling back to the union of locked/paused/completed.
     const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`, '--', '--json', '--quiet']);
     const checkPayload = parseJsonFromOutput(`${checkResult.stdout}\n${checkResult.stderr}`) || {};
     const excluded = Array.isArray(checkPayload.excluded)
@@ -523,6 +725,8 @@ async function main() {
     });
     const lockResult = lockAttempt.result;
 
+    // Lock exit 3: race lost — another agent claimed this slot between our check
+    // and our publish. Restart the loop to pick the next available agent.
     if (lockResult.code === 3) {
       continue;
     }
@@ -664,6 +868,8 @@ async function main() {
     const runStartMs = Date.parse(runArtifactSince);
     const outputChunks = [];
 
+    // Pre-create the memory update file path and inject it as SCHEDULER_MEMORY_FILE
+    // so the spawned agent can write learnings without computing the path itself.
     const memoryDir = path.resolve(process.cwd(), 'memory-updates');
     await fs.mkdir(memoryDir, { recursive: true });
     const memoryFile = path.join(memoryDir, `${ts()}__${selectedAgent}.md`);
@@ -795,6 +1001,7 @@ async function main() {
       sinceMs: runStartMs,
     });
 
+    // mode='required' → missing evidence is a hard failure; mode='optional' → warning only.
     const missingSteps = [retrieveCheck, storeCheck].filter((step) => !step.complete).map((step) => step.name);
     if (missingSteps.length && schedulerConfig.memoryPolicy.mode === 'required') {
       await writeLog({

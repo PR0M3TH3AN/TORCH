@@ -158,12 +158,20 @@ Configuration options:
 - `nostrLock.relays` (array of relay URLs)
 - `nostrLock.ttlSeconds` (lock duration in seconds)
 - `nostrLock.queryTimeoutMs` (timeout for relay queries)
+- `nostrLock.publishTimeoutMs` (per-relay publish timeout in ms)
+- `nostrLock.minSuccessfulRelayPublishes` (minimum successful publishes before lock continues, default: `1`)
+- `nostrLock.relayFallbacks` (optional fallback relay URLs used when primary relays fail quorum)
+- `nostrLock.minActiveRelayPool` (minimum relays kept active even when others are quarantined, default: `1`)
 - `nostrLock.dailyRoster` / `nostrLock.weeklyRoster` (explicit rosters)
 - `dashboard.defaultCadenceView` (`daily`, `weekly`, or `all`)
 - `dashboard.defaultStatusView` (`active` or `all`)
 - `dashboard.hashtag` (custom hashtag for lock events)
 - `scheduler.firstPromptByCadence.daily` / `.weekly` (first prompt to run)
+- `scheduler.handoffCommandByCadence.daily` / `.weekly` (shell command run after lock acquisition; must use `SCHEDULER_AGENT`, `SCHEDULER_CADENCE`, `SCHEDULER_PROMPT_PATH` env vars)
 - `scheduler.paused.daily` / `.weekly` (array of agent names to pause locally)
+- `scheduler.strict_lock` (lock backend policy; when `false`, defers backend-unavailable failures before failing, default: `true`)
+- `scheduler.degraded_lock_retry_window` (ms window for non-strict deferral of backend failures)
+- `scheduler.max_deferrals` (max non-strict lock deferrals before recording a hard failure)
 
 ### Dashboard
 
@@ -201,6 +209,10 @@ You can override configuration using environment variables:
 - `NOSTR_LOCK_RELAYS` (comma-separated)
 - `NOSTR_LOCK_TTL`
 - `NOSTR_LOCK_QUERY_TIMEOUT_MS`
+- `NOSTR_LOCK_PUBLISH_TIMEOUT_MS`
+- `NOSTR_LOCK_MIN_SUCCESSFUL_PUBLISHES`
+- `NOSTR_LOCK_RELAY_FALLBACKS` (comma-separated fallback relay URLs)
+- `NOSTR_LOCK_MIN_ACTIVE_RELAY_POOL`
 - `NOSTR_LOCK_DAILY_ROSTER` (comma-separated list of agents)
 - `NOSTR_LOCK_WEEKLY_ROSTER` (comma-separated list of agents)
 - `TORCH_CONFIG_PATH` (path to config file)

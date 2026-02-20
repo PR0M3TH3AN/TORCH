@@ -69,7 +69,7 @@ Environment:
   NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
   NOSTR_LOCK_RELAYS         Comma-separated relay WSS URLs
   NOSTR_LOCK_TTL            Lock TTL in seconds (default: 7200)
-  NOSTR_LOCK_QUERY_TIMEOUT_MS   Relay query timeout in milliseconds (default: 15000)
+  NOSTR_LOCK_QUERY_TIMEOUT_MS   Relay query timeout in milliseconds (default: 30000)
   NOSTR_LOCK_DAILY_ROSTER   Comma-separated daily roster (optional)
   NOSTR_LOCK_WEEKLY_ROSTER  Comma-separated weekly roster (optional)
   TORCH_CONFIG_PATH         Optional path to torch-config.json (default: ./torch-config.json)

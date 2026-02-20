@@ -40,7 +40,7 @@ Displays a CLI-friendly table of active locks.
    - Content: JSON payload with metadata.
 4. **Publish**: Send to all configured relays.
 5. **Race Check**:
-   - Wait `RACE_CHECK_DELAY_MS` (default 2000ms).
+   - Wait `RACE_CHECK_DELAY_MS` (default 1500ms).
    - Query relays again.
    - If another valid event exists with an *earlier* `created_at`: **Abort** (Race lost).
    - Otherwise: **Success**.

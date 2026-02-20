@@ -7,7 +7,7 @@ This document identifies areas of the TORCH repository that lack specific agent 
 | Gap | Evidence | Proposed Agent |
 | :--- | :--- | :--- |
 | **Database Migrations** | `migrations/` directory and SQL files present. | `migration-agent` |
-| **E2E Testing** | `playwright` dependency and `test/` integration files. | `e2e-agent` |
+| **E2E Testing** | `test/` integration/e2e files (Node.js `--test`). | `e2e-agent` |
 | **Memory Subsystem** | `scripts/memory/`, `.scheduler-memory/` exist. | `memory-health-agent` |
 | **Relay Stability** | `src/relay-health.mjs` and known relay flakiness. | `relay-health-agent` |
 | **Skills Management** | `skills/` directory and `torch-basics.md`. | `skills-agent` |
@@ -24,8 +24,8 @@ This document identifies areas of the TORCH repository that lack specific agent 
 - **Priority**: Medium
 
 ### 2. `e2e-agent`
-- **Gap**: `playwright` is used for dashboard and integration testing, but no agent is dedicated to scenario maintenance.
-- **Mission**: Maintain Playwright E2E scenarios, fix flaky tests, and ensure the dashboard remains functional across protocol changes.
+- **Gap**: E2E/integration tests exist (e.g., `test/scheduler-preflight-lock.e2e.test.mjs` via Node.js `--test`), but no agent is dedicated to scenario maintenance.
+- **Mission**: Maintain E2E scenarios, fix flaky tests, and ensure the dashboard and scheduler flow remain functional across protocol changes.
 - **Priority**: High (given the "Scenario-First" mandate in `AGENTS.md`)
 
 ### 3. `memory-health-agent`
