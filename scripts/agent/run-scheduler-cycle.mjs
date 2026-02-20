@@ -15,6 +15,13 @@ import {
   excerptText,
   getRunDateKey,
   toYamlScalar,
+  buildRecentlyRunExclusionSet,
+  parseDateValue,
+  parseFrontmatterCreatedAt,
+  parseFrontmatterAgent,
+  parseTimestampFromFilename,
+  isStrictSchedulerLogFilename,
+  parseAgentFromFilename,
 } from './scheduler-utils.mjs';
 
 import {
@@ -125,55 +132,6 @@ async function verifyMemoryStep({ name, markers, artifacts, outputText, sinceMs 
   };
 }
 
-function parseFrontmatterAgent(markdown) {
-  const lines = markdown.split(/\r?\n/);
-  if (lines[0]?.trim() !== '---') return null;
-  for (let i = 1; i < lines.length; i += 1) {
-    const line = lines[i];
-    if (line.trim() === '---') break;
-    const match = line.match(/^agent\s*:\s*(.+)$/i);
-    if (match?.[1]) {
-      return match[1].trim().replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return null;
-}
-
-function parseFrontmatterCreatedAt(markdown) {
-  const lines = markdown.split(/\r?\n/);
-  if (lines[0]?.trim() !== '---') return null;
-  for (let i = 1; i < lines.length; i += 1) {
-    const line = lines[i];
-    if (line.trim() === '---') break;
-    const match = line.match(/^created_at\s*:\s*(.+)$/i);
-    if (match?.[1]) {
-      return match[1].trim().replace(/^['"]|['"]$/g, '');
-    }
-  }
-  return null;
-}
-
-function parseDateValue(value) {
-  if (!value || typeof value !== 'string') return null;
-  const ms = Date.parse(value);
-  return Number.isFinite(ms) ? ms : null;
-}
-
-function parseTimestampFromFilename(filename) {
-  const match = String(filename).match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)__[^_]+__(completed|failed)\.md$/);
-  if (!match?.[1]) return null;
-  const iso = match[1].replace(/T(\d{2})-(\d{2})-(\d{2})Z$/, 'T$1:$2:$3Z');
-  return parseDateValue(iso);
-}
-
-function isStrictSchedulerLogFilename(filename) {
-  return /^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)__[^_]+__(completed|failed)\.md$/.test(String(filename));
-}
-
-function parseAgentFromFilename(filename) {
-  const match = String(filename).match(/^.+__([^_]+?)__(completed|failed)\.md$/);
-  return match?.[1] || null;
-}
 
 async function getLatestFile(logDir) {
   await fs.mkdir(logDir, { recursive: true });
@@ -486,6 +444,19 @@ async function main() {
         ])];
     const excludedSet = new Set(excluded);
 
+    // Time-window guard: exclude agents that already ran within the cadence window
+    // (24 h for daily, 7 d for weekly). This catches the cross-midnight edge case
+    // where the relay's date-scoped lock has rolled over but the run was recent.
+    const windowLabel = cadence === 'weekly' ? '7-day' : '24-hour';
+    const recentlyRunSet = await buildRecentlyRunExclusionSet(logDir, cadence);
+    const newlyTimeExcluded = [...recentlyRunSet].filter((agent) => !excludedSet.has(agent));
+    for (const agent of recentlyRunSet) {
+      excludedSet.add(agent);
+    }
+    if (newlyTimeExcluded.length > 0) {
+      console.log(`[scheduler] Time-window guard (${windowLabel}): ${newlyTimeExcluded.join(', ')} excluded — ran within window`);
+    }
+
     const latestFile = await getLatestFile(logDir);
     let previousAgent = null;
 
@@ -506,6 +477,22 @@ async function main() {
     });
 
     if (!selectedAgent) {
+      // Cycle saturation: every roster agent has a recent local log within the
+      // window. This is the expected steady state once a full rotation completes.
+      // Exit 0 so the triggering process (cron, CI) does not treat it as an error.
+      const allCycleSaturated = roster.every((agent) => recentlyRunSet.has(agent));
+      if (allCycleSaturated) {
+        const reason = `Cycle complete: all ${roster.length} agents ran within the ${windowLabel} window`;
+        console.log(`[scheduler] ${reason}. Nothing to do.`);
+        await exitWithSummary(0, {
+          status: 'skipped',
+          agent: 'scheduler',
+          promptPath: null,
+          reason,
+          platform,
+        });
+      }
+
       await writeLog({
         cadence,
         agent: 'scheduler',

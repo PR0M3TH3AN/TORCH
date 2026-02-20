@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { spawn } from 'node:child_process';
 
 const ALLOWED_ENV_KEYS = new Set([
@@ -197,4 +198,124 @@ export function toYamlScalar(value) {
 
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ---------------------------------------------------------------------------
+// Time-window guard helpers
+// Exported so they can be unit-tested independently of run-scheduler-cycle.mjs
+// ---------------------------------------------------------------------------
+
+/** Window sizes for the per-cadence duplicate-run guard. */
+export const CADENCE_WINDOW_MS = {
+  daily: 24 * 60 * 60 * 1000,      // 24 hours
+  weekly: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+/** Parse a date string to milliseconds, or null if invalid. */
+export function parseDateValue(value) {
+  if (!value || typeof value !== 'string') return null;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+/** Returns true when a filename matches the canonical scheduler log pattern. */
+export function isStrictSchedulerLogFilename(filename) {
+  return /^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)__[^_]+__(completed|failed)\.md$/.test(String(filename));
+}
+
+/** Extract agent name from a canonical log filename, or null. */
+export function parseAgentFromFilename(filename) {
+  const match = String(filename).match(/^.+__([^_]+?)__(completed|failed)\.md$/);
+  return match?.[1] || null;
+}
+
+/** Extract the ISO timestamp embedded in a canonical log filename as ms, or null. */
+export function parseTimestampFromFilename(filename) {
+  const match = String(filename).match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z)__[^_]+__(completed|failed)\.md$/);
+  if (!match?.[1]) return null;
+  const iso = match[1].replace(/T(\d{2})-(\d{2})-(\d{2})Z$/, 'T$1:$2:$3Z');
+  return parseDateValue(iso);
+}
+
+/** Read a single YAML frontmatter key from a markdown string, or null. */
+export function parseFrontmatterValue(markdown, key) {
+  const lines = String(markdown).split(/\r?\n/);
+  if (lines[0]?.trim() !== '---') return null;
+  const keyPattern = new RegExp(`^${key}\\s*:\\s*(.+)$`, 'i');
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (line.trim() === '---') break;
+    const match = line.match(keyPattern);
+    if (match?.[1]) {
+      return match[1].trim().replace(/^['"]|['"]$/g, '');
+    }
+  }
+  return null;
+}
+
+/** Read `created_at` from YAML frontmatter. */
+export function parseFrontmatterCreatedAt(markdown) {
+  return parseFrontmatterValue(markdown, 'created_at');
+}
+
+/** Read `agent` from YAML frontmatter. */
+export function parseFrontmatterAgent(markdown) {
+  return parseFrontmatterValue(markdown, 'agent');
+}
+
+/**
+ * Scans task-log files for a cadence and returns a Set of agent names that
+ * completed or failed within the cadence's time window (24 h daily, 7 d weekly).
+ *
+ * This is the local-filesystem companion to the Nostr relay lock check.  It
+ * catches the cross-midnight edge case where the relay's date-scoped lock has
+ * rolled over but the agent ran less than a full window ago.
+ *
+ * Only `completed` and `failed` logs are considered.  `deferred` logs are
+ * intentionally skipped so the scheduler retries lock-backend failures.
+ *
+ * Non-fatal: if the log directory cannot be read, an empty Set is returned.
+ *
+ * @param {string} logDir - Absolute or relative path to task-logs/<cadence>/.
+ * @param {'daily'|'weekly'} cadence
+ * @param {number} [now] - Current epoch ms (injectable for tests).
+ * @returns {Promise<Set<string>>} Agent names that ran within the window.
+ */
+export async function buildRecentlyRunExclusionSet(logDir, cadence, now = Date.now()) {
+  const windowMs = CADENCE_WINDOW_MS[cadence] ?? CADENCE_WINDOW_MS.daily;
+  const cutoff = now - windowMs;
+  const recentlyRun = new Set();
+
+  let entries;
+  try {
+    await fs.mkdir(logDir, { recursive: true });
+    entries = await fs.readdir(logDir, { withFileTypes: true });
+  } catch {
+    return recentlyRun;
+  }
+
+  const logFiles = entries
+    .filter((e) => e.isFile() && isStrictSchedulerLogFilename(e.name))
+    .map((e) => e.name);
+
+  await Promise.all(logFiles.map(async (filename) => {
+    const agentName = parseAgentFromFilename(filename);
+    if (!agentName) return;
+
+    // Prefer frontmatter created_at (more precise) over the filename timestamp.
+    let effectiveMs = parseTimestampFromFilename(filename);
+    try {
+      const content = await fs.readFile(path.join(logDir, filename), 'utf8');
+      const frontmatterMs = parseDateValue(parseFrontmatterCreatedAt(content));
+      if (frontmatterMs !== null) effectiveMs = frontmatterMs;
+    } catch {
+      // Read failure: fall back to filename timestamp.
+    }
+
+    if (effectiveMs !== null && effectiveMs >= cutoff) {
+      recentlyRun.add(agentName);
+    }
+  }));
+
+  return recentlyRun;
 }
