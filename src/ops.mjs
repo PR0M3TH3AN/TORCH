@@ -304,6 +304,29 @@ function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
   console.log(`Saved configuration to ${path.relative(cwd, configPath)}`);
 }
 
+function ensureGitIgnore(targetDir) {
+  const gitIgnorePath = path.join(targetDir, '.gitignore');
+  let content = '';
+  const exists = fs.existsSync(gitIgnorePath);
+
+  if (exists) {
+    content = fs.readFileSync(gitIgnorePath, 'utf8');
+  }
+
+  const lines = content.split('\n').map((l) => l.trim());
+  const hasNodeModules = lines.some((l) => l === 'node_modules' || l === '/node_modules' || l === 'node_modules/');
+
+  if (!hasNodeModules) {
+    const prefix = exists && content.length > 0 && !content.endsWith('\n') ? '\n' : '';
+    fs.appendFileSync(gitIgnorePath, `${prefix}node_modules\n`, 'utf8');
+    if (exists) {
+      console.log(`Updated ${path.relative(process.cwd(), gitIgnorePath)}: added node_modules`);
+    } else {
+      console.log(`Created ${path.relative(process.cwd(), gitIgnorePath)} with node_modules`);
+    }
+  }
+}
+
 function injectHostScriptsIfNeeded(paths, installDir) {
   // 7. Inject Scripts into Host Package.json
   // If we are NOT installing to '.', the host package.json is in paths.root
@@ -327,6 +350,7 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
 
   installAppAssets(paths.torchDir, installDir);
   installTorchAssets(paths, installDir);
+  ensureGitIgnore(paths.torchDir);
   configureTorch(cwd, paths, installDir, namespace, relays, hashtag);
   createDashboardLinkFile(paths, namespace, relays, hashtag);
   injectHostScriptsIfNeeded(paths, installDir);
