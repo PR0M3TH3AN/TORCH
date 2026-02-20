@@ -38,6 +38,7 @@ export function detectPlatform() {
   if (process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_SESSION_ID) return 'claude';
   if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return 'gemini';
   if (process.env.ANTIGRAVITY_API_KEY || process.env.ANTIGRAVITY_SESSION_ID) return 'antigravity';
+  if (process.env.QWEN_API_KEY || process.env.QWEN_SESSION_ID) return 'qwen';
   return null;
 }
 
