@@ -71,12 +71,19 @@ MUST 3: Run these commands in this order:
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
 11) Only after step 10 succeeds, write final task log (`_completed.md` for success). For any failure in step 9 or step 10, write `_failed.md`, then stop.
+12) Print a final summary message to stdout.
+    - Status: [Success/Failure]
+    - Agent: [Agent Name]
+    - Prompt: [Prompt Path]
+    - Reason: [Reason string]
+    - Learnings: [Content of the memory update file or "No learnings recorded"]
 
    Worked example (required order):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
    - execute selected prompt work
    - `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
    - write `task-logs/daily/<timestamp>__content-audit-agent__completed.md`
+   - print final summary (Status: Success, Learnings: <content>)
 
    Worked example (failed validation, no completion publish):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
@@ -84,6 +91,7 @@ MUST 3: Run these commands in this order:
    - `npm run lint` exits non-zero (or `npm test` exits non-zero)
    - write `task-logs/daily/<timestamp>__content-audit-agent__failed.md` with failure reason
    - stop without running `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily`
+   - print final summary (Status: Failed, Reason: <reason>)
 
 MUST 4: If all daily agents are excluded, stop and write `_failed.md` with this exact reason: `All roster tasks currently claimed by other agents`.
 ```
@@ -155,12 +163,19 @@ MUST 3: Run these commands in this order:
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
 11) Only after step 10 succeeds, write final task log (`_completed.md` for success). For any failure in step 9 or step 10, write `_failed.md`, then stop.
+12) Print a final summary message to stdout.
+    - Status: [Success/Failure]
+    - Agent: [Agent Name]
+    - Prompt: [Prompt Path]
+    - Reason: [Reason string]
+    - Learnings: [Content of the memory update file or "No learnings recorded"]
 
    Worked example (required order):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent bug-reproducer-agent --cadence weekly`
    - execute selected prompt work
    - `AGENT_PLATFORM=codex npm run lock:complete -- --agent bug-reproducer-agent --cadence weekly` (complete, permanent)
    - write `task-logs/weekly/<timestamp>__bug-reproducer-agent__completed.md`
+   - print final summary (Status: Success, Learnings: <content>)
 
    Worked example (failed validation, no completion publish):
    - `AGENT_PLATFORM=codex npm run lock:lock -- --agent bug-reproducer-agent --cadence weekly`
@@ -168,6 +183,7 @@ MUST 3: Run these commands in this order:
    - `npm run lint` exits non-zero (or `npm test` exits non-zero)
    - write `task-logs/weekly/<timestamp>__bug-reproducer-agent__failed.md` with failure reason
    - stop without running `AGENT_PLATFORM=codex npm run lock:complete -- --agent bug-reproducer-agent --cadence weekly`
+   - print final summary (Status: Failed, Reason: <reason>)
 
 MUST 4: If all weekly agents are excluded, stop and write `_failed.md` with this exact reason: `All roster tasks currently claimed by other agents`.
 ```

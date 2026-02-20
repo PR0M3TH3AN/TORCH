@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Source of truth: numbered MUST steps 2 and 4-14 in src/prompts/scheduler-flow.md are
+// Source of truth: numbered MUST steps 2 and 4-16 in src/prompts/scheduler-flow.md are
 // implemented by this script; step 3 (policy-file read) is best-effort and non-fatal.
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -370,6 +370,45 @@ async function writeLog({ cadence, agent, status, reason, detail, platform, meta
   return file;
 }
 
+async function printRunSummary({ status, agent, promptPath, reason, detail, memoryFile, platform }) {
+  let learnings = 'No learnings recorded.';
+  if (memoryFile) {
+    try {
+      const content = await fs.readFile(memoryFile, 'utf8');
+      if (content.trim()) {
+        learnings = content.trim();
+        if (learnings.length > 2000) {
+          learnings = learnings.slice(0, 2000) + '\n... (truncated)';
+        }
+      }
+    } catch {
+      // ignore read errors
+    }
+  }
+
+  process.stdout.write('\n================================================================================\n');
+  process.stdout.write('Scheduler Run Summary\n');
+  process.stdout.write('================================================================================\n');
+  process.stdout.write(`Status:    ${status}\n`);
+  process.stdout.write(`Agent:     ${agent}\n`);
+  process.stdout.write(`Prompt:    ${promptPath || '(none)'}\n`);
+  process.stdout.write(`Platform:  ${platform}\n`);
+  process.stdout.write(`Reason:    ${reason}\n`);
+  if (detail) {
+    process.stdout.write(`Detail:    ${detail}\n`);
+  }
+  process.stdout.write('\nLearnings / Discoveries:\n');
+  process.stdout.write(`${learnings}\n`);
+  process.stdout.write('================================================================================\n\n');
+}
+
+async function exitWithSummary(code, summaryData) {
+  if (summaryData) {
+    await printRunSummary(summaryData);
+  }
+  process.exit(code);
+}
+
 async function main() {
   const { cadence, platform, model } = parseArgs(process.argv.slice(2));
   if (!VALID_CADENCES.has(cadence)) {
@@ -426,7 +465,13 @@ async function main() {
             relay_health_history_path: preflight.payload?.historyPath || null,
           },
         });
-        process.exit(allRelaysUnhealthy ? 0 : (preflight.code || 1));
+        await exitWithSummary(allRelaysUnhealthy ? 0 : (preflight.code || 1), {
+          status: allRelaysUnhealthy ? 'deferred' : 'failed',
+          agent: 'scheduler',
+          promptPath: null,
+          reason: allRelaysUnhealthy ? 'All relays unhealthy preflight' : 'Lock backend unavailable preflight',
+          platform,
+        });
       }
     }
 
@@ -468,7 +513,13 @@ async function main() {
         platform,
         reason: ALL_EXCLUDED_REASON,
       });
-      process.exit(1);
+      await exitWithSummary(1, {
+        status: 'failed',
+        agent: 'scheduler',
+        promptPath: null,
+        reason: ALL_EXCLUDED_REASON,
+        platform,
+      });
     }
 
     const deferralForAgent = schedulerRunState.lock_deferral?.selected_agent === selectedAgent
@@ -533,7 +584,14 @@ async function main() {
             lock_idempotency_key: idempotencyKey,
           },
         });
-        process.exit(0);
+        await exitWithSummary(0, {
+          status: 'deferred',
+          agent: selectedAgent,
+          promptPath: null,
+          reason: 'Lock backend deferred',
+          platform,
+          detail: `Lock backend failure (${backendCategory})`,
+        });
       }
 
       schedulerRunState.lock_deferral = null;
@@ -562,7 +620,14 @@ async function main() {
           lock_stdout_excerpt: stdoutExcerpt || '(empty)',
         },
       });
-      process.exit(2);
+      await exitWithSummary(2, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath: null,
+        reason: 'Lock backend error',
+        platform,
+        detail: `Lock backend error (${backendCategory})`,
+      });
     }
 
     if (lockResult.code !== 0) {
@@ -575,7 +640,13 @@ async function main() {
         platform,
         reason: 'Failed to acquire lock',
       });
-      process.exit(lockResult.code);
+      await exitWithSummary(lockResult.code, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath: null,
+        reason: 'Failed to acquire lock',
+        platform,
+      });
     }
 
     const promptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
@@ -590,7 +661,14 @@ async function main() {
         detail: promptValidation.detail,
         metadata: categorizeFailureMetadata(promptValidation.category, { prompt_path: promptPath }),
       });
-      process.exit(1);
+      await exitWithSummary(1, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath,
+        reason: promptValidation.reason,
+        detail: promptValidation.detail,
+        platform,
+      });
     }
 
     schedulerRunState.lock_deferral = null;
@@ -626,7 +704,15 @@ async function main() {
           detail: schedulerConfig.memoryPolicy.retrieveCommand,
           metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
-        process.exit(retrieveResult.code);
+        await exitWithSummary(retrieveResult.code, {
+          status: 'failed',
+          agent: selectedAgent,
+          promptPath,
+          reason: 'Memory retrieval command failed',
+          detail: schedulerConfig.memoryPolicy.retrieveCommand,
+          memoryFile,
+          platform,
+        });
       }
     }
 
@@ -645,7 +731,15 @@ async function main() {
           detail: 'Handoff callback failed.',
           metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
-        process.exit(handoff.code);
+        await exitWithSummary(handoff.code, {
+          status: 'failed',
+          agent: selectedAgent,
+          promptPath,
+          reason: 'Prompt/handoff execution failed',
+          detail: 'Handoff callback failed',
+          memoryFile,
+          platform,
+        });
       }
     } else {
       const detail = schedulerConfig.missingHandoffCommandForMode
@@ -660,7 +754,15 @@ async function main() {
         detail,
         metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
       });
-      process.exit(1);
+      await exitWithSummary(1, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath,
+        reason: 'Prompt/handoff execution failed',
+        detail,
+        memoryFile,
+        platform,
+      });
     }
 
     if (schedulerConfig.memoryPolicy.storeCommand) {
@@ -678,7 +780,15 @@ async function main() {
           detail: schedulerConfig.memoryPolicy.storeCommand,
           metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
-        process.exit(storeResult.code);
+        await exitWithSummary(storeResult.code, {
+          status: 'failed',
+          agent: selectedAgent,
+          promptPath,
+          reason: 'Memory storage command failed',
+          detail: schedulerConfig.memoryPolicy.storeCommand,
+          memoryFile,
+          platform,
+        });
       }
     }
 
@@ -709,7 +819,15 @@ async function main() {
         detail: `Missing evidence for: ${missingSteps.join(', ')}`,
         metadata: categorizeFailureMetadata(FAILURE_CATEGORY.PROMPT_SCHEMA, { failure_class: 'prompt_validation_error' }),
       });
-      process.exit(1);
+      await exitWithSummary(1, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath,
+        reason: 'Required memory steps not verified',
+        detail: `Missing evidence for: ${missingSteps.join(', ')}`,
+        memoryFile,
+        platform,
+      });
     }
 
     if (missingSteps.length) {
@@ -741,7 +859,15 @@ async function main() {
         detail,
         metadata: categorizeFailureMetadata(FAILURE_CATEGORY.PROMPT_SCHEMA, { failure_class: 'prompt_validation_error' }),
       });
-      process.exit(artifactCheck.code);
+      await exitWithSummary(artifactCheck.code, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath,
+        reason: 'Missing required run artifacts',
+        detail,
+        memoryFile,
+        platform,
+      });
     }
 
     for (const validation of schedulerConfig.validationCommands) {
@@ -758,7 +884,15 @@ async function main() {
           detail: validation,
           metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
-        process.exit(result.code);
+        await exitWithSummary(result.code, {
+          status: 'failed',
+          agent: selectedAgent,
+          promptPath,
+          reason: 'Validation failed',
+          detail: validation,
+          memoryFile,
+          platform,
+        });
       }
     }
 
@@ -776,11 +910,26 @@ async function main() {
         platform,
         reason: `Completion publish failed. Retry npm run lock:complete -- --agent ${selectedAgent} --cadence ${cadence} after verifying relay connectivity`,
       });
-      process.exit(completeResult.code);
+      await exitWithSummary(completeResult.code, {
+        status: 'failed',
+        agent: selectedAgent,
+        promptPath,
+        reason: 'Completion publish failed',
+        detail: 'Retry npm run lock:complete after verifying relay connectivity',
+        memoryFile,
+        platform,
+      });
     }
 
     await writeLog({ cadence, agent: selectedAgent, status: 'completed', platform, reason: 'Scheduler cycle completed successfully' });
-    process.exit(0);
+    await exitWithSummary(0, {
+      status: 'completed',
+      agent: selectedAgent,
+      promptPath,
+      reason: 'Scheduler cycle completed successfully',
+      memoryFile,
+      platform,
+    });
   }
 }
 
