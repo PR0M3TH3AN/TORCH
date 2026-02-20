@@ -232,6 +232,18 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
     - `scripts/agent/run-scheduler-cycle.mjs` does **not** run `git commit` or `git push`.
     - If commit/push is required for your workflow, perform it in the configured handoff agent command or a separate orchestration step.
 
+16. Print a final summary message to stdout (standard output).
+
+    - The message MUST include:
+      - **Status**: [Success/Failure/Deferred]
+      - **Agent**: [Agent Name]
+      - **Prompt**: [Prompt Path]
+      - **Reason**: [Reason string]
+      - **Learnings**: [Content of the memory update file or "No learnings recorded"]
+
+    - If the run failed, include the failure reason.
+    - If the run succeeded, try to include the content of the memory update file (e.g., `memory-updates/<timestamp>__<agent>.md`) as the "Learnings".
+
 Worked post-task example (MUST order):
 
 1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
@@ -239,6 +251,7 @@ Worked post-task example (MUST order):
 3. `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes`
 4. `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
 5. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
+6. Print final summary (Status: Success, Learnings: <content>)
 
 Worked validation-failure example (MUST behavior):
 
@@ -248,3 +261,4 @@ Worked validation-failure example (MUST behavior):
 4. `npm run lint` exits non-zero (or `npm test` exits non-zero)
 5. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__failed.md` with the failing command and reason
 6. Stop the run **without** calling `npm run lock:complete -- --agent content-audit-agent --cadence daily`
+7. Print final summary (Status: Failed, Reason: <reason>)

@@ -149,6 +149,27 @@ const invariants = [
       "status: 'completed'",
     ],
   },
+  {
+    name: 'final summary print',
+    promptSnippets: {
+      meta: [
+        'Print a final summary message to stdout',
+        'Status: [Success/Failure]',
+        'Learnings: [Content of the memory update file',
+      ],
+      flow: [
+        'Print a final summary message to stdout',
+        'The message MUST include:',
+        '**Learnings**: [Content of the memory update file',
+      ],
+    },
+    schedulerSnippets: [
+      'async function printRunSummary',
+      'async function exitWithSummary',
+      'await printRunSummary(summaryData)',
+      'Learnings / Discoveries:',
+    ],
+  },
 ];
 
 
