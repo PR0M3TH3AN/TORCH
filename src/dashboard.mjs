@@ -26,8 +26,7 @@ function timingSafeCompare(a, b) {
     const paddedB = Buffer.alloc(maxLen);
     bufA.copy(paddedA);
     bufB.copy(paddedB);
-    crypto.timingSafeEqual(paddedA, paddedB);
-    return false;
+    return crypto.timingSafeEqual(paddedA, paddedB);
   }
   return crypto.timingSafeEqual(bufA, bufB);
 }
