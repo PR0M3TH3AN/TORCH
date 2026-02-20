@@ -377,6 +377,30 @@ Validation behavior:
   3. If failures persist past retry window, follow incident runbook `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md` and escalate relay/network remediation.
 - Relay health snapshots are emitted periodically and whenever lock publish/query fails; snapshots include success rate, timeout rate, rolling latency, and quarantine state per relay.
 
+## Scheduler Usage
+
+The scheduler is the primary entry point for automated agent execution. It handles lock acquisition, environment setup, agent handoff, and artifact verification.
+
+```bash
+# Run the daily rotation
+npm run scheduler:daily
+
+# Run the weekly rotation
+npm run scheduler:weekly
+```
+
+## Lock Management Usage
+
+Manage distributed locks manually if needed:
+
+```bash
+# Check status of locks
+npm run lock:check:daily
+
+# Manually complete a task lock
+npm run lock:complete -- --agent <agent> --cadence <cadence>
+```
+
 ## Scheduler lock reliability reporting
 
 Run the lock reliability summary to aggregate recent scheduler outcomes by platform, cadence, backend error category, and relay endpoint:

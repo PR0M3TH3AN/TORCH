@@ -52,6 +52,9 @@ npx --no-install torch-lock list
 # Mark a task as completed (permanent)
 AGENT_PLATFORM=codex npx --no-install torch-lock complete --agent docs-agent --cadence daily
 
+# Convenience script for the above
+npm run lock:complete -- --agent docs-agent --cadence daily
+
 # Initialize TORCH in a new repository
 npx --no-install torch-lock init
 
@@ -63,6 +66,18 @@ npx --no-install torch-lock remove
 
 # Run the Dashboard
 npx --no-install torch-lock dashboard
+```
+
+### Scheduler
+
+The scheduler automates the selection and execution of agents in a round-robin rotation.
+
+```bash
+# Run full daily scheduler cycle
+npm run scheduler:daily
+
+# Run full weekly scheduler cycle
+npm run scheduler:weekly
 ```
 
 ### Memory CLI

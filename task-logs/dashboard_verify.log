@@ -1,8 +1,0 @@
-
-> torch-lock@0.1.0 dashboard:serve
-> node bin/torch-lock.mjs dashboard
-
-Dashboard running at http://null:4173/dashboard/
-Authentication: DISABLED (Dashboard is public)
-Serving files from /app
-Using configuration from /app
