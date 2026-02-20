@@ -8,6 +8,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import util from 'node:util';
 
+/*
+ * Memory service flow:
+ * 1) `ingestEvents` validates/transforms raw events via `ingestMemoryWindow`, persists records, and clears retrieval cache.
+ * 2) `getRelevantMemories` applies cached lookup + ranking, updates usage timestamps, emits telemetry/metrics, and caches results.
+ * 3) Admin flows (`runPruneCycle`, pin/unpin, merge, list/inspect/stats) mutate or inspect the same backing store.
+ *
+ * Key invariants:
+ * - `memoryStore` is the process-local source of truth and is asynchronously persisted to `.scheduler-memory/memory-store.json`.
+ * - Any mutation that affects retrieval semantics clears the in-memory cache.
+ * - Save operations are serialized/coalesced (`currentSavePromise` + `pendingSavePromise`) so concurrent writes do not overlap.
+ */
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
 const debug = util.debuglog('torch-memory');
@@ -193,8 +204,11 @@ function recordThroughput(samples, now) {
  * Ingests agent events and stores them as memory records.
  *
  * @param {import('./schema.js').MemoryEvent[]} events - Ordered list of raw events to persist.
- * @param {{ maxSummaryLength?: number, embedText?: (value: string) => Promise<number[]> | number[], repository?: typeof memoryRepository }} [options] - Optional ingest tuning.
+ * @param {{ agent_id?: string, env?: NodeJS.ProcessEnv, maxSummaryLength?: number, embedText?: (value: string) => Promise<number[]> | number[], repository?: typeof memoryRepository, emitTelemetry?: (event: string, payload: object) => void, telemetry?: { emit?: (event: string, payload: object) => void }, emitMetric?: (metric: string, payload: object) => void, metrics?: { emit?: (metric: string, payload: object) => void } }} [options] - Optional ingest tuning and dependency injection hooks.
  * @returns {Promise<import('./schema.js').MemoryRecord[]>} Stored memory records.
+ * @throws {Error} Propagates validation/ingest failures from `ingestMemoryWindow` or repository calls.
+ * @example
+ * await ingestEvents([{ agent_id: 'agent-a', content: 'event payload', timestamp: Date.now() }], { agent_id: 'agent-a' });
  */
 export async function ingestEvents(events, options = {}) {
   const repository = options.repository ?? memoryRepository;
@@ -221,8 +235,11 @@ export async function ingestEvents(events, options = {}) {
 /**
  * Retrieves top-k memories for an agent query.
  *
- * @param {{ agent_id: string, query?: string, tags?: string[], timeframe?: { from?: number, to?: number }, k?: number, repository?: typeof memoryRepository }} params - Retrieval filter and ranking inputs.
+ * @param {{ agent_id: string, query?: string, tags?: string[], timeframe?: { from?: number, to?: number }, k?: number, repository?: typeof memoryRepository, ranker?: typeof filterAndRankMemories, cache?: { get: (key: string) => import('./schema.js').MemoryRecord[] | undefined, set: (key: string, value: import('./schema.js').MemoryRecord[]) => void }, emitTelemetry?: (event: string, payload: object) => void, telemetry?: { emit?: (event: string, payload: object) => void }, emitMetric?: (metric: string, payload: object) => void, metrics?: { emit?: (metric: string, payload: object) => void } }} params - Retrieval filter, ranking inputs, and optional hooks.
  * @returns {Promise<import('./schema.js').MemoryRecord[]>} Sorted list of relevant memories.
+ * @throws {Error} Propagates repository/ranker/update failures.
+ * @example
+ * const top = await getRelevantMemories({ agent_id: 'agent-a', query: 'scheduler memory retrieval', k: 5 });
  */
 export async function getRelevantMemories(params) {
   const {
@@ -273,8 +290,11 @@ export async function getRelevantMemories(params) {
 /**
  * Runs a memory pruning pass and removes unpinned stale records.
  *
- * @param {{ retentionMs?: number, now?: number, scheduleEveryMs?: number, repository?: typeof memoryRepository }} [options] - Prune configuration; if scheduleEveryMs is set, returns a scheduler handle.
- * @returns {Promise<{ pruned: import('./schema.js').MemoryRecord[], scheduler?: { stop: () => void } }>} Pruned records and optional scheduler handle.
+ * @param {{ retentionMs?: number, now?: number, scheduleEveryMs?: number, repository?: typeof memoryRepository, env?: NodeJS.ProcessEnv, pruneMode?: 'off' | 'dry-run' | 'on', emitTelemetry?: (event: string, payload: object) => void, telemetry?: { emit?: (event: string, payload: object) => void }, emitMetric?: (metric: string, payload: object) => void, metrics?: { emit?: (metric: string, payload: object) => void } }} [options] - Prune configuration and optional dependency hooks.
+ * @returns {Promise<{ pruned: import('./schema.js').MemoryRecord[], mode?: 'off' | 'dry-run', candidates?: import('./schema.js').MemoryRecord[], scheduler?: { stop: () => void } }>} Prune result. `mode`/`candidates` are returned for non-destructive modes.
+ * @throws {Error} Propagates repository listing or scheduler start failures.
+ * @example
+ * const result = await runPruneCycle({ retentionMs: 30 * 24 * 60 * 60 * 1000 });
  */
 export async function runPruneCycle(options = {}) {
   const repository = options.repository ?? memoryRepository;
@@ -340,7 +360,11 @@ export async function runPruneCycle(options = {}) {
  * Pins a memory to prevent pruning and boost retrieval ranking.
  *
  * @param {string} id - Memory record identifier.
+ * @param {{ repository?: typeof memoryRepository }} [options] - Optional repository override for tests/integration wiring.
  * @returns {Promise<import('./schema.js').MemoryRecord | null>} Updated memory record or null when not found.
+ * @throws {Error} Propagates repository update failures.
+ * @example
+ * await pinMemory('mem_123');
  */
 export async function pinMemory(id, options = {}) {
   const repository = options.repository ?? memoryRepository;
@@ -353,7 +377,11 @@ export async function pinMemory(id, options = {}) {
  * Removes a pin from a memory so it can be pruned normally.
  *
  * @param {string} id - Memory record identifier.
+ * @param {{ repository?: typeof memoryRepository }} [options] - Optional repository override for tests/integration wiring.
  * @returns {Promise<import('./schema.js').MemoryRecord | null>} Updated memory record or null when not found.
+ * @throws {Error} Propagates repository update failures.
+ * @example
+ * await unpinMemory('mem_123');
  */
 export async function unpinMemory(id, options = {}) {
   const repository = options.repository ?? memoryRepository;
@@ -365,8 +393,13 @@ export async function unpinMemory(id, options = {}) {
 /**
  * Marks one memory as merged into another.
  *
- * @param {string} id
- * @param {string} mergedInto
+ * @param {string} id - Source memory identifier to mark as merged.
+ * @param {string} mergedInto - Destination memory identifier.
+ * @param {{ repository?: typeof memoryRepository }} [options] - Optional repository override for tests/integration wiring.
+ * @returns {Promise<boolean>} `true` when source memory existed and was marked; otherwise `false`.
+ * @throws {Error} Propagates repository update failures.
+ * @example
+ * await markMemoryMerged('mem_old', 'mem_canonical');
  */
 export async function markMemoryMerged(id, mergedInto, options = {}) {
   const repository = options.repository ?? memoryRepository;
@@ -375,6 +408,16 @@ export async function markMemoryMerged(id, mergedInto, options = {}) {
   return merged;
 }
 
+/**
+ * Lists memory records with optional boundary-level filters and pagination.
+ *
+ * @param {{ agent_id?: string, type?: string, pinned?: boolean, includeMerged?: boolean, tags?: string[], offset?: number, limit?: number }} [filters] - Filter and pagination controls.
+ * @param {{ repository?: typeof memoryRepository }} [options] - Optional repository override.
+ * @returns {Promise<import('./schema.js').MemoryRecord[]>} Filtered records sorted by descending `last_seen`.
+ * @throws {Error} Propagates repository list failures.
+ * @example
+ * const rows = await listMemories({ agent_id: 'agent-a', pinned: true, limit: 20 });
+ */
 export async function listMemories(filters = {}, options = {}) {
   const repository = options.repository ?? memoryRepository;
   const source = typeof repository.listMemories === 'function'
@@ -392,6 +435,16 @@ export async function listMemories(filters = {}, options = {}) {
   return filtered.slice(offset, offset + limit);
 }
 
+/**
+ * Retrieves a single memory by id.
+ *
+ * @param {string} id - Memory record identifier.
+ * @param {{ repository?: typeof memoryRepository }} [options] - Optional repository override.
+ * @returns {Promise<import('./schema.js').MemoryRecord | null>} Memory record or `null` if not found.
+ * @throws {Error} Propagates repository read failures.
+ * @example
+ * const memory = await inspectMemory('mem_123');
+ */
 export async function inspectMemory(id, options = {}) {
   const repository = options.repository ?? memoryRepository;
   if (typeof repository.getMemoryById === 'function') {
@@ -400,6 +453,15 @@ export async function inspectMemory(id, options = {}) {
   return memoryStore.get(id) ?? null;
 }
 
+/**
+ * Simulates prune selection without deleting data.
+ *
+ * @param {{ retentionMs?: number, now?: number, repository?: typeof memoryRepository }} [options] - Dry-run selection controls.
+ * @returns {Promise<{ dryRun: true, retentionMs: number, candidateCount: number, candidates: Array<{ id: string, agent_id: string, type: string, pinned: boolean, last_seen: number, merged_into?: string | null }> }>} Dry-run summary and redacted candidates.
+ * @throws {Error} Propagates repository list/selection failures.
+ * @example
+ * const preview = await triggerPruneDryRun({ retentionMs: 7 * 24 * 60 * 60 * 1000 });
+ */
 export async function triggerPruneDryRun(options = {}) {
   const repository = options.repository ?? memoryRepository;
   const retentionMs = options.retentionMs ?? (1000 * 60 * 60 * 24 * 30);
@@ -430,6 +492,15 @@ export async function triggerPruneDryRun(options = {}) {
   };
 }
 
+/**
+ * Returns aggregate memory counts and throughput estimates for observability.
+ *
+ * @param {{ repository?: typeof memoryRepository, now?: number, windowMs?: number }} [options] - Stats window and repository controls.
+ * @returns {Promise<{ countsByType: Record<string, number>, totals: { total: number, pinned: number, archived: number, deletedObserved: number }, rates: { archivedRate: number, deletedRate: number }, indexSizeEstimateBytes: number, ingestThroughputPerMinute: number }>} Current memory aggregate snapshot.
+ * @throws {Error} Propagates repository list failures.
+ * @example
+ * const stats = await memoryStats({ windowMs: 60 * 60 * 1000 });
+ */
 export async function memoryStats(options = {}) {
   const repository = options.repository ?? memoryRepository;
   const now = options.now ?? Date.now();

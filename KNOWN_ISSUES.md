@@ -16,6 +16,26 @@ Track only **active, reproducible, unresolved** issues.
 
 ## Active issues
 
+### `test/scheduler-preflight-lock.e2e.test.mjs` fails in Codex due platform mismatch (`unknown` vs `codex`)
+- **Status:** Active
+- **Area:** Test
+- **Symptom:** `npm test` fails in `test/scheduler-preflight-lock.e2e.test.mjs` first case, expecting frontmatter platform `unknown` but run log writes `codex`.
+- **Trigger/Conditions:** Running full test suite in Codex environment where scheduler log frontmatter includes `platform: codex`.
+- **Workaround:** Run targeted tests excluding `test/scheduler-preflight-lock.e2e.test.mjs` until assertion baseline is clarified for Codex.
+- **Impact:** Medium — blocks `npm test` from passing in this environment.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-codex-test-failures-platform-and-telemetry.md`
+- **Last verified:** 2026-02-20
+
+### `test/memory-telemetry.test.mjs` expects child-process stdout/stderr that are empty in this environment
+- **Status:** Active
+- **Area:** Test / Tooling
+- **Symptom:** Both telemetry tests fail because spawned fixture process returns empty `stdout` and `stderr`, causing `[PASS]`/`TORCH-MEMORY` assertions to fail.
+- **Trigger/Conditions:** Running `node test/memory-telemetry.test.mjs` or memory test glob in this environment.
+- **Workaround:** Run memory tests excluding `test/memory-telemetry.test.mjs` while investigating child-process output capture behavior.
+- **Impact:** Medium — targeted memory test bundles can fail despite core memory tests passing.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-codex-test-failures-platform-and-telemetry.md`
+- **Last verified:** 2026-02-20
+
 ### Goose Desktop: hermit "text file busy" (ETXTBSY) blocks all `node`/`npm` commands
 - **Status:** Active (local workaround applied, upstream fix needed)
 - **Area:** Tooling
