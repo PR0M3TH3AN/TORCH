@@ -41,13 +41,24 @@ function loadMemoryStore() {
 let currentSavePromise = null;
 let pendingSavePromise = null;
 let pendingSaveResolve = null;
+let lastSaveTime = 0;
+const MIN_SAVE_INTERVAL_MS = 1000;
 
 async function performSave(store) {
   try {
+    const now = Date.now();
+    const timeSinceLast = now - lastSaveTime;
+    if (timeSinceLast < MIN_SAVE_INTERVAL_MS) {
+      await new Promise((resolve) => setTimeout(resolve, MIN_SAVE_INTERVAL_MS - timeSinceLast));
+    }
+
     const dir = path.dirname(MEMORY_FILE_PATH);
     await fs.promises.mkdir(dir, { recursive: true });
     const entries = [...store.entries()];
-    await fs.promises.writeFile(MEMORY_FILE_PATH, JSON.stringify(entries, null, 2), 'utf8');
+    const tmpPath = `${MEMORY_FILE_PATH}.${Date.now()}.${Math.random()}.tmp`;
+    await fs.promises.writeFile(tmpPath, JSON.stringify(entries, null, 2), 'utf8');
+    await fs.promises.rename(tmpPath, MEMORY_FILE_PATH);
+    lastSaveTime = Date.now();
   } catch (err) {
     console.error('Failed to save memory store:', err);
   } finally {
@@ -105,7 +116,7 @@ const memoryRepository = {
     const updated = { ...existing, last_seen: lastSeen };
     memoryStore.set(id, updated);
     storeVersion++;
-    await saveMemoryStore(memoryStore);
+    saveMemoryStore(memoryStore).catch((err) => console.error('Failed to save memory usage update:', err));
     return updated;
   },
   async listPruneCandidates({ cutoff }) {

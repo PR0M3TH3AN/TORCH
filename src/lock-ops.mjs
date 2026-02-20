@@ -10,7 +10,13 @@ import {
 } from './constants.mjs';
 import { nowUnix, relayListLabel } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
-import { publishLock, LockPublisher, secureRandom } from './lock-publisher.mjs';
+import { publishLock, LockPublisher } from './lock-publisher.mjs';
+import {
+  withTimeout,
+  relayListLabel,
+  mergeRelayList,
+  secureRandom,
+} from './lock-utils.mjs';
 
 /**
  * Parses a raw Nostr event into a structured lock object.

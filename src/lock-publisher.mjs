@@ -1,4 +1,4 @@
-import { randomInt, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getPublishTimeoutMs,
@@ -6,6 +6,7 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
+import { mergeRelayList } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
 import { relayListLabel } from './utils.mjs';
 

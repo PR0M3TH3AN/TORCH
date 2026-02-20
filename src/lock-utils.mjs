@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { randomInt } from 'node:crypto';
 import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
 export { relayListLabel } from './utils.mjs';
@@ -50,16 +51,14 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
-export function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
+export { withTimeout };
 
 export function mergeRelayList(primaryRelays, fallbackRelays) {
   return [...new Set([...primaryRelays, ...fallbackRelays])];
+}
+
+const MAX_RANDOM = 281474976710655; // 2**48 - 1
+
+export function secureRandom() {
+  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
 }

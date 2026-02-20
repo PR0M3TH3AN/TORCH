@@ -59,6 +59,23 @@ describe('Date Utilities', () => {
   });
 });
 
+describe('Relay Utilities', () => {
+  describe('mergeRelayList', () => {
+    it('merges two lists of relays without duplicates', () => {
+      const primary = ['wss://relay1.com', 'wss://relay2.com'];
+      const fallback = ['wss://relay2.com', 'wss://relay3.com'];
+      const merged = mergeRelayList(primary, fallback);
+      assert.deepStrictEqual(merged, ['wss://relay1.com', 'wss://relay2.com', 'wss://relay3.com']);
+    });
+
+    it('handles empty lists', () => {
+      assert.deepStrictEqual(mergeRelayList([], []), []);
+      assert.deepStrictEqual(mergeRelayList(['wss://relay1.com'], []), ['wss://relay1.com']);
+      assert.deepStrictEqual(mergeRelayList([], ['wss://relay1.com']), ['wss://relay1.com']);
+    });
+  });
+});
+
 describe('Platform Utilities', () => {
   describe('detectPlatform', () => {
     const originalEnv = { ...process.env };
