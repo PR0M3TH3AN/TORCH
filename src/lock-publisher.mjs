@@ -6,23 +6,8 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { mergeRelayList } from './utils.mjs';
+import { mergeRelayList, relayListLabel, withTimeout } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
-import { relayListLabel } from './utils.mjs';
-
-function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
-
-function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
-}
 
 const PUBLISH_ERROR_CODES = {
   TIMEOUT: 'publish_timeout',
