@@ -132,8 +132,14 @@ export async function createProposal({ agent, target, newContent, reason }) {
   return { id, diff };
 }
 
-export async function validateProposal(id) {
-  const { meta, newContent } = await getProposal(id);
+export async function validateProposal(proposalOrId) {
+  let proposal;
+  if (typeof proposalOrId === 'string') {
+    proposal = await getProposal(proposalOrId);
+  } else {
+    proposal = proposalOrId;
+  }
+  const { meta, newContent } = proposal;
 
   // 1. Allowlist check (redundant but safe)
   const { isAllowed } = resolveAndValidateTarget(meta.target);
@@ -165,7 +171,7 @@ export async function applyProposal(id) {
     throw new Error(`Proposal is ${meta.status}, cannot apply.`);
   }
 
-  const validation = await validateProposal(id);
+  const validation = await validateProposal(proposal);
   if (!validation.valid) {
     // Mark as rejected if validation fails?
     // Or just throw? The governance agent should decide.
