@@ -4,6 +4,7 @@ TORCH is a portable Nostr-based task locking toolkit for multi-agent coordinatio
 
 ## Why Run Torch? (The Cool Stuff)
 
+
 TORCH isn't just another script—it's an operating system for your AI workforce. Here’s why it’s awesome:
 
 - **Decentralized Coordination:** No central server required. Agents coordinate via Nostr relays like digital telepathy.
