@@ -3,6 +3,8 @@ import path from 'node:path';
 import { randomInt } from 'node:crypto';
 import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
+export { relayListLabel } from './utils.mjs';
+
 /**
  * Scans the local log directory to identify agents that have already completed their task
  * for the current period (daily or weekly).
@@ -50,10 +52,6 @@ export async function getCompletedAgents(cadence, logDir, deps) {
 }
 
 export { withTimeout };
-
-export function relayListLabel(relays) {
-  return relays.join(', ');
-}
 
 export function mergeRelayList(primaryRelays, fallbackRelays) {
   return [...new Set([...primaryRelays, ...fallbackRelays])];

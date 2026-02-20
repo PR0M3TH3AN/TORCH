@@ -52,12 +52,6 @@ export function ensureDir(dir) {
   }
 }
 
-export function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
+export function relayListLabel(relays) {
+  return relays.join(', ');
 }
