@@ -42,6 +42,13 @@ GOALS & SUCCESS CRITERIA
 3. Document Actions — Log processed proposals in `src/decisions/DECISIONS_<timestamp>.md`.
 
 ───────────────────────────────────────────────────────────────────────────────
+FAILURE MODES
+
+- If `process-proposals.mjs` fails, log the error and stop.
+- If no proposals are found, do nothing (this is normal).
+- If validation fails, reject the proposal and log the reason.
+
+───────────────────────────────────────────────────────────────────────────────
 WORKFLOW
 
 1. Preflight
