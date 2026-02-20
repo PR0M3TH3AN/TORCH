@@ -47,3 +47,7 @@ export function ensureDir(dir) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
+
+export function relayListLabel(relays) {
+  return relays.join(', ');
+}

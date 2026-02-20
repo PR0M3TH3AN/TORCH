@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
+export { relayListLabel } from './utils.mjs';
+
 /**
  * Scans the local log directory to identify agents that have already completed their task
  * for the current period (daily or weekly).
@@ -56,10 +58,6 @@ export function withTimeout(promise, timeoutMs, timeoutMessage) {
   return Promise.race([promise, timeoutPromise]).finally(() => {
     if (timeoutHandle) clearTimeout(timeoutHandle);
   });
-}
-
-export function relayListLabel(relays) {
-  return relays.join(', ');
 }
 
 export function mergeRelayList(primaryRelays, fallbackRelays) {

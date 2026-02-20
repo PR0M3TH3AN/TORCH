@@ -2,7 +2,7 @@ import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform } from '../src/utils.mjs';
+import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform, relayListLabel } from '../src/utils.mjs';
 
 describe('Date Utilities', () => {
   describe('todayDateStr', () => {
@@ -181,6 +181,25 @@ describe('File Utilities', () => {
       assert.strictEqual(fs.existsSync(targetDir), false);
       ensureDir(targetDir);
       assert.strictEqual(fs.existsSync(targetDir), true);
+    });
+  });
+});
+
+describe('String Utilities', () => {
+  describe('relayListLabel', () => {
+    it('joins relay URLs with comma and space', () => {
+      const relays = ['ws://relay1.com', 'ws://relay2.com'];
+      assert.strictEqual(relayListLabel(relays), 'ws://relay1.com, ws://relay2.com');
+    });
+
+    it('handles single relay', () => {
+      const relays = ['ws://relay1.com'];
+      assert.strictEqual(relayListLabel(relays), 'ws://relay1.com');
+    });
+
+    it('handles empty array', () => {
+      const relays = [];
+      assert.strictEqual(relayListLabel(relays), '');
     });
   });
 });
