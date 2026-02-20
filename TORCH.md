@@ -382,10 +382,10 @@ Validation behavior:
 The scheduler is the primary entry point for automated agent execution. It handles lock acquisition, environment setup, agent handoff, and artifact verification.
 
 ```bash
-# Run the daily rotation
+# Run full daily scheduler cycle
 npm run scheduler:daily
 
-# Run the weekly rotation
+# Run full weekly scheduler cycle
 npm run scheduler:weekly
 ```
 
