@@ -328,11 +328,16 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   installAppAssets(paths.torchDir, installDir);
   installTorchAssets(paths, installDir);
   configureTorch(cwd, paths, installDir, namespace, relays, hashtag);
-  createDashboardLinkFile(paths, namespace, relays, hashtag);
+  const dashboardUrl = createDashboardLinkFile(paths, namespace, relays, hashtag);
   injectHostScriptsIfNeeded(paths, installDir);
 
   console.log('\nInitialization complete.');
   console.log('You can now customize the files in ' + path.relative(cwd, paths.torchDir) + '/');
+
+  console.log(`\n● From torch-config.json:`);
+  console.log(`\n  - Hashtag: ${hashtag}`);
+  console.log(`  - Namespace: ${namespace}\n`);
+  console.log(dashboardUrl);
 }
 
 function createDashboardLinkFile(paths, namespace, relays, hashtag) {
@@ -358,6 +363,7 @@ To change these settings, edit \`torch-config.json\` in your project root.
   const filePath = path.join(paths.torchDir, 'TORCH_DASHBOARD.md');
   fs.writeFileSync(filePath, content, 'utf8');
   console.log(`Created ${path.relative(paths.root, filePath)}`);
+  return dashboardUrl;
 }
 
 function injectScriptsIntoHost(hostRoot, installDirName) {
