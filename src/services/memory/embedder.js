@@ -19,22 +19,29 @@ function fallbackEmbedding(_text) {
   return [];
 }
 
-function cosineSimilarity(left, right) {
-  const size = Math.max(left.length, right.length);
+/**
+ * @param {number[]} vector
+ * @returns {number}
+ */
+function computeNorm(vector) {
+  let norm = 0;
+  for (let index = 0; index < vector.length; index += 1) {
+    norm += (vector[index] ?? 0) ** 2;
+  }
+  return Math.sqrt(norm);
+}
+
+function cosineSimilarity(left, right, leftNorm, rightNorm) {
+  if (leftNorm === 0 || rightNorm === 0) return 0;
+
+  const size = Math.min(left.length, right.length);
   let dot = 0;
-  let leftNorm = 0;
-  let rightNorm = 0;
 
   for (let index = 0; index < size; index += 1) {
-    const leftValue = Number(left[index] ?? 0);
-    const rightValue = Number(right[index] ?? 0);
-    dot += leftValue * rightValue;
-    leftNorm += leftValue ** 2;
-    rightNorm += rightValue ** 2;
+    dot += (left[index] ?? 0) * (right[index] ?? 0);
   }
 
-  if (leftNorm === 0 || rightNorm === 0) return 0;
-  return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm));
+  return dot / (leftNorm * rightNorm);
 }
 
 /** @implements {EmbedderAdapter} */
@@ -60,7 +67,8 @@ class InMemoryEmbedderAdapter {
       // Given we want to support "no embedding", simply returning is safer than throwing.
       return;
     }
-    this.vectors.set(id, { vector: [...vector], metadata: { ...metadata } });
+    const norm = computeNorm(vector);
+    this.vectors.set(id, { vector: [...vector], norm, metadata: { ...metadata } });
   }
 
   /** @param {{ vector: number[], k?: number, filter?: Record<string, unknown> }} input */
@@ -68,12 +76,13 @@ class InMemoryEmbedderAdapter {
     if (!Array.isArray(vector) || vector.length === 0) return [];
 
     const matchesFilter = (metadata) => Object.entries(filter).every(([key, value]) => metadata?.[key] === value);
+    const queryNorm = computeNorm(vector);
 
     return [...this.vectors.entries()]
       .filter(([, value]) => matchesFilter(value.metadata))
       .map(([id, value]) => ({
         id,
-        score: cosineSimilarity(vector, value.vector),
+        score: cosineSimilarity(vector, value.vector, queryNorm, value.norm ?? computeNorm(value.vector)),
         vector: [...value.vector],
         metadata: { ...value.metadata },
       }))
