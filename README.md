@@ -56,6 +56,9 @@ AGENT_PLATFORM=codex npx --no-install torch-lock complete --agent docs-agent --c
 # Convenience script for the above
 npm run lock:complete -- --agent docs-agent --cadence daily
 
+# Generic usage for lock completion
+npm run lock:complete -- --agent <agent> --cadence <cadence>
+
 # Initialize TORCH in a new repository
 npx --no-install torch-lock init
 
