@@ -9,9 +9,8 @@ import {
   MS_PER_SECOND,
 } from './constants.mjs';
 import { nowUnix } from './utils.mjs';
-import { defaultHealthManager, RelayHealthManager, buildRelayHealthConfig, _resetRelayHealthState } from './relay-health-manager.mjs';
-import { publishLock, LockPublisher, _secureRandom } from './lock-publisher.mjs';
-import { withTimeout, relayListLabel, mergeRelayList } from './lock-utils.mjs';
+import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
+import { publishLock, LockPublisher, secureRandom } from './lock-publisher.mjs';
 
 /**
  * Parses a raw Nostr event into a structured lock object.
@@ -54,6 +53,24 @@ export function parseLockEvent(event) {
 function filterActiveLocks(locks) {
   const now = nowUnix();
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
+}
+
+function withTimeout(promise, timeoutMs, timeoutMessage) {
+  let timeoutHandle;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  });
+}
+
+function relayListLabel(relays) {
+  return relays.join(', ');
+}
+
+function mergeRelayList(primaryRelays, fallbackRelays) {
+  return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
 /**
@@ -142,11 +159,15 @@ export async function queryLocks(relays, cadence, dateStr, namespace, deps = {})
   }
 }
 
+export function _resetRelayHealthState() {
+  defaultHealthManager.reset();
+}
+
 export {
-  publishLock,
-  LockPublisher,
   RelayHealthManager,
   defaultHealthManager,
-  _resetRelayHealthState,
-  _secureRandom,
+  LockPublisher,
+  publishLock,
 };
+
+export const _secureRandom = secureRandom;

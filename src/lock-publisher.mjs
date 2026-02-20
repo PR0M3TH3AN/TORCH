@@ -7,7 +7,24 @@ import {
   getMinActiveRelayPool,
 } from './torch-config.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
-import { withTimeout, mergeRelayList } from './lock-utils.mjs';
+
+function withTimeout(promise, timeoutMs, timeoutMessage) {
+  let timeoutHandle;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  });
+}
+
+function relayListLabel(relays) {
+  return relays.join(', ');
+}
+
+function mergeRelayList(primaryRelays, fallbackRelays) {
+  return [...new Set([...primaryRelays, ...fallbackRelays])];
+}
 
 const PUBLISH_ERROR_CODES = {
   TIMEOUT: 'publish_timeout',
@@ -33,7 +50,7 @@ const PUBLISH_FAILURE_CATEGORIES = {
  * @param {string|Error} message - The error message or object to classify.
  * @returns {string} One of the PUBLISH_ERROR_CODES constants.
  */
-export function classifyPublishError(message) {
+function classifyPublishError(message) {
   const normalized = String(message || '').toLowerCase();
   if (normalized.includes('publish timed out after') || normalized.includes('publish timeout')) {
     return PUBLISH_ERROR_CODES.TIMEOUT;
@@ -87,7 +104,7 @@ export function classifyPublishError(message) {
   return PUBLISH_ERROR_CODES.PERMANENT;
 }
 
-export function isTransientPublishCategory(category) {
+function isTransientPublishCategory(category) {
   return [
     PUBLISH_ERROR_CODES.TIMEOUT,
     PUBLISH_ERROR_CODES.DNS,
@@ -102,11 +119,11 @@ export function isTransientPublishCategory(category) {
 
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
 
-function secureRandom() {
+export function secureRandom() {
   return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
 }
 
-export function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
+function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
   return Math.floor(randomFn() * maxDelay);
 }
@@ -295,7 +312,7 @@ export class LockPublisher {
     const { prioritized } = this.healthManager.prioritizeRelays(phaseRelays, this.healthConfig);
     if (!prioritized.length) return;
 
-    console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${prioritized.join(', ')})...`);
+    console.error(`[${phaseName}] Publishing to ${prioritized.length} relays (${relayListLabel(prioritized)})...`);
 
     const startedAtMs = Date.now();
     for (const relay of prioritized) {
@@ -437,5 +454,3 @@ export async function publishLock(relays, event, deps = {}) {
     },
   }).publish();
 }
-
-export const _secureRandom = secureRandom;

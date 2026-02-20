@@ -284,7 +284,3 @@ export function buildRelayHealthConfig(deps) {
     minActiveRelayPool: Math.max(1, deps.minActiveRelayPool ?? 1),
   };
 }
-
-export function _resetRelayHealthState() {
-  defaultHealthManager.reset();
-}
