@@ -1,4 +1,4 @@
-import { test, mock, describe, it, before, after, beforeEach } from 'node:test';
+import { mock, describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
 
 // Mock process.exit
