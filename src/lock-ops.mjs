@@ -8,7 +8,7 @@ import {
   KIND_APP_DATA,
   MS_PER_SECOND,
 } from './constants.mjs';
-import { nowUnix } from './utils.mjs';
+import { nowUnix, mergeRelayList } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
 import { publishLock, LockPublisher, secureRandom } from './lock-publisher.mjs';
 
@@ -67,10 +67,6 @@ function withTimeout(promise, timeoutMs, timeoutMessage) {
 
 function relayListLabel(relays) {
   return relays.join(', ');
-}
-
-function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
 /**
