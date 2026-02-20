@@ -867,12 +867,20 @@
                     <p class="agent-desc">Web-based tool with Auto-Scheduler. Optimized for Google's latest coding agent. <a href="https://jules.google/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-codex" class="agent-card disabled">
+                <div id="card-codex" onclick="selectAgent('codex')" class="agent-card" style="cursor: pointer;">
                     <div class="agent-header">
-                        <span class="agent-name">Codex</span>
+                        <span class="agent-name">Codex CLI</span>
+                        <span class="agent-status">Active</span>
+                    </div>
+                    <p class="agent-desc">Advanced reasoning for complex tasks. (Requires full access permissions)</p>
+                </div>
+
+                <div id="card-opencode" class="agent-card disabled">
+                    <div class="agent-header">
+                        <span class="agent-name">OpenCode CLI</span>
                         <span class="agent-status">Coming Soon</span>
                     </div>
-                    <p class="agent-desc">Advanced reasoning for complex tasks.</p>
+                    <p class="agent-desc">Open source models running locally.</p>
                 </div>
 
                 <div id="card-claude" onclick="selectAgent('claude')" class="agent-card" style="cursor: pointer;">
@@ -1465,6 +1473,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
 
             if (agent === 'jules') {
                 promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'codex') {
+                promptText = "Hey Codex, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'claude') {
                 promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'gemini') {
