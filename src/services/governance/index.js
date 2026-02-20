@@ -15,6 +15,12 @@ async function ensureDirs() {
   await fs.mkdir(HISTORY_DIR, { recursive: true });
 }
 
+function resolveAndValidateTarget(target) {
+  const absoluteTarget = path.resolve(process.cwd(), target);
+  const isAllowed = ALLOWED_TARGET_DIRS.some(allowed => absoluteTarget.startsWith(allowed));
+  return { absoluteTarget, isAllowed };
+}
+
 export async function listProposals() {
   await ensureDirs();
   const entries = await fs.readdir(PROPOSALS_DIR, { withFileTypes: true });
@@ -70,8 +76,7 @@ export async function createProposal({ agent, target, newContent, reason }) {
   await ensureDirs();
 
   // Validate target path is allowed
-  const absoluteTarget = path.resolve(process.cwd(), target);
-  const isAllowed = ALLOWED_TARGET_DIRS.some(allowed => absoluteTarget.startsWith(allowed));
+  const { absoluteTarget, isAllowed } = resolveAndValidateTarget(target);
 
   if (!isAllowed) {
     throw new Error(`Target ${target} is not in an allowed directory (src/prompts/daily or src/prompts/weekly).`);
@@ -131,8 +136,7 @@ export async function validateProposal(id) {
   const { meta, newContent } = await getProposal(id);
 
   // 1. Allowlist check (redundant but safe)
-  const absoluteTarget = path.resolve(process.cwd(), meta.target);
-  const isAllowed = ALLOWED_TARGET_DIRS.some(allowed => absoluteTarget.startsWith(allowed));
+  const { isAllowed } = resolveAndValidateTarget(meta.target);
   if (!isAllowed) {
     return { valid: false, reason: 'Target not in allowed directories.' };
   }
@@ -169,7 +173,7 @@ export async function applyProposal(id) {
     throw new Error(`Validation failed: ${validation.reason}`);
   }
 
-  const absoluteTarget = path.resolve(process.cwd(), meta.target);
+  const { absoluteTarget } = resolveAndValidateTarget(meta.target);
 
   // Archive old
   try {
@@ -311,7 +315,7 @@ export async function listPromptVersions(target) {
 export async function rollbackPrompt(target, hashOrStrategy = 'latest') {
   // target is relative path e.g. src/prompts/daily/agent.md
   const archiveDir = path.join(HISTORY_DIR, path.dirname(target));
-  const absoluteTarget = path.resolve(process.cwd(), target);
+  const { absoluteTarget } = resolveAndValidateTarget(target);
 
   let sourceContent = null;
   let sourceName = null;
