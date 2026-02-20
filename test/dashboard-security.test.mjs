@@ -43,6 +43,11 @@ test('Dashboard File Access Security', async (t) => {
     assert.strictEqual(res.statusCode, 200);
   });
 
+  await t.test('allows access to landing page', async () => {
+    const res = await get('/landing/index.html');
+    assert.strictEqual(res.statusCode, 200);
+  });
+
   await t.test('blocks access to package.json', async () => {
     const res = await get('/package.json');
     assert.strictEqual(res.statusCode, 403);

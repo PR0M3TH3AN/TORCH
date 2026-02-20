@@ -14,18 +14,26 @@
       <div role="main" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <!-- Header -->
         <header class="mb-8">
-          <div class="flex items-center gap-3 mb-2">
-            <img src="../assets/logo.svg" alt="TORCH Logo" width="32" height="32">
-            <h1 class="text-2xl font-semibold text-text-strong">
-              TORCH Agent Dashboard
-            </h1>
-            <span
-              id="connectionStatus"
-              class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium bg-surface-alt text-muted"
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-3">
+              <img src="../assets/logo.svg" alt="TORCH Logo" width="32" height="32">
+              <h1 class="text-2xl font-semibold text-text-strong">
+                TORCH Agent Dashboard
+              </h1>
+              <span
+                id="connectionStatus"
+                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium bg-surface-alt text-muted"
+              >
+                <span class="pulse-dot bg-muted"></span>
+                Connecting&hellip;
+              </span>
+            </div>
+            <a
+              href="../landing/"
+              class="rounded-md bg-surface border border-border px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-alt focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
             >
-              <span class="pulse-dot bg-muted"></span>
-              Connecting&hellip;
-            </span>
+              Home
+            </a>
           </div>
           <p class="text-muted text-sm max-w-prose">
             Live view of

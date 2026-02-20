@@ -160,8 +160,10 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     // Security check: restrict access to allowed paths
     const allowedPaths = [
       path.join(packageRoot, 'dashboard'),
+      path.join(packageRoot, 'landing'),
       path.join(packageRoot, 'assets'),
       path.join(packageRoot, 'src', 'docs'),
+      path.join(packageRoot, 'src', 'prompts'),
       path.join(packageRoot, 'src', 'constants.mjs'),
       path.join(packageRoot, 'torch-config.json')
     ];

@@ -48,6 +48,13 @@ const distDashboard = path.join(DIST_DIR, 'dashboard');
 fs.mkdirSync(distDashboard, { recursive: true });
 fs.cpSync(DASHBOARD_SRC, distDashboard, { recursive: true });
 
+// Patch dashboard/index.html to point to correct landing page in production build
+// In dev, ../landing/ works. In dist, ../ works (since landing becomes index.html at root).
+const dashboardIndex = path.join(distDashboard, 'index.html');
+let dashboardHtml = fs.readFileSync(dashboardIndex, 'utf8');
+dashboardHtml = dashboardHtml.replace(/href="\.\.\/landing\/"/g, 'href="../"');
+fs.writeFileSync(dashboardIndex, dashboardHtml);
+
 // 3. Copy docs/ -> dist/src/docs/
 const distDocs = path.join(DIST_DIR, 'src', 'docs');
 fs.mkdirSync(distDocs, { recursive: true });
