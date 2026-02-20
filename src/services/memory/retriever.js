@@ -48,6 +48,58 @@ function textMatchSimilarity(queryTerms, queryRegexes, memory) {
   return matchedTerms / queryTerms.length;
 }
 
+class LexicalIndex {
+  constructor(memories) {
+    this.index = new Map();
+    this.memoriesById = new Map();
+
+    for (const memory of memories) {
+      this.memoriesById.set(memory.id, memory);
+      const text = `${memory.summary} ${memory.content}`.toLowerCase();
+      const terms = text.split(/\W+/).filter(Boolean);
+      const uniqueTerms = new Set(terms);
+
+      for (const term of uniqueTerms) {
+        if (!this.index.has(term)) {
+          this.index.set(term, []);
+        }
+        this.index.get(term).push(memory.id);
+      }
+    }
+  }
+
+  search(queryTerms) {
+    const candidateIds = new Set();
+    for (const term of queryTerms) {
+      const subTerms = term.toLowerCase().split(/\W+/).filter(Boolean);
+      for (const subTerm of subTerms) {
+        const matches = this.index.get(subTerm);
+        if (matches) {
+          for (const id of matches) {
+            candidateIds.add(id);
+          }
+        }
+      }
+    }
+    return candidateIds;
+  }
+
+  getMemory(id) {
+    return this.memoriesById.get(id);
+  }
+}
+
+const indexCache = new WeakMap();
+
+function getOrCreateIndex(memories) {
+  let index = indexCache.get(memories);
+  if (!index) {
+    index = new LexicalIndex(memories);
+    indexCache.set(memories, index);
+  }
+  return index;
+}
+
 /**
  * @param {import('./schema.js').MemoryRecord} memory
  * @param {{ tags: string[], timeframe?: { from?: number, to?: number }, pinnedPreference?: 'prefer' | 'only' | 'exclude' }} params
@@ -108,10 +160,29 @@ async function buildSimilarityIndex(memories, params) {
   const queryTerms = normalizedQuery.toLowerCase().split(/\s+/).filter(Boolean);
   const queryRegexes = queryTerms.map((t) => new RegExp(escapeRegExp(t), 'i'));
 
-  for (const memory of memories) {
-    const lexicalScore = textMatchSimilarity(queryTerms, queryRegexes, memory);
-    if (lexicalScore > 0) {
-      similarityById.set(memory.id, lexicalScore);
+  const isFiltered = params.sourceMemories && params.sourceMemories !== memories;
+  const index = getOrCreateIndex(params.sourceMemories || memories);
+  const candidateIds = index.search(queryTerms);
+
+  let targetIds;
+  if (isFiltered) {
+    if (candidateIds.size > memories.length) {
+      targetIds = memories.filter((m) => candidateIds.has(m.id)).map((m) => m.id);
+    } else {
+      const memoriesInScope = new Set(memories.map((m) => m.id));
+      targetIds = [...candidateIds].filter((id) => memoriesInScope.has(id));
+    }
+  } else {
+    targetIds = candidateIds;
+  }
+
+  for (const id of targetIds) {
+    const memory = index.getMemory(id);
+    if (memory) {
+      const lexicalScore = textMatchSimilarity(queryTerms, queryRegexes, memory);
+      if (lexicalScore > 0) {
+        similarityById.set(memory.id, lexicalScore);
+      }
     }
   }
 
@@ -154,6 +225,7 @@ export async function filterAndRankMemories(memories, params) {
     k,
     vectorAdapter,
     embedText,
+    sourceMemories: memories,
   });
 
   return filtered
