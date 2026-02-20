@@ -524,6 +524,167 @@ export async function cmdComplete(agent, cadence, optionsOrDryRun = false, deps 
   return { status: 'completed', eventId: event.id };
 }
 
+const COMMAND_HANDLERS = {
+  check: async (args) => {
+    if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+      console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for check`);
+      throw new ExitError(1, 'Missing cadence');
+    }
+    await cmdCheck(args.cadence, {
+      logDir: args.logDir,
+      ignoreLogs: args.ignoreLogs,
+      json: args.json,
+      jsonFile: args.jsonFile,
+      quiet: args.quiet,
+    });
+  },
+  lock: async (args) => {
+    if (!args.agent) {
+      console.error('ERROR: --agent <name> is required for lock');
+      throw new ExitError(1, 'Missing agent');
+    }
+    if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+      console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for lock`);
+      throw new ExitError(1, 'Missing cadence');
+    }
+    await cmdLock(args.agent, args.cadence, {
+      dryRun: args.dryRun,
+      platform: args.platform,
+      model: args.model
+    });
+  },
+  complete: async (args) => {
+    if (!args.agent) {
+      console.error('ERROR: --agent <name> is required for complete');
+      throw new ExitError(1, 'Missing agent');
+    }
+    if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+      console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for complete`);
+      throw new ExitError(1, 'Missing cadence');
+    }
+    await cmdComplete(args.agent, args.cadence, {
+      dryRun: args.dryRun,
+      platform: args.platform,
+      model: args.model
+    });
+  },
+  list: async (args) => {
+    if (args.cadence && !VALID_CADENCES.has(args.cadence)) {
+      console.error(`ERROR: --cadence must be one of: ${[...VALID_CADENCES].join(', ')}`);
+      throw new ExitError(1, 'Invalid cadence');
+    }
+    await cmdList(args.cadence || null);
+  },
+  health: async (args) => {
+    if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
+      console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for health`);
+      throw new ExitError(1, 'Missing cadence');
+    }
+    const result = await runRelayHealthCheck({
+      cadence: args.cadence,
+      ...(Number.isFinite(args.timeoutMs) ? { timeoutMs: args.timeoutMs } : {}),
+      ...(Number.isFinite(args.allRelaysDownMinutes) ? { allRelaysDownMinutes: args.allRelaysDownMinutes } : {}),
+      ...(Number.isFinite(args.minSuccessRate) ? { minSuccessRate: args.minSuccessRate } : {}),
+      ...(Number.isFinite(args.windowMinutes) ? { windowMinutes: args.windowMinutes } : {}),
+    });
+    if (!result.ok) {
+      result.failureCategory = 'all relays unhealthy';
+    }
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.ok) throw new ExitError(2, 'Relay health check failed');
+  },
+  dashboard: async (args) => {
+    await cmdDashboard(args.port, args.host);
+  },
+  init: async (args) => {
+    await cmdInit(args.force);
+  },
+  update: async (args) => {
+    await cmdUpdate(args.force);
+  },
+  remove: async (args) => {
+    await cmdRemove(args.force);
+  },
+  'list-memories': async (args) => {
+    const result = await listMemories({
+      agent_id: args.agent,
+      type: args.type,
+      tags: args.tags,
+      pinned: args.pinned,
+      limit: args.limit,
+      offset: args.offset,
+    });
+
+    if (!args.full && Array.isArray(result)) {
+      for (const memory of result) {
+        if (typeof memory.content === 'string' && memory.content.length > 200) {
+          memory.content = memory.content.slice(0, 200) + '... (truncated, use --full to see all)';
+        }
+      }
+    }
+
+    console.log(JSON.stringify(result, null, 2));
+  },
+  'inspect-memory': async (args) => {
+    if (!args.id) {
+      console.error('ERROR: --id <memoryId> is required for inspect-memory');
+      throw new ExitError(1, 'Missing memory id');
+    }
+    const result = await inspectMemory(args.id);
+    console.log(JSON.stringify(result, null, 2));
+  },
+  'pin-memory': async (args) => {
+    if (!args.id) {
+      console.error('ERROR: --id <memoryId> is required for pin-memory');
+      throw new ExitError(1, 'Missing memory id');
+    }
+    const result = await pinMemory(args.id);
+    console.log(JSON.stringify(result, null, 2));
+  },
+  'unpin-memory': async (args) => {
+    if (!args.id) {
+      console.error('ERROR: --id <memoryId> is required for unpin-memory');
+      throw new ExitError(1, 'Missing memory id');
+    }
+    const result = await unpinMemory(args.id);
+    console.log(JSON.stringify(result, null, 2));
+  },
+  'trigger-prune-dry-run': async (args) => {
+    const result = await triggerPruneDryRun({ retentionMs: args.retentionMs ?? undefined });
+    console.log(JSON.stringify(result, null, 2));
+  },
+  'memory-stats': async (args) => {
+    const result = await memoryStats({ windowMs: args.windowMs ?? undefined });
+    console.log(JSON.stringify(result, null, 2));
+  },
+  proposal: async (args) => {
+    if (!args.subcommand) {
+      console.error('ERROR: Missing subcommand for proposal (create, list, apply, reject, show)');
+      throw new ExitError(1, 'Missing subcommand');
+    }
+    await cmdProposal(args.subcommand, {
+      agent: args.agent,
+      target: args.target,
+      contentFile: args.content,
+      reason: args.reason,
+      id: args.id,
+      status: args.status
+    });
+  },
+  rollback: async (args) => {
+    await cmdRollback(args.target, args.strategy, { list: args.list });
+  },
+  backup: async (args) => {
+    const { cmdBackup, listBackups } = await import('./cmd-backup.mjs');
+    if (args.list) {
+      const backups = await listBackups();
+      console.log(JSON.stringify(backups, null, 2));
+    } else {
+      await cmdBackup({ output: args.output });
+    }
+  },
+};
+
 function usage() {
   console.error(USAGE_TEXT);
 }
@@ -543,205 +704,13 @@ export async function main(argv) {
       throw new ExitError(1, 'No command specified');
     }
 
-    switch (args.command) {
-      case 'check': {
-        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for check`);
-          throw new ExitError(1, 'Missing cadence');
-        }
-        await cmdCheck(args.cadence, {
-          logDir: args.logDir,
-          ignoreLogs: args.ignoreLogs,
-          json: args.json,
-          jsonFile: args.jsonFile,
-          quiet: args.quiet,
-        });
-        break;
-      }
-
-      case 'lock': {
-        if (!args.agent) {
-          console.error('ERROR: --agent <name> is required for lock');
-          throw new ExitError(1, 'Missing agent');
-        }
-        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for lock`);
-          throw new ExitError(1, 'Missing cadence');
-        }
-        await cmdLock(args.agent, args.cadence, {
-          dryRun: args.dryRun,
-          platform: args.platform,
-          model: args.model
-        });
-        break;
-      }
-
-      case 'complete': {
-        if (!args.agent) {
-          console.error('ERROR: --agent <name> is required for complete');
-          throw new ExitError(1, 'Missing agent');
-        }
-        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for complete`);
-          throw new ExitError(1, 'Missing cadence');
-        }
-        await cmdComplete(args.agent, args.cadence, {
-          dryRun: args.dryRun,
-          platform: args.platform,
-          model: args.model
-        });
-        break;
-      }
-
-      case 'list': {
-        if (args.cadence && !VALID_CADENCES.has(args.cadence)) {
-          console.error(`ERROR: --cadence must be one of: ${[...VALID_CADENCES].join(', ')}`);
-          throw new ExitError(1, 'Invalid cadence');
-        }
-        await cmdList(args.cadence || null);
-        break;
-      }
-
-      case 'health': {
-        if (!args.cadence || !VALID_CADENCES.has(args.cadence)) {
-          console.error(`ERROR: --cadence <${[...VALID_CADENCES].join('|')}> is required for health`);
-          throw new ExitError(1, 'Missing cadence');
-        }
-        const result = await runRelayHealthCheck({
-          cadence: args.cadence,
-          ...(Number.isFinite(args.timeoutMs) ? { timeoutMs: args.timeoutMs } : {}),
-          ...(Number.isFinite(args.allRelaysDownMinutes) ? { allRelaysDownMinutes: args.allRelaysDownMinutes } : {}),
-          ...(Number.isFinite(args.minSuccessRate) ? { minSuccessRate: args.minSuccessRate } : {}),
-          ...(Number.isFinite(args.windowMinutes) ? { windowMinutes: args.windowMinutes } : {}),
-        });
-        if (!result.ok) {
-          result.failureCategory = 'all relays unhealthy';
-        }
-        console.log(JSON.stringify(result, null, 2));
-        if (!result.ok) throw new ExitError(2, 'Relay health check failed');
-        break;
-      }
-
-      case 'dashboard': {
-        await cmdDashboard(args.port, args.host);
-        break;
-      }
-
-      case 'init': {
-        await cmdInit(args.force);
-        break;
-      }
-
-      case 'update': {
-        await cmdUpdate(args.force);
-        break;
-      }
-
-      case 'remove': {
-        await cmdRemove(args.force);
-        break;
-      }
-
-      case 'list-memories': {
-        const result = await listMemories({
-          agent_id: args.agent,
-          type: args.type,
-          tags: args.tags,
-          pinned: args.pinned,
-          limit: args.limit,
-          offset: args.offset,
-        });
-
-        if (!args.full && Array.isArray(result)) {
-          for (const memory of result) {
-            if (typeof memory.content === 'string' && memory.content.length > 200) {
-              memory.content = memory.content.slice(0, 200) + '... (truncated, use --full to see all)';
-            }
-          }
-        }
-
-        console.log(JSON.stringify(result, null, 2));
-        break;
-      }
-
-      case 'inspect-memory': {
-        if (!args.id) {
-          console.error('ERROR: --id <memoryId> is required for inspect-memory');
-          throw new ExitError(1, 'Missing memory id');
-        }
-        const result = await inspectMemory(args.id);
-        console.log(JSON.stringify(result, null, 2));
-        break;
-      }
-
-      case 'pin-memory': {
-        if (!args.id) {
-          console.error('ERROR: --id <memoryId> is required for pin-memory');
-          throw new ExitError(1, 'Missing memory id');
-        }
-        const result = await pinMemory(args.id);
-        console.log(JSON.stringify(result, null, 2));
-        break;
-      }
-
-      case 'unpin-memory': {
-        if (!args.id) {
-          console.error('ERROR: --id <memoryId> is required for unpin-memory');
-          throw new ExitError(1, 'Missing memory id');
-        }
-        const result = await unpinMemory(args.id);
-        console.log(JSON.stringify(result, null, 2));
-        break;
-      }
-
-      case 'trigger-prune-dry-run': {
-        const result = await triggerPruneDryRun({ retentionMs: args.retentionMs ?? undefined });
-        console.log(JSON.stringify(result, null, 2));
-        break;
-      }
-
-      case 'memory-stats': {
-        const result = await memoryStats({ windowMs: args.windowMs ?? undefined });
-        console.log(JSON.stringify(result, null, 2));
-        break;
-      }
-
-      case 'proposal': {
-        if (!args.subcommand) {
-          console.error('ERROR: Missing subcommand for proposal (create, list, apply, reject, show)');
-          throw new ExitError(1, 'Missing subcommand');
-        }
-        await cmdProposal(args.subcommand, {
-          agent: args.agent,
-          target: args.target,
-          contentFile: args.content,
-          reason: args.reason,
-          id: args.id,
-          status: args.status
-        });
-        break;
-      }
-
-      case 'rollback': {
-        await cmdRollback(args.target, args.strategy, { list: args.list });
-        break;
-      }
-
-      case 'backup': {
-        const { cmdBackup, listBackups } = await import('./cmd-backup.mjs');
-        if (args.list) {
-          const backups = await listBackups();
-          console.log(JSON.stringify(backups, null, 2));
-        } else {
-          await cmdBackup({ output: args.output });
-        }
-        break;
-      }
-
-      default:
-        console.error(`ERROR: Unknown command: ${args.command}`);
-        usage();
-        throw new ExitError(1, 'Unknown command');
+    const handler = COMMAND_HANDLERS[args.command];
+    if (handler && Object.hasOwn(COMMAND_HANDLERS, args.command)) {
+      await handler(args);
+    } else {
+      console.error(`ERROR: Unknown command: ${args.command}`);
+      usage();
+      throw new ExitError(1, 'Unknown command');
     }
   } catch (err) {
     if (err instanceof ExitError) {
