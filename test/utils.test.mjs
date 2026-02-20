@@ -2,7 +2,7 @@ import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform } from '../src/utils.mjs';
+import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform, mergeRelayList } from '../src/utils.mjs';
 
 describe('Date Utilities', () => {
   describe('todayDateStr', () => {
@@ -55,6 +55,23 @@ describe('Date Utilities', () => {
 
     it('handles invalid input gracefully', () => {
       assert.strictEqual(getIsoWeekStr('invalid-date'), '');
+    });
+  });
+});
+
+describe('Relay Utilities', () => {
+  describe('mergeRelayList', () => {
+    it('merges two lists of relays without duplicates', () => {
+      const primary = ['wss://relay1.com', 'wss://relay2.com'];
+      const fallback = ['wss://relay2.com', 'wss://relay3.com'];
+      const merged = mergeRelayList(primary, fallback);
+      assert.deepStrictEqual(merged, ['wss://relay1.com', 'wss://relay2.com', 'wss://relay3.com']);
+    });
+
+    it('handles empty lists', () => {
+      assert.deepStrictEqual(mergeRelayList([], []), []);
+      assert.deepStrictEqual(mergeRelayList(['wss://relay1.com'], []), ['wss://relay1.com']);
+      assert.deepStrictEqual(mergeRelayList([], ['wss://relay1.com']), ['wss://relay1.com']);
     });
   });
 });

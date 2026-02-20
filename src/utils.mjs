@@ -42,6 +42,10 @@ export function detectPlatform() {
   return null;
 }
 
+export function mergeRelayList(primaryRelays, fallbackRelays) {
+  return [...new Set([...primaryRelays, ...fallbackRelays])];
+}
+
 export function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
