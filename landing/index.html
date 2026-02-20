@@ -888,15 +888,15 @@
                         <span class="agent-name">Codex CLI</span>
                         <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Advanced reasoning for complex tasks. (Requires full access permissions)</p>
+                    <p class="agent-desc">Advanced reasoning for complex tasks. (Requires full access permissions) <a href="https://openai.com/blog/openai-codex" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-opencode" class="agent-card disabled">
+                <div id="card-opencode" onclick="selectAgent('opencode')" class="agent-card" style="cursor: pointer;">
                     <div class="agent-header">
                         <span class="agent-name">OpenCode CLI</span>
-                        <span class="agent-status">Coming Soon</span>
+                        <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Open source models running locally.</p>
+                    <p class="agent-desc">Open source models running locally. <a href="https://opencode.ai/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
                 <div id="card-claude" onclick="selectAgent('claude')" class="agent-card" style="cursor: pointer;">
@@ -904,7 +904,7 @@
                         <span class="agent-name">Claude Code CLI</span>
                         <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Long-context understanding and safety. (CLI Required, needs cronjob)</p>
+                    <p class="agent-desc">Long-context understanding and safety. (CLI Required, needs cronjob) <a href="https://claude.ai/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
                 <div id="card-gemini" onclick="selectAgent('gemini')" class="agent-card" style="cursor: pointer;">
@@ -912,7 +912,7 @@
                         <span class="agent-name">Gemini CLI</span>
                         <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Google's multimodal AI model. (CLI Required, needs cronjob)</p>
+                    <p class="agent-desc">Google's multimodal AI model. (CLI Required, needs cronjob) <a href="https://deepmind.google/technologies/gemini/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
                 <div id="card-qwen" onclick="selectAgent('qwen')" class="agent-card" style="cursor: pointer;">
@@ -920,7 +920,7 @@
                         <span class="agent-name">Qwen Coder CLI</span>
                         <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">Alibaba's open weights coding model. (CLI Required, needs cronjob)</p>
+                    <p class="agent-desc">Alibaba's open weights coding model. (CLI Required, needs cronjob) <a href="https://qwenlm.github.io/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
                 <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;">
@@ -928,7 +928,7 @@
                         <span class="agent-name">Antigravity IDE</span>
                         <span class="agent-status">Active</span>
                     </div>
-                    <p class="agent-desc">The autonomous Python IDE. (Manual only)</p>
+                    <p class="agent-desc">The autonomous Python IDE. (Manual only) <a href="https://antigravity.google/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
             </div>
 
@@ -1499,6 +1499,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'codex') {
                 promptText = "Hey Codex, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'opencode') {
+                promptText = "Hey OpenCode, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'claude') {
                 promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'gemini') {

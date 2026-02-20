@@ -403,6 +403,11 @@ const PLATFORM_COLORS = {
     text: 'text-purple',
     label: 'Qwen Coder',
   },
+  opencode: {
+    bg: 'bg-teal/10',
+    text: 'text-teal',
+    label: 'OpenCode',
+  },
   unknown: { bg: 'bg-muted/10', text: 'text-muted', label: 'Unknown' },
 };
 
