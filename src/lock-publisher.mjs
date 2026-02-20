@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomInt } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getPublishTimeoutMs,
@@ -6,7 +6,7 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { mergeRelayList } from './utils.mjs';
+import { mergeRelayList } from './lock-utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
 import { relayListLabel } from './utils.mjs';
 
@@ -18,10 +18,6 @@ function withTimeout(promise, timeoutMs, timeoutMessage) {
   return Promise.race([promise, timeoutPromise]).finally(() => {
     if (timeoutHandle) clearTimeout(timeoutHandle);
   });
-}
-
-function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
 const PUBLISH_ERROR_CODES = {
