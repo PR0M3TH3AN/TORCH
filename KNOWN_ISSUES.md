@@ -83,3 +83,13 @@ Track only **active, reproducible, unresolved** issues.
 - **Workaround:** None. Prompt updated to target `docs/` instead of `/content`.
 - **Impact:** Docs audit cannot be performed.
 - **Last verified:** 2026-02-18
+
+### content-audit-agent mission remains mis-scoped (no upload/contribution product surface in repo)
+- **Status:** Active
+- **Area:** Docs
+- **Symptom:** `content-audit-agent` is instructed to audit upload/contribution media flows (MIME limits, resumability, moderation, attribution), but repository docs and code contain no such features or contracts.
+- **Trigger/Conditions:** Running `content-audit-agent` against current default branch.
+- **Workaround:** Execute a no-op audit with evidence capture, then report scope mismatch instead of fabricating doc updates.
+- **Impact:** Repeated no-op runs and prompt/mission drift; no actionable docs-runtime alignment can be performed for upload workflows.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-content-audit-no-upload-surface.md`
+- **Last verified:** 2026-02-20
