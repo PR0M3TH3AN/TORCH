@@ -82,13 +82,13 @@ a { color: inherit; }
 .text-info { color: var(--info); }
 .text-info-strong { color: var(--info-strong); }
 .text-accent { color: var(--accent); }
-.text-accent-strong { color: var(--accent); }
+.text-accent-strong { color: var(--accent-strong); }
 .text-success { color: var(--success); }
 .text-warning { color: var(--warning); }
 .text-danger { color: var(--danger); }
 .text-purple { color: var(--purple); }
 .text-pink { color: var(--pink); }
-.text-white { color: #fff; }
+.text-white { color: var(--text-strong); }
 
 .border { border-width: 1px; border-style: solid; }
 .border-t { border-top-width: 1px; border-top-style: solid; }
