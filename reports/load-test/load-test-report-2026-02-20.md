@@ -3,34 +3,34 @@
 ## Safety
 - Does not target public relays.
 - Requires explicit `RELAY_URL`.
-- Relay target: ws://127.0.0.1:7777
+- Relay target: ws://localhost:9999
 - Mode: dry-run (no network sends)
 
 ## Configuration
-- Clients: 50
-- Duration: 2s
+- Clients: 1000
+- Duration: 10s
 - Rate: 20 events/sec
-- Metadata mix: 0.3
-- Max connections: 50
+- Metadata mix: 0.2
+- Max connections: 250
 - Max in-flight publishes: 300
-- Seed: load-test-smoke
+- Seed: (random)
 
 ## Summary
-- Attempted: 40
-- Succeeded: 40
+- Attempted: 200
+- Succeeded: 200
 - Failed: 0
-- Throughput: 19.99 events/sec
+- Throughput: 19.998 events/sec
 - Success rate: 100.00%
 
 ## Latency
-- p50: 13.787 ms
-- p90: 21.282 ms
-- p95: 21.878 ms
-- p99: 24.229 ms
+- p50: 13.845 ms
+- p90: 22.402 ms
+- p95: 23.497 ms
+- p99: 24.346 ms
 
 ## Event Loop Lag
-- Avg: 0.875 ms
-- p95: 5 ms
+- Avg: 0.375 ms
+- p95: 1 ms
 
 ## Error Taxonomy
 - none

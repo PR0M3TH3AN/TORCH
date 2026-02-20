@@ -1,56 +1,71 @@
 {
-  "generatedAt": "2026-02-20T04:30:10.395Z",
+  "generatedAt": "2026-02-20T17:11:43.222Z",
   "config": {
     "relay": {
       "protocol": "ws:",
-      "hostname": "127.0.0.1",
-      "port": "7777"
+      "hostname": "localhost",
+      "port": "9999"
     },
-    "relaySummary": "ws://127.0.0.1:7777",
+    "relaySummary": "ws://localhost:9999",
     "dryRun": true,
-    "clients": 50,
-    "durationSec": 2,
+    "clients": 1000,
+    "durationSec": 10,
     "rateEps": 20,
-    "mixMetadata": 0.3,
-    "seed": "load-test-smoke",
+    "mixMetadata": 0.2,
+    "seed": null,
     "connectConcurrency": 25,
-    "maxConnections": 50,
+    "maxConnections": 250,
     "maxInflight": 300,
     "publishTimeoutMs": 15000,
     "metadataParts": 4
   },
   "results": {
-    "attempted": 40,
-    "succeeded": 40,
+    "attempted": 200,
+    "succeeded": 200,
     "failed": 0,
     "successRate": 1,
-    "throughputEps": 19.99,
+    "throughputEps": 19.998,
     "backpressureDrops": 0,
     "inFlightPeak": 2,
     "latency": {
-      "count": 40,
-      "minMs": 4.94,
-      "avgMs": 13.866649999999998,
-      "p50Ms": 13.787,
-      "p90Ms": 21.282,
-      "p95Ms": 21.878,
-      "p99Ms": 24.229,
-      "maxMs": 24.229
+      "count": 200,
+      "minMs": 4.796,
+      "avgMs": 14.317129999999993,
+      "p50Ms": 13.845,
+      "p90Ms": 22.402,
+      "p95Ms": 23.497,
+      "p99Ms": 24.346,
+      "maxMs": 24.576
     },
     "eventLoopLag": {
-      "avgMs": 0.875,
-      "p95Ms": 5
+      "avgMs": 0.375,
+      "p95Ms": 1
     },
     "errorBreakdown": {},
     "topStackTraces": {},
     "resource": {
-      "samples": [],
-      "sampleCount": 0,
-      "maxRssMb": 0,
-      "maxHeapUsedMb": 0,
-      "avgCpuPercent": 0,
-      "cpuUserMs": 369.44,
-      "cpuSystemMs": 9.975
+      "samples": [
+        {
+          "tSec": 5,
+          "rssMb": 78.51,
+          "heapUsedMb": 10.08,
+          "heapTotalMb": 19.1,
+          "cpuPercent": 15.75
+        },
+        {
+          "tSec": 10,
+          "rssMb": 78.66,
+          "heapUsedMb": 10.24,
+          "heapTotalMb": 19.1,
+          "cpuPercent": 13.34
+        }
+      ],
+      "sampleCount": 2,
+      "maxRssMb": 78.66,
+      "maxHeapUsedMb": 10.24,
+      "avgCpuPercent": 14.54,
+      "cpuUserMs": 1430.143,
+      "cpuSystemMs": 24.589
     },
     "throughputSeries": [
       {
@@ -66,12 +81,68 @@
         "succeeded": 20,
         "failed": 0,
         "backpressureDrops": 0
+      },
+      {
+        "second": 2,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 3,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 4,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 5,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 6,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 7,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 8,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 9,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
       }
     ],
     "hotFunctions": "not measured",
-    "startedAtIso": "2026-02-20T04:30:08.394Z",
-    "completedAtIso": "2026-02-20T04:30:10.395Z",
-    "runDurationSec": 2.001
+    "startedAtIso": "2026-02-20T17:11:33.221Z",
+    "completedAtIso": "2026-02-20T17:11:43.222Z",
+    "runDurationSec": 10.001
   },
   "remediation": [
     "No significant bottlenecks observed in this run; increase load gradually and repeat to find saturation point."
