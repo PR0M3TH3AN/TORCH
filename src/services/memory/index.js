@@ -80,9 +80,22 @@ async function saveMemoryStore(store) {
 const memoryStore = loadMemoryStore();
 const cache = createMemoryCache();
 
+let storeVersion = 0;
+let cachedMemoriesArray = null;
+let cachedMemoriesVersion = -1;
+
+function getMemoriesArray() {
+  if (cachedMemoriesVersion !== storeVersion || !cachedMemoriesArray) {
+    cachedMemoriesArray = [...memoryStore.values()];
+    cachedMemoriesVersion = storeVersion;
+  }
+  return cachedMemoriesArray;
+}
+
 const memoryRepository = {
   async insertMemory(memory) {
     memoryStore.set(memory.id, memory);
+    storeVersion++;
     await saveMemoryStore(memoryStore);
     return memory;
   },
@@ -91,16 +104,18 @@ const memoryRepository = {
     if (!existing) return null;
     const updated = { ...existing, last_seen: lastSeen };
     memoryStore.set(id, updated);
+    storeVersion++;
     await saveMemoryStore(memoryStore);
     return updated;
   },
   async listPruneCandidates({ cutoff }) {
-    return [...memoryStore.values()].filter((memory) => !memory.pinned && memory.last_seen < cutoff);
+    return getMemoriesArray().filter((memory) => !memory.pinned && memory.last_seen < cutoff);
   },
   async markMerged(id, mergedInto) {
     const existing = memoryStore.get(id);
     if (!existing) return false;
     memoryStore.set(id, { ...existing, merged_into: mergedInto, last_seen: Date.now() });
+    storeVersion++;
     await saveMemoryStore(memoryStore);
     return true;
   },
@@ -109,6 +124,7 @@ const memoryRepository = {
     if (!existing) return null;
     const updated = { ...existing, pinned, last_seen: Date.now() };
     memoryStore.set(id, updated);
+    storeVersion++;
     await saveMemoryStore(memoryStore);
     return updated;
   },
@@ -116,7 +132,7 @@ const memoryRepository = {
     return memoryStore.get(id) ?? null;
   },
   async listMemories() {
-    return [...memoryStore.values()];
+    return getMemoriesArray();
   },
 };
 
@@ -267,7 +283,7 @@ export async function getRelevantMemories(params) {
 
   const source = typeof repository.listMemories === 'function'
     ? await repository.listMemories(queryParams)
-    : [...memoryStore.values()];
+    : getMemoriesArray();
 
   const ranked = await ranker(source, queryParams);
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
@@ -308,7 +324,7 @@ export async function runPruneCycle(options = {}) {
 
   const prunable = dbCandidates.length > 0
     ? dbCandidates
-    : selectPrunableMemories([...memoryStore.values()], {
+    : selectPrunableMemories(getMemoriesArray(), {
       retentionMs,
       now: options.now,
     });
@@ -333,6 +349,7 @@ export async function runPruneCycle(options = {}) {
   }
 
   if (prunable.length > 0) {
+    storeVersion++;
     await saveMemoryStore(memoryStore);
   }
 
@@ -422,7 +439,7 @@ export async function listMemories(filters = {}, options = {}) {
   const repository = options.repository ?? memoryRepository;
   const source = typeof repository.listMemories === 'function'
     ? await repository.listMemories(filters)
-    : [...memoryStore.values()];
+    : getMemoriesArray();
 
   const filtered = applyMemoryFilters(source, filters)
     .sort((left, right) => right.last_seen - left.last_seen);
