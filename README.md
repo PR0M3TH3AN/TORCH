@@ -175,6 +175,9 @@ If you are developing `torch-lock` itself:
 - `npm run dashboard:serve`
 - `npm test` (run unit tests)
 - `npm run lint` (run linter)
+- `npm run lock:complete` (manually complete a task)
+- `npm run scheduler:daily` (run full daily scheduler cycle)
+- `npm run scheduler:weekly` (run full weekly scheduler cycle)
 - `npm run report:lock-reliability` (aggregate recent scheduler logs into markdown+JSON reliability reports)
 
 

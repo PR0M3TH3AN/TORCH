@@ -456,3 +456,27 @@ The "Offline Bundle" is a standard npm package tarball (`.tgz`) generated during
     ```bash
     npx torch-lock init
     ```
+
+## Included Resources
+
+- `src/lib.mjs` — Core library logic (can be imported in scripts)
+- `TORCH.md` — Protocol summary and usage
+- `src/prompts/` — Generic scheduler prompts and flow
+- `skills/` — Repository-local skill guides for agent onboarding and repeatable workflows
+- `dashboard/` — Static lock dashboard assets
+
+## NPM Scripts (for development)
+
+If you are developing `torch-lock` itself:
+
+- `npm run lock:check:daily`
+- `npm run lock:check:weekly`
+- `npm run lock:list`
+- `npm run lock:health -- --cadence daily` (relay websocket + publish/read probe; writes history to `task-logs/relay-health/`)
+- `npm run dashboard:serve`
+- `npm test` (run unit tests)
+- `npm run lint` (run linter)
+- `npm run lock:complete` (manually complete a task)
+- `npm run scheduler:daily` (run full daily scheduler cycle)
+- `npm run scheduler:weekly` (run full weekly scheduler cycle)
+- `npm run report:lock-reliability` (aggregate recent scheduler logs into markdown+JSON reliability reports)
