@@ -723,7 +723,18 @@ export async function main(argv) {
       }
 
       case 'rollback': {
-        await cmdRollback(args.target, args.strategy);
+        await cmdRollback(args.target, args.strategy, { list: args.list });
+        break;
+      }
+
+      case 'backup': {
+        const { cmdBackup, listBackups } = await import('./cmd-backup.mjs');
+        if (args.list) {
+          const backups = await listBackups();
+          console.log(JSON.stringify(backups, null, 2));
+        } else {
+          await cmdBackup({ output: args.output });
+        }
         break;
       }
 

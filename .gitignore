@@ -1,6 +1,7 @@
 node_modules
 dist/
 .scheduler-memory/
+.torch/
 
 # Logs
 *.log

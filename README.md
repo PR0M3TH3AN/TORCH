@@ -84,6 +84,54 @@ npx --no-install torch-lock unpin-memory --id <memory-id>
 npx --no-install torch-lock memory-stats
 ```
 
+### Prompt Governance & Versioning CLI
+
+Agent prompts are changed through a governance workflow that archives the previous version before overwriting, enabling full rollback.
+
+```bash
+# Propose a change to an agent prompt
+npx --no-install torch-lock proposal create \
+  --agent my-agent \
+  --target src/prompts/daily/my-agent.md \
+  --content /path/to/new-content.md \
+  --reason "Add missing EXIT CRITERIA section"
+
+# List pending proposals
+npx --no-install torch-lock proposal list
+npx --no-install torch-lock proposal list --status pending
+
+# Inspect or apply a proposal
+npx --no-install torch-lock proposal show --id <proposal-id>
+npx --no-install torch-lock proposal apply --id <proposal-id>
+npx --no-install torch-lock proposal reject --id <proposal-id> --reason "..."
+
+# List available archived versions of a prompt
+npx --no-install torch-lock rollback --target src/prompts/daily/my-agent.md --list
+
+# Roll back to the most recent archived version
+npx --no-install torch-lock rollback --target src/prompts/daily/my-agent.md
+
+# Roll back to a specific version by hash fragment
+npx --no-install torch-lock rollback --target src/prompts/daily/my-agent.md --strategy <hash>
+```
+
+### State Backup CLI
+
+Snapshot agent runtime state (long-term memory and scheduler state) to a timestamped directory under `.torch/backups/`.
+
+```bash
+# Create a snapshot
+npx --no-install torch-lock backup
+
+# List existing snapshots
+npx --no-install torch-lock backup --list
+
+# Write snapshot to a custom directory
+npx --no-install torch-lock backup --output /path/to/backup-dir
+```
+
+See [docs/prompt-versioning.md](docs/prompt-versioning.md) for the full workflow, restore procedure, and storage layout.
+
 ### Configuration (`torch-config.json`)
 
 Create a `torch-config.json` file in your project root to configure TORCH for your repository. You can use the included `torch-config.example.json` as a template.
