@@ -1,0 +1,79 @@
+{
+  "generatedAt": "2026-02-20T04:30:10.395Z",
+  "config": {
+    "relay": {
+      "protocol": "ws:",
+      "hostname": "127.0.0.1",
+      "port": "7777"
+    },
+    "relaySummary": "ws://127.0.0.1:7777",
+    "dryRun": true,
+    "clients": 50,
+    "durationSec": 2,
+    "rateEps": 20,
+    "mixMetadata": 0.3,
+    "seed": "load-test-smoke",
+    "connectConcurrency": 25,
+    "maxConnections": 50,
+    "maxInflight": 300,
+    "publishTimeoutMs": 15000,
+    "metadataParts": 4
+  },
+  "results": {
+    "attempted": 40,
+    "succeeded": 40,
+    "failed": 0,
+    "successRate": 1,
+    "throughputEps": 19.99,
+    "backpressureDrops": 0,
+    "inFlightPeak": 2,
+    "latency": {
+      "count": 40,
+      "minMs": 4.94,
+      "avgMs": 13.866649999999998,
+      "p50Ms": 13.787,
+      "p90Ms": 21.282,
+      "p95Ms": 21.878,
+      "p99Ms": 24.229,
+      "maxMs": 24.229
+    },
+    "eventLoopLag": {
+      "avgMs": 0.875,
+      "p95Ms": 5
+    },
+    "errorBreakdown": {},
+    "topStackTraces": {},
+    "resource": {
+      "samples": [],
+      "sampleCount": 0,
+      "maxRssMb": 0,
+      "maxHeapUsedMb": 0,
+      "avgCpuPercent": 0,
+      "cpuUserMs": 369.44,
+      "cpuSystemMs": 9.975
+    },
+    "throughputSeries": [
+      {
+        "second": 0,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 1,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      }
+    ],
+    "hotFunctions": "not measured",
+    "startedAtIso": "2026-02-20T04:30:08.394Z",
+    "completedAtIso": "2026-02-20T04:30:10.395Z",
+    "runDurationSec": 2.001
+  },
+  "remediation": [
+    "No significant bottlenecks observed in this run; increase load gradually and repeat to find saturation point."
+  ]
+}

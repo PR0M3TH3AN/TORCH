@@ -1,0 +1,5 @@
+- Reworked scripts/agent/load-test.mjs into a safety-first harness.
+- Added hard public-relay blocking and explicit dedicated-test relay acknowledgement for non-local targets.
+- Added deterministic optional seed, bounded in-flight publish pipeline, and connection concurrency controls.
+- Added latency percentiles, event loop lag summary, resource snapshots, throughput time series, and ranked remediation outputs.
+- Validated with dry-run and eslint.

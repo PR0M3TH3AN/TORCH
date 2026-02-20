@@ -16,24 +16,39 @@ Track only **active, reproducible, unresolved** issues.
 
 ## Active issues
 
-### `test/scheduler-preflight-lock.e2e.test.mjs` fails in Codex due platform mismatch (`unknown` vs `codex`)
-- **Status:** Active
+### `test/scheduler-preflight-lock.e2e.test.mjs` platform mismatch (`unknown` vs `codex`)
+- **Status:** Resolved
 - **Area:** Test
-- **Symptom:** `npm test` fails in `test/scheduler-preflight-lock.e2e.test.mjs` first case, expecting frontmatter platform `unknown` but run log writes `codex`.
-- **Trigger/Conditions:** Running full test suite in Codex environment where scheduler log frontmatter includes `platform: codex`.
-- **Workaround:** Run targeted tests excluding `test/scheduler-preflight-lock.e2e.test.mjs` until assertion baseline is clarified for Codex.
-- **Impact:** Medium — blocks `npm test` from passing in this environment.
+- **Symptom:** Historical issue where test expected `platform: unknown` while scheduler logs used `platform: codex`.
+- **Trigger/Conditions:** Previously reproed in Codex.
+- **Workaround:** None needed after assertion behavior update.
+- **Impact:** No longer blocking.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-codex-test-failures-platform-and-telemetry.md`
 - **Last verified:** 2026-02-20
 
 ### `test/memory-telemetry.test.mjs` expects child-process stdout/stderr that are empty in this environment
 - **Status:** Active
+- **Issue-ID:** KNOWN-ISSUE-memory-telemetry-stdout-stderr
 - **Area:** Test / Tooling
 - **Symptom:** Both telemetry tests fail because spawned fixture process returns empty `stdout` and `stderr`, causing `[PASS]`/`TORCH-MEMORY` assertions to fail.
 - **Trigger/Conditions:** Running `node test/memory-telemetry.test.mjs` or memory test glob in this environment.
 - **Workaround:** Run memory tests excluding `test/memory-telemetry.test.mjs` while investigating child-process output capture behavior.
 - **Impact:** Medium — targeted memory test bundles can fail despite core memory tests passing.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-codex-test-failures-platform-and-telemetry.md`
+- **Last verified:** 2026-02-20
+
+### Sandbox restrictions cause `npm test` failures (`listen EPERM` and `spawnSync /bin/sh EPERM`)
+- **Status:** Active
+- **Issue-ID:** KNOWN-ISSUE-sandbox-eprem-tests
+- **Area:** Test / Runtime
+- **Symptom:** Multiple tests fail in this sandbox due process restrictions, including:
+  - `test/dashboard-auth.test.mjs` with `listen EPERM: operation not permitted 127.0.0.1`
+  - `test/nostr-lock.test.mjs` with `listen EPERM: operation not permitted 0.0.0.0`
+  - `test/ops.test.mjs` with `spawnSync /bin/sh EPERM`
+- **Trigger/Conditions:** Running tests that bind local sockets or invoke shell-backed `execSync`/`spawnSync` in this sandboxed environment.
+- **Workaround:** Run affected tests in an environment that permits local socket binding and shell execution, or skip these cases during sandbox triage.
+- **Impact:** Medium — full `npm test` is red in sandbox even when core logic tests pass.
+- **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-sandbox-test-permissions-eprem.md`
 - **Last verified:** 2026-02-20
 
 ### Goose Desktop: hermit "text file busy" (ETXTBSY) blocks all `node`/`npm` commands
@@ -44,7 +59,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Workaround:** Use patched setup: `PATH=/home/user/.local/goose-fix/bin:$PATH` before commands. Or: `rm -rf ~/.config/goose/mcp-hermit` then use patched wrappers. See `docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md` for the full patch.
 - **Impact:** Critical — 100% blocks scheduler runs, lock operations, and any npm script on Goose Desktop.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md`, patch at `docs/agent-handoffs/incidents/goose-hermit-etxtbsy-fix.patch`
-- **Last verified:** 2026-02-15
+- **Last verified:** 2026-02-20 (not re-checkable here: Goose Desktop wrapper/toolchain unavailable in this environment)
 
 ### Goose Desktop: `node`/`npx` wrappers swallow non-zero exit codes
 - **Status:** Active (no workaround except stdout parsing)
@@ -54,7 +69,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Workaround:** Parse stdout for `LOCK_STATUS=denied` / `LOCK_STATUS=race_lost` instead of relying on exit codes.
 - **Impact:** Medium — scheduler lock-race retry logic broken; requires stdout parsing fallback.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md`
-- **Last verified:** 2026-02-15
+- **Last verified:** 2026-02-20 (not re-checkable here: Goose Desktop wrapper/toolchain unavailable in this environment)
 
 ### `npm test` fails due to prompt contract violations
 - **Status:** Resolved
@@ -63,7 +78,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Trigger/Conditions:** Running `npm test`.
 - **Workaround:** Run `npm run validate:scheduler` separately and inspect output, or ignore errors for now.
 - **Impact:** CI/local testing blocked.
-- **Last verified:** 2026-02-18
+- **Last verified:** 2026-02-20
 
 ### `npm test` hangs/times out in full suite run
 - **Status:** Resolved
@@ -72,17 +87,18 @@ Track only **active, reproducible, unresolved** issues.
 - **Trigger/Conditions:** Running `npm test` in CI/Sandbox.
 - **Fix:** Fixed blocking \`spawnSync\` in \`nostr-lock.test.mjs\`, removed real network calls in smoke tests, and switched dashboard tests to dynamic ports.
 - **Impact:** Test suite duration reduced from 400s+ to <10s.
-- **Last verified:** 2026-02-19
+- **Last verified:** 2026-02-20
 
 ### Recurring scheduler lock backend failures in recent task logs
 - **Status:** Monitoring
+- **Issue-ID:** KNOWN-ISSUE-relay-connectivity-sandbox
 - **Area:** Runtime
 - **Symptom:** Multiple scheduler runs fail with `Lock backend error` before prompt handoff/validation.
 - **Trigger/Conditions:** Running scheduler cycles when relay connectivity is unstable or lock backend operations time out; observed in both `daily` and `weekly` task logs.
 - **Workaround:** Run relay preflight (`npm run lock:health -- --cadence <daily|weekly>`) and inspect `task-logs/relay-health/<cadence>.jsonl` for trend/alert data before rerunning scheduler. If scheduler logs `All relays unhealthy preflight`, treat it as an incident signal, defer lock attempts, and escalate relay/network checks (DNS/TLS/connectivity).
 - **Impact:** Scheduled agent execution may be deferred early when all relays are unhealthy, preventing noisy lock retries until relay health recovers.
 - **Related notes:** `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md`
-- **Last verified:** 2026-02-15
+- **Last verified:** 2026-02-20
 
 ### Claude Code: outbound WebSocket blocked — scheduler cannot run from this environment
 - **Status:** Active (no code-level workaround)
@@ -93,7 +109,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Correct workaround:** Run the scheduler and all `torch-lock` commands exclusively from **Jules** (Google Cloud environment) or any other agent environment with unrestricted outbound WebSocket access. Do not attempt to run `lock:lock` / `lock:complete` from Claude Code sessions.
 - **Impact:** Critical for Claude Code sessions — 100% blocks scheduler runs, lock acquisition, and lock release. No impact on Jules-initiated runs.
 - **Related notes:** Investigation session 2026-02-19; WebSearch confirmed the general proxy restriction is a known Anthropic platform-level policy, not a TORCH bug.
-- **Last verified:** 2026-02-19
+- **Last verified:** 2026-02-20 (not re-checkable from Claude environment in this run; Codex sandbox still shows relay DNS/WebSocket reachability failure via `npm run lock:health -- --cadence daily`)
 
 ### content-audit-agent targets missing /content directory
 - **Status:** Resolved
@@ -102,7 +118,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Trigger/Conditions:** Running `content-audit-agent`.
 - **Workaround:** None. Prompt updated to target `docs/` instead of `/content`.
 - **Impact:** Docs audit cannot be performed.
-- **Last verified:** 2026-02-18
+- **Last verified:** 2026-02-20
 
 ### content-audit-agent mission remains mis-scoped (no upload/contribution product surface in repo)
 - **Status:** Resolved
