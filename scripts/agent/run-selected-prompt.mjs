@@ -67,12 +67,20 @@ async function main() {
   }
 
   const runner = resolveRunner(promptMarkdown);
+
+  // Compute a stable, per-run memory output file path so agents know where to write learnings.
+  // store.mjs reads this env var; if absent it falls back to the root memory-update.md placeholder.
+  const agentName = process.env.SCHEDULER_AGENT || 'unknown-agent';
+  const runTs = new Date().toISOString().replace(/:/g, '-').replace(/\.\d+Z$/, 'Z');
+  const memoryFile = `memory-updates/${runTs}__${agentName}.md`;
+
   const child = spawn(runner.command, runner.args, {
     cwd: process.cwd(),
     env: {
       ...process.env,
       SCHEDULER_PROMPT_PATH: promptPath,
       SCHEDULER_PROMPT_MARKDOWN: promptMarkdown,
+      SCHEDULER_MEMORY_FILE: memoryFile,
     },
     stdio: 'inherit',
   });

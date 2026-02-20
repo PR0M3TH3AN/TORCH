@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 // Parse environment variables
-const fallbackCadence = 'weekly';
+const fallbackCadence = 'daily';
 const cadence = process.env.SCHEDULER_CADENCE || fallbackCadence;
 const agentId = process.env.SCHEDULER_AGENT || `scheduler-memory-${cadence}`;
 const promptPath = process.env.SCHEDULER_PROMPT_PATH || '';
@@ -69,34 +69,9 @@ if (memoryContent) {
         }
     });
 } else {
-    // Fallback if no file provided (preserve existing behavior for compatibility)
-    console.warn(`No memory input found (checked --file, env SCHEDULER_MEMORY_FILE=${envFile}, or default ${defaultFile}). using fallback placeholder.`);
-    events = [
-        {
-            agent_id: agentId,
-            content: `Store memory event A for ${cadence} :: ${promptIntent}`,
-            timestamp: baseTs,
-            tags: ['scheduler', cadence, 'store'],
-            metadata: {
-                session_id: runId,
-                source: 'scheduler-store',
-                importance: 0.55,
-                prompt_path: promptPath
-            }
-        },
-        {
-            agent_id: agentId,
-            content: `Store memory event B for ${cadence} :: ${promptIntent}`,
-            timestamp: baseTs + 1,
-            tags: ['scheduler', cadence, 'store'],
-            metadata: {
-                session_id: runId,
-                source: 'scheduler-store',
-                importance: 0.55,
-                prompt_path: promptPath
-            }
-        }
-    ];
+    // No memory file found — skip ingest rather than storing meaningless placeholder events.
+    // Placeholder events pollute the store and degrade retrieval quality on future runs.
+    console.warn(`No memory input found (checked --file, env SCHEDULER_MEMORY_FILE=${envFile}, and default ${defaultFile}). Skipping ingest.`);
 }
 
 try {
@@ -120,7 +95,7 @@ try {
             promptPath,
             promptIntent,
             events: events.length,
-            sourceFile: targetFile || 'fallback'
+            sourceFile: targetFile || 'none'
         },
         outputs: {
             storedCount: stored.length,

@@ -38,7 +38,21 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - **Agent Action**: Review `.scheduler-memory/latest/<cadence>/memories.md` for relevant context.
 
 5. **Store memory after implementation and before completion publish**:
-   - **Agent Action**: Write any new insights, learnings, or patterns to the file specified by `$SCHEDULER_MEMORY_FILE` (defaulting to `memory-updates/<timestamp>__<agent>.md`).
+   - **Agent Action**: Write any new insights, learnings, or patterns to the file specified by `$SCHEDULER_MEMORY_FILE`. The scheduler sets this env var to `memory-updates/<timestamp>__<agent>.md` automatically — do not compute a path yourself.
+   - **What to write** — use this template (keep each bullet to 1-2 lines; omit sections with nothing to say):
+     ```markdown
+     # Memory Update — <agent-name> — <YYYY-MM-DD>
+
+     ## Key findings
+     - <concrete fact discovered this run, e.g. "ESLint v9 requires flat config">
+
+     ## Patterns / reusable knowledge
+     - <technique or pattern that will help this agent on its next run>
+
+     ## Warnings / gotchas
+     - <env quirk, test failure, or constraint to watch for>
+     ```
+   - Write only facts that will help the **same agent** on its **next run**. Skip meta-commentary about the task structure.
    - Run configured memory storage workflow after prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.storeCommand`)
    - Storage command MUST call real memory services (`src/services/memory/index.js#ingestEvents`, which uses ingestor/summarizer pipeline) and MUST emit deterministic marker `MEMORY_STORED`.
    - Storage command MUST ingest content from the file at `$SCHEDULER_MEMORY_FILE` (or fallback to `memory-update.md` if present).

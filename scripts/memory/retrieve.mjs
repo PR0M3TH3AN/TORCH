@@ -84,7 +84,17 @@ try {
     writeFileSync(path.join(sessionDir, 'retrieve.json'), JSON.stringify(artifact, null, 2));
     writeFileSync(path.join(sessionDir, 'retrieve.ok'), 'MEMORY_RETRIEVED\n');
     writeFileSync(path.join(latestDir, 'retrieve.ok'), 'MEMORY_RETRIEVED\n');
-    writeFileSync(path.join(latestDir, 'memories.md'), retrieved.map(m => `- ${m.content}`).join('\n'));
+    // Format retrieved memories as readable markdown sections.
+    // Prefer m.summary (compact excerpt) over m.content (full blob) for prompt injection.
+    const memoriesMarkdown = retrieved.length > 0
+      ? retrieved.map((m, i) => {
+          const date = new Date(m.created_at || m.last_seen || Date.now()).toISOString().split('T')[0];
+          const tagStr = Array.isArray(m.tags) && m.tags.length > 0 ? m.tags.join(', ') : '';
+          const text = (m.summary || m.content || '').trim();
+          return `### ${i + 1}. [${date}]${tagStr ? ` (${tagStr})` : ''}\n\n${text}`;
+        }).join('\n\n---\n\n')
+      : '_No memories found for this agent. This may be the first run or the memory store is empty._';
+    writeFileSync(path.join(latestDir, 'memories.md'), memoriesMarkdown);
 
     // 5. Output success marker to stdout (for scheduler verification)
     console.log('MEMORY_RETRIEVED');
