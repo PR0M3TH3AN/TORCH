@@ -6,23 +6,9 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { mergeRelayList } from './utils.mjs';
+import { mergeRelayList, relayListLabel, withTimeout } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
-import { relayListLabel } from './utils.mjs';
-
-function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
-
-function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
-}
+import { secureRandom } from './lock-utils.mjs';
 
 const PUBLISH_ERROR_CODES = {
   TIMEOUT: 'publish_timeout',
@@ -113,12 +99,6 @@ function isTransientPublishCategory(category) {
     PUBLISH_ERROR_CODES.CONNECTION_RESET,
     PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE,
   ].includes(category);
-}
-
-const MAX_RANDOM = 281474976710655; // 2**48 - 1
-
-export function secureRandom() {
-  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
 }
 
 function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {

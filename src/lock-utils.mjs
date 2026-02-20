@@ -51,7 +51,7 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
-export { withTimeout };
+export { withTimeout } from './utils.mjs';
 
 export function mergeRelayList(primaryRelays, fallbackRelays) {
   return [...new Set([...primaryRelays, ...fallbackRelays])];
