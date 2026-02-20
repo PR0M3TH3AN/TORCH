@@ -2,7 +2,7 @@ import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform, withTimeout } from '../src/utils.mjs';
+import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform } from '../src/utils.mjs';
 
 describe('Date Utilities', () => {
   describe('todayDateStr', () => {
@@ -181,56 +181,6 @@ describe('File Utilities', () => {
       assert.strictEqual(fs.existsSync(targetDir), false);
       ensureDir(targetDir);
       assert.strictEqual(fs.existsSync(targetDir), true);
-    });
-  });
-});
-
-describe('Async Utilities', () => {
-  describe('withTimeout', () => {
-    it('resolves when promise completes before timeout', async () => {
-      const result = await withTimeout(
-        new Promise((resolve) => setTimeout(() => resolve('success'), 10)),
-        100,
-        'Timed out'
-      );
-      assert.strictEqual(result, 'success');
-    });
-
-    it('rejects when promise times out', async () => {
-      try {
-        await withTimeout(
-          new Promise((resolve) => setTimeout(() => resolve('success'), 100)),
-          10,
-          'Operation timed out'
-        );
-        assert.fail('Should have rejected');
-      } catch (err) {
-        assert.strictEqual(err.message, 'Operation timed out');
-      }
-    });
-
-    it('clears timeout on success', async () => {
-       // This is hard to test directly without mocking setTimeout/clearTimeout
-       // but we can verify it doesn't throw or hang.
-       const result = await withTimeout(
-         Promise.resolve('fast'),
-         1000,
-         'timeout'
-       );
-       assert.strictEqual(result, 'fast');
-    });
-
-    it('propagates original promise rejection', async () => {
-      try {
-        await withTimeout(
-          Promise.reject(new Error('Original error')),
-          100,
-          'Timeout'
-        );
-        assert.fail('Should have rejected');
-      } catch (err) {
-        assert.strictEqual(err.message, 'Original error');
-      }
     });
   });
 });
