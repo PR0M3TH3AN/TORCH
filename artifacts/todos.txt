@@ -1,74 +1,7 @@
-src/test_logs/TEST_LOG_2026-02-15T23-20-19Z.md:11:- Result: Created CONTEXT, TODO, DECISIONS, TEST_LOG files.
-src/test_logs/TEST_LOG_2026-02-15T18-00-00Z.md:10:- Command: Scan for TODOs
-src/test_logs/TEST_LOG_2026-02-15T18-00-00Z.md:11:  `git grep -n -E "TODO|FIXME|XXX" -- '*.js' '*.mjs' 'docs/*' | sed -n '1,200p' > artifacts/todos.txt`
-src/context/CONTEXT_2026-02-15T18-00-00Z.md:11:Scan the repository for TODO/FIXME/XXX markers and triage them.
-src/decisions/DECISIONS_2026-02-15T18-00-00Z.md:11:No actionable TODOs were found in the codebase. The scan returned only documentation references and test data.
-src/decisions/DECISIONS_2026-02-15T18-00-00Z.md:14:The goal is to triage *actionable* TODOs. Since none exist, no changes or issues are required.
-src/todo/TODO_manual-jules-1771293773.md:1:# TODO for Scheduler Update Agent
-src/todo/TODO_2026-02-14T13-30-00Z.md:1:# Decomposition TODO
-src/todo/TODO_2026-02-14T06-04-19Z.md:1:# Audit Run TODO
-src/todo/2026-02-13-dom-migration-todo.md:1:# TODO — Rendering Migration (Example)
-src/todo/TODO_2026-02-17T02-04-31Z.md:1:# TODO for Scheduler Update Agent
-src/todo/TODO_2026-02-17T02-04-05Z.md:1:# TODO for Scheduler Update Agent
-src/todo/TODO_2026-02-15T01-22-33Z.md:1:# TODO for Perf Agent Run 2026-02-15T01-22-33Z
-src/todo/TODO_2026-02-15T18-00-00Z.md:14:- Scan repository for TODOs.
-src/todo/TODO_2026-02-16.md:1:# TODO: perf-agent (2026-02-16)
-src/todo/TODO_2026-02-14.md:1:# TODO Checklist
-src/todo/TODO_2026-02-15T01:03:31Z.md:8:# TODO Update - 2026-02-15T01:03:31Z
-src/todo/TODO_2026-02-14T23-00-00Z.md:1:# TODO: dashboard/index.html innerHTML Migration
-src/prompts/scheduler-flow.md:11:- `src/todo/TODO_<timestamp>.md`
-src/prompts/daily/decompose-agent.md:32:- `src/todo/TODO_<timestamp>.md` — checklist of extraction items (2–3 blocks) and status.
-src/prompts/daily/decompose-agent.md:75:Add these items to `src/todo/TODO_<timestamp>.md`.
-src/prompts/daily/decompose-agent.md:266:4. Read file, identify 2–3 cohesive blocks, document in `src/context/CONTEXT_<timestamp>.md` and `src/todo/TODO_<timestamp>.md`.
-src/prompts/daily/const-refactor-agent.md:40:- `src/todo/TODO_<timestamp>.md` — List of duplicated constants to canonicalize and status for each.
-src/prompts/daily/audit-agent.md:29:- `src/todo/TODO_<timestamp>.md` — checklist for the audit run and follow-ups.
-src/prompts/daily/audit-agent.md:121:   - If automated, add a follow-up task in `src/todo/TODO_<timestamp>.md` or open issues for high-priority items with labels `perf`, `lint`, or `security` as appropriate.
-src/prompts/daily/scheduler-update-agent.md:89:     - `src/todo/TODO_<timestamp>.md`
-src/prompts/daily/perf-agent.md:50:- `src/todo/TODO_<timestamp>.md` — tasks (Done / Blocked).
-src/prompts/daily/innerhtml-migration-agent.md:31:- `src/todo/TODO_<timestamp>.md` — checklist of assignments in the file and status.
-src/prompts/daily/innerhtml-migration-agent.md:66:   Add this list to `src/todo/TODO_<timestamp>.md` as items to migrate.
-src/prompts/daily/docs-code-investigator.md:22:  - Focus on files > ~200 LOC, or files that contain `TODO|FIXME|XXX`.
-src/prompts/daily/docs-code-investigator.md:23:- Priority: files containing `TODO|FIXME|XXX` or >200 lines. shared helpers and core modules are high-value places to document.
-src/prompts/daily/docs-code-investigator.md:39:git grep -n -E "TODO|FIXME|XXX" -- . | sed -n '1,200p'
-src/prompts/daily/docs-code-investigator.md:42:- Is large (> 200 LOC) or contains `TODO` / `FIXME` / `XXX`.
-src/prompts/daily/docs-code-investigator.md:80:- Note unreachable code, TODOs, or suspicious `try/catch` with swallowing errors.
-src/prompts/daily/docs-code-investigator.md:206:git grep -n -E "TODO|FIXME|XXX" -- . | sed -n '1,200p'
-src/prompts/daily/todo-triage-agent.md:13:Mission: keep the codebase’s TODO/FIXME backlog actionable by scanning for TODO-style comments, classifying them by effort/risk, and either (a) fixing **trivial, safe** items via small PRs or (b) converting non-trivial or sensitive items into well-formed GitHub issues. Every change must be small, safe, traceable, and reviewable.
-src/prompts/daily/todo-triage-agent.md:29:  - Scanning the repo for TODO/FIXME/XXX markers in source/docs.
-src/prompts/daily/todo-triage-agent.md:36:  - Refactors or feature work disguised as “TODO fixes”.
-src/prompts/daily/todo-triage-agent.md:40:  - Deleting TODOs without resolving the underlying need.
-src/prompts/daily/todo-triage-agent.md:45:1. Visibility — Produce a current TODO inventory file each run.
-src/prompts/daily/todo-triage-agent.md:46:2. Safety — No risky areas are modified; sensitive TODOs become issues.
-src/prompts/daily/todo-triage-agent.md:50:5. Minimal disruption — Avoid churn; don’t reformat files just to touch TODOs.
-src/prompts/daily/todo-triage-agent.md:58:- No security-sensitive fixes. If the TODO mentions (or touches) cryptography,
-src/prompts/daily/todo-triage-agent.md:61:- No mission drift. Do not expand TODO triage into general cleanup/refactors.
-src/prompts/daily/todo-triage-agent.md:62:- One logical change per commit; don’t bundle unrelated TODOs in one PR unless
-src/prompts/daily/todo-triage-agent.md:68:P0  Security/safety TODOs → issue only, label clearly.
-src/prompts/daily/todo-triage-agent.md:69:P1  Trivial correctness/docs TODOs → small PR if safe and < 1 hour.
-src/prompts/daily/todo-triage-agent.md:70:P2  Medium/large engineering TODOs → issue with next-step recommendation.
-src/prompts/daily/todo-triage-agent.md:71:P3  Cosmetic/low-value TODOs → issue or leave (don’t churn) unless policy
-src/prompts/daily/todo-triage-agent.md:89:      `git grep -n -E "TODO|FIXME|XXX" -- '*.js' '*.html' 'docs/*' \
-src/prompts/daily/todo-triage-agent.md:95:  For each TODO/FIXME/XXX entry:
-src/prompts/daily/todo-triage-agent.md:97:    - file, line number, exact TODO first line
-src/prompts/daily/todo-triage-agent.md:130:2) Implement the smallest change that resolves the TODO.
-src/prompts/daily/todo-triage-agent.md:135:   - `fix(ai): <short description> (TODO)`
-src/prompts/daily/todo-triage-agent.md:136:   - `chore(ai): <short description> (TODO)` for docs-only changes
-src/prompts/daily/todo-triage-agent.md:138:   - Summary of the TODO and what changed
-src/prompts/daily/todo-triage-agent.md:144:- `fix(ai): <short description> (TODO)`
-src/prompts/daily/todo-triage-agent.md:152:- any sensitive/security-related TODOs
-src/prompts/daily/todo-triage-agent.md:155:- `todo: <first line of the TODO>`
-src/prompts/daily/todo-triage-agent.md:160:- What you believe the TODO intends
-src/prompts/daily/todo-triage-agent.md:170:DE-DUPING & STALE TODOs
-src/prompts/daily/todo-triage-agent.md:172:- If multiple TODOs refer to the same underlying problem, consolidate into one
-src/prompts/daily/todo-triage-agent.md:174:- Do not delete TODOs as “stale” unless you can prove the need is resolved.
-src/prompts/daily/todo-triage-agent.md:195:- 0–N small PRs for trivial, safe TODOs
-src/prompts/daily/todo-triage-agent.md:196:- 0–N GitHub issues for medium/large/sensitive TODOs
-src/prompts/daily/content-audit-agent.md:43:- `src/todo/TODO_<timestamp>.md` — checklist of pages and claims to verify, with statuses.
-src/prompts/daily/deps-security-agent.md:44:- `src/todo/TODO_<timestamp>.md` — upgrade tasks and statuses.
-src/prompts/daily/test-audit-agent.md:42:- `src/todo/TODO_<timestamp>.md` — checklist of specific tests/issues to investigate/fix.
-src/prompts/daily/test-audit-agent.md:164:  1. **Test-fix PR** — add missing assertions, replace `setTimeout` sleeps with `waitFor`, or mock timers. Include `src/context/CONTEXT_<timestamp>.md`, `src/todo/TODO_<timestamp>.md`, `src/test_logs/TEST_LOG_<timestamp>.md`.
-docs/agent-handoffs/incidents/goose-hermit-etxtbsy-fix.patch:70:+    HERMIT_TMP=$(mktemp ~/.config/goose/mcp-hermit/bin/.hermit-download.XXXXXX)
-docs/agent-handoffs/incidents/goose-hermit-etxtbsy-fix.patch:91:+    HERMIT_INIT_COPY=$(mktemp /tmp/.hermit-init-copy.XXXXXX)
 docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md:48:HERMIT_TMP=$(mktemp ~/.config/goose/mcp-hermit/bin/.hermit-download.XXXXXX)
 docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md:57:HERMIT_INIT_COPY=$(mktemp /tmp/.hermit-init-copy.XXXXXX)
+docs/agent-handoffs/incidents/goose-hermit-etxtbsy-fix.patch:70:+    HERMIT_TMP=$(mktemp ~/.config/goose/mcp-hermit/bin/.hermit-download.XXXXXX)
+docs/agent-handoffs/incidents/goose-hermit-etxtbsy-fix.patch:91:+    HERMIT_INIT_COPY=$(mktemp /tmp/.hermit-init-copy.XXXXXX)
 docs/proposals/prompt-packages.md:26:    *   `todo-triage-agent`: Manage TODOs.
+scripts/agent/verify-run-artifacts.mjs:15:    expectedPrefix: 'TODO_',
+test/verify-run-artifacts.test.mjs:46:  await fs.writeFile(path.join(root, 'src', 'todo', 'TODO_1.md'), `${metadata}\n\nPending tasks:\n- finish checks\n`, 'utf8');
