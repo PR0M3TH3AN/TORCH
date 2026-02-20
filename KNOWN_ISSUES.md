@@ -129,3 +129,21 @@ Track only **active, reproducible, unresolved** issues.
 - **Impact:** Previously caused repeated no-op runs and prompt/mission drift.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-content-audit-no-upload-surface.md`
 - **Last verified:** 2026-02-20
+
+### `scripts/agent/load-test.mjs` and `scripts/agent/smoke-test.mjs` consistently fail in sandbox
+- **Status:** Active
+- **Area:** Test
+- **Symptom:** Flakiness check reports 5/5 failures for these scripts.
+- **Trigger/Conditions:** Running `node scripts/test-audit/run-flaky-check.mjs`.
+- **Workaround:** None currently.
+- **Impact:** Test audit reliability reduced; potential underlying issues masked.
+- **Last verified:** 2026-02-21
+
+### `cmdInit should validate install directory name` test is flaky
+- **Status:** Active
+- **Area:** Test
+- **Symptom:** Test failed 1/5 times during flakiness check.
+- **Trigger/Conditions:** Running `node scripts/test-audit/run-flaky-check.mjs`.
+- **Workaround:** Retry.
+- **Impact:** CI instability.
+- **Last verified:** 2026-02-21
