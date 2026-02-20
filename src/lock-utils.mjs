@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { todayDateStr, getIsoWeekStr } from './utils.mjs';
+import { todayDateStr, getIsoWeekStr, withTimeout } from './utils.mjs';
 
 /**
  * Scans the local log directory to identify agents that have already completed their task
@@ -48,15 +48,7 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
-export function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
+export { withTimeout };
 
 export function relayListLabel(relays) {
   return relays.join(', ');
