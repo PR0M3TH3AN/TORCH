@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { todayDateStr, getIsoWeekStr, withTimeout } from './utils.mjs';
+import { randomInt } from 'node:crypto';
+import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
 /**
  * Scans the local log directory to identify agents that have already completed their task
@@ -56,4 +57,10 @@ export function relayListLabel(relays) {
 
 export function mergeRelayList(primaryRelays, fallbackRelays) {
   return [...new Set([...primaryRelays, ...fallbackRelays])];
+}
+
+const MAX_RANDOM = 281474976710655; // 2**48 - 1
+
+export function secureRandom() {
+  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
 }

@@ -10,7 +10,13 @@ import {
 } from './constants.mjs';
 import { nowUnix, mergeRelayList } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
-import { publishLock, LockPublisher, secureRandom } from './lock-publisher.mjs';
+import { publishLock, LockPublisher } from './lock-publisher.mjs';
+import {
+  withTimeout,
+  relayListLabel,
+  mergeRelayList,
+  secureRandom,
+} from './lock-utils.mjs';
 
 /**
  * Parses a raw Nostr event into a structured lock object.
@@ -53,10 +59,6 @@ export function parseLockEvent(event) {
 function filterActiveLocks(locks) {
   const now = nowUnix();
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
-}
-
-function relayListLabel(relays) {
-  return relays.join(', ');
 }
 
 /**
