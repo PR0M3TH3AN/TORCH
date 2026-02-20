@@ -47,3 +47,21 @@ export async function getCompletedAgents(cadence, logDir, deps) {
 
   return completed;
 }
+
+export function withTimeout(promise, timeoutMs, timeoutMessage) {
+  let timeoutHandle;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  });
+}
+
+export function relayListLabel(relays) {
+  return relays.join(', ');
+}
+
+export function mergeRelayList(primaryRelays, fallbackRelays) {
+  return [...new Set([...primaryRelays, ...fallbackRelays])];
+}
