@@ -899,6 +899,14 @@
                     <p class="agent-desc">Google's multimodal AI model. (CLI Required, needs cronjob)</p>
                 </div>
 
+                <div id="card-qwen" onclick="selectAgent('qwen')" class="agent-card" style="cursor: pointer;">
+                    <div class="agent-header">
+                        <span class="agent-name">Qwen Coder CLI</span>
+                        <span class="agent-status">Active</span>
+                    </div>
+                    <p class="agent-desc">Alibaba's open weights coding model. (CLI Required, needs cronjob)</p>
+                </div>
+
                 <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;">
                     <div class="agent-header">
                         <span class="agent-name">Antigravity IDE</span>
@@ -1479,6 +1487,8 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'gemini') {
                 promptText = "Hey Gemini, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+            } else if (agent === 'qwen') {
+                promptText = "Hey Qwen, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             } else if (agent === 'antigravity') {
                 promptText = "Hey Antigravity, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
             }

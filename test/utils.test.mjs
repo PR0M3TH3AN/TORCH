@@ -78,6 +78,8 @@ describe('Platform Utilities', () => {
       delete process.env.GOOGLE_API_KEY;
       delete process.env.ANTIGRAVITY_API_KEY;
       delete process.env.ANTIGRAVITY_SESSION_ID;
+      delete process.env.QWEN_API_KEY;
+      delete process.env.QWEN_SESSION_ID;
     };
 
     after(() => {
@@ -136,6 +138,12 @@ describe('Platform Utilities', () => {
       clearEnv();
       process.env.ANTIGRAVITY_SESSION_ID = 'test';
       assert.strictEqual(detectPlatform(), 'antigravity');
+    });
+
+    it('detects qwen via QWEN_API_KEY', () => {
+      clearEnv();
+      process.env.QWEN_API_KEY = 'test';
+      assert.strictEqual(detectPlatform(), 'qwen');
     });
 
     it('returns null if no platform detected', () => {

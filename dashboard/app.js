@@ -398,6 +398,11 @@ const PLATFORM_COLORS = {
     text: 'text-pink',
     label: 'Antigravity IDE',
   },
+  qwen: {
+    bg: 'bg-purple/10',
+    text: 'text-purple',
+    label: 'Qwen Coder',
+  },
   unknown: { bg: 'bg-muted/10', text: 'text-muted', label: 'Unknown' },
 };
 
