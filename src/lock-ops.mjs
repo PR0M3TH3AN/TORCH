@@ -13,7 +13,6 @@ import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from
 import { publishLock, LockPublisher } from './lock-publisher.mjs';
 import {
   withTimeout,
-  relayListLabel,
   mergeRelayList,
   secureRandom,
 } from './lock-utils.mjs';
@@ -61,19 +60,6 @@ function filterActiveLocks(locks) {
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
 }
 
-function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
-
-function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
-}
 
 /**
  * Queries relays for active lock events matching the criteria.
