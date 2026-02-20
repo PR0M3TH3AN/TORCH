@@ -68,7 +68,8 @@
     "test:ci-resilience": "node --test test/lock-acquisition-resilience.integration.test.mjs",
     "test:extended-main": "npm run test:integration:e2e && npm run test:ci-resilience",
     "torch:memory:list": "node bin/torch-lock.mjs list-memories",
-    "torch:memory:inspect": "node bin/torch-lock.mjs inspect-memory"
+    "torch:memory:inspect": "node bin/torch-lock.mjs inspect-memory",
+    "torch:remove": "node bin/torch-lock.mjs remove"
   },
   "dependencies": {
     "nostr-tools": "2.19.4",

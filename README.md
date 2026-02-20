@@ -58,6 +58,9 @@ npx --no-install torch-lock init
 # Update TORCH configuration and scripts
 npx --no-install torch-lock update
 
+# Remove TORCH completely from this project
+npx --no-install torch-lock remove
+
 # Run the Dashboard
 npx --no-install torch-lock dashboard
 ```
@@ -112,6 +115,18 @@ By default, the dashboard binds to `127.0.0.1`. To allow external access, you ca
 #### Authentication
 
 The dashboard supports Basic Authentication. You can enable it by setting the `TORCH_DASHBOARD_AUTH` environment variable or the `dashboard.auth` field in `torch-config.json` with the format `username:password`.
+
+## Removing TORCH
+
+To completely remove TORCH from a project:
+
+```bash
+npx torch-lock remove
+```
+
+This removes the `torch/` directory, configuration files, runtime artifacts, host package.json scripts, and the npm package. Use `--force` to skip the confirmation prompt.
+
+For manual removal steps and a full list of what gets cleaned up, see [docs/removal.md](docs/removal.md).
 
 ## Environment variables
 

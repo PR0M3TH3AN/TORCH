@@ -20,7 +20,7 @@ import {
   USAGE_TEXT,
   MS_PER_SECOND,
 } from './constants.mjs';
-import { cmdInit, cmdUpdate } from './ops.mjs';
+import { cmdInit, cmdUpdate, cmdRemove } from './ops.mjs';
 import { parseArgs } from './cli-parser.mjs';
 import { getRoster as _getRoster } from './roster.mjs';
 import { queryLocks as _queryLocks, publishLock as _publishLock, parseLockEvent } from './lock-ops.mjs';
@@ -634,6 +634,11 @@ export async function main(argv) {
 
       case 'update': {
         await cmdUpdate(args.force);
+        break;
+      }
+
+      case 'remove': {
+        await cmdRemove(args.force);
         break;
       }
 
