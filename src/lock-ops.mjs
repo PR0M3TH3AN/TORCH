@@ -8,7 +8,7 @@ import {
   KIND_APP_DATA,
   MS_PER_SECOND,
 } from './constants.mjs';
-import { nowUnix } from './utils.mjs';
+import { nowUnix, mergeRelayList } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
 import { publishLock, LockPublisher } from './lock-publisher.mjs';
 import {

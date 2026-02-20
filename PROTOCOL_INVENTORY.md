@@ -31,7 +31,7 @@ This file tracks external protocol specifications and libraries used in this rep
 
 | Library | Version | Usage | Risks |
 | :--- | :--- | :--- | :--- |
-| `nostr-tools` | `2.19.4` | Core Nostr primitives (keys, events, pool). | Supply chain risk. Pinned version recommended. |
+| `nostr-tools` | `2.23.1` | Core Nostr primitives (keys, events, pool). | Supply chain risk. Pinned version recommended. |
 | `ws` | `8.19.0` | WebSocket client for Node.js. | Standard library for Node.js websocket support. |
 
 ## Implementation details

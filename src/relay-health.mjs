@@ -4,16 +4,9 @@ import WebSocket from 'ws';
 import { finalizeEvent, generateSecretKey, getPublicKey } from 'nostr-tools/pure';
 import { getNamespace, getRelays } from './torch-config.mjs';
 import { MS_PER_SECOND } from './constants.mjs';
+import { withTimeout } from './utils.mjs';
 
 const PROBE_KIND = 27235;
-
-function withTimeout(promise, timeoutMs, message) {
-  let timeoutId;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
-}
 
 function nowIso() {
   return new Date().toISOString();
