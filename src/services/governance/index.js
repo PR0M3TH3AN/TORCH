@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 const PROPOSALS_DIR = path.resolve(process.cwd(), 'src/proposals');
@@ -96,9 +96,9 @@ export async function createProposal({ agent, target, newContent, reason }) {
     // Create a temporary file for the diff logic to work cleanly
     // But direct path is fine.
     const newFile = path.join(dir, 'new.md');
-    const diffCmd = `git diff --no-index --color=never "${absoluteTarget}" "${newFile}"`;
     try {
-      execSync(diffCmd, { stdio: 'pipe' }); // Will throw if exit code 1 (diff found)
+      // Use execFileSync to avoid command injection via shell
+      execFileSync('git', ['diff', '--no-index', '--color=never', absoluteTarget, newFile], { stdio: 'pipe' });
     } catch (e) {
       if (e.status === 1 && e.stdout) {
         diff = e.stdout.toString();
@@ -210,12 +210,12 @@ export async function applyProposal(id) {
 
   // Git Commit (optional)
   try {
-    // We use execSync for git operations
+    // We use execFileSync for git operations to avoid command injection
     // Ensure we are in repo root? cwd is repo root.
-    execSync(`git add "${meta.target}"`);
+    execFileSync('git', ['add', meta.target]);
     const commitMsg = `feat(prompts): apply proposal ${id} by ${meta.author}`;
-    execSync(`git commit -m "${commitMsg}"`);
-    meta.gitCommit = execSync('git rev-parse HEAD').toString().trim();
+    execFileSync('git', ['commit', '-m', commitMsg]);
+    meta.gitCommit = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim();
     await fs.writeFile(path.join(dir, 'meta.json'), JSON.stringify(meta, null, 2));
   } catch (gitErr) {
     console.warn('Git commit failed (ignoring):', gitErr.message);
@@ -344,7 +344,7 @@ export async function rollbackPrompt(target, hashOrStrategy = 'latest') {
   // Fallback to Git
   try {
     const commit = hashOrStrategy === 'latest' ? 'HEAD' : hashOrStrategy;
-    execSync(`git checkout "${commit}" -- "${target}"`);
+    execFileSync('git', ['checkout', commit, '--', target]);
     return { success: true, source: 'git', restored: commit };
   } catch (e) {
     throw new Error(`Rollback failed: Local archive not found and git failed (${e.message})`, { cause: e });
