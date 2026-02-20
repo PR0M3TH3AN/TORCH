@@ -1460,7 +1460,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             }
 
             // Description extraction
-            const missionRegex = /(?:\bYour single-purpose mission\b|\bMission\b|\bYour mission\b):?\s*(?:\*\*)?([^\n]+)/i;
+            const missionRegex = /(?:\bYour single-purpose mission\b|\bMission\b|\bYour mission\b):?\s*(?:\*\*)?([\s\S]+?)(?:\n\s*\n|\n(?=#{1,6}\s)|\n(?=[=\-_]{3,})|$)/i;
             const missionMatch = content.match(missionRegex);
 
             if (missionMatch) {
