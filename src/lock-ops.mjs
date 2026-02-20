@@ -8,7 +8,7 @@ import {
   KIND_APP_DATA,
   MS_PER_SECOND,
 } from './constants.mjs';
-import { nowUnix, relayListLabel } from './utils.mjs';
+import { nowUnix } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
 import { publishLock, LockPublisher } from './lock-publisher.mjs';
 import {
@@ -61,19 +61,6 @@ function filterActiveLocks(locks) {
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
 }
 
-function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
-
-function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
-}
 
 /**
  * Queries relays for active lock events matching the criteria.

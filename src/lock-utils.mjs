@@ -51,7 +51,16 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
-export { withTimeout };
+export function withTimeout(promise, timeoutMs, timeoutMessage = 'Operation timed out') {
+  let timer;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    timeoutPromise,
+  ]);
+}
 
 export function mergeRelayList(primaryRelays, fallbackRelays) {
   return [...new Set([...primaryRelays, ...fallbackRelays])];
