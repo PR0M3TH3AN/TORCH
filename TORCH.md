@@ -544,11 +544,18 @@ If you are developing `torch-lock` itself:
 - `npm run lock:check:daily`
 - `npm run lock:check:weekly`
 - `npm run lock:list`
+- `npm run lock:lock` (manually acquire a lock)
 - `npm run lock:health -- --cadence daily` (relay websocket + publish/read probe; writes history to `task-logs/relay-health/`)
+- `npm run lock:complete` (manually complete a task)
 - `npm run dashboard:serve`
 - `npm test` (run unit tests)
+- `npm run test:unit:lock-backend` (run lock backend unit tests)
+- `npm run test:extended-main` (run extended integration tests)
+- `npm run validate:scheduler` (validate scheduler roster and prompts)
 - `npm run lint` (run linter)
-- `npm run lock:complete` (manually complete a task)
 - `npm run scheduler:daily` (run full daily scheduler cycle)
 - `npm run scheduler:weekly` (run full weekly scheduler cycle)
 - `npm run report:lock-reliability` (aggregate recent scheduler logs into markdown+JSON reliability reports)
+- `npm run torch:memory:list` (list memories)
+- `npm run torch:memory:inspect` (inspect a memory)
+- `npm run torch:remove` (remove TORCH from the project)
