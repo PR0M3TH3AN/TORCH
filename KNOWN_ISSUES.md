@@ -17,14 +17,15 @@ Track only **active, reproducible, unresolved** issues.
 ## Active issues
 
 ### `test/scheduler-preflight-lock.e2e.test.mjs` platform mismatch (`unknown` vs `codex`)
-- **Status:** Resolved
+- **Status:** Active
+- **Issue-ID:** KNOWN-ISSUE-scheduler-preflight-platform
 - **Area:** Test
-- **Symptom:** Historical issue where test expected `platform: unknown` while scheduler logs used `platform: codex`.
-- **Trigger/Conditions:** Previously reproed in Codex.
-- **Workaround:** None needed after assertion behavior update.
-- **Impact:** No longer blocking.
+- **Symptom:** The first e2e scenario fails because expected frontmatter platform resolves to `unknown` in test context while scheduler output persists `platform: codex`.
+- **Trigger/Conditions:** Running `node test/scheduler-preflight-lock.e2e.test.mjs` or `node --test test/scheduler-preflight-lock.e2e.test.mjs` in this environment.
+- **Workaround:** Exclude `test/scheduler-preflight-lock.e2e.test.mjs` from local sandbox triage runs until the expectation source is aligned with scheduler platform semantics.
+- **Impact:** Medium — scheduler e2e bundle reports a deterministic failure unrelated to most feature changes.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-codex-test-failures-platform-and-telemetry.md`
-- **Last verified:** 2026-02-20
+- **Last verified:** 2026-02-21
 
 ### `test/memory-telemetry.test.mjs` expects child-process stdout/stderr that are empty in this environment
 - **Status:** Active

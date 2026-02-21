@@ -51,14 +51,19 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
-export function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
+export function withTimeout(promise, timeoutMs, timeoutMessage = 'Operation timed out') {
+  let timer;
   const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+    timer = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
   });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    timeoutPromise,
+  ]);
+}
+
+export function mergeRelayList(primaryRelays, fallbackRelays) {
+  return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
