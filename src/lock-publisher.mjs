@@ -7,6 +7,7 @@ import {
   getMinActiveRelayPool,
 } from './torch-config.mjs';
 import { mergeRelayList, relayListLabel, withTimeout } from './utils.mjs';
+import { secureRandom } from './lock-utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
 
 const PUBLISH_ERROR_CODES = {
@@ -99,8 +100,6 @@ function isTransientPublishCategory(category) {
     PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE,
   ].includes(category);
 }
-
-export { secureRandom };
 
 function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
