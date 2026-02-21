@@ -1,7 +1,15 @@
 {
-  "Build artifacts verification": {
+  "scripts/agent/load-test.mjs": {
     "pass": 0,
     "fail": 5
+  },
+  "scripts/agent/smoke-test.mjs": {
+    "pass": 0,
+    "fail": 5
+  },
+  "Build artifacts verification # SKIP dist/ not found — run npm run build first": {
+    "pass": 5,
+    "fail": 0
   },
   "parseArgs should parse basic command": {
     "pass": 5,
@@ -63,9 +71,57 @@
     "pass": 5,
     "fail": 0
   },
-  "cmdInit should validate install directory name": {
+  "ExitError": {
     "pass": 5,
     "fail": 0
+  },
+  "test/fixtures/memory-fixtures.js": {
+    "pass": 5,
+    "fail": 0
+  },
+  "createProposal should throw error for disallowed target": {
+    "pass": 5,
+    "fail": 0
+  },
+  "validateProposal should return invalid for disallowed target": {
+    "pass": 5,
+    "fail": 0
+  },
+  "validateProposal should return valid for allowed target": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-proposal-create: createProposal writes meta.json, new.md, change.diff": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-proposal-list: listProposals returns created proposal; status filter works": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-proposal-reject: rejectProposal marks proposal with rejected status and reason": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-archive-naming: applyProposal archives with timestamp_hash filename and sidecar": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-version-list: listPromptVersions returns versions newest-first with metadata": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-rollback-latest: rollbackPrompt restores the most recently archived content": {
+    "pass": 5,
+    "fail": 0
+  },
+  "SCN-rollback-hash: rollbackPrompt --strategy <fragment> restores matching archive": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdInit should validate install directory name": {
+    "pass": 4,
+    "fail": 1
   },
   "src/lib.mjs": {
     "pass": 5,
@@ -84,6 +140,10 @@
     "fail": 0
   },
   "lock-utils": {
+    "pass": 5,
+    "fail": 0
+  },
+  "main dispatch": {
     "pass": 5,
     "fail": 0
   },
@@ -399,6 +459,42 @@
     "pass": 5,
     "fail": 0
   },
+  "ops.mjs: cmdInit creates .gitignore with node_modules": {
+    "pass": 5,
+    "fail": 0
+  },
+  "ops.mjs: cmdInit appends to existing .gitignore": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove reports nothing when no TORCH installation exists": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove with --force removes torch/ directory": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove removes runtime artifacts (task-logs, .scheduler-memory)": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove removes src/proposals/ and cleans empty src/": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove cleans torch:* scripts from host package.json": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove cancels when user declines confirmation": {
+    "pass": 5,
+    "fail": 0
+  },
+  "cmdRemove confirmed via mockAnswers removes artifacts": {
+    "pass": 5,
+    "fail": 0
+  },
   "cmdInit creates directory structure and files": {
     "pass": 5,
     "fail": 0
@@ -575,6 +671,34 @@
     "pass": 5,
     "fail": 0
   },
+  "parseDateValue": {
+    "pass": 5,
+    "fail": 0
+  },
+  "isStrictSchedulerLogFilename": {
+    "pass": 5,
+    "fail": 0
+  },
+  "parseAgentFromFilename": {
+    "pass": 5,
+    "fail": 0
+  },
+  "parseTimestampFromFilename": {
+    "pass": 5,
+    "fail": 0
+  },
+  "parseFrontmatterCreatedAt / parseFrontmatterAgent": {
+    "pass": 5,
+    "fail": 0
+  },
+  "buildRecentlyRunExclusionSet — scenarios": {
+    "pass": 5,
+    "fail": 0
+  },
+  "CADENCE_WINDOW_MS constants": {
+    "pass": 5,
+    "fail": 0
+  },
   "secureRandom": {
     "pass": 5,
     "fail": 0
@@ -591,7 +715,15 @@
     "pass": 5,
     "fail": 0
   },
+  "Async Utilities": {
+    "pass": 5,
+    "fail": 0
+  },
   "Date Utilities": {
+    "pass": 5,
+    "fail": 0
+  },
+  "Relay Utilities": {
     "pass": 5,
     "fail": 0
   },
@@ -600,6 +732,10 @@
     "fail": 0
   },
   "File Utilities": {
+    "pass": 5,
+    "fail": 0
+  },
+  "String Utilities": {
     "pass": 5,
     "fail": 0
   },

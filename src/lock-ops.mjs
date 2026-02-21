@@ -1,14 +1,14 @@
+/**
+ * Refactored: RelayHealthManager and LockPublisher extracted to separate modules.
+ */
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import {
-  KIND_APP_DATA,
-  MS_PER_SECOND,
-} from './constants.mjs';
-import { nowUnix, relayListLabel } from './utils.mjs';
+import { KIND_APP_DATA, MS_PER_SECOND } from './constants.mjs';
+import { nowUnix } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from './relay-health-manager.mjs';
 import { publishLock, LockPublisher } from './lock-publisher.mjs';
 import {

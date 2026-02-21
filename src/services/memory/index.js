@@ -38,9 +38,50 @@ function loadMemoryStore() {
   return new Map();
 }
 
-let currentSavePromise = null;
-let pendingSavePromise = null;
-let pendingSaveResolve = null;
+class CoalescingWorker {
+  constructor(workerFn) {
+    this.workerFn = workerFn;
+    this.currentPromise = null;
+    this.pendingPromise = null;
+    this.pendingResolve = null;
+    this.pendingArg = null;
+  }
+
+  enqueue(arg) {
+    this.pendingArg = arg;
+
+    if (this.pendingPromise) {
+      return this.pendingPromise;
+    }
+
+    if (this.currentPromise) {
+      this.pendingPromise = new Promise((resolve) => {
+        this.pendingResolve = resolve;
+      });
+      return this.pendingPromise;
+    }
+
+    this.currentPromise = this._execute(arg);
+    return this.currentPromise;
+  }
+
+  async _execute(arg) {
+    try {
+      await this.workerFn(arg);
+    } finally {
+      this.currentPromise = null;
+      if (this.pendingPromise) {
+        const resolve = this.pendingResolve;
+        const nextArg = this.pendingArg;
+        this.pendingPromise = null;
+        this.pendingResolve = null;
+        this.pendingArg = null;
+        this.currentPromise = this._execute(nextArg).then(resolve);
+      }
+    }
+  }
+}
+
 let lastSaveTime = 0;
 const MIN_SAVE_INTERVAL_MS = 1000;
 
@@ -61,31 +102,13 @@ async function performSave(store) {
     lastSaveTime = Date.now();
   } catch (err) {
     console.error('Failed to save memory store:', err);
-  } finally {
-    currentSavePromise = null;
-    if (pendingSavePromise) {
-      const resolve = pendingSaveResolve;
-      pendingSavePromise = null;
-      pendingSaveResolve = null;
-      currentSavePromise = performSave(store).then(() => resolve());
-    }
   }
 }
 
+const saveWorker = new CoalescingWorker(performSave);
+
 async function saveMemoryStore(store) {
-  if (pendingSavePromise) {
-    return pendingSavePromise;
-  }
-
-  if (currentSavePromise) {
-    pendingSavePromise = new Promise((resolve) => {
-      pendingSaveResolve = resolve;
-    });
-    return pendingSavePromise;
-  }
-
-  currentSavePromise = performSave(store);
-  return currentSavePromise;
+  return saveWorker.enqueue(store);
 }
 
 const memoryStore = loadMemoryStore();
@@ -227,6 +250,24 @@ function recordThroughput(samples, now) {
   }
 }
 
+function invalidateAgentCache(agentId) {
+  if (!agentId) return;
+  // If the cache supports prune (it should), use it to remove entries for this agent.
+  if (typeof cache.prune === 'function') {
+    cache.prune((key) => {
+      try {
+        const parsed = JSON.parse(key);
+        return parsed.agent_id === agentId;
+      } catch {
+        return false;
+      }
+    });
+  } else {
+    // Fallback if cache implementation doesn't support prune
+    cache.clear();
+  }
+}
+
 /**
  * Ingests agent events and stores them as memory records.
  *
@@ -255,7 +296,22 @@ export async function ingestEvents(events, options = {}) {
       }
     },
   });
-  cache.clear();
+
+  const uniqueAgents = new Set();
+  if (options.agent_id) uniqueAgents.add(options.agent_id);
+  for (const event of events) {
+    if (event.agent_id) uniqueAgents.add(event.agent_id);
+  }
+  for (const record of records) {
+    if (record.agent_id) uniqueAgents.add(record.agent_id);
+  }
+
+  if (uniqueAgents.size > 0) {
+    for (const agentId of uniqueAgents) invalidateAgentCache(agentId);
+  } else {
+    cache.clear();
+  }
+
   return records;
 }
 
@@ -372,7 +428,16 @@ export async function runPruneCycle(options = {}) {
   });
   emitMetric(options, 'memory_pruned_total', { count: prunable.length, retention_ms: retentionMs });
 
-  cache.clear();
+  const uniqueAgents = new Set();
+  for (const memory of prunable) {
+    if (memory.agent_id) uniqueAgents.add(memory.agent_id);
+  }
+
+  if (uniqueAgents.size > 0) {
+    for (const agentId of uniqueAgents) invalidateAgentCache(agentId);
+  } else if (prunable.length > 0) {
+    cache.clear();
+  }
 
   const result = { pruned: prunable };
   if (Number.isFinite(options.scheduleEveryMs) && options.scheduleEveryMs > 0) {
@@ -397,7 +462,11 @@ export async function runPruneCycle(options = {}) {
 export async function pinMemory(id, options = {}) {
   const repository = options.repository ?? memoryRepository;
   const updated = await repository.setPinned(id, true);
-  cache.clear();
+  if (updated && updated.agent_id) {
+    invalidateAgentCache(updated.agent_id);
+  } else {
+    cache.clear();
+  }
   return updated;
 }
 
@@ -414,7 +483,11 @@ export async function pinMemory(id, options = {}) {
 export async function unpinMemory(id, options = {}) {
   const repository = options.repository ?? memoryRepository;
   const updated = await repository.setPinned(id, false);
-  cache.clear();
+  if (updated && updated.agent_id) {
+    invalidateAgentCache(updated.agent_id);
+  } else {
+    cache.clear();
+  }
   return updated;
 }
 
@@ -431,8 +504,14 @@ export async function unpinMemory(id, options = {}) {
  */
 export async function markMemoryMerged(id, mergedInto, options = {}) {
   const repository = options.repository ?? memoryRepository;
+  const memory = await inspectMemory(id, { repository });
   const merged = await repository.markMerged(id, mergedInto);
-  cache.clear();
+
+  if (memory && memory.agent_id) {
+    invalidateAgentCache(memory.agent_id);
+  } else {
+    cache.clear();
+  }
   return merged;
 }
 

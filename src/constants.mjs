@@ -22,6 +22,11 @@ export const DEFAULT_SNAPSHOT_INTERVAL_MS = 60_000;
 export const VALID_CADENCES = new Set(['daily', 'weekly']);
 export const KIND_APP_DATA = 30078;
 export const MS_PER_SECOND = 1000;
+export const MINUTE_MS = 60_000;
+export const HOUR_MS = 60 * MINUTE_MS;
+export const DAY_MS = 24 * HOUR_MS;
+export const WEEK_MS = 7 * DAY_MS;
+export const MEMORY_CACHE_MAX_EVENTS = 5000;
 
 /**
  * Script keys injected into the host package.json during `torch-lock init`.
@@ -48,6 +53,9 @@ Commands:
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
   remove    [--force]                              Remove all TORCH files and configuration from project
+  backup    [--list] [--output <path>]             Snapshot runtime state to .torch/backups/
+  proposal  <create|list|apply|reject|show> [...]  Manage prompt change proposals
+  rollback  --target <file> [--list]               Roll back a prompt to a previous version
 
   list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>] [--full]
   inspect-memory          --id <memoryId>
