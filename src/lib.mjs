@@ -102,13 +102,7 @@ export async function cmdCheck(cadence, deps = {}) {
     }
   }
 
-  const locks = await queryLocks(
-    relays,
-    cadence,
-    dateStr,
-    namespace,
-    quiet ? { errorLogger: () => {}, healthLogger: () => {} } : {},
-  );
+  const locks = await queryLocks(relays, cadence, dateStr, namespace);
   const lockedAgents = [...new Set(locks.map((l) => l.agent).filter(Boolean))];
   const roster = await getRoster(cadence);
   const rosterSet = new Set(roster);

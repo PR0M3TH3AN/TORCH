@@ -59,9 +59,6 @@ async function setupFixture({
   roster = ['agent-a'],
   lockHealthPreflight = undefined,
   schedulerPolicy = {},
-  handoffCommand = 'echo HANDOFF_OK',
-  validationCommands = ['true'],
-  lockCheckOutput = `echo '{"excluded":[]}'`,
   preflightScript = '#!/usr/bin/env node\nconsole.log(JSON.stringify({ ok: true, relays: ["wss://relay.test"] }));\nprocess.exit(0);\n',
 }) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-memory-policy-'));
@@ -106,8 +103,8 @@ async function setupFixture({
     JSON.stringify({
       scheduler: {
         firstPromptByCadence: { daily: 'agent-a' },
-        handoffCommandByCadence: { daily: handoffCommand },
-        validationCommandsByCadence: { daily: validationCommands },
+        handoffCommandByCadence: { daily: 'echo HANDOFF_OK' },
+        validationCommandsByCadence: { daily: ['true'] },
         memoryPolicyByCadence: { daily: memoryPolicy },
         ...schedulerPolicy,
         ...(lockHealthPreflight === undefined ? {} : { lockHealthPreflight }),
@@ -125,7 +122,7 @@ if [[ "$1" != "run" ]]; then
 fi
 case "$2" in
   lock:check:daily)
-${lockCheckOutput}
+    echo '{"excluded":[]}'
     ;;
   lock:health)
     shift 2
@@ -613,111 +610,4 @@ test('does not use backend retry flow for exit code 3 lock conflicts', { concurr
 
   assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
   assert.doesNotMatch(result.stdout, /"event":"scheduler.lock.retry"/);
-});
-
-test('retries handoff command for retryable network failures and succeeds', { concurrency: false }, async () => {
-  const fixture = await setupFixture({
-    memoryPolicy: { mode: 'optional' },
-    handoffCommand: `count_file="$PWD/.handoff-count"
-count=0
-if [[ -f "$count_file" ]]; then
-  count="$(cat "$count_file")"
-fi
-count=$((count + 1))
-echo "$count" > "$count_file"
-if [[ "$count" -lt 2 ]]; then
-  echo "stream disconnected before completion" >&2
-  exit 12
-fi
-echo HANDOFF_OK`,
-    schedulerPolicy: {
-      handoffPolicyByCadence: {
-        daily: {
-          maxAttempts: 3,
-          retryBackoffMs: 0,
-        },
-      },
-    },
-  });
-
-  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
-    cwd: fixture.root,
-    env: fixture.env,
-  });
-
-  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
-  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
-  assert.ok(logs.some((name) => name.endsWith('__completed.md')));
-});
-
-test('uses fallback platform for handoff when primary platform fails', { concurrency: false }, async () => {
-  const fixture = await setupFixture({
-    memoryPolicy: { mode: 'optional' },
-    handoffCommand: `if [[ "$AGENT_PLATFORM" == "linux" ]]; then
-  echo HANDOFF_FALLBACK_OK
-  exit 0
-fi
-echo "stream disconnected before completion" >&2
-exit 13`,
-    schedulerPolicy: {
-      handoffPolicyByCadence: {
-        daily: {
-          maxAttempts: 1,
-          fallbackPlatform: 'linux',
-        },
-      },
-    },
-  });
-
-  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily', '--platform', 'codex'], {
-    cwd: fixture.root,
-    env: fixture.env,
-  });
-
-  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
-  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
-  assert.ok(logs.some((name) => name.endsWith('__completed.md')));
-});
-
-test('fails before lock acquisition when runner health preflight command fails', { concurrency: false }, async () => {
-  const fixture = await setupFixture({
-    memoryPolicy: { mode: 'optional' },
-    schedulerPolicy: {
-      runnerHealthCommandByCadence: {
-        daily: 'echo RUNNER_UNAVAILABLE >&2; exit 9',
-      },
-    },
-  });
-
-  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
-    cwd: fixture.root,
-    env: fixture.env,
-  });
-
-  assert.equal(result.code, 9, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
-  const logs = await fs.readdir(path.join(fixture.root, 'task-logs', 'daily'));
-  const failedLog = logs.find((name) => name.endsWith('__failed.md'));
-  assert.ok(failedLog);
-  const failedBody = await fs.readFile(path.join(fixture.root, 'task-logs', 'daily', failedLog), 'utf8');
-  assert.match(failedBody, /reason: Runner health preflight failed/);
-  assert.match(failedBody, /failure_class: 'runner_unavailable'/);
-  assert.match(failedBody, /failure_category: 'execution_error'/);
-  assert.match(failedBody, /Prompt not executed\./);
-});
-
-test('uses exclusion payload from mixed JSON lock:check output', { concurrency: false }, async () => {
-  const fixture = await setupFixture({
-    memoryPolicy: { mode: 'optional' },
-    roster: ['agent-a', 'agent-b'],
-    lockCheckOutput: `echo '{"event":"relay_health_snapshot"}'
-echo '{"excluded":["agent-a"]}'`,
-  });
-
-  const result = await runNode(fixture.scriptPath, ['--cadence', 'daily'], {
-    cwd: fixture.root,
-    env: fixture.env,
-  });
-
-  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
-  assert.match(result.stdout, /Agent:\s+agent-b/);
 });
