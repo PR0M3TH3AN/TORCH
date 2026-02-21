@@ -3,7 +3,7 @@ import path from 'node:path';
 import WebSocket from 'ws';
 import { finalizeEvent, generateSecretKey, getPublicKey } from 'nostr-tools/pure';
 import { getNamespace, getRelays } from './torch-config.mjs';
-import { MS_PER_SECOND } from './constants.mjs';
+import { MS_PER_SECOND, MINUTE_MS } from './constants.mjs';
 import { withTimeout } from './utils.mjs';
 
 const PROBE_KIND = 27235;
@@ -13,7 +13,7 @@ function nowIso() {
 }
 
 export function summarizeHistory(historyEntries, { nowMs = Date.now(), windowMinutes = 60 } = {}) {
-  const windowStartMs = nowMs - (windowMinutes * 60_000);
+  const windowStartMs = nowMs - (windowMinutes * MINUTE_MS);
   const recent = historyEntries.filter((entry) => Date.parse(entry.timestamp || '') >= windowStartMs);
   const relayProbeCount = recent.reduce((sum, entry) => sum + (entry.summary?.totalRelays || 0), 0);
   const successCount = recent.reduce((sum, entry) => sum + (entry.summary?.healthyRelays || 0), 0);
@@ -29,7 +29,7 @@ export function summarizeHistory(historyEntries, { nowMs = Date.now(), windowMin
 
   const allDownDurationMinutes = lastHealthyAtMs === null
     ? null
-    : Math.max(0, Math.floor((nowMs - lastHealthyAtMs) / 60_000));
+    : Math.max(0, Math.floor((nowMs - lastHealthyAtMs) / MINUTE_MS));
 
   return {
     windowMinutes,
