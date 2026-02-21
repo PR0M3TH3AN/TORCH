@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "file": "dashboard/app.js",
+      "count": 1
+    },
+    {
+      "file": "landing/index.html",
+      "count": 4
+    }
+  ],
+  "total_assignments": 5
+}

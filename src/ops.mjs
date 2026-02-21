@@ -527,41 +527,17 @@ function removeHostScripts(hostRoot, log) {
 }
 
 /**
- * Completely removes TORCH from a project that installed it via
- * `npm install <torch-tarball> && npx torch-lock init`.
+ * Identifies all TORCH artifacts that should be removed.
  *
- * What it removes:
- * 1. The torch/ install directory (or equivalent)
- * 2. torch-config.json at the project root
- * 3. .torch/ hidden directory (prompt history)
- * 4. .scheduler-memory/ directory (runtime memory store)
- * 5. task-logs/ directory (scheduler run logs)
- * 6. src/proposals/ directory (governance proposals)
- * 7. torch:* scripts from the host package.json
- * 8. The torch-lock npm package (node_modules/torch-lock)
- *
- * @param {boolean} force - If true, skip the confirmation prompt
  * @param {string} cwd - Working directory (project root)
- * @param {Object|null} mockAnswers - For testing: { confirm: true/false }
- * @returns {Promise<void>}
+ * @param {string} installDir - The detected installation directory name ('torch', '.', etc.)
+ * @returns {{ targets: Array<{path: string, label: string}>, hasHostScripts: boolean }}
  */
-export async function cmdRemove(force = false, cwd = process.cwd(), mockAnswers = null) {
-  const log = console.log;
-  const installDir = detectTorchInstallDir(cwd);
-
-  if (!installDir) {
-    log('No TORCH installation detected in this directory.');
-    log('Looked for:');
-    log('  - A torch/ subdirectory containing roster.json or bin/');
-    log('  - A package.json with name "torch-lock" (root install)');
-    return;
-  }
-
+function identifyRemovalTargets(cwd, installDir) {
   const isRootInstall = installDir === '.';
   const torchDir = path.resolve(cwd, installDir);
-
-  // Build a manifest of what will be removed
   const targets = [];
+  let hasHostScripts = false;
 
   if (!isRootInstall && fs.existsSync(torchDir)) {
     targets.push({ path: torchDir, label: `${installDir}/  (TORCH install directory)` });
@@ -594,7 +570,6 @@ export async function cmdRemove(force = false, cwd = process.cwd(), mockAnswers 
 
   // Check for host scripts
   const hostPkgPath = path.join(cwd, 'package.json');
-  let hasHostScripts = false;
   if (fs.existsSync(hostPkgPath)) {
     try {
       const pkg = JSON.parse(fs.readFileSync(hostPkgPath, 'utf8'));
@@ -603,6 +578,114 @@ export async function cmdRemove(force = false, cwd = process.cwd(), mockAnswers 
       }
     } catch (_e) { /* ignore */ }
   }
+
+  return { targets, hasHostScripts };
+}
+
+/**
+ * Asks the user for confirmation before proceeding with removal.
+ *
+ * @param {boolean} force - If true, skip confirmation and return true
+ * @param {Object|null} mockAnswers - mocked answers for testing
+ * @returns {Promise<boolean>} - True if confirmed, false otherwise
+ */
+async function confirmRemoval(force, mockAnswers) {
+  if (force) return true;
+
+  if (mockAnswers) {
+    return mockAnswers.confirm;
+  }
+
+  const rl = readline.createInterface({ input, output });
+  try {
+    const answer = await rl.question('Proceed with removal? (yes/no): ');
+    return answer.trim().toLowerCase() === 'yes';
+  } finally {
+    rl.close();
+  }
+}
+
+/**
+ * Executes the removal of identified targets.
+ *
+ * @param {Array<{path: string, label: string}>} targets - List of targets to remove
+ * @param {Function} log - Logging function
+ */
+function executeRemoval(targets, log) {
+  for (const t of targets) {
+    removeIfExists(t.path, t.label, log);
+  }
+}
+
+/**
+ * Performs post-removal cleanup tasks like removing empty directories and uninstalling the package.
+ *
+ * @param {string} cwd - Working directory (project root)
+ * @param {Function} log - Logging function
+ * @param {boolean} hasHostScripts - Whether host scripts need to be removed
+ */
+async function cleanupPostRemoval(cwd, log, hasHostScripts) {
+  // 1. Clean up empty src/ directory if proposals was the only thing in it
+  const srcDir = path.join(cwd, 'src');
+  if (fs.existsSync(srcDir)) {
+    try {
+      const entries = fs.readdirSync(srcDir);
+      if (entries.length === 0) {
+        fs.rmdirSync(srcDir);
+        log('  Removed empty src/ directory');
+      }
+    } catch (_e) { /* leave it if not empty or permission error */ }
+  }
+
+  // 2. Remove host package.json scripts
+  if (hasHostScripts) {
+    removeHostScripts(cwd, log);
+  }
+
+  // 3. Uninstall the npm package
+  log('\n  Running npm uninstall torch-lock...');
+  try {
+    const { execSync } = await import('node:child_process');
+    execSync('npm uninstall torch-lock', { cwd, stdio: 'pipe' });
+    log('  Uninstalled torch-lock package.');
+  } catch (e) {
+    log(`  Warning: npm uninstall torch-lock failed: ${e.message}`);
+    log('  You may need to run "npm uninstall torch-lock" manually.');
+  }
+}
+
+/**
+ * Completely removes TORCH from a project that installed it via
+ * `npm install <torch-tarball> && npx torch-lock init`.
+ *
+ * What it removes:
+ * 1. The torch/ install directory (or equivalent)
+ * 2. torch-config.json at the project root
+ * 3. .torch/ hidden directory (prompt history)
+ * 4. .scheduler-memory/ directory (runtime memory store)
+ * 5. task-logs/ directory (scheduler run logs)
+ * 6. src/proposals/ directory (governance proposals)
+ * 7. torch:* scripts from the host package.json
+ * 8. The torch-lock npm package (node_modules/torch-lock)
+ *
+ * @param {boolean} force - If true, skip the confirmation prompt
+ * @param {string} cwd - Working directory (project root)
+ * @param {Object|null} mockAnswers - For testing: { confirm: true/false }
+ * @returns {Promise<void>}
+ */
+export async function cmdRemove(force = false, cwd = process.cwd(), mockAnswers = null) {
+  const log = console.log;
+  const installDir = detectTorchInstallDir(cwd);
+
+  if (!installDir) {
+    log('No TORCH installation detected in this directory.');
+    log('Looked for:');
+    log('  - A torch/ subdirectory containing roster.json or bin/');
+    log('  - A package.json with name "torch-lock" (root install)');
+    return;
+  }
+
+  const { targets, hasHostScripts } = identifyRemovalTargets(cwd, installDir);
 
   if (targets.length === 0 && !hasHostScripts) {
     log('Nothing to remove — no TORCH artifacts found.');
@@ -620,62 +703,15 @@ export async function cmdRemove(force = false, cwd = process.cwd(), mockAnswers 
   log('  - torch-lock npm package (via npm uninstall)');
   log('');
 
-  // Confirm unless --force
-  if (!force) {
-    let confirmed;
-
-    if (mockAnswers) {
-      confirmed = mockAnswers.confirm;
-    } else {
-      const rl = readline.createInterface({ input, output });
-      try {
-        const answer = await rl.question('Proceed with removal? (yes/no): ');
-        confirmed = answer.trim().toLowerCase() === 'yes';
-      } finally {
-        rl.close();
-      }
-    }
-
-    if (!confirmed) {
-      log('Removal cancelled.');
-      return;
-    }
+  const confirmed = await confirmRemoval(force, mockAnswers);
+  if (!confirmed) {
+    log('Removal cancelled.');
+    return;
   }
 
   log('\nRemoving TORCH...\n');
-
-  // 1. Remove directories and files
-  for (const t of targets) {
-    removeIfExists(t.path, t.label, log);
-  }
-
-  // 2. Clean up empty src/ directory if proposals was the only thing in it
-  const srcDir = path.join(cwd, 'src');
-  if (fs.existsSync(srcDir)) {
-    try {
-      const entries = fs.readdirSync(srcDir);
-      if (entries.length === 0) {
-        fs.rmdirSync(srcDir);
-        log('  Removed empty src/ directory');
-      }
-    } catch (_e) { /* leave it if not empty or permission error */ }
-  }
-
-  // 3. Remove host package.json scripts
-  if (hasHostScripts) {
-    removeHostScripts(cwd, log);
-  }
-
-  // 4. Uninstall the npm package
-  log('\n  Running npm uninstall torch-lock...');
-  try {
-    const { execSync } = await import('node:child_process');
-    execSync('npm uninstall torch-lock', { cwd, stdio: 'pipe' });
-    log('  Uninstalled torch-lock package.');
-  } catch (e) {
-    log(`  Warning: npm uninstall torch-lock failed: ${e.message}`);
-    log('  You may need to run "npm uninstall torch-lock" manually.');
-  }
+  executeRemoval(targets, log);
+  await cleanupPostRemoval(cwd, log, hasHostScripts);
 
   log('\nTORCH has been completely removed from this project.');
   log('If you used TORCH environment variables (NOSTR_LOCK_*, TORCH_*),');

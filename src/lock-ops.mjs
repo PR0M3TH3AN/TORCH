@@ -1,3 +1,6 @@
+/**
+ * Refactored: RelayHealthManager and LockPublisher extracted to separate modules.
+ */
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
@@ -13,7 +16,6 @@ import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from
 import { publishLock, LockPublisher } from './lock-publisher.mjs';
 import {
   withTimeout,
-  relayListLabel,
   mergeRelayList,
   secureRandom,
 } from './lock-utils.mjs';

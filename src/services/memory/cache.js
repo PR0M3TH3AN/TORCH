@@ -1,6 +1,8 @@
+import { MEMORY_CACHE_MAX_EVENTS, MINUTE_MS } from '../../constants.mjs';
+
 const DEFAULT_MAX_NAMESPACES = 128;
 const DEFAULT_MAX_EVENTS_PER_NAMESPACE = 200;
-const DEFAULT_MAX_TOTAL_EVENTS = 5000;
+const DEFAULT_MAX_TOTAL_EVENTS = MEMORY_CACHE_MAX_EVENTS;
 
 function normalizeScope(scope = {}) {
   const signerId = typeof scope.signer_id === 'string' && scope.signer_id.trim()
@@ -89,21 +91,26 @@ export function createMemoryCache(options = {}) {
     }
   }
 
-  function removeExpired(now = Date.now()) {
-    for (const [namespaceKey, bucket] of runtimeNamespaces.entries()) {
-      if (!bucket.events.length) continue;
+  function expireNamespace(namespaceKey, now) {
+    const bucket = runtimeNamespaces.get(namespaceKey);
+    if (!bucket || !bucket.events.length) return;
 
-      const originalLength = bucket.events.length;
-      bucket.events = bucket.events.filter((entry) => entry.expiresAt > now);
-      const removed = originalLength - bucket.events.length;
-      if (removed > 0) {
-        totalRuntimeEvents -= removed;
-        metrics.runtime_events_expired += removed;
-      }
+    const originalLength = bucket.events.length;
+    bucket.events = bucket.events.filter((entry) => entry.expiresAt > now);
+    const removed = originalLength - bucket.events.length;
+    if (removed > 0) {
+      totalRuntimeEvents -= removed;
+      metrics.runtime_events_expired += removed;
+    }
 
-      if (bucket.events.length === 0) {
-        runtimeNamespaces.delete(namespaceKey);
-      }
+    if (bucket.events.length === 0) {
+      runtimeNamespaces.delete(namespaceKey);
+    }
+  }
+
+  function expireAllNamespaces(now = Date.now()) {
+    for (const [namespaceKey] of runtimeNamespaces.entries()) {
+      expireNamespace(namespaceKey, now);
     }
   }
 
@@ -150,13 +157,25 @@ export function createMemoryCache(options = {}) {
       runtimeNamespaces.clear();
       totalRuntimeEvents = 0;
     },
-    setRuntimeEvent(scope, event, ttlMs = 60_000) {
+    prune(predicate) {
+      if (typeof predicate !== 'function') return;
+      for (const key of store.keys()) {
+        if (predicate(key)) {
+          store.delete(key);
+        }
+      }
+    },
+    setRuntimeEvent(scope, event, ttlMs = MINUTE_MS) {
       const now = Date.now();
-      removeExpired(now);
-
-      const safeTtlMs = Number.isFinite(ttlMs) && ttlMs > 0 ? ttlMs : 60_000;
-      const expiresAt = now + safeTtlMs;
       const namespaceKey = getNamespaceKey(scope);
+
+      expireNamespace(namespaceKey, now);
+      if (totalRuntimeEvents >= maxTotalEvents) {
+        expireAllNamespaces(now);
+      }
+
+      const safeTtlMs = Number.isFinite(ttlMs) && ttlMs > 0 ? ttlMs : MINUTE_MS;
+      const expiresAt = now + safeTtlMs;
       const bucket = runtimeNamespaces.get(namespaceKey) ?? { events: [] };
 
       bucket.events.push({
@@ -180,9 +199,9 @@ export function createMemoryCache(options = {}) {
     },
     getRecentRuntimeEvents(scope, params = {}) {
       const now = Date.now();
-      removeExpired(now);
-
       const namespaceKey = getNamespaceKey(scope);
+      expireNamespace(namespaceKey, now);
+
       const bucket = runtimeNamespaces.get(namespaceKey);
       if (!bucket) return [];
 
