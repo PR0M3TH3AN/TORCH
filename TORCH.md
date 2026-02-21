@@ -330,9 +330,6 @@ Common settings:
 - `dashboard.hashtag` — custom hashtag for lock events (defaults to `<namespace>-agent-lock`).
 - `scheduler.firstPromptByCadence.daily` / `.weekly` — first-run scheduler starting agent.
 - `scheduler.handoffCommandByCadence.daily` / `.weekly` — shell command run after lock acquisition; command must use `SCHEDULER_AGENT`, `SCHEDULER_CADENCE`, and `SCHEDULER_PROMPT_PATH` provided by `scripts/agent/run-scheduler-cycle.mjs`.
-- `scheduler.handoffPolicyByCadence.daily` / `.weekly` — optional retry/fallback policy for handoff execution (`maxAttempts`, `retryBackoffMs`, `retryOnPatterns`, `fallbackPlatform`).
-- `scheduler.runnerHealthCommandByCadence.daily` / `.weekly` — optional command run before lock acquisition to verify runner availability; non-zero exits fail the run before prompt execution.
-- `scheduler.memoryPolicyByCadence.<cadence>.retrieveArtifacts` / `.storeArtifacts` — evidence file list; recommended canonical files include `.scheduler-memory/latest/<cadence>/retrieve.ok`, `.scheduler-memory/latest/<cadence>/retrieve.json`, `.scheduler-memory/latest/<cadence>/store.ok`, `.scheduler-memory/latest/<cadence>/store.json`.
 - `scheduler.paused.daily` / `.weekly` — array of agent names to exclude from scheduler rotation.
 - `scheduler.strict_lock` — lock backend policy switch (default: `true`); when `false`, scheduler defers backend-unavailable lock failures before converting the run to failed.
 - `scheduler.degraded_lock_retry_window` — non-strict deferral window in milliseconds; backend lock failures outside this window immediately consume failure budget and mark run failed.
