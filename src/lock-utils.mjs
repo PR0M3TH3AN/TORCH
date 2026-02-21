@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomInt } from 'node:crypto';
 import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
-export { relayListLabel, withTimeout, mergeRelayList } from './utils.mjs';
+export { relayListLabel } from './utils.mjs';
 
 /**
  * Scans the local log directory to identify agents that have already completed their task
@@ -51,6 +51,20 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
+export function withTimeout(promise, timeoutMs, timeoutMessage = 'Operation timed out') {
+  let timer;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    timeoutPromise,
+  ]);
+}
+
+export function mergeRelayList(primaryRelays, fallbackRelays) {
+  return [...new Set([...primaryRelays, ...fallbackRelays])];
+}
 
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
 
