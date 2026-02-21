@@ -77,3 +77,16 @@ test('blocks decrypted/session-sensitive data from durable promotion without san
   assert.equal(events[1].durable_eligible, true);
   assert.equal(cache.getMetrics().runtime_sensitive_events_blocked, 1);
 });
+
+test('prunes cache entries based on predicate', () => {
+  const cache = createMemoryCache();
+  cache.set('key1', 'value1');
+  cache.set('key2', 'value2');
+  cache.set('other', 'value3');
+
+  cache.prune((key) => key.startsWith('key'));
+
+  assert.equal(cache.get('key1'), undefined);
+  assert.equal(cache.get('key2'), undefined);
+  assert.equal(cache.get('other'), 'value3');
+});

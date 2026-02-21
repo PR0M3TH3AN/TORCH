@@ -5,8 +5,9 @@ import { getRoster, _resetRosterCache, _setRosterDependencies, _restoreRosterDep
 
 // Mock dependencies
 const mockFs = {
-  existsSync: mock.fn(),
-  readFileSync: mock.fn(),
+  promises: {
+    readFile: mock.fn(),
+  },
 };
 
 const mockLoadTorchConfig = mock.fn();
@@ -25,18 +26,18 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
     console.error = mockConsoleError;
 
     _resetRosterCache();
-    mockFs.existsSync.mock.resetCalls();
-    mockFs.readFileSync.mock.resetCalls();
+    mockFs.promises.readFile.mock.resetCalls();
     mockLoadTorchConfig.mock.resetCalls();
 
     // Default: config returns empty nostrLock
     mockLoadTorchConfig.mock.mockImplementation(async () => ({ nostrLock: {} }));
 
-    // Default: fs.existsSync returns false (no files found)
-    mockFs.existsSync.mock.mockImplementation(() => false);
-
-    // Default: fs.readFileSync returns empty object
-    mockFs.readFileSync.mock.mockImplementation(() => '{}');
+    // Default: fs.promises.readFile returns ENOENT
+    mockFs.promises.readFile.mock.mockImplementation(async () => {
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
+    });
 
     // Inject mocks
     _setRosterDependencies({
@@ -63,11 +64,20 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
   });
 
   it('loads internal module roster if user/cwd rosters are missing', async () => {
-    // User/CWD missing
-    mockFs.existsSync.mock.mockImplementation(() => false);
+    // When reading file, if it's not USER or CWD (implied by default ENOENT), check ROSTER_FILE logic?
+    // Wait, the logic tries USER -> CWD -> ROSTER.
+    // So if first two fail (default), third one should succeed for this test.
 
-    // When reading file, return internal roster content
-    mockFs.readFileSync.mock.mockImplementation(() => {
+    // We need to verify that it eventually reads internal roster (ROSTER_FILE).
+    // But since we don't know the exact path of ROSTER_FILE easily in test (it depends on import.meta.url),
+    // we can just say "if not USER or CWD, return content".
+
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
+        if (filepath === USER_ROSTER_FILE || filepath === CWD_ROSTER_FILE) {
+            const err = new Error('ENOENT');
+            err.code = 'ENOENT';
+            throw err;
+        }
         return JSON.stringify({ daily: ['internal-daily'], weekly: ['internal-weekly'] });
     });
 
@@ -76,12 +86,13 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
   });
 
   it('loads roster from torch/roster.json (User Roster) if present', async () => {
-    mockFs.existsSync.mock.mockImplementation((filepath) => filepath === USER_ROSTER_FILE);
-    mockFs.readFileSync.mock.mockImplementation((filepath) => {
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
         if (filepath === USER_ROSTER_FILE) {
             return JSON.stringify({ daily: ['user-agent-daily'], weekly: ['user-agent-weekly'] });
         }
-        throw new Error('ENOENT');
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
     });
 
     const daily = await getRoster('daily');
@@ -89,16 +100,21 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
 
     assert.deepStrictEqual(daily, ['user-agent-daily']);
     assert.deepStrictEqual(weekly, ['user-agent-weekly']);
-    assert.strictEqual(mockFs.readFileSync.mock.calls.length, 1); // Should be cached after first call
+
+    // Should be cached after first call
+    // Note: getRoster calls loadCanonicalRoster each time but it caches result internally.
+    // However, since we call getRoster twice, and result is cached, readFile should be called once.
+    assert.strictEqual(mockFs.promises.readFile.mock.calls.length, 1);
   });
 
   it('loads roster from roster.json (CWD Roster) if present and torch/roster.json is missing', async () => {
-    mockFs.existsSync.mock.mockImplementation((filepath) => filepath === CWD_ROSTER_FILE);
-    mockFs.readFileSync.mock.mockImplementation((filepath) => {
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
         if (filepath === CWD_ROSTER_FILE) {
             return JSON.stringify({ daily: ['cwd-agent-daily'], weekly: ['cwd-agent-weekly'] });
         }
-        throw new Error('ENOENT');
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
     });
 
     const daily = await getRoster('daily');
@@ -106,20 +122,32 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
   });
 
   it('falls back to default if roster file is malformed', async () => {
-    mockFs.existsSync.mock.mockImplementation((filepath) => filepath === USER_ROSTER_FILE);
-    mockFs.readFileSync.mock.mockImplementation(() => '{ invalid json }');
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
+        if (filepath === USER_ROSTER_FILE) {
+            return '{ invalid json }';
+        }
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
+    });
 
     // Should catch error and return fallback
     const daily = await getRoster('daily');
     assert.ok(daily.includes('audit-agent'));
 
     // Should have tried to read file
-    assert.strictEqual(mockFs.readFileSync.mock.calls.length, 1);
+    assert.strictEqual(mockFs.promises.readFile.mock.calls.length, 1);
   });
 
   it('falls back to default if roster file is missing daily/weekly arrays', async () => {
-    mockFs.existsSync.mock.mockImplementation((filepath) => filepath === USER_ROSTER_FILE);
-    mockFs.readFileSync.mock.mockImplementation(() => JSON.stringify({ other: [] }));
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
+        if (filepath === USER_ROSTER_FILE) {
+            return JSON.stringify({ other: [] });
+        }
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
+    });
 
     const daily = await getRoster('daily');
     assert.ok(daily.includes('audit-agent'));
@@ -129,8 +157,14 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
     process.env.NOSTR_LOCK_DAILY_ROSTER = 'env-agent-daily';
 
     // Setup file to exist
-    mockFs.existsSync.mock.mockImplementation((filepath) => filepath === USER_ROSTER_FILE);
-    mockFs.readFileSync.mock.mockImplementation(() => JSON.stringify({ daily: ['file-agent'] }));
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
+        if (filepath === USER_ROSTER_FILE) {
+            return JSON.stringify({ daily: ['file-agent'] });
+        }
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
+    });
 
     const daily = await getRoster('daily');
     assert.deepStrictEqual(daily, ['env-agent-daily']);
@@ -142,8 +176,14 @@ describe('Roster (Unit Tests with Dependency Injection)', () => {
     }));
 
     // Setup file to exist
-    mockFs.existsSync.mock.mockImplementation((filepath) => filepath === USER_ROSTER_FILE);
-    mockFs.readFileSync.mock.mockImplementation(() => JSON.stringify({ daily: ['file-agent'] }));
+    mockFs.promises.readFile.mock.mockImplementation(async (filepath) => {
+        if (filepath === USER_ROSTER_FILE) {
+            return JSON.stringify({ daily: ['file-agent'] });
+        }
+        const err = new Error('ENOENT');
+        err.code = 'ENOENT';
+        throw err;
+    });
 
     const daily = await getRoster('daily');
     assert.deepStrictEqual(daily, ['config-agent-daily']);
