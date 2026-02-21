@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomInt } from 'node:crypto';
-import { todayDateStr, getIsoWeekStr, relayListLabel, mergeRelayList } from './utils.mjs';
+import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
-export { relayListLabel, mergeRelayList };
+export { relayListLabel, withTimeout, mergeRelayList } from './utils.mjs';
 
 /**
  * Scans the local log directory to identify agents that have already completed their task
@@ -51,15 +51,6 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
-export function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
 
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
 
