@@ -38,9 +38,50 @@ function loadMemoryStore() {
   return new Map();
 }
 
-let currentSavePromise = null;
-let pendingSavePromise = null;
-let pendingSaveResolve = null;
+class CoalescingWorker {
+  constructor(workerFn) {
+    this.workerFn = workerFn;
+    this.currentPromise = null;
+    this.pendingPromise = null;
+    this.pendingResolve = null;
+    this.pendingArg = null;
+  }
+
+  enqueue(arg) {
+    this.pendingArg = arg;
+
+    if (this.pendingPromise) {
+      return this.pendingPromise;
+    }
+
+    if (this.currentPromise) {
+      this.pendingPromise = new Promise((resolve) => {
+        this.pendingResolve = resolve;
+      });
+      return this.pendingPromise;
+    }
+
+    this.currentPromise = this._execute(arg);
+    return this.currentPromise;
+  }
+
+  async _execute(arg) {
+    try {
+      await this.workerFn(arg);
+    } finally {
+      this.currentPromise = null;
+      if (this.pendingPromise) {
+        const resolve = this.pendingResolve;
+        const nextArg = this.pendingArg;
+        this.pendingPromise = null;
+        this.pendingResolve = null;
+        this.pendingArg = null;
+        this.currentPromise = this._execute(nextArg).then(resolve);
+      }
+    }
+  }
+}
+
 let lastSaveTime = 0;
 const MIN_SAVE_INTERVAL_MS = 1000;
 
@@ -61,31 +102,13 @@ async function performSave(store) {
     lastSaveTime = Date.now();
   } catch (err) {
     console.error('Failed to save memory store:', err);
-  } finally {
-    currentSavePromise = null;
-    if (pendingSavePromise) {
-      const resolve = pendingSaveResolve;
-      pendingSavePromise = null;
-      pendingSaveResolve = null;
-      currentSavePromise = performSave(store).then(() => resolve());
-    }
   }
 }
 
+const saveWorker = new CoalescingWorker(performSave);
+
 async function saveMemoryStore(store) {
-  if (pendingSavePromise) {
-    return pendingSavePromise;
-  }
-
-  if (currentSavePromise) {
-    pendingSavePromise = new Promise((resolve) => {
-      pendingSaveResolve = resolve;
-    });
-    return pendingSavePromise;
-  }
-
-  currentSavePromise = performSave(store);
-  return currentSavePromise;
+  return saveWorker.enqueue(store);
 }
 
 const memoryStore = loadMemoryStore();
