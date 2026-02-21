@@ -61,10 +61,6 @@ export function withTimeout(promise, timeoutMs, timeoutMessage) {
   });
 }
 
-export function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
-}
-
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
 
 export function secureRandom() {
