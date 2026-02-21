@@ -31,6 +31,22 @@ function timingSafeCompare(a, b) {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
+function verifyPassword(input, stored) {
+  if (stored.startsWith('scrypt:')) {
+    const parts = stored.split(':');
+    if (parts.length !== 3) return false;
+    try {
+      const salt = Buffer.from(parts[1], 'hex');
+      const hash = Buffer.from(parts[2], 'hex');
+      const derived = crypto.scryptSync(input, salt, 64);
+      return crypto.timingSafeEqual(derived, hash);
+    } catch {
+      return false;
+    }
+  }
+  return timingSafeCompare(input, stored);
+}
+
 export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.0.1') {
   // Resolve package root relative to this file (src/dashboard.mjs)
   // this file is in <root>/src/dashboard.mjs, so '..' goes to <root>
@@ -54,7 +70,7 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
       if (type === 'Basic' && credentials) {
         try {
           const decoded = Buffer.from(credentials, 'base64').toString();
-          isValid = timingSafeCompare(decoded, auth);
+          isValid = verifyPassword(decoded, auth);
         } catch {
           isValid = false;
         }
