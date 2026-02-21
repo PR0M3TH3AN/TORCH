@@ -355,6 +355,9 @@ export async function rollbackPrompt(target, hashOrStrategy = 'latest') {
   // Fallback to Git
   try {
     const commit = hashOrStrategy === 'latest' ? 'HEAD' : hashOrStrategy;
+    if (commit.startsWith('-')) {
+      throw new Error(`Invalid commit/strategy: ${commit} (cannot start with '-')`);
+    }
     execFileSync('git', ['checkout', commit, '--', target]);
     return { success: true, source: 'git', restored: commit };
   } catch (e) {

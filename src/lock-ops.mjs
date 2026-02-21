@@ -61,7 +61,6 @@ function filterActiveLocks(locks) {
   return locks.filter((lock) => !lock.expiresAt || lock.expiresAt > now);
 }
 
-
 /**
  * Queries relays for active lock events matching the criteria.
  * Uses a tiered approach: tries primary relays first, then falls back to others if needed.
