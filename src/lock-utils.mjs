@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomInt } from 'node:crypto';
-import { todayDateStr, getIsoWeekStr } from './utils.mjs';
+import { todayDateStr, getIsoWeekStr, relayListLabel, mergeRelayList } from './utils.mjs';
 
 export { relayListLabel } from './utils.mjs';
 

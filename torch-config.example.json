@@ -18,8 +18,7 @@
   },
   "dashboard": {
     "defaultCadenceView": "daily",
-    "defaultStatusView": "active",
-    "auth": "admin:password"
+    "defaultStatusView": "active"
   },
   "scheduler": {
     "firstPromptByCadence": {
