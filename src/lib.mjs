@@ -10,7 +10,6 @@ import {
   loadTorchConfig as _loadTorchConfig,
   getRelays as _getRelays,
   getNamespace as _getNamespace,
-  getTtl as _getTtl,
   getHashtag as _getHashtag,
 } from './torch-config.mjs';
 import {
