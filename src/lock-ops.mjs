@@ -1,3 +1,6 @@
+/**
+ * Refactored: RelayHealthManager and LockPublisher extracted to separate modules.
+ */
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getQueryTimeoutMs,
