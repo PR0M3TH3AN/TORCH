@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomInt } from 'node:crypto';
 import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
-export { relayListLabel, withTimeout, mergeRelayList } from './utils.mjs';
+export { relayListLabel, mergeRelayList } from './utils.mjs';
 
 /**
  * Scans the local log directory to identify agents that have already completed their task
@@ -59,10 +59,6 @@ export function withTimeout(promise, timeoutMs, timeoutMessage) {
   return Promise.race([promise, timeoutPromise]).finally(() => {
     if (timeoutHandle) clearTimeout(timeoutHandle);
   });
-}
-
-export function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
