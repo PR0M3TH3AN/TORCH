@@ -6,11 +6,8 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { mergeRelayList, relayListLabel, withTimeout } from './utils.mjs';
-import { secureRandom } from './lock-utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
-import { relayListLabel } from './utils.mjs';
-import { mergeRelayList, withTimeout } from './lock-utils.mjs';
+import { mergeRelayList, withTimeout, relayListLabel } from './lock-utils.mjs';
 
 const PUBLISH_ERROR_CODES = {
   TIMEOUT: 'publish_timeout',
