@@ -7,7 +7,7 @@ import assert from 'node:assert';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const implPath = path.join(__dirname, 'governance-security-impl.mjs');
 
-test('Governance Service Security: Command Injection Prevention', (t) => {
+test('Governance Service Security: Command Injection Prevention', (_t) => {
   // We run the implementation in a separate process to ensure process.cwd() isolation
   // and to verify that the dynamic import picks up the correct paths.
   try {

@@ -44,7 +44,7 @@ async function runTest() {
 
     // Malicious payload
     const maliciousPayload = 'attacker"; touch /tmp/pwned_check; echo "';
-    const proposalId = `test-proposal-${Date.now()}`;
+    // const proposalId = `test-proposal-${Date.now()}`; // unused
 
     // Manually create proposal metadata and files because createProposal also uses git diff
     // We can use createProposal from the service, but we need to pass the malicious agent name there.
@@ -101,7 +101,7 @@ async function runTest() {
     process.chdir(originalCwd);
     await fs.rm(tempDir, { recursive: true, force: true });
     // Also remove /tmp/pwned_check if it exists (it shouldn't)
-    try { await fs.unlink('/tmp/pwned_check'); } catch {}
+    try { await fs.unlink('/tmp/pwned_check'); } catch { /* ignore */ }
   }
 }
 
