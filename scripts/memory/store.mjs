@@ -108,7 +108,6 @@ try {
     writeFileSync(path.join(sessionDir, 'store.json'), JSON.stringify(artifact, null, 2));
     writeFileSync(path.join(sessionDir, 'store.ok'), 'MEMORY_STORED\n');
     writeFileSync(path.join(latestDir, 'store.ok'), 'MEMORY_STORED\n');
-    writeFileSync(path.join(latestDir, 'store.json'), JSON.stringify(artifact, null, 2));
 
     // 4. Output success marker to stdout (for scheduler verification)
     console.log('MEMORY_STORED');

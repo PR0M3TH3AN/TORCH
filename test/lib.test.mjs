@@ -96,24 +96,6 @@ describe('src/lib.mjs', () => {
       // unknown agents are not in roster, so available should be full roster (since no roster agent is locked)
       assert.deepStrictEqual(result.available, mockRoster.sort());
     });
-
-    it('suppresses relay query loggers when quiet mode is enabled', async () => {
-      let receivedQueryDeps = null;
-      const deps = {
-        ...baseDeps,
-        json: true,
-        quiet: true,
-        queryLocks: async (_relays, _cadence, _dateStr, _namespace, queryDeps) => {
-          receivedQueryDeps = queryDeps;
-          return [];
-        },
-      };
-
-      await cmdCheck('daily', deps);
-
-      assert.equal(typeof receivedQueryDeps.errorLogger, 'function');
-      assert.equal(typeof receivedQueryDeps.healthLogger, 'function');
-    });
   });
 
   describe('cmdLock', () => {

@@ -289,14 +289,8 @@ function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
         mode: "required",
         retrieveSuccessMarkers: ["MEMORY_RETRIEVED"],
         storeSuccessMarkers: ["MEMORY_STORED"],
-        retrieveArtifacts: [
-          `.scheduler-memory/latest/${cadence}/retrieve.ok`,
-          `.scheduler-memory/latest/${cadence}/retrieve.json`,
-        ],
-        storeArtifacts: [
-          `.scheduler-memory/latest/${cadence}/store.ok`,
-          `.scheduler-memory/latest/${cadence}/store.json`,
-        ],
+        retrieveArtifacts: [`.scheduler-memory/latest/${cadence}/retrieve.ok`],
+        storeArtifacts: [`.scheduler-memory/latest/${cadence}/store.ok`]
       };
     }
 
@@ -304,22 +298,6 @@ function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
     const policy = configData.scheduler.memoryPolicyByCadence[cadence];
     policy.retrieveCommand = `node ${scriptPrefix}scripts/memory/retrieve.mjs`;
     policy.storeCommand = `node ${scriptPrefix}scripts/memory/store.mjs`;
-    const retrieveArtifacts = Array.isArray(policy.retrieveArtifacts) ? policy.retrieveArtifacts : [];
-    const storeArtifacts = Array.isArray(policy.storeArtifacts) ? policy.storeArtifacts : [];
-    if (!retrieveArtifacts.includes(`.scheduler-memory/latest/${cadence}/retrieve.ok`)) {
-      retrieveArtifacts.push(`.scheduler-memory/latest/${cadence}/retrieve.ok`);
-    }
-    if (!retrieveArtifacts.includes(`.scheduler-memory/latest/${cadence}/retrieve.json`)) {
-      retrieveArtifacts.push(`.scheduler-memory/latest/${cadence}/retrieve.json`);
-    }
-    if (!storeArtifacts.includes(`.scheduler-memory/latest/${cadence}/store.ok`)) {
-      storeArtifacts.push(`.scheduler-memory/latest/${cadence}/store.ok`);
-    }
-    if (!storeArtifacts.includes(`.scheduler-memory/latest/${cadence}/store.json`)) {
-      storeArtifacts.push(`.scheduler-memory/latest/${cadence}/store.json`);
-    }
-    policy.retrieveArtifacts = retrieveArtifacts;
-    policy.storeArtifacts = storeArtifacts;
   });
 
   fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf8');
