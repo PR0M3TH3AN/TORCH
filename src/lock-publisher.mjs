@@ -6,100 +6,14 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { mergeRelayList, relayListLabel, withTimeout } from './utils.mjs';
+import { relayListLabel, withTimeout, mergeRelayList } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
 import { secureRandom } from './lock-utils.mjs';
-
-const PUBLISH_ERROR_CODES = {
-  TIMEOUT: 'publish_timeout',
-  DNS: 'dns_resolution',
-  TCP: 'tcp_connect_timeout',
-  TLS: 'tls_handshake',
-  WEBSOCKET: 'websocket_open_failure',
-  NETWORK: 'network_timeout',
-  CONNECTION_RESET: 'connection_reset',
-  RELAY_UNAVAILABLE: 'relay_unavailable',
-  PERMANENT: 'permanent_validation_error',
-};
-
-const PUBLISH_FAILURE_CATEGORIES = {
-  QUORUM_FAILURE: 'relay_publish_quorum_failure',
-  NON_RETRYABLE: 'relay_publish_non_retryable',
-};
-
-/**
- * Classifies a raw error message into a standardized publication error code.
- * Used to determine if a failure is transient (retryable) or permanent.
- *
- * @param {string|Error} message - The error message or object to classify.
- * @returns {string} One of the PUBLISH_ERROR_CODES constants.
- */
-function classifyPublishError(message) {
-  const normalized = String(message || '').toLowerCase();
-  if (normalized.includes('publish timed out after') || normalized.includes('publish timeout')) {
-    return PUBLISH_ERROR_CODES.TIMEOUT;
-  }
-  if (
-    normalized.includes('enotfound')
-    || normalized.includes('eai_again')
-    || normalized.includes('getaddrinfo')
-    || (normalized.includes('dns') && normalized.includes('websocket'))
-  ) {
-    return PUBLISH_ERROR_CODES.DNS;
-  }
-  if (
-    normalized.includes('connect etimedout')
-    || normalized.includes('tcp connect timed out')
-    || normalized.includes('connect timeout')
-  ) {
-    return PUBLISH_ERROR_CODES.TCP;
-  }
-  if (
-    normalized.includes('tls')
-    || normalized.includes('ssl')
-    || normalized.includes('certificate')
-    || normalized.includes('handshake')
-  ) {
-    return PUBLISH_ERROR_CODES.TLS;
-  }
-  if (
-    normalized.includes('websocket')
-    || normalized.includes('bad response')
-    || normalized.includes('unexpected server response')
-  ) {
-    return PUBLISH_ERROR_CODES.WEBSOCKET;
-  }
-  if (normalized.includes('timed out') || normalized.includes('timeout') || normalized.includes('etimedout')) {
-    return PUBLISH_ERROR_CODES.NETWORK;
-  }
-  if (normalized.includes('econnreset') || normalized.includes('connection reset') || normalized.includes('socket hang up')) {
-    return PUBLISH_ERROR_CODES.CONNECTION_RESET;
-  }
-  if (
-    normalized.includes('unavailable')
-    || normalized.includes('offline')
-    || normalized.includes('econnrefused')
-    || normalized.includes('connection refused')
-    || normalized.includes('enotfound')
-    || normalized.includes('503')
-  ) {
-    return PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE;
-  }
-  return PUBLISH_ERROR_CODES.PERMANENT;
-}
-
-function isTransientPublishCategory(category) {
-  return [
-    PUBLISH_ERROR_CODES.TIMEOUT,
-    PUBLISH_ERROR_CODES.DNS,
-    PUBLISH_ERROR_CODES.TCP,
-    PUBLISH_ERROR_CODES.TLS,
-    PUBLISH_ERROR_CODES.WEBSOCKET,
-    PUBLISH_ERROR_CODES.NETWORK,
-    PUBLISH_ERROR_CODES.CONNECTION_RESET,
-    PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE,
-  ].includes(category);
-}
+import {
+  PUBLISH_FAILURE_CATEGORIES,
+  classifyPublishError,
+  isTransientPublishCategory,
+} from './lock-error-classifier.mjs';
 
 function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
@@ -187,6 +101,17 @@ export class LockPublisher {
    * @throws {Error} If publication quorum is not met after all attempts.
    */
   async publish() {
+    this._initialize();
+
+    try {
+      this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
+      return await this._executeRetryLoop(Date.now());
+    } finally {
+      this.pool.close(this.allRelays);
+    }
+  }
+
+  _initialize() {
     const {
       poolFactory = () => new SimplePool(),
       retryAttempts = 4,
@@ -222,49 +147,49 @@ export class LockPublisher {
     this.attemptId = diagnostics.attemptId || randomUUID();
 
     this.allRelays = mergeRelayList(this.relays, this.fallbackRelays);
+  }
 
-    try {
-      this.healthManager.maybeLogSnapshot(this.allRelays, this.healthConfig, this.healthLogger, 'publish:periodic');
-      let lastAttemptState = null;
-      const retryTimeline = [];
-      const overallStartedAt = Date.now();
-      let terminalFailureCategory = PUBLISH_FAILURE_CATEGORIES.NON_RETRYABLE;
+  async _executeRetryLoop(overallStartedAt) {
+    let lastAttemptState = null;
+    const retryTimeline = [];
+    let terminalFailureCategory = PUBLISH_FAILURE_CATEGORIES.NON_RETRYABLE;
 
-      // Retry loop: attempts publication until success or max attempts reached
-      for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
-        const startedAtMs = Date.now();
-        lastAttemptState = await this.executePublishCycle();
-        const elapsedMs = Date.now() - startedAtMs;
-        retryTimeline.push({
-          publishAttempt: attemptNumber,
-          successCount: lastAttemptState.successCount,
-          relayAttemptedCount: lastAttemptState.attempted.size,
-          elapsedMs,
-        });
+    // Retry loop: attempts publication until success or max attempts reached
+    for (let attemptNumber = 1; attemptNumber <= this.maxAttempts; attemptNumber += 1) {
+      const startedAtMs = Date.now();
+      lastAttemptState = await this.executePublishCycle();
+      const elapsedMs = Date.now() - startedAtMs;
+      retryTimeline.push({
+        publishAttempt: attemptNumber,
+        successCount: lastAttemptState.successCount,
+        relayAttemptedCount: lastAttemptState.attempted.size,
+        elapsedMs,
+      });
 
-        if (lastAttemptState.successCount >= this.minSuccesses) {
-          this.logSuccess(attemptNumber, lastAttemptState, retryTimeline, overallStartedAt);
-          return this.event;
-        }
-
-        const { hasTransientFailure, hasPermanentFailure } = this.analyzeFailures(lastAttemptState.failures);
-        const canRetry = attemptNumber < this.maxAttempts && hasTransientFailure && !hasPermanentFailure;
-
-        terminalFailureCategory = this.determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber);
-
-        if (!canRetry) {
-          break;
-        }
-
-        const nextDelayMs = calculateBackoffDelayMs(attemptNumber, this.retryBaseDelayMs, this.retryCapDelayMs, this.randomFn);
-        this.logRetry(attemptNumber, lastAttemptState.failures, elapsedMs, nextDelayMs);
-        await this.sleepFn(nextDelayMs);
+      if (lastAttemptState.successCount >= this.minSuccesses) {
+        this.logSuccess(attemptNumber, lastAttemptState, retryTimeline, overallStartedAt);
+        return this.event;
       }
 
-      this.handleFinalFailure(lastAttemptState, terminalFailureCategory, retryTimeline, overallStartedAt);
-    } finally {
-      this.pool.close(this.allRelays);
+      const { hasTransientFailure, hasPermanentFailure } = this.analyzeFailures(lastAttemptState.failures);
+      const canRetry = this._shouldRetry(attemptNumber, hasTransientFailure, hasPermanentFailure);
+
+      terminalFailureCategory = this.determineFailureCategory(hasTransientFailure, hasPermanentFailure, attemptNumber);
+
+      if (!canRetry) {
+        break;
+      }
+
+      const nextDelayMs = calculateBackoffDelayMs(attemptNumber, this.retryBaseDelayMs, this.retryCapDelayMs, this.randomFn);
+      this.logRetry(attemptNumber, lastAttemptState.failures, elapsedMs, nextDelayMs);
+      await this.sleepFn(nextDelayMs);
     }
+
+    this.handleFinalFailure(lastAttemptState, terminalFailureCategory, retryTimeline, overallStartedAt);
+  }
+
+  _shouldRetry(attemptNumber, hasTransientFailure, hasPermanentFailure) {
+    return attemptNumber < this.maxAttempts && hasTransientFailure && !hasPermanentFailure;
   }
 
   async executePublishCycle() {

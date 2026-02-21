@@ -91,7 +91,7 @@ test('cmdInit should validate install directory name', async (t) => {
                 relays: []
             });
         } catch (e) {
-            assert.notMatch(e.message, /Invalid directory name/);
+            assert.doesNotMatch(e.message, /Invalid directory name/);
         }
     });
   });
@@ -105,7 +105,7 @@ test('cmdInit should validate install directory name', async (t) => {
                 relays: []
             });
         } catch (e) {
-            assert.notMatch(e.message, /Invalid directory name/);
+            assert.doesNotMatch(e.message, /Invalid directory name/);
         }
     });
   });
@@ -119,7 +119,7 @@ test('cmdInit should validate install directory name', async (t) => {
                   relays: []
               });
           } catch (e) {
-              assert.notMatch(e.message, /Invalid directory name/);
+              assert.doesNotMatch(e.message, /Invalid directory name/);
           }
       });
   });
