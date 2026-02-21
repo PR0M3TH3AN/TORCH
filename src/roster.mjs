@@ -70,58 +70,33 @@ const FALLBACK_ROSTER = {
 
 let cachedCanonicalRoster = null;
 
-async function loadCanonicalRoster() {
+function loadCanonicalRoster() {
   if (cachedCanonicalRoster) return cachedCanonicalRoster;
 
   let rosterPath = ROSTER_FILE;
-  let content = null;
 
-  const tryRead = async (p) => {
-    try {
-      return { data: await deps.fs.promises.readFile(p, 'utf8'), error: null };
-    } catch (error) {
-      return { data: null, error };
-    }
-  };
-
-  // Try user roster
-  let result = await tryRead(USER_ROSTER_FILE);
-  if (result.data) {
+  // Prefer user-managed roster if present
+  if (deps.fs.existsSync(USER_ROSTER_FILE)) {
     rosterPath = USER_ROSTER_FILE;
-    content = result.data;
-  } else if (result.error.code === 'ENOENT') {
-    // Try CWD roster
-    result = await tryRead(CWD_ROSTER_FILE);
-    if (result.data) {
-      rosterPath = CWD_ROSTER_FILE;
-      content = result.data;
-    } else if (result.error.code === 'ENOENT') {
-      // Try default roster
-      result = await tryRead(ROSTER_FILE);
-      if (result.data) {
-        rosterPath = ROSTER_FILE;
-        content = result.data;
-      }
-    }
+  } else if (deps.fs.existsSync(CWD_ROSTER_FILE)) {
+    rosterPath = CWD_ROSTER_FILE;
   }
 
-  if (content) {
-    try {
-      const parsed = JSON.parse(content);
-      const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
-      const weekly = Array.isArray(parsed.weekly)
-        ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
-        : [];
+  try {
+    const parsed = JSON.parse(deps.fs.readFileSync(rosterPath, 'utf8'));
+    const daily = Array.isArray(parsed.daily) ? parsed.daily.map((item) => String(item).trim()).filter(Boolean) : [];
+    const weekly = Array.isArray(parsed.weekly)
+      ? parsed.weekly.map((item) => String(item).trim()).filter(Boolean)
+      : [];
 
-      if (daily.length > 0 && weekly.length > 0) {
-        cachedCanonicalRoster = { daily, weekly };
-        return cachedCanonicalRoster;
-      }
-
-      console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${rosterPath}`);
-    } catch {
-      // It's okay if roster file is missing when used as a library/CLI without the file present
+    if (daily.length > 0 && weekly.length > 0) {
+      cachedCanonicalRoster = { daily, weekly };
+      return cachedCanonicalRoster;
     }
+
+    console.error(`WARNING: Roster file is missing daily/weekly entries, falling back: ${rosterPath}`);
+  } catch {
+    // It's okay if roster file is missing when used as a library/CLI without the file present
   }
 
   cachedCanonicalRoster = FALLBACK_ROSTER;
@@ -145,7 +120,7 @@ export async function getRoster(cadence) {
   const config = await deps.loadTorchConfig();
   const dailyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_DAILY_ROSTER);
   const weeklyFromEnv = parseEnvRoster(process.env.NOSTR_LOCK_WEEKLY_ROSTER);
-  const canonical = await loadCanonicalRoster();
+  const canonical = loadCanonicalRoster();
   const dailyFromConfig = config.nostrLock.dailyRoster;
   const weeklyFromConfig = config.nostrLock.weeklyRoster;
 

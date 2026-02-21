@@ -60,7 +60,6 @@
     "lint": "eslint .",
     "lock:complete": "node bin/torch-lock.mjs complete",
     "validate:scheduler": "node scripts/validate-scheduler-roster.mjs && node scripts/validate-prompt-contract.mjs && node scripts/validate-scheduler-flow-parity.mjs && npm run validate:scheduler-failure-schema",
-    "validate:docs": "node scripts/validate-docs-links.mjs",
     "scheduler:daily": "node scripts/agent/run-scheduler-cycle.mjs daily",
     "scheduler:weekly": "node scripts/agent/run-scheduler-cycle.mjs weekly",
     "report:lock-reliability": "node scripts/agent/summarize-lock-reliability.mjs --since-days 30",
@@ -78,7 +77,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.0.1",
+    "eslint": "^10.0.0",
     "globals": "^17.3.0"
   }
 }

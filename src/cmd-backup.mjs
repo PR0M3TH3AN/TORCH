@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 
+const BACKUP_ROOT = path.resolve(process.cwd(), '.torch/backups');
+
 // Paths to snapshot on each backup run
 const STATE_SOURCES = [
   '.scheduler-memory/memory-store.json',
@@ -20,21 +22,19 @@ const STATE_SOURCES = [
  *
  * @param {Object} [opts]
  * @param {string|null} [opts.output] - Override destination directory (default: .torch/backups/<ts>)
- * @param {string} [opts.cwd] - Working directory (default: process.cwd())
  * @returns {Promise<{backupDir: string, manifest: Object}>}
  */
-export async function cmdBackup({ output = null, cwd = process.cwd() } = {}) {
-  const BACKUP_ROOT = path.resolve(cwd, '.torch/backups');
+export async function cmdBackup({ output = null } = {}) {
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const backupDir = output
-    ? path.resolve(cwd, output)
+    ? path.resolve(process.cwd(), output)
     : path.join(BACKUP_ROOT, ts);
 
   await fs.mkdir(backupDir, { recursive: true });
 
   let gitCommit = null;
   try {
-    gitCommit = execSync('git rev-parse HEAD', { stdio: 'pipe', cwd }).toString().trim();
+    gitCommit = execSync('git rev-parse HEAD', { stdio: 'pipe' }).toString().trim();
   } catch {
     // Not in a git repo or git unavailable
   }
@@ -43,7 +43,7 @@ export async function cmdBackup({ output = null, cwd = process.cwd() } = {}) {
   const skipped = [];
 
   for (const relPath of STATE_SOURCES) {
-    const src = path.resolve(cwd, relPath);
+    const src = path.resolve(process.cwd(), relPath);
     const dest = path.join(backupDir, relPath.replace(/\//g, '__'));
     try {
       await fs.copyFile(src, dest);
@@ -77,12 +77,9 @@ export async function cmdBackup({ output = null, cwd = process.cwd() } = {}) {
 /**
  * Lists all available backups under .torch/backups/, newest first.
  *
- * @param {Object} [opts]
- * @param {string} [opts.cwd] - Working directory (default: process.cwd())
  * @returns {Promise<Array<{id: string, createdAt: string|null, backupDir: string}>>}
  */
-export async function listBackups({ cwd = process.cwd() } = {}) {
-  const BACKUP_ROOT = path.resolve(cwd, '.torch/backups');
+export async function listBackups() {
   try {
     const entries = await fs.readdir(BACKUP_ROOT, { withFileTypes: true });
     const backups = [];
