@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: test/lock-ops-publish-retry.test.mjs
+ok 1 - test/lock-ops-publish-retry.test.mjs
+  ---
+  duration_ms: 118.053138
+  type: 'test'
+  ...
+# Subtest: test/scheduler-lock-failure-schema.contract.test.mjs
+ok 2 - test/scheduler-lock-failure-schema.contract.test.mjs
+  ---
+  duration_ms: 127.486819
+  type: 'test'
+  ...
+# Subtest: test/scheduler-preflight-lock.e2e.test.mjs
+not ok 3 - test/scheduler-preflight-lock.e2e.test.mjs
+  ---
+  duration_ms: 340.626807
+  type: 'test'
+  location: '/home/user/Documents/GitHub/TORCH/test/scheduler-preflight-lock.e2e.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 357.903984
