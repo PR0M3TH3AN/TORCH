@@ -9,12 +9,6 @@ import {
 import { mergeRelayList, relayListLabel, withTimeout } from './utils.mjs';
 import { secureRandom } from './lock-utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
-import {
-  withTimeout,
-  mergeRelayList,
-  relayListLabel,
-  secureRandom,
-} from './lock-utils.mjs';
 
 const PUBLISH_ERROR_CODES = {
   TIMEOUT: 'publish_timeout',

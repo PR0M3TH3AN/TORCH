@@ -16,16 +16,6 @@ Track only **active, reproducible, unresolved** issues.
 
 ## Active issues
 
-### Missing `format` script in `package.json` prevents style enforcement
-- **Status:** Active
-- **Area:** Tooling
-- **Symptom:** `style-agent` failed to run `npm run format` because the script is missing. `lint:inline-styles` is also missing.
-- **Trigger/Conditions:** Running `style-agent`.
-- **Workaround:** None.
-- **Impact:** Code formatting is not enforced or automated.
-- **Related notes:** `docs/agent-handoffs/incidents/2026-02-21-missing-format-script.md`
-- **Last verified:** 2026-02-21
-
 ### `test/scheduler-preflight-lock.e2e.test.mjs` platform mismatch (`unknown` vs `codex`)
 - **Status:** Resolved
 - **Area:** Test
