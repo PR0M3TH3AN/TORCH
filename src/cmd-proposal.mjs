@@ -1,116 +1,99 @@
-import {
-  createProposal as _createProposal,
-  listProposals as _listProposals,
-  applyProposal as _applyProposal,
-  rejectProposal as _rejectProposal,
-  getProposal as _getProposal
-} from './services/governance/index.js';
+import { createProposal, listProposals, applyProposal, rejectProposal, getProposal } from './services/governance/index.js';
 import { ExitError } from './errors.mjs';
 import fs from 'node:fs/promises';
 
-export async function cmdProposal(subcommand, args = {}, deps = {}) {
-  const {
-    createProposal = _createProposal,
-    listProposals = _listProposals,
-    applyProposal = _applyProposal,
-    rejectProposal = _rejectProposal,
-    getProposal = _getProposal,
-    readFile = fs.readFile,
-    log = console.log,
-    error = console.error
-  } = deps;
-
+export async function cmdProposal(subcommand, args = {}) {
   switch (subcommand) {
     case 'create':
-      return await handleCreate(args, { createProposal, readFile, log, error });
+      return await handleCreate(args);
     case 'list':
-      return await handleList(args, { listProposals, log, error });
+      return await handleList(args);
     case 'apply':
-      return await handleApply(args, { applyProposal, log, error });
+      return await handleApply(args);
     case 'reject':
-      return await handleReject(args, { rejectProposal, log, error });
+      return await handleReject(args);
     case 'show':
-      return await handleShow(args, { getProposal, log, error });
+      return await handleShow(args);
     default:
-      error(`Unknown proposal subcommand: ${subcommand}`);
+      console.error(`Unknown proposal subcommand: ${subcommand}`);
       throw new ExitError(1, 'Unknown subcommand');
   }
 }
 
-async function handleCreate({ agent, target, contentFile, reason }, { createProposal, readFile, log, error }) {
+async function handleCreate({ agent, target, contentFile, reason }) {
   if (!agent || !target || !contentFile || !reason) {
-    error('Usage: torch-lock proposal create --agent <name> --target <path> --content <file> --reason <text>');
+    console.error('Usage: torch-lock proposal create --agent <name> --target <path> --content <file> --reason <text>');
     throw new ExitError(1, 'Missing arguments');
   }
 
   let newContent;
   try {
-    newContent = await readFile(contentFile, 'utf8');
+    newContent = await fs.readFile(contentFile, 'utf8');
   } catch (_e) {
-    error(`Failed to read content file: ${contentFile}`);
+    console.error(`Failed to read content file: ${contentFile}`);
     throw new ExitError(1, 'File read error');
   }
 
   try {
     const result = await createProposal({ agent, target, newContent, reason });
-    log(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
   } catch (e) {
-    error(`Failed to create proposal: ${e.message}`);
+    console.error(`Failed to create proposal: ${e.message}`);
     throw new ExitError(1, 'Proposal creation failed');
   }
 }
 
-async function handleList({ status }, { listProposals, log, error }) {
+async function handleList({ status }) {
   try {
     const proposals = await listProposals();
     const filtered = status ? proposals.filter(p => p.status === status) : proposals;
-    log(JSON.stringify(filtered, null, 2));
+    console.log(JSON.stringify(filtered, null, 2));
   } catch (e) {
-    error(`Failed to list proposals: ${e.message}`);
+    console.error(`Failed to list proposals: ${e.message}`);
     throw new ExitError(1, 'List failed');
   }
 }
 
-async function handleApply({ id }, { applyProposal, log, error }) {
+async function handleApply({ id }) {
   if (!id) {
-    error('Usage: torch-lock proposal apply --id <proposal-id>');
+    console.error('Usage: torch-lock proposal apply --id <proposal-id>');
     throw new ExitError(1, 'Missing id');
   }
 
   try {
     const result = await applyProposal(id);
-    log(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
   } catch (e) {
-    error(`Failed to apply proposal: ${e.message}`);
+    console.error(`Failed to apply proposal: ${e.message}`);
     throw new ExitError(1, 'Apply failed');
   }
 }
 
-async function handleReject({ id, reason }, { rejectProposal, log, error }) {
+async function handleReject({ id, reason }) {
   if (!id || !reason) {
-    error('Usage: torch-lock proposal reject --id <proposal-id> --reason <text>');
+    console.error('Usage: torch-lock proposal reject --id <proposal-id> --reason <text>');
     throw new ExitError(1, 'Missing arguments');
   }
 
   try {
     const result = await rejectProposal(id, reason);
-    log(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
   } catch (e) {
-    error(`Failed to reject proposal: ${e.message}`);
+    console.error(`Failed to reject proposal: ${e.message}`);
     throw new ExitError(1, 'Reject failed');
   }
 }
 
-async function handleShow({ id }, { getProposal, log, error }) {
-  if (!id) {
-    error('Usage: torch-lock proposal show --id <proposal-id>');
-    throw new ExitError(1, 'Missing id');
-  }
-  try {
-    const proposal = await getProposal(id);
-    log(JSON.stringify(proposal, null, 2));
-  } catch (e) {
-    error(`Failed to show proposal: ${e.message}`);
-    throw new ExitError(1, 'Show failed');
-  }
+async function handleShow({ id }) {
+    if (!id) {
+        console.error('Usage: torch-lock proposal show --id <proposal-id>');
+        throw new ExitError(1, 'Missing id');
+    }
+    try {
+        const proposal = await getProposal(id);
+        console.log(JSON.stringify(proposal, null, 2));
+    } catch (e) {
+        console.error(`Failed to show proposal: ${e.message}`);
+        throw new ExitError(1, 'Show failed');
+    }
 }

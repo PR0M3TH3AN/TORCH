@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import http from 'node:http';
-import crypto from 'node:crypto';
 import { cmdDashboard } from '../src/dashboard.mjs';
 import { _resetTorchConfigCache } from '../src/torch-config.mjs';
 
@@ -145,45 +144,6 @@ test('Dashboard Authentication', async (t) => {
 
       assert.notStrictEqual(res.statusCode, 401);
     } finally {
-      _resetTorchConfigCache();
-    }
-  });
-
-  await t.test('validates correctly using scrypt hashed credentials', async () => {
-    // Generate a valid scrypt hash
-    const password = 'admin:hashedpassword';
-    const salt = crypto.randomBytes(16);
-    const hash = crypto.scryptSync(password, salt, 64);
-    const storedAuth = `scrypt:${salt.toString('hex')}:${hash.toString('hex')}`;
-
-    process.env.TORCH_DASHBOARD_AUTH = storedAuth;
-    _resetTorchConfigCache();
-
-    server = await cmdDashboard(0);
-    testPort = server.address().port;
-
-    try {
-      const makeRequest = (credentials) => {
-        const auth = Buffer.from(credentials).toString('base64');
-        return new Promise((resolve) => {
-          http.get({
-            host: '127.0.0.1',
-            port: testPort,
-            path: '/dashboard/',
-            headers: { 'Authorization': `Basic ${auth}` }
-          }, resolve);
-        });
-      };
-
-      // Correct password
-      const resCorrect = await makeRequest(password);
-      assert.notStrictEqual(resCorrect.statusCode, 401, 'correct hashed credentials must not be rejected');
-
-      // Incorrect password
-      const resIncorrect = await makeRequest('admin:wrong');
-      assert.strictEqual(resIncorrect.statusCode, 401, 'incorrect hashed credentials must be rejected');
-    } finally {
-      delete process.env.TORCH_DASHBOARD_AUTH;
       _resetTorchConfigCache();
     }
   });

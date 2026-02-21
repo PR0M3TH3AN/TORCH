@@ -13,7 +13,7 @@ function nowIso() {
 }
 
 export function summarizeHistory(historyEntries, { nowMs = Date.now(), windowMinutes = 60 } = {}) {
-  const windowStartMs = nowMs - (windowMinutes * MINUTE_MS);
+  const windowStartMs = nowMs - (windowMinutes * 60_000);
   const recent = historyEntries.filter((entry) => Date.parse(entry.timestamp || '') >= windowStartMs);
   const relayProbeCount = recent.reduce((sum, entry) => sum + (entry.summary?.totalRelays || 0), 0);
   const successCount = recent.reduce((sum, entry) => sum + (entry.summary?.healthyRelays || 0), 0);
@@ -29,7 +29,7 @@ export function summarizeHistory(historyEntries, { nowMs = Date.now(), windowMin
 
   const allDownDurationMinutes = lastHealthyAtMs === null
     ? null
-    : Math.max(0, Math.floor((nowMs - lastHealthyAtMs) / MINUTE_MS));
+    : Math.max(0, Math.floor((nowMs - lastHealthyAtMs) / 60_000));
 
   return {
     windowMinutes,
@@ -67,40 +67,28 @@ export function evaluateAlertThresholds(currentResult, historyEntries, threshold
 
 async function probeWebSocketReachability(relayUrl, timeoutMs) {
   const startedAt = Date.now();
-  let ws;
-  try {
-    return await withTimeout(new Promise((resolve, reject) => {
-      ws = new WebSocket(relayUrl);
-      let settled = false;
+  return withTimeout(new Promise((resolve, reject) => {
+    const ws = new WebSocket(relayUrl);
+    let settled = false;
 
-      const finish = (fn) => (value) => {
-        if (settled) return;
-        settled = true;
-        try {
-          ws.close();
-        } catch {
-          // ignore
-        }
-        fn(value);
-      };
-
-      ws.once('open', finish(() => resolve({ ok: true, latencyMs: Date.now() - startedAt })));
-      ws.once('error', finish((err) => reject(err)));
-    }), timeoutMs, `WebSocket reachability timeout after ${timeoutMs}ms`);
-  } catch (error) {
-    if (ws) {
+    const finish = (fn) => (value) => {
+      if (settled) return;
+      settled = true;
       try {
         ws.close();
       } catch {
         // ignore
       }
-    }
-    throw error;
-  }
+      fn(value);
+    };
+
+    ws.once('open', finish(() => resolve({ ok: true, latencyMs: Date.now() - startedAt })));
+    ws.once('error', finish((err) => reject(err)));
+  }), timeoutMs, `WebSocket reachability timeout after ${timeoutMs}ms`);
 }
 
 async function probePublishRead(relayUrl, namespace, timeoutMs) {
-  let ws;
+  const ws = new WebSocket(relayUrl);
   const sk = generateSecretKey();
   const pk = getPublicKey(sk);
   const createdAt = Math.floor(Date.now() / MS_PER_SECOND);
@@ -118,71 +106,59 @@ async function probePublishRead(relayUrl, namespace, timeoutMs) {
 
   const subId = `probe-${nonce}`;
 
-  try {
-    return await withTimeout(new Promise((resolve, reject) => {
-      ws = new WebSocket(relayUrl);
-      let okAck = false;
-      let readSeen = false;
-      let settled = false;
+  return withTimeout(new Promise((resolve, reject) => {
+    let okAck = false;
+    let readSeen = false;
+    let settled = false;
 
-      const settle = (fn) => (value) => {
-        if (settled) return;
-        settled = true;
-        try {
-          ws.close();
-        } catch {
-          // ignore
-        }
-        fn(value);
-      };
-
-      ws.once('open', () => {
-        ws.send(JSON.stringify(['EVENT', event]));
-        ws.send(JSON.stringify(['REQ', subId, { ids: [event.id], limit: 1 }]));
-      });
-
-      ws.on('message', (raw) => {
-        let message;
-        try {
-          message = JSON.parse(raw.toString());
-        } catch {
-          // Ignore malformed messages. The relay might be sending non-JSON data
-          // or we might have a protocol mismatch. We only care about valid JSON.
-          return;
-        }
-        if (!Array.isArray(message) || message.length < 2) return;
-        const type = message[0];
-
-        if (type === 'OK' && message[1] === event.id) {
-          okAck = Boolean(message[2]);
-          if (!okAck) {
-            settle(reject)(new Error(`Relay rejected health probe event: ${String(message[3] || 'unknown reason')}`));
-            return;
-          }
-        }
-
-        if (type === 'EVENT' && message[1] === subId && message[2]?.id === event.id) {
-          readSeen = true;
-        }
-
-        if (okAck && readSeen) {
-          ws.send(JSON.stringify(['CLOSE', subId]));
-          settle(resolve)({ ok: true, eventId: event.id });
-        }
-      });
-
-      ws.once('error', settle(reject));
-    }), timeoutMs, `Publish/read probe timeout after ${timeoutMs}ms`);
-  } catch (error) {
-    if (ws) {
+    const settle = (fn) => (value) => {
+      if (settled) return;
+      settled = true;
       try {
         ws.close();
       } catch {
         // ignore
       }
-    }
-    throw error;
-  }
+      fn(value);
+    };
+
+    ws.once('open', () => {
+      ws.send(JSON.stringify(['EVENT', event]));
+      ws.send(JSON.stringify(['REQ', subId, { ids: [event.id], limit: 1 }]));
+    });
+
+    ws.on('message', (raw) => {
+      let message;
+      try {
+        message = JSON.parse(raw.toString());
+      } catch {
+        // Ignore malformed messages. The relay might be sending non-JSON data
+        // or we might have a protocol mismatch. We only care about valid JSON.
+        return;
+      }
+      if (!Array.isArray(message) || message.length < 2) return;
+      const type = message[0];
+
+      if (type === 'OK' && message[1] === event.id) {
+        okAck = Boolean(message[2]);
+        if (!okAck) {
+          settle(reject)(new Error(`Relay rejected health probe event: ${String(message[3] || 'unknown reason')}`));
+          return;
+        }
+      }
+
+      if (type === 'EVENT' && message[1] === subId && message[2]?.id === event.id) {
+        readSeen = true;
+      }
+
+      if (okAck && readSeen) {
+        ws.send(JSON.stringify(['CLOSE', subId]));
+        settle(resolve)({ ok: true, eventId: event.id });
+      }
+    });
+
+    ws.once('error', settle(reject));
+  }), timeoutMs, `Publish/read probe timeout after ${timeoutMs}ms`);
 }
 
 async function readHistory(historyPath) {
