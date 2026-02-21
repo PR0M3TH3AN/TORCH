@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomInt } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getPublishTimeoutMs,
