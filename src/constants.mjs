@@ -22,6 +22,11 @@ export const DEFAULT_SNAPSHOT_INTERVAL_MS = 60_000;
 export const VALID_CADENCES = new Set(['daily', 'weekly']);
 export const KIND_APP_DATA = 30078;
 export const MS_PER_SECOND = 1000;
+export const MINUTE_MS = 60_000;
+export const HOUR_MS = 60 * MINUTE_MS;
+export const DAY_MS = 24 * HOUR_MS;
+export const WEEK_MS = 7 * DAY_MS;
+export const MEMORY_CACHE_MAX_EVENTS = 5000;
 
 /**
  * Script keys injected into the host package.json during `torch-lock init`.
