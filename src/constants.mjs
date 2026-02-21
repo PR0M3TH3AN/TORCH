@@ -53,6 +53,9 @@ Commands:
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
   remove    [--force]                              Remove all TORCH files and configuration from project
+  backup    [--list] [--output <path>]             Snapshot runtime state to .torch/backups/
+  proposal  <create|list|apply|reject|show> [...]  Manage prompt change proposals
+  rollback  --target <file> [--list]               Roll back a prompt to a previous version
 
   list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>] [--full]
   inspect-memory          --id <memoryId>
