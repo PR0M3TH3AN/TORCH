@@ -109,11 +109,15 @@ function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secure
 async function publishToRelays(pool, relays, event, publishTimeoutMs, phase) {
   const publishPromises = pool.publish(relays, event);
   const settled = await Promise.allSettled(
-    publishPromises.map((publishPromise, index) => withTimeout(
-      publishPromise,
-      publishTimeoutMs,
-      `[${phase}] Publish timed out after ${publishTimeoutMs}ms (relay=${relays[index]})`,
-    )),
+    publishPromises.map((publishPromise, index) => {
+      // Prevent unhandled rejection if timeout wins
+      publishPromise.catch(() => {});
+      return withTimeout(
+        publishPromise,
+        publishTimeoutMs,
+        `[${phase}] Publish timed out after ${publishTimeoutMs}ms (relay=${relays[index]})`,
+      );
+    }),
   );
 
   return settled.map((result, index) => {
