@@ -84,7 +84,6 @@ try {
     writeFileSync(path.join(sessionDir, 'retrieve.json'), JSON.stringify(artifact, null, 2));
     writeFileSync(path.join(sessionDir, 'retrieve.ok'), 'MEMORY_RETRIEVED\n');
     writeFileSync(path.join(latestDir, 'retrieve.ok'), 'MEMORY_RETRIEVED\n');
-    writeFileSync(path.join(latestDir, 'retrieve.json'), JSON.stringify(artifact, null, 2));
     // Format retrieved memories as readable markdown sections.
     // Prefer m.summary (compact excerpt) over m.content (full blob) for prompt injection.
     const memoriesMarkdown = retrieved.length > 0

@@ -47,7 +47,6 @@ import { randomUUID } from 'node:crypto';
 import {
   runCommand,
   parseJsonFromOutput,
-  parseJsonEventsFromOutput,
   readJson,
   normalizeStringList,
   parseNonNegativeInt,
@@ -62,7 +61,6 @@ import {
   parseTimestampFromFilename,
   isStrictSchedulerLogFilename,
   parseAgentFromFilename,
-  sleep,
 } from './scheduler-utils.mjs';
 
 import {
@@ -82,12 +80,6 @@ const FAILURE_CATEGORY = {
   PROMPT_SCHEMA: 'prompt_schema_error',
   LOCK_BACKEND: 'lock_backend_error',
   EXECUTION: 'execution_error',
-};
-
-const HANDOFF_FAILURE = {
-  NETWORK: 'network_error',
-  RUNNER_UNAVAILABLE: 'runner_unavailable',
-  UNKNOWN: 'unknown_error',
 };
 
 /**
@@ -147,23 +139,6 @@ function categorizeFailureMetadata(failureCategory, extraMetadata = {}) {
     failure_category: failureCategory,
     ...extraMetadata,
   };
-}
-
-function getDefaultRunnerHealthCommand({ platform, handoffCommand }) {
-  if (!handoffCommand || !handoffCommand.includes('run-selected-prompt.mjs')) {
-    return null;
-  }
-  const normalizedPlatform = String(platform || '').trim().toLowerCase();
-  if (normalizedPlatform === 'codex') {
-    return 'command -v codex >/dev/null 2>&1';
-  }
-  if (normalizedPlatform === 'claude') {
-    return 'command -v claude >/dev/null 2>&1';
-  }
-  if (normalizedPlatform === 'linux') {
-    return 'command -v echo >/dev/null 2>&1';
-  }
-  return null;
 }
 
 /**
@@ -248,55 +223,6 @@ async function verifyMemoryStep({ name, markers, artifacts, outputText, sinceMs 
     artifactMatched,
     complete: markerMatched || artifactMatched,
   };
-}
-
-function classifyHandoffFailure(text) {
-  const normalized = String(text || '').toLowerCase();
-  if (!normalized) return HANDOFF_FAILURE.UNKNOWN;
-
-  if (
-    normalized.includes('stream disconnected')
-    || normalized.includes('econnreset')
-    || normalized.includes('enotfound')
-    || normalized.includes('eai_again')
-    || normalized.includes('timed out')
-    || normalized.includes('timeout')
-    || normalized.includes('temporarily unavailable')
-    || normalized.includes('connection reset')
-    || normalized.includes('502')
-    || normalized.includes('503')
-    || normalized.includes('504')
-  ) {
-    return HANDOFF_FAILURE.NETWORK;
-  }
-
-  if (
-    normalized.includes('runner command not found')
-    || normalized.includes('command not found')
-    || normalized.includes('enoent')
-    || normalized.includes('unsupported agent_platform')
-  ) {
-    return HANDOFF_FAILURE.RUNNER_UNAVAILABLE;
-  }
-
-  return HANDOFF_FAILURE.UNKNOWN;
-}
-
-function isRetryableHandoffFailure({ failureCategory, combinedOutput, retryOnPatterns }) {
-  if (failureCategory === HANDOFF_FAILURE.NETWORK) {
-    return true;
-  }
-  const text = String(combinedOutput || '');
-  for (const pattern of retryOnPatterns || []) {
-    try {
-      if (new RegExp(pattern, 'i').test(text)) {
-        return true;
-      }
-    } catch {
-      // Invalid regex in config; ignore and continue.
-    }
-  }
-  return false;
 }
 
 
@@ -407,7 +333,6 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
   const handoffCommand = scheduler.handoffCommandByCadence?.[cadence] || null;
   const missingHandoffCommandForMode = !isInteractive && !handoffCommand;
   const memoryPolicyRaw = scheduler.memoryPolicyByCadence?.[cadence] || {};
-  const handoffPolicyRaw = scheduler.handoffPolicyByCadence?.[cadence] || {};
   const mode = memoryPolicyRaw.mode === 'required' ? 'required' : 'optional';
   const lockRetryRaw = scheduler.lockRetry || {};
   const maxRetries = parseNonNegativeInt(
@@ -440,42 +365,11 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     process.env.SCHEDULER_MAX_DEFERRALS,
     parseNonNegativeInt(scheduler.max_deferrals, 3),
   );
-  const handoffMaxAttempts = Math.max(1, parseNonNegativeInt(
-    process.env.SCHEDULER_HANDOFF_MAX_ATTEMPTS,
-    parseNonNegativeInt(handoffPolicyRaw.maxAttempts, 1),
-  ));
-  const handoffRetryBackoffMs = parseNonNegativeInt(
-    process.env.SCHEDULER_HANDOFF_RETRY_BACKOFF_MS,
-    parseNonNegativeInt(handoffPolicyRaw.retryBackoffMs, 1000),
-  );
-  const runnerHealthCommand = (process.env.SCHEDULER_RUNNER_HEALTH_COMMAND
-    || scheduler.runnerHealthCommandByCadence?.[cadence]
-    || null);
-  const fallbackPlatform = (process.env.SCHEDULER_HANDOFF_FALLBACK_PLATFORM
-    || handoffPolicyRaw.fallbackPlatform
-    || null);
-  const retryOnPatterns = normalizeStringList(handoffPolicyRaw.retryOnPatterns, [
-    'stream disconnected',
-    'timeout',
-    'temporarily unavailable',
-    'connection reset',
-  ]);
 
   return {
     firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
     handoffCommand,
-    runnerHealthCommand: typeof runnerHealthCommand === 'string' && runnerHealthCommand.trim()
-      ? runnerHealthCommand.trim()
-      : null,
     missingHandoffCommandForMode,
-    handoffPolicy: {
-      maxAttempts: handoffMaxAttempts,
-      retryBackoffMs: handoffRetryBackoffMs,
-      retryOnPatterns,
-      fallbackPlatform: typeof fallbackPlatform === 'string' && fallbackPlatform.trim()
-        ? fallbackPlatform.trim()
-        : null,
-    },
     validationCommands: Array.isArray(scheduler.validationCommandsByCadence?.[cadence])
       ? scheduler.validationCommandsByCadence[cadence].filter((cmd) => typeof cmd === 'string' && cmd.trim())
       : ['npm run lint'],
@@ -688,8 +582,6 @@ async function main() {
 
   const isInteractive = Boolean(process.stdin.isTTY && process.stdout.isTTY);
   const schedulerConfig = await getSchedulerConfig(cadence, { isInteractive });
-  const runnerHealthPreflightCommand = schedulerConfig.runnerHealthCommand
-    || getDefaultRunnerHealthCommand({ platform, handoffCommand: schedulerConfig.handoffCommand });
   const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
 
   const agentsPath = path.resolve(process.cwd(), 'AGENTS.md');
@@ -744,14 +636,7 @@ async function main() {
     // Step 6: Build exclusion set from relay state. Prefer the top-level `excluded`
     // field (computed by cmdCheck), falling back to the union of locked/paused/completed.
     const checkResult = await runCommand('npm', ['run', `lock:check:${cadence}`, '--', '--json', '--quiet']);
-    const checkCombinedOutput = `${checkResult.stdout}\n${checkResult.stderr}`;
-    const checkEvents = parseJsonEventsFromOutput(checkCombinedOutput);
-    const checkPayload = checkEvents.findLast((event) => (
-      Array.isArray(event.excluded)
-      || Array.isArray(event.locked)
-      || Array.isArray(event.paused)
-      || Array.isArray(event.completed)
-    )) || parseJsonFromOutput(checkCombinedOutput) || {};
+    const checkPayload = parseJsonFromOutput(`${checkResult.stdout}\n${checkResult.stderr}`) || {};
     const excluded = Array.isArray(checkPayload.excluded)
       ? checkPayload.excluded
       : [...new Set([
@@ -824,43 +709,6 @@ async function main() {
         reason: ALL_EXCLUDED_REASON,
         platform,
       });
-    }
-
-    if (runnerHealthPreflightCommand) {
-      const runnerPreflightPromptPath = path.resolve(process.cwd(), 'src/prompts', cadence, `${selectedAgent}.md`);
-      const runnerPreflight = await runCommand('bash', ['-lc', runnerHealthPreflightCommand], {
-        env: {
-          AGENT_PLATFORM: platform,
-          ...(model ? { AGENT_MODEL: model } : {}),
-          SCHEDULER_AGENT: selectedAgent,
-          SCHEDULER_CADENCE: cadence,
-          SCHEDULER_PROMPT_PATH: runnerPreflightPromptPath,
-        },
-      });
-      if (runnerPreflight.code !== 0) {
-        await writeLog({
-          cadence,
-          agent: selectedAgent,
-          status: 'failed',
-          platform,
-          reason: 'Runner health preflight failed',
-          detail: `Prompt not executed. Command failed: ${runnerHealthPreflightCommand}`,
-          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, {
-            failure_class: 'runner_unavailable',
-            runner_health_command: runnerHealthPreflightCommand,
-            runner_health_stdout_excerpt: excerptText(runnerPreflight.stdout) || '(empty)',
-            runner_health_stderr_excerpt: excerptText(runnerPreflight.stderr) || '(empty)',
-          }),
-        });
-        await exitWithSummary(runnerPreflight.code, {
-          status: 'failed',
-          agent: selectedAgent,
-          promptPath: runnerPreflightPromptPath,
-          reason: 'Runner health preflight failed',
-          detail: runnerHealthPreflightCommand,
-          platform,
-        });
-      }
     }
 
     const deferralForAgent = schedulerRunState.lock_deferral?.selected_agent === selectedAgent
@@ -1062,95 +910,26 @@ async function main() {
     }
 
     if (schedulerConfig.handoffCommand) {
-      const handoffAttempts = [];
-      const maxAttempts = schedulerConfig.handoffPolicy.maxAttempts;
-      let handoffSucceeded = false;
-      let fallbackUsed = false;
-      let attempt = 0;
-      let finalHandoff = { code: 1, stdout: '', stderr: '' };
-
-      while (attempt < maxAttempts) {
-        attempt += 1;
-        const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
-          env: schedulerEnv,
-        });
-        handoffAttempts.push(handoff);
-        outputChunks.push(handoff.stdout, handoff.stderr);
-        finalHandoff = handoff;
-        if (handoff.code === 0) {
-          handoffSucceeded = true;
-          break;
-        }
-        const combinedOutput = `${handoff.stdout}\n${handoff.stderr}`;
-        const failureCategory = classifyHandoffFailure(combinedOutput);
-        const retryable = isRetryableHandoffFailure({
-          failureCategory,
-          combinedOutput,
-          retryOnPatterns: schedulerConfig.handoffPolicy.retryOnPatterns,
-        });
-        if (!retryable || attempt >= maxAttempts) {
-          break;
-        }
-        if (schedulerConfig.handoffPolicy.retryBackoffMs > 0) {
-          await sleep(schedulerConfig.handoffPolicy.retryBackoffMs * attempt);
-        }
-      }
-
-      if (
-        !handoffSucceeded
-        && schedulerConfig.handoffPolicy.fallbackPlatform
-        && schedulerConfig.handoffPolicy.fallbackPlatform !== platform
-      ) {
-        const fallbackPlatform = schedulerConfig.handoffPolicy.fallbackPlatform;
-        const fallbackResult = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
-          env: {
-            ...schedulerEnv,
-            AGENT_PLATFORM: fallbackPlatform,
-          },
-        });
-        handoffAttempts.push(fallbackResult);
-        outputChunks.push(fallbackResult.stdout, fallbackResult.stderr);
-        finalHandoff = fallbackResult;
-        fallbackUsed = true;
-        if (fallbackResult.code === 0) {
-          handoffSucceeded = true;
-        }
-      }
-
-      if (!handoffSucceeded) {
-        const combinedOutput = `${finalHandoff.stdout}\n${finalHandoff.stderr}`;
-        const failureCategory = classifyHandoffFailure(combinedOutput);
-        const retryable = isRetryableHandoffFailure({
-          failureCategory,
-          combinedOutput,
-          retryOnPatterns: schedulerConfig.handoffPolicy.retryOnPatterns,
-        });
-        const detail = `Handoff callback failed after ${handoffAttempts.length} attempt(s)${fallbackUsed ? ` including fallback platform ${schedulerConfig.handoffPolicy.fallbackPlatform}` : ''}.`;
+      const handoff = await runCommand('bash', ['-lc', schedulerConfig.handoffCommand], {
+        env: schedulerEnv,
+      });
+      outputChunks.push(handoff.stdout, handoff.stderr);
+      if (handoff.code !== 0) {
         await writeLog({
           cadence,
           agent: selectedAgent,
           status: 'failed',
           platform,
           reason: 'Prompt/handoff execution failed',
-          detail,
-          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, {
-            failure_class: 'prompt_validation_error',
-            handoff_failure_category: failureCategory,
-            handoff_retryable: retryable,
-            handoff_attempts: handoffAttempts.length,
-            handoff_fallback_used: fallbackUsed,
-            handoff_fallback_platform: fallbackUsed ? schedulerConfig.handoffPolicy.fallbackPlatform : null,
-            handoff_last_exit_code: finalHandoff.code,
-            handoff_stdout_excerpt: excerptText(finalHandoff.stdout) || '(empty)',
-            handoff_stderr_excerpt: excerptText(finalHandoff.stderr) || '(empty)',
-          }),
+          detail: 'Handoff callback failed.',
+          metadata: categorizeFailureMetadata(FAILURE_CATEGORY.EXECUTION, { failure_class: 'prompt_validation_error' }),
         });
-        await exitWithSummary(finalHandoff.code || 1, {
+        await exitWithSummary(handoff.code, {
           status: 'failed',
           agent: selectedAgent,
           promptPath,
           reason: 'Prompt/handoff execution failed',
-          detail,
+          detail: 'Handoff callback failed',
           memoryFile,
           platform,
         });
