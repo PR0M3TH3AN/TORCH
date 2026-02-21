@@ -152,6 +152,14 @@ export function createMemoryCache(options = {}) {
       runtimeNamespaces.clear();
       totalRuntimeEvents = 0;
     },
+    prune(predicate) {
+      if (typeof predicate !== 'function') return;
+      for (const key of store.keys()) {
+        if (predicate(key)) {
+          store.delete(key);
+        }
+      }
+    },
     setRuntimeEvent(scope, event, ttlMs = MINUTE_MS) {
       const now = Date.now();
       removeExpired(now);
