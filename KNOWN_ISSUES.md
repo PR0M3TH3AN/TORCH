@@ -140,10 +140,10 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-21
 
 ### `cmdInit should validate install directory name` test is flaky
-- **Status:** Active
+- **Status:** Resolved
 - **Area:** Test
 - **Symptom:** Test failed 1/5 times during flakiness check.
 - **Trigger/Conditions:** Running `node scripts/test-audit/run-flaky-check.mjs`.
-- **Workaround:** Retry.
+- **Workaround:** None needed.
 - **Impact:** CI instability.
 - **Last verified:** 2026-02-21
