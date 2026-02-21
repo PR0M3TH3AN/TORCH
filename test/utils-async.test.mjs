@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { withTimeout } from '../src/lock-utils.mjs';
+import { withTimeout } from '../src/utils.mjs';
 
 describe('Async Utilities', () => {
   describe('withTimeout', () => {

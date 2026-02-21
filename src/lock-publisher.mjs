@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomInt } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getPublishTimeoutMs,
@@ -100,7 +100,11 @@ function isTransientPublishCategory(category) {
   ].includes(category);
 }
 
-export { secureRandom };
+const MAX_RANDOM = 281474976710655; // 2**48 - 1
+
+export function secureRandom() {
+  return randomInt(0, MAX_RANDOM) / MAX_RANDOM;
+}
 
 function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
