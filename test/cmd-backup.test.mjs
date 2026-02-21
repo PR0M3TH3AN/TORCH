@@ -27,7 +27,7 @@ test('cmdBackup creates backup directory and manifest', async () => {
   fs.mkdirSync(cwd, { recursive: true });
   setupStateFiles(cwd);
 
-  const { backupDir, manifest } = await cmdBackup({ cwd });
+  const { backupDir } = await cmdBackup({ cwd });
 
   assert.ok(fs.existsSync(backupDir), 'Backup directory created');
   assert.ok(fs.existsSync(path.join(backupDir, 'backup-manifest.json')), 'Manifest created');
