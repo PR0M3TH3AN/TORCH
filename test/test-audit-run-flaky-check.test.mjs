@@ -36,6 +36,8 @@ test('run-flaky-check reports pass/fail counts from TAP output files', async () 
   assert.equal(result.code, 0, result.stderr || result.stdout);
 
   const matrix = JSON.parse(await fs.readFile(path.join(outputDir, 'flakiness-matrix.json'), 'utf8'));
+
+  // The tool keys results by test name, not filename
   assert.deepEqual(matrix['pass fixture stays green'], { pass: 5, fail: 0 });
   assert.deepEqual(matrix['fail fixture stays red'], { pass: 0, fail: 5 });
 
