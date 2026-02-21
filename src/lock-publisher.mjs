@@ -10,7 +10,6 @@ import { relayListLabel, withTimeout, mergeRelayList } from './utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
 import { secureRandom } from './lock-utils.mjs';
 import {
-  PUBLISH_ERROR_CODES,
   PUBLISH_FAILURE_CATEGORIES,
   classifyPublishError,
   isTransientPublishCategory,
