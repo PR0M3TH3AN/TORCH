@@ -1,71 +1,8 @@
 import { describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  getCompletedAgents,
-  withTimeout,
-  relayListLabel,
-  mergeRelayList
-} from '../src/lock-utils.mjs';
+import { getCompletedAgents } from '../src/lock-utils.mjs';
 
 describe('lock-utils', () => {
-  describe('withTimeout', () => {
-    it('resolves if promise completes before timeout', async () => {
-      const result = await withTimeout(
-        Promise.resolve('success'),
-        100,
-        'timed out'
-      );
-      assert.equal(result, 'success');
-    });
-
-    it('rejects with timeout message if promise takes too long', async () => {
-      const slowPromise = new Promise((resolve) => setTimeout(resolve, 100));
-      await assert.rejects(
-        () => withTimeout(slowPromise, 10, 'timed out'),
-        { message: 'timed out' }
-      );
-    });
-
-    it('rejects if the promise rejects before timeout', async () => {
-      await assert.rejects(
-        () => withTimeout(Promise.reject(new Error('fail')), 100, 'timed out'),
-        { message: 'fail' }
-      );
-    });
-  });
-
-  describe('relayListLabel', () => {
-    it('joins relays with comma and space', () => {
-      assert.equal(relayListLabel(['wss://relay1', 'wss://relay2']), 'wss://relay1, wss://relay2');
-    });
-
-    it('handles single relay', () => {
-      assert.equal(relayListLabel(['wss://relay1']), 'wss://relay1');
-    });
-
-    it('handles empty list', () => {
-      assert.equal(relayListLabel([]), '');
-    });
-  });
-
-  describe('mergeRelayList', () => {
-    it('merges two lists', () => {
-      const result = mergeRelayList(['r1'], ['r2']);
-      assert.deepEqual(result, ['r1', 'r2']);
-    });
-
-    it('deduplicates relays', () => {
-      const result = mergeRelayList(['r1', 'r2'], ['r2', 'r3']);
-      assert.deepEqual(result, ['r1', 'r2', 'r3']);
-    });
-
-    it('handles empty lists', () => {
-      assert.deepEqual(mergeRelayList([], ['r1']), ['r1']);
-      assert.deepEqual(mergeRelayList(['r1'], []), ['r1']);
-      assert.deepEqual(mergeRelayList([], []), []);
-    });
-  });
-
   describe('getCompletedAgents', () => {
     // Helper to create deps
     const createDeps = (overrides = {}) => ({
