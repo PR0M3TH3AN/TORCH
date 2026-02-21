@@ -13,7 +13,6 @@ import { defaultHealthManager, buildRelayHealthConfig, RelayHealthManager } from
 import { publishLock, LockPublisher } from './lock-publisher.mjs';
 import {
   withTimeout,
-  relayListLabel,
   mergeRelayList,
   secureRandom,
 } from './lock-utils.mjs';
