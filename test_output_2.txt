@@ -1,0 +1,3737 @@
+
+> torch-lock@0.1.0 test
+> npm run validate:scheduler && npm run test:integration:e2e && node --test --test-timeout=30000 test/*.test.mjs test/*.test.js
+
+
+> torch-lock@0.1.0 validate:scheduler
+> node scripts/validate-scheduler-roster.mjs && node scripts/validate-prompt-contract.mjs && node scripts/validate-scheduler-flow-parity.mjs && npm run validate:scheduler-failure-schema
+
+Scheduler tables, roster, and prompt filenames are in sync.
+Prompt contract validated for all daily/weekly prompts.
+Scheduler flow parity validated for prompts and scheduler implementation.
+
+> torch-lock@0.1.0 validate:scheduler-failure-schema
+> node --test test/scheduler-lock-failure-schema.contract.test.mjs
+
+TAP version 13
+# Subtest: scheduler lock backend failure artifact matches required frontmatter schema
+ok 1 - scheduler lock backend failure artifact matches required frontmatter schema
+  ---
+  duration_ms: 109.871725
+  type: 'test'
+  ...
+# Subtest: schema contract catches missing required lock-backend field
+ok 2 - schema contract catches missing required lock-backend field
+  ---
+  duration_ms: 3.332479
+  type: 'test'
+  ...
+# Subtest: schema contract catches misnamed lock-backend key
+ok 3 - schema contract catches misnamed lock-backend key
+  ---
+  duration_ms: 0.734052
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 197.383201
+
+> torch-lock@0.1.0 test:integration:e2e
+> node --test test/scheduler-preflight-lock.e2e.test.mjs
+
+TAP version 13
+# Subtest: lock preflight e2e: successful lock writes completed status snapshot
+ok 1 - lock preflight e2e: successful lock writes completed status snapshot
+  ---
+  duration_ms: 385.998381
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+ok 2 - lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+  ---
+  duration_ms: 115.949588
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+ok 3 - lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+  ---
+  duration_ms: 120.263737
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 705.394087
+TAP version 13
+# Subtest: Build artifacts verification
+ok 1 - Build artifacts verification # SKIP dist/ not found — run npm run build first
+  ---
+  duration_ms: 1.26568
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse basic command
+ok 2 - parseArgs should parse basic command
+  ---
+  duration_ms: 1.79563
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse agent and cadence
+ok 3 - parseArgs should parse agent and cadence
+  ---
+  duration_ms: 0.386606
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse equals sign syntax
+ok 4 - parseArgs should parse equals sign syntax
+  ---
+  duration_ms: 2.024816
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse dry-run flag
+ok 5 - parseArgs should parse dry-run flag
+  ---
+  duration_ms: 0.494981
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse port with default
+ok 6 - parseArgs should parse port with default
+  ---
+  duration_ms: 0.365478
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse custom port
+ok 7 - parseArgs should parse custom port
+  ---
+  duration_ms: 0.248664
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse ignore-logs flag
+ok 8 - parseArgs should parse ignore-logs flag
+  ---
+  duration_ms: 0.490888
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse memory flags
+ok 9 - parseArgs should parse memory flags
+  ---
+  duration_ms: 1.862777
+  type: 'test'
+  ...
+# Subtest: parseArgs should parse memory flags with equals
+ok 10 - parseArgs should parse memory flags with equals
+  ---
+  duration_ms: 0.835739
+  type: 'test'
+  ...
+# Subtest: cmdList
+    # Subtest: should list active locks and identify unknown agents
+    ok 1 - should list active locks and identify unknown agents
+      ---
+      duration_ms: 1.847509
+      type: 'test'
+      ...
+    1..1
+ok 11 - cmdList
+  ---
+  duration_ms: 5.444977
+  type: 'suite'
+  ...
+# Subtest: cmdProposal
+    # Subtest: create
+        # Subtest: should create a proposal successfully
+        ok 1 - should create a proposal successfully
+          ---
+          duration_ms: 1.569611
+          type: 'test'
+          ...
+        # Subtest: should throw if arguments are missing
+        ok 2 - should throw if arguments are missing
+          ---
+          duration_ms: 1.200494
+          type: 'test'
+          ...
+        # Subtest: should throw if file read fails
+        ok 3 - should throw if file read fails
+          ---
+          duration_ms: 0.509905
+          type: 'test'
+          ...
+        # Subtest: should throw if createProposal fails
+        ok 4 - should throw if createProposal fails
+          ---
+          duration_ms: 0.515425
+          type: 'test'
+          ...
+        1..4
+    ok 1 - create
+      ---
+      duration_ms: 5.102578
+      type: 'suite'
+      ...
+    # Subtest: list
+        # Subtest: should list all proposals
+        ok 1 - should list all proposals
+          ---
+          duration_ms: 0.509083
+          type: 'test'
+          ...
+        # Subtest: should filter proposals by status
+        ok 2 - should filter proposals by status
+          ---
+          duration_ms: 0.51186
+          type: 'test'
+          ...
+        # Subtest: should handle list failure
+        ok 3 - should handle list failure
+          ---
+          duration_ms: 0.479172
+          type: 'test'
+          ...
+        1..3
+    ok 2 - list
+      ---
+      duration_ms: 2.172095
+      type: 'suite'
+      ...
+    # Subtest: apply
+        # Subtest: should apply a proposal
+        ok 1 - should apply a proposal
+          ---
+          duration_ms: 0.512954
+          type: 'test'
+          ...
+        # Subtest: should throw if id is missing
+        ok 2 - should throw if id is missing
+          ---
+          duration_ms: 0.440915
+          type: 'test'
+          ...
+        # Subtest: should handle apply failure
+        ok 3 - should handle apply failure
+          ---
+          duration_ms: 0.705406
+          type: 'test'
+          ...
+        1..3
+    ok 3 - apply
+      ---
+      duration_ms: 2.063869
+      type: 'suite'
+      ...
+    # Subtest: reject
+        # Subtest: should reject a proposal
+        ok 1 - should reject a proposal
+          ---
+          duration_ms: 0.575697
+          type: 'test'
+          ...
+        # Subtest: should throw if arguments are missing
+        ok 2 - should throw if arguments are missing
+          ---
+          duration_ms: 0.30535
+          type: 'test'
+          ...
+        # Subtest: should handle reject failure
+        ok 3 - should handle reject failure
+          ---
+          duration_ms: 0.383438
+          type: 'test'
+          ...
+        1..3
+    ok 4 - reject
+      ---
+      duration_ms: 1.54811
+      type: 'suite'
+      ...
+    # Subtest: show
+        # Subtest: should show a proposal
+        ok 1 - should show a proposal
+          ---
+          duration_ms: 0.343592
+          type: 'test'
+          ...
+        # Subtest: should throw if id is missing
+        ok 2 - should throw if id is missing
+          ---
+          duration_ms: 0.409711
+          type: 'test'
+          ...
+        # Subtest: should handle show failure
+        ok 3 - should handle show failure
+          ---
+          duration_ms: 0.43607
+          type: 'test'
+          ...
+        1..3
+    ok 5 - show
+      ---
+      duration_ms: 1.351113
+      type: 'suite'
+      ...
+    # Subtest: unknown subcommand
+        # Subtest: should throw ExitError for unknown subcommand
+        ok 1 - should throw ExitError for unknown subcommand
+          ---
+          duration_ms: 0.336945
+          type: 'test'
+          ...
+        1..1
+    ok 6 - unknown subcommand
+      ---
+      duration_ms: 0.458137
+      type: 'suite'
+      ...
+    1..6
+ok 12 - cmdProposal
+  ---
+  duration_ms: 15.586743
+  type: 'suite'
+  ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: enabled (Basic Auth)
+# Serving files from /app
+# Using configuration from /app
+# Subtest: Dashboard Authentication
+    # Subtest: returns 401 when auth is required but missing
+    ok 1 - returns 401 when auth is required but missing
+      ---
+      duration_ms: 45.556596
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: enabled (Basic Auth)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: returns 401 when malformed auth header is provided
+    ok 2 - returns 401 when malformed auth header is provided
+      ---
+      duration_ms: 10.50824
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: enabled (Basic Auth)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: returns 200 when valid credentials are provided
+    ok 3 - returns 200 when valid credentials are provided
+      ---
+      duration_ms: 10.117545
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: enabled (Basic Auth)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: returns 401 when password has different byte length than stored credential
+    ok 4 - returns 401 when password has different byte length than stored credential
+      ---
+      duration_ms: 15.023786
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: returns 200 when auth is disabled
+    ok 5 - returns 200 when auth is disabled
+      ---
+      duration_ms: 7.571875
+      type: 'test'
+      ...
+    1..5
+ok 13 - Dashboard Authentication
+  ---
+  duration_ms: 93.252878
+  type: 'test'
+  ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+# Subtest: Dashboard Configuration Exposure Security
+ok 14 - Dashboard Configuration Exposure Security
+  ---
+  duration_ms: 39.648018
+  type: 'test'
+  ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+# Subtest: Dashboard Configuration Security
+    # Subtest: sanitizes config when auth is disabled
+    ok 1 - sanitizes config when auth is disabled
+      ---
+      duration_ms: 37.206431
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: enabled (Basic Auth)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: sanitizes auth credentials even when authenticated
+    ok 2 - sanitizes auth credentials even when authenticated
+      ---
+      duration_ms: 11.524309
+      type: 'test'
+      ...
+    1..2
+ok 15 - Dashboard Configuration Security
+  ---
+  duration_ms: 51.2626
+  type: 'test'
+  ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Authentication: DISABLED (Dashboard is public)
+# Using configuration from /app
+# Subtest: Dashboard Path Traversal Security Fix
+    # Subtest: allows access to valid dashboard index
+    ok 1 - allows access to valid dashboard index
+      ---
+      duration_ms: 33.33266
+      type: 'test'
+      ...
+# Authentication: DISABLED (Dashboard is public)
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks traversal attempt: /../../etc/passwd
+    ok 2 - blocks traversal attempt: /../../etc/passwd
+      ---
+      duration_ms: 9.846825
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Authentication: DISABLED (Dashboard is public)
+# Using configuration from /app
+    # Subtest: blocks traversal attempt: /dashboard/../../etc/passwd
+    ok 3 - blocks traversal attempt: /dashboard/../../etc/passwd
+      ---
+      duration_ms: 6.710265
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/../../../etc/passwd
+    ok 4 - blocks traversal attempt: /dashboard/../../../etc/passwd
+      ---
+      duration_ms: 4.748842
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /../package.json
+    ok 5 - blocks traversal attempt: /../package.json
+      ---
+      duration_ms: 6.23507
+      type: 'test'
+      ...
+# Authentication: DISABLED (Dashboard is public)
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks traversal attempt: /dashboard/../package.json
+    ok 6 - blocks traversal attempt: /dashboard/../package.json
+      ---
+      duration_ms: 3.734106
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/%2e%2e/package.json
+    ok 7 - blocks traversal attempt: /dashboard/%2e%2e/package.json
+      ---
+      duration_ms: 3.41679
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/%2e%2e%2fpackage.json
+    ok 8 - blocks traversal attempt: /dashboard/%2e%2e%2fpackage.json
+      ---
+      duration_ms: 4.863594
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /..%2fpackage.json
+    ok 9 - blocks traversal attempt: /..%2fpackage.json
+      ---
+      duration_ms: 5.673561
+      type: 'test'
+      ...
+# Authentication: DISABLED (Dashboard is public)
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks traversal attempt: /%2e%2e%2fpackage.json
+    ok 10 - blocks traversal attempt: /%2e%2e%2fpackage.json
+      ---
+      duration_ms: 4.312965
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/..%5cpackage.json
+    ok 11 - blocks traversal attempt: /dashboard/..%5cpackage.json
+      ---
+      duration_ms: 3.930223
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/..%252fpackage.json
+    ok 12 - blocks traversal attempt: /dashboard/..%252fpackage.json
+      ---
+      duration_ms: 5.426696
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/....//package.json
+    ok 13 - blocks traversal attempt: /dashboard/....//package.json
+      ---
+      duration_ms: 3.486919
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks traversal attempt: /dashboard/.../package.json
+    ok 14 - blocks traversal attempt: /dashboard/.../package.json
+      ---
+      duration_ms: 2.923865
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks traversal attempt: //etc/passwd
+    ok 15 - blocks traversal attempt: //etc/passwd
+      ---
+      duration_ms: 4.022684
+      type: 'test'
+      ...
+# Authentication: DISABLED (Dashboard is public)
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks traversal attempt: /dashboard//../../etc/passwd
+    ok 16 - blocks traversal attempt: /dashboard//../../etc/passwd
+      ---
+      duration_ms: 3.274564
+      type: 'test'
+      ...
+    # Subtest: allows traversal within allowed paths
+    ok 17 - allows traversal within allowed paths
+      ---
+      duration_ms: 3.644129
+      type: 'test'
+      ...
+    1..17
+ok 16 - Dashboard Path Traversal Security Fix
+  ---
+  duration_ms: 114.836904
+  type: 'test'
+  ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+# Subtest: Dashboard File Access Security
+    # Subtest: allows access to dashboard assets
+    ok 1 - allows access to dashboard assets
+      ---
+      duration_ms: 35.404997
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: allows access to global assets
+    ok 2 - allows access to global assets
+      ---
+      duration_ms: 9.177676
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Authentication: DISABLED (Dashboard is public)
+# Using configuration from /app
+    # Subtest: allows access to landing page
+    ok 3 - allows access to landing page
+      ---
+      duration_ms: 7.17698
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Authentication: DISABLED (Dashboard is public)
+# Using configuration from /app
+    # Subtest: blocks access to package.json
+    ok 4 - blocks access to package.json
+      ---
+      duration_ms: 9.297126
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks access to src/dashboard.mjs
+    ok 5 - blocks access to src/dashboard.mjs
+      ---
+      duration_ms: 9.972196
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Using configuration from /app
+# Authentication: DISABLED (Dashboard is public)
+    # Subtest: blocks access to random root files
+    ok 6 - blocks access to random root files
+      ---
+      duration_ms: 5.134802
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: allows access to torch-config.json via special handler
+    ok 7 - allows access to torch-config.json via special handler
+      ---
+      duration_ms: 4.604933
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Authentication: DISABLED (Dashboard is public)
+# Serving files from /app
+# Using configuration from /app
+    # Subtest: blocks directory traversal attempts
+    ok 8 - blocks directory traversal attempts
+      ---
+      duration_ms: 6.813318
+      type: 'test'
+      ...
+# Dashboard running at http://127.0.0.1:0/dashboard/
+# Serving files from /app
+# Authentication: DISABLED (Dashboard is public)
+# Using configuration from /app
+    # Subtest: responses include security headers
+    ok 9 - responses include security headers
+      ---
+      duration_ms: 9.301295
+      type: 'test'
+      ...
+    # Subtest: error responses include security headers
+    ok 10 - error responses include security headers
+      ---
+      duration_ms: 8.048724
+      type: 'test'
+      ...
+    1..10
+ok 17 - Dashboard File Access Security
+  ---
+  duration_ms: 110.919724
+  type: 'test'
+  ...
+# Subtest: ExitError
+    # Subtest: should capture the code and message correctly
+    ok 1 - should capture the code and message correctly
+      ---
+      duration_ms: 1.020855
+      type: 'test'
+      ...
+    # Subtest: should be an instance of Error and ExitError
+    ok 2 - should be an instance of Error and ExitError
+      ---
+      duration_ms: 0.280475
+      type: 'test'
+      ...
+    # Subtest: should have a stack trace
+    ok 3 - should have a stack trace
+      ---
+      duration_ms: 0.425532
+      type: 'test'
+      ...
+    # Subtest: should have the correct name
+    ok 4 - should have the correct name
+      ---
+      duration_ms: 0.214442
+      type: 'test'
+      ...
+    1..4
+ok 18 - ExitError
+  ---
+  duration_ms: 3.688324
+  type: 'suite'
+  ...
+# Subtest: createProposal should throw error for disallowed target
+ok 19 - createProposal should throw error for disallowed target
+  ---
+  duration_ms: 6.249746
+  type: 'test'
+  ...
+# Subtest: validateProposal should return invalid for disallowed target
+ok 20 - validateProposal should return invalid for disallowed target
+  ---
+  duration_ms: 9.347468
+  type: 'test'
+  ...
+# Subtest: validateProposal should return valid for allowed target
+ok 21 - validateProposal should return valid for allowed target
+  ---
+  duration_ms: 4.807795
+  type: 'test'
+  ...
+# Subtest: SCN-proposal-create: createProposal writes meta.json, new.md, change.diff
+ok 22 - SCN-proposal-create: createProposal writes meta.json, new.md, change.diff
+  ---
+  duration_ms: 20.712153
+  type: 'test'
+  ...
+# Subtest: SCN-proposal-list: listProposals returns created proposal; status filter works
+ok 23 - SCN-proposal-list: listProposals returns created proposal; status filter works
+  ---
+  duration_ms: 2.618828
+  type: 'test'
+  ...
+# Subtest: SCN-proposal-reject: rejectProposal marks proposal with rejected status and reason
+ok 24 - SCN-proposal-reject: rejectProposal marks proposal with rejected status and reason
+  ---
+  duration_ms: 15.319187
+  type: 'test'
+  ...
+# Subtest: SCN-archive-naming: applyProposal archives with timestamp_hash filename and sidecar
+ok 25 - SCN-archive-naming: applyProposal archives with timestamp_hash filename and sidecar
+  ---
+  duration_ms: 45.069755
+  type: 'test'
+  ...
+# Subtest: SCN-version-list: listPromptVersions returns versions newest-first with metadata
+ok 26 - SCN-version-list: listPromptVersions returns versions newest-first with metadata
+  ---
+  duration_ms: 16.862232
+  type: 'test'
+  ...
+# Subtest: SCN-rollback-latest: rollbackPrompt restores the most recently archived content
+ok 27 - SCN-rollback-latest: rollbackPrompt restores the most recently archived content
+  ---
+  duration_ms: 11.013582
+  type: 'test'
+  ...
+# Subtest: SCN-rollback-hash: rollbackPrompt --strategy <fragment> restores matching archive
+ok 28 - SCN-rollback-hash: rollbackPrompt --strategy <fragment> restores matching archive
+  ---
+  duration_ms: 9.140784
+  type: 'test'
+  ...
+# Initializing torch in /tmp/torch-test-Iz9iLQ/valid-dir_123...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created valid-dir_123/roster.json
+# Created valid-dir_123/META_PROMPTS.md
+# Created valid-dir_123/scheduler-flow.md
+# Created valid-dir_123/daily-scheduler.md
+# Created valid-dir_123/weekly-scheduler.md
+# Created 23 files in valid-dir_123/prompts/daily/
+# Created 21 files in valid-dir_123/prompts/weekly/
+# Created ../tmp/torch-test-Iz9iLQ/valid-dir_123/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created valid-dir_123/TORCH_DASHBOARD.md
+#   Added script: "torch:dashboard"
+#   Added script: "torch:check"
+#   Added script: "torch:lock"
+#   Added script: "torch:health"
+#   Added script: "torch:memory:list"
+#   Added script: "torch:memory:inspect"
+# Updated package.json with convenience scripts.
+# Initialization complete.
+# You can now customize the files in valid-dir_123/
+# ● From torch-config.json:
+#   - Hashtag: ns-agent-lock
+#   - Namespace: ns
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
+# Initializing torch in /tmp/torch-test-dYqtn2...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Skipping package.json to avoid overwriting host package.json (installing to root).
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created roster.json
+# Created META_PROMPTS.md
+# Created scheduler-flow.md
+# Created daily-scheduler.md
+# Created weekly-scheduler.md
+# Created 23 files in prompts/daily/
+# Created 21 files in prompts/weekly/
+# Created ../tmp/torch-test-dYqtn2/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in /
+# ● From torch-config.json:
+#   - Hashtag: ns-agent-lock
+#   - Namespace: ns
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
+# Initializing torch in /tmp/torch-test-2578JX/path/to/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created path/to/torch/roster.json
+# Created path/to/torch/META_PROMPTS.md
+# Created path/to/torch/scheduler-flow.md
+# Created path/to/torch/daily-scheduler.md
+# Created path/to/torch/weekly-scheduler.md
+# Created 23 files in path/to/torch/prompts/daily/
+# Created 21 files in path/to/torch/prompts/weekly/
+# Created ../tmp/torch-test-2578JX/path/to/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created path/to/torch/TORCH_DASHBOARD.md
+#   Added script: "torch:dashboard"
+#   Added script: "torch:check"
+#   Added script: "torch:lock"
+#   Added script: "torch:health"
+#   Added script: "torch:memory:list"
+#   Added script: "torch:memory:inspect"
+# Updated package.json with convenience scripts.
+# Initialization complete.
+# You can now customize the files in path/to/torch/
+# ● From torch-config.json:
+#   - Hashtag: ns-agent-lock
+#   - Namespace: ns
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
+# Subtest: cmdInit should validate install directory name
+    # Subtest: should reject directory with semicolon
+    ok 1 - should reject directory with semicolon
+      ---
+      duration_ms: 6.395521
+      type: 'test'
+      ...
+    # Subtest: should reject directory with spaces
+    ok 2 - should reject directory with spaces
+      ---
+      duration_ms: 1.285156
+      type: 'test'
+      ...
+    # Subtest: should reject directory with quotes
+    ok 3 - should reject directory with quotes
+      ---
+      duration_ms: 1.363175
+      type: 'test'
+      ...
+    # Subtest: should reject directory with backticks
+    ok 4 - should reject directory with backticks
+      ---
+      duration_ms: 1.158698
+      type: 'test'
+      ...
+    # Subtest: should reject directory with $
+    ok 5 - should reject directory with $
+      ---
+      duration_ms: 1.539531
+      type: 'test'
+      ...
+    # Subtest: should accept valid directory names
+    ok 6 - should accept valid directory names
+      ---
+      duration_ms: 70.018452
+      type: 'test'
+      ...
+    # Subtest: should accept "."
+    ok 7 - should accept "."
+      ---
+      duration_ms: 49.045602
+      type: 'test'
+      ...
+    # Subtest: should accept nested paths with slashes
+    ok 8 - should accept nested paths with slashes
+      ---
+      duration_ms: 50.337671
+      type: 'test'
+      ...
+    1..8
+ok 29 - cmdInit should validate install directory name
+  ---
+  duration_ms: 185.670322
+  type: 'test'
+  ...
+# Subtest: src/lib.mjs
+    # Subtest: cmdCheck
+        # Subtest: returns correct structure with empty locks
+        ok 1 - returns correct structure with empty locks
+          ---
+          duration_ms: 5.976956
+          type: 'test'
+          ...
+        # Subtest: identifies locked agents
+        ok 2 - identifies locked agents
+          ---
+          duration_ms: 0.785658
+          type: 'test'
+          ...
+        # Subtest: excludes paused agents
+        ok 3 - excludes paused agents
+          ---
+          duration_ms: 0.700528
+          type: 'test'
+          ...
+        # Subtest: identifies unknown locked agents
+        ok 4 - identifies unknown locked agents
+          ---
+          duration_ms: 0.773542
+          type: 'test'
+          ...
+        1..4
+    ok 1 - cmdCheck
+      ---
+      duration_ms: 9.58845
+      type: 'suite'
+      ...
+    # Subtest: cmdLock
+        # Subtest: successfully locks an available agent
+        ok 1 - successfully locks an available agent
+          ---
+          duration_ms: 23.624356
+          type: 'test'
+          ...
+        # Subtest: fails if agent is not in roster
+        ok 2 - fails if agent is not in roster
+          ---
+          duration_ms: 9.369314
+          type: 'test'
+          ...
+        # Subtest: fails if agent is already locked
+        ok 3 - fails if agent is already locked
+          ---
+          duration_ms: 8.10465
+          type: 'test'
+          ...
+        # Subtest: fails if agent is already completed
+        ok 4 - fails if agent is already completed
+          ---
+          duration_ms: 7.937442
+          type: 'test'
+          ...
+        # Subtest: fails if race check is lost
+        ok 5 - fails if race check is lost
+          ---
+          duration_ms: 9.379218
+          type: 'test'
+          ...
+        # Subtest: handles race condition with identical timestamps using eventId tie-breaker (we win)
+        ok 6 - handles race condition with identical timestamps using eventId tie-breaker (we win)
+          ---
+          duration_ms: 22.0192
+          type: 'test'
+          ...
+        # Subtest: handles race condition with identical timestamps using eventId tie-breaker (we lose)
+        ok 7 - handles race condition with identical timestamps using eventId tie-breaker (we lose)
+          ---
+          duration_ms: 10.256505
+          type: 'test'
+          ...
+        # Subtest: dry run does not publish
+        ok 8 - dry run does not publish
+          ---
+          duration_ms: 8.396401
+          type: 'test'
+          ...
+        1..8
+    ok 2 - cmdLock
+      ---
+      duration_ms: 100.51377
+      type: 'suite'
+      ...
+    # Subtest: cmdList
+        # Subtest: lists active locks
+        ok 1 - lists active locks
+          ---
+          duration_ms: 1.118504
+          type: 'test'
+          ...
+        # Subtest: warns about unknown agents
+        ok 2 - warns about unknown agents
+          ---
+          duration_ms: 0.404244
+          type: 'test'
+          ...
+        # Subtest: handles no locks
+        ok 3 - handles no locks
+          ---
+          duration_ms: 0.340225
+          type: 'test'
+          ...
+        1..3
+    ok 3 - cmdList
+      ---
+      duration_ms: 2.167812
+      type: 'suite'
+      ...
+    # Subtest: cmdComplete
+        # Subtest: successfully completes an active lock
+        ok 1 - successfully completes an active lock
+          ---
+          duration_ms: 0.945015
+          type: 'test'
+          ...
+        # Subtest: fails if no active lock found
+        ok 2 - fails if no active lock found
+          ---
+          duration_ms: 0.463133
+          type: 'test'
+          ...
+        # Subtest: detects already completed task
+        ok 3 - detects already completed task
+          ---
+          duration_ms: 0.403365
+          type: 'test'
+          ...
+        1..3
+    ok 4 - cmdComplete
+      ---
+      duration_ms: 2.048362
+      type: 'suite'
+      ...
+    1..4
+ok 30 - src/lib.mjs
+  ---
+  duration_ms: 115.329088
+  type: 'suite'
+  ...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+#   Published to 1/3 relays (required=1, timeout=25ms)
+# [publish:primary] Publishing to 2 relays (wss://relay-a, wss://relay-b)...
+# [publish:primary] Publishing to 2 relays (wss://relay-a, wss://relay-b)...
+#   Published to 2/2 relays (required=2, timeout=25ms)
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+# [publish:primary] Publishing to 3 relays (wss://relay-a, wss://relay-b, wss://relay-c)...
+#   Published to 2/3 relays (required=2, timeout=25ms)
+# (node:9231) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: ci-resilience lock acquisition under unstable relays
+    # Subtest: recovers after all relays are down for an initial outage window
+    ok 1 - recovers after all relays are down for an initial outage window
+      ---
+      duration_ms: 22.850353
+      type: 'test'
+      ...
+    # Subtest: survives intermittent timeout spikes and reaches quorum with bounded retries
+    ok 2 - survives intermittent timeout spikes and reaches quorum with bounded retries
+      ---
+      duration_ms: 2.076944
+      type: 'test'
+      ...
+    # Subtest: handles staggered relay recovery and never exceeds retry budget
+    ok 3 - handles staggered relay recovery and never exceeds retry budget
+      ---
+      duration_ms: 3.463779
+      type: 'test'
+      ...
+    1..3
+ok 31 - ci-resilience lock acquisition under unstable relays
+  ---
+  duration_ms: 30.336871
+  type: 'suite'
+  ...
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+# [publish:primary] Publishing to 1 relays (wss://relay-a)...
+# (node:9258) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: publishLock retry behavior
+    # Subtest: succeeds immediately on first attempt without retries
+    ok 1 - succeeds immediately on first attempt without retries
+      ---
+      duration_ms: 6.146052
+      type: 'test'
+      ...
+    # Subtest: retries a transient failure then succeeds within retry budget with bounded jitter
+    ok 2 - retries a transient failure then succeeds within retry budget with bounded jitter
+      ---
+      duration_ms: 2.852972
+      type: 'test'
+      ...
+    # Subtest: returns terminal relay_publish_quorum_failure after exhausting retry budget
+    ok 3 - returns terminal relay_publish_quorum_failure after exhausting retry budget
+      ---
+      duration_ms: 3.511318
+      type: 'test'
+      ...
+    # Subtest: short-circuits non-retryable failures without extra attempts
+    ok 4 - short-circuits non-retryable failures without extra attempts
+      ---
+      duration_ms: 1.979156
+      type: 'test'
+      ...
+    1..4
+ok 32 - publishLock retry behavior
+  ---
+  duration_ms: 16.216027
+  type: 'suite'
+  ...
+# Subtest: lock-ops
+    # Subtest: parseLockEvent
+        # Subtest: parses a valid lock event correctly
+        ok 1 - parses a valid lock event correctly
+          ---
+          duration_ms: 1.708123
+          type: 'test'
+          ...
+        # Subtest: returns nulls when content is invalid JSON
+        ok 2 - returns nulls when content is invalid JSON
+          ---
+          duration_ms: 0.561639
+          type: 'test'
+          ...
+        # Subtest: returns nulls when required content fields are missing
+        ok 3 - returns nulls when required content fields are missing
+          ---
+          duration_ms: 0.300337
+          type: 'test'
+          ...
+        # Subtest: returns nulls when content is an array (not object)
+        ok 4 - returns nulls when content is an array (not object)
+          ---
+          duration_ms: 0.460105
+          type: 'test'
+          ...
+        1..4
+    ok 1 - parseLockEvent
+      ---
+      duration_ms: 4.231653
+      type: 'suite'
+      ...
+# [publish:primary] Publishing to 2 relays (wss://primary-a, wss://primary-b)...
+# [publish:primary] Publishing to 2 relays (wss://primary-a, wss://primary-b)...
+#   Published to 2/2 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 1 relays (wss://primary-down)...
+# [publish:primary] Publishing to 1 relays (wss://primary-down)...
+# [publish:primary] Publishing to 1 relays (wss://primary-down)...
+# [publish:primary] Publishing to 1 relays (wss://primary-bad)...
+# [publish:primary] Publishing to 5 relays (relay-timeout, wss://dns, wss://tcp, wss://tls, wss://ws)...
+# [publish:primary] Publishing to 2 relays (wss://relay-bad, wss://relay-ok)...
+# {"event":"lock_publish_quorum_met","correlationId":"f0e40607-24be-406f-9cc7-bf10b2c25c6d","attemptId":"0040b1fd-2739-46d9-b585-de49ebbccc68","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":1}],"totalElapsedMs":1}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 1 relays (wss://primary-bad)...
+# [publish:fallback] Publishing to 1 relays (wss://fallback-ok)...
+# {"event":"lock_publish_quorum_met","correlationId":"78325355-df6a-4cdc-88df-7e23268df2e5","attemptId":"0cf8b385-86ff-41ff-9a63-69dd02cf378c","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 2 relays (wss://bad, wss://healthy)...
+# {"event":"lock_publish_quorum_met","correlationId":"4437a105-9ca1-4749-9eef-034360df4fff","attemptId":"60c1ebad-2443-49b3-a037-7bf611efb802","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 2 relays (wss://healthy, wss://bad)...
+# {"event":"lock_publish_quorum_met","correlationId":"19565fa3-9777-4965-b469-a97489df2eaa","attemptId":"311b64d8-6aec-4697-af94-fc9d4b8bfb7d","publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":2,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/2 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 1 relays (wss://healthy)...
+# {"event":"lock_publish_quorum_met","correlationId":"79fabd0b-5a33-40cf-b941-af821e9287fe","attemptId":"00d33c04-53fa-46b7-9249-5a1008fb7f6f","publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 1 relays (wss://healthy)...
+# {"event":"lock_publish_quorum_met","correlationId":"0463695b-8d52-4f2f-8fc6-46caca9ff4e1","attemptId":"1735a6c5-75ae-41be-a5e2-345c0b7e352b","publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":1,"elapsedMs":0}],"totalElapsedMs":0}
+#   Published to 1/1 relays (required=1, timeout=200ms)
+# [publish:primary] Publishing to 2 relays (wss://primary-a, wss://primary-b)...
+# [publish:fallback] Publishing to 1 relays (wss://fallback-healthy)...
+# {"event":"lock_publish_quorum_met","correlationId":"3780f96f-28c3-459f-bd0f-707e5a5a8d1e","attemptId":"6a9598b3-28f1-4dde-be0d-b3df919ee0e6","publishAttempt":1,"successCount":1,"relayAttemptedCount":3,"requiredSuccesses":1,"timeoutMs":200,"retryTimeline":[{"publishAttempt":1,"successCount":1,"relayAttemptedCount":3,"elapsedMs":1}],"totalElapsedMs":1}
+#   Published to 1/3 relays (required=1, timeout=200ms)
+    # Subtest: queryLocks
+        # Subtest: falls back to fallback relays when primary query fails
+        ok 1 - falls back to fallback relays when primary query fails
+          ---
+          duration_ms: 25.669772
+          type: 'test'
+          ...
+        1..1
+    ok 2 - queryLocks
+      ---
+      duration_ms: 26.078455
+      type: 'suite'
+      ...
+    # Subtest: publishLock
+        # Subtest: retries transient failures and succeeds on a later attempt
+        ok 1 - retries transient failures and succeeds on a later attempt
+          ---
+          duration_ms: 4.690241
+          type: 'test'
+          ...
+        # Subtest: fails after retry budget is exhausted for persistent transient failures
+        ok 2 - fails after retry budget is exhausted for persistent transient failures
+          ---
+          duration_ms: 3.330079
+          type: 'test'
+          ...
+        # Subtest: fails without retry for persistent validation failures
+        ok 3 - fails without retry for persistent validation failures
+          ---
+          duration_ms: 1.235179
+          type: 'test'
+          ...
+        # Subtest: includes per-relay reason categories and retry metadata in failure diagnostics
+        ok 4 - includes per-relay reason categories and retry metadata in failure diagnostics
+          ---
+          duration_ms: 3.958904
+          type: 'test'
+          ...
+        # Subtest: returns success when mixed relay outcomes still satisfy quorum
+        ok 5 - returns success when mixed relay outcomes still satisfy quorum
+          ---
+          duration_ms: 1.322328
+          type: 'test'
+          ...
+        # Subtest: uses fallback relays to satisfy min success quorum
+        ok 6 - uses fallback relays to satisfy min success quorum
+          ---
+          duration_ms: 1.100485
+          type: 'test'
+          ...
+        # Subtest: quarantines repeatedly failing relays and still reaches quorum with one healthy relay
+        ok 7 - quarantines repeatedly failing relays and still reaches quorum with one healthy relay
+          ---
+          duration_ms: 2.273672
+          type: 'test'
+          ...
+        # Subtest: uses fallback and min active pool to reintroduce quarantined relay when needed
+        ok 8 - uses fallback and min active pool to reintroduce quarantined relay when needed
+          ---
+          duration_ms: 1.056816
+          type: 'test'
+          ...
+        1..8
+    ok 3 - publishLock
+      ---
+      duration_ms: 19.687764
+      type: 'suite'
+      ...
+    1..3
+ok 33 - lock-ops
+  ---
+  duration_ms: 50.914852
+  type: 'suite'
+  ...
+# Warning: Failed to read log dir logs/daily: Permission denied
+# Subtest: lock-utils
+    # Subtest: getCompletedAgents
+        # Subtest: returns completed agents for daily cadence
+        ok 1 - returns completed agents for daily cadence
+          ---
+          duration_ms: 2.202764
+          type: 'test'
+          ...
+        # Subtest: returns completed agents for weekly cadence
+        ok 2 - returns completed agents for weekly cadence
+          ---
+          duration_ms: 0.467437
+          type: 'test'
+          ...
+        # Subtest: handles ENOENT gracefully
+        ok 3 - handles ENOENT gracefully
+          ---
+          duration_ms: 0.852186
+          type: 'test'
+          ...
+        # Subtest: logs error for non-ENOENT errors
+        ok 4 - logs error for non-ENOENT errors
+          ---
+          duration_ms: 1.505035
+          type: 'test'
+          ...
+        1..4
+    ok 1 - getCompletedAgents
+      ---
+      duration_ms: 6.119334
+      type: 'suite'
+      ...
+    1..1
+ok 34 - lock-utils
+  ---
+  duration_ms: 6.750196
+  type: 'suite'
+  ...
+# Subtest: main dispatch
+    # Subtest: should exit with code 1 if no command provided
+    ok 1 - should exit with code 1 if no command provided
+      ---
+      duration_ms: 1.784018
+      type: 'test'
+      ...
+    # Subtest: should exit with code 1 if unknown command provided
+    ok 2 - should exit with code 1 if unknown command provided
+      ---
+      duration_ms: 0.624868
+      type: 'test'
+      ...
+    # Subtest: should exit with code 1 if check command misses cadence
+    ok 3 - should exit with code 1 if check command misses cadence
+      ---
+      duration_ms: 0.68666
+      type: 'test'
+      ...
+    # Subtest: should exit with code 1 if lock command misses agent
+    ok 4 - should exit with code 1 if lock command misses agent
+      ---
+      duration_ms: 0.766103
+      type: 'test'
+      ...
+    # Subtest: should exit with code 1 if complete command misses agent
+    ok 5 - should exit with code 1 if complete command misses agent
+      ---
+      duration_ms: 0.787726
+      type: 'test'
+      ...
+    # Subtest: should exit with code 1 if proposal command misses subcommand
+    ok 6 - should exit with code 1 if proposal command misses subcommand
+      ---
+      duration_ms: 0.46341
+      type: 'test'
+      ...
+    1..6
+ok 35 - main dispatch
+  ---
+  duration_ms: 122.375305
+  type: 'suite'
+  ...
+# Subtest: listMemories, inspectMemory, pinMemory, and unpinMemory support admin hooks
+ok 36 - listMemories, inspectMemory, pinMemory, and unpinMemory support admin hooks
+  ---
+  duration_ms: 2.630045
+  type: 'test'
+  ...
+# Subtest: triggerPruneDryRun returns candidate metadata without deleting records
+ok 37 - triggerPruneDryRun returns candidate metadata without deleting records
+  ---
+  duration_ms: 0.520921
+  type: 'test'
+  ...
+# Subtest: memoryStats reports counts/rates and retrieval telemetry remains redaction-safe
+ok 38 - memoryStats reports counts/rates and retrieval telemetry remains redaction-safe
+  ---
+  duration_ms: 15.185217
+  type: 'test'
+  ...
+# Subtest: runPruneCycle respects prune feature-flag modes
+ok 39 - runPruneCycle respects prune feature-flag modes
+  ---
+  duration_ms: 0.901735
+  type: 'test'
+  ...
+# Subtest: markMemoryMerged delegates to repository and clears cache
+ok 40 - markMemoryMerged delegates to repository and clears cache
+  ---
+  duration_ms: 1.036014
+  type: 'test'
+  ...
+# Subtest: stores runtime events in signer/session namespace and clears scope
+ok 41 - stores runtime events in signer/session namespace and clears scope
+  ---
+  duration_ms: 2.72526
+  type: 'test'
+  ...
+# Subtest: expires runtime events and records expiration metrics
+ok 42 - expires runtime events and records expiration metrics
+  ---
+  duration_ms: 0.387152
+  type: 'test'
+  ...
+# Subtest: enforces LRU bounds and tracks eviction metrics
+ok 43 - enforces LRU bounds and tracks eviction metrics
+  ---
+  duration_ms: 0.511768
+  type: 'test'
+  ...
+# Subtest: blocks decrypted/session-sensitive data from durable promotion without sanitizer pass
+ok 44 - blocks decrypted/session-sensitive data from durable promotion without sanitizer pass
+  ---
+  duration_ms: 1.689578
+  type: 'test'
+  ...
+# Subtest: createEmbedderAdapter selects in-memory backend and supports vector CRUD
+ok 45 - createEmbedderAdapter selects in-memory backend and supports vector CRUD
+  ---
+  duration_ms: 1.684698
+  type: 'test'
+  ...
+# Subtest: createEmbedderAdapter reads backend from environment
+ok 46 - createEmbedderAdapter reads backend from environment
+  ---
+  duration_ms: 0.467253
+  type: 'test'
+  ...
+# Subtest: memory feature flags parse defaults and canary allow-lists
+ok 47 - memory feature flags parse defaults and canary allow-lists
+  ---
+  duration_ms: 1.371941
+  type: 'test'
+  ...
+# Subtest: memory prune flag supports off, dry-run, and active modes
+ok 48 - memory prune flag supports off, dry-run, and active modes
+  ---
+  duration_ms: 0.293283
+  type: 'test'
+  ...
+# Subtest: estimateTokenCount returns heuristic count
+ok 49 - estimateTokenCount returns heuristic count
+  ---
+  duration_ms: 1.543653
+  type: 'test'
+  ...
+# Subtest: formatMemoryBlock converts memory record to display block
+ok 50 - formatMemoryBlock converts memory record to display block
+  ---
+  duration_ms: 0.780871
+  type: 'test'
+  ...
+# Subtest: formatMemoryBlock handles missing optional fields and default clamping
+ok 51 - formatMemoryBlock handles missing optional fields and default clamping
+  ---
+  duration_ms: 0.221507
+  type: 'test'
+  ...
+# Subtest: formatMemoryBlock respects custom clamping options
+ok 52 - formatMemoryBlock respects custom clamping options
+  ---
+  duration_ms: 0.301855
+  type: 'test'
+  ...
+# Subtest: formatMemoryBlock handles edge cases for clamping
+ok 53 - formatMemoryBlock handles edge cases for clamping
+  ---
+  duration_ms: 0.384212
+  type: 'test'
+  ...
+# Subtest: formatMemoriesForPrompt enforces token budget and k limit
+ok 54 - formatMemoriesForPrompt enforces token budget and k limit
+  ---
+  duration_ms: 0.921374
+  type: 'test'
+  ...
+# Subtest: formatMemoriesForPrompt handles aggressive budget fitting
+ok 55 - formatMemoriesForPrompt handles aggressive budget fitting
+  ---
+  duration_ms: 0.452649
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext injects context when enabled
+ok 56 - renderPromptWithMemoryContext injects context when enabled
+  ---
+  duration_ms: 0.834781
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext returns base prompt when disabled
+ok 57 - renderPromptWithMemoryContext returns base prompt when disabled
+  ---
+  duration_ms: 0.529138
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles missing query or service
+ok 58 - renderPromptWithMemoryContext handles missing query or service
+  ---
+  duration_ms: 0.656405
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles circular agentContext gracefully
+ok 59 - renderPromptWithMemoryContext handles circular agentContext gracefully
+  ---
+  duration_ms: 0.423544
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles agentContext as array of strings
+ok 60 - renderPromptWithMemoryContext handles agentContext as array of strings
+  ---
+  duration_ms: 0.350136
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles agentContext as plain object
+ok 61 - renderPromptWithMemoryContext handles agentContext as plain object
+  ---
+  duration_ms: 0.284201
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles agentContext as primitives
+ok 62 - renderPromptWithMemoryContext handles agentContext as primitives
+  ---
+  duration_ms: 1.460142
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext calls updateMemoryUsage for retrieved memories
+ok 63 - renderPromptWithMemoryContext calls updateMemoryUsage for retrieved memories
+  ---
+  duration_ms: 1.352623
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles empty memories gracefully
+ok 64 - renderPromptWithMemoryContext handles empty memories gracefully
+  ---
+  duration_ms: 0.220899
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext handles null/undefined memories gracefully
+ok 65 - renderPromptWithMemoryContext handles null/undefined memories gracefully
+  ---
+  duration_ms: 0.202353
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext respects TORCH_MEMORY_ENABLED=false
+ok 66 - renderPromptWithMemoryContext respects TORCH_MEMORY_ENABLED=false
+  ---
+  duration_ms: 0.138791
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext respects retrieval allowlist
+ok 67 - renderPromptWithMemoryContext respects retrieval allowlist
+  ---
+  duration_ms: 0.473749
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext passes k and tokenBudget
+ok 68 - renderPromptWithMemoryContext passes k and tokenBudget
+  ---
+  duration_ms: 0.365102
+  type: 'test'
+  ...
+# Subtest: getRelevantMemories uses cached results when available
+ok 69 - getRelevantMemories uses cached results when available
+  ---
+  duration_ms: 2.198645
+  type: 'test'
+  ...
+# Subtest: getRelevantMemories calls ranker and updates cache on miss
+ok 70 - getRelevantMemories calls ranker and updates cache on miss
+  ---
+  duration_ms: 1.159282
+  type: 'test'
+  ...
+# Subtest: getRelevantMemories passes correct parameters to ranker
+ok 71 - getRelevantMemories passes correct parameters to ranker
+  ---
+  duration_ms: 1.128826
+  type: 'test'
+  ...
+# Subtest: getRelevantMemories triggers updateMemoryUsage on repository
+ok 72 - getRelevantMemories triggers updateMemoryUsage on repository
+  ---
+  duration_ms: 0.53249
+  type: 'test'
+  ...
+# Subtest: ingestEvents
+    # Subtest: happy path: successfully ingests events
+    ok 1 - happy path: successfully ingests events
+      ---
+      duration_ms: 6.485626
+      type: 'test'
+      ...
+    # Subtest: skips ingestion when feature flag is disabled
+    ok 2 - skips ingestion when feature flag is disabled
+      ---
+      duration_ms: 0.431606
+      type: 'test'
+      ...
+    # Subtest: clears cache after ingestion
+    ok 3 - clears cache after ingestion
+      ---
+      duration_ms: 1.846968
+      type: 'test'
+      ...
+    # Subtest: skips duplicate windows
+    ok 4 - skips duplicate windows
+      ---
+      duration_ms: 1.031496
+      type: 'test'
+      ...
+    # Subtest: propagates repository errors
+    ok 5 - propagates repository errors
+      ---
+      duration_ms: 1.564075
+      type: 'test'
+      ...
+    1..5
+ok 73 - ingestEvents
+  ---
+  duration_ms: 12.977405
+  type: 'suite'
+  ...
+# Subtest: ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, and emits telemetry
+ok 74 - ingestMemoryWindow gathers sources, redacts pii, chunks, embeds, links, and emits telemetry
+  ---
+  duration_ms: 6.322399
+  type: 'test'
+  ...
+# Subtest: ingestMemoryWindow dedupes overlapping windows by hashed content + agent + timestamp bucket
+ok 75 - ingestMemoryWindow dedupes overlapping windows by hashed content + agent + timestamp bucket
+  ---
+  duration_ms: 0.786899
+  type: 'test'
+  ...
+# Subtest: pinMemory pins the memory and clears the cache
+ok 76 - pinMemory pins the memory and clears the cache
+  ---
+  duration_ms: 3.925533
+  type: 'test'
+  ...
+# Subtest: pinMemory returns null for non-existent ID but still clears cache
+ok 77 - pinMemory returns null for non-existent ID but still clears cache
+  ---
+  duration_ms: 0.776176
+  type: 'test'
+  ...
+# Subtest: unpinMemory unpins the memory and clears the cache
+ok 78 - unpinMemory unpins the memory and clears the cache
+  ---
+  duration_ms: 0.643192
+  type: 'test'
+  ...
+# Subtest: unpinMemory returns null for non-existent ID but still clears cache
+ok 79 - unpinMemory returns null for non-existent ID but still clears cache
+  ---
+  duration_ms: 0.60009
+  type: 'test'
+  ...
+# Subtest: createLifecyclePlan respects delete safety constraints and logs reasons
+ok 80 - createLifecyclePlan respects delete safety constraints and logs reasons
+  ---
+  duration_ms: 4.197974
+  type: 'test'
+  ...
+# Subtest: createLifecyclePlan condenses near-duplicates and archives merged source records
+ok 81 - createLifecyclePlan condenses near-duplicates and archives merged source records
+  ---
+  duration_ms: 0.993557
+  type: 'test'
+  ...
+# Subtest: applyLifecycleActions executes keep/archive/delete and merge markers
+ok 82 - applyLifecycleActions executes keep/archive/delete and merge markers
+  ---
+  duration_ms: 14.500696
+  type: 'test'
+  ...
+# Subtest: filterAndRankMemories applies metadata filters and composite score
+ok 83 - filterAndRankMemories applies metadata filters and composite score
+  ---
+  duration_ms: 3.420893
+  type: 'test'
+  ...
+# Subtest: formatMemoriesForPrompt returns prompt blocks and enforces token budget trimming
+ok 84 - formatMemoriesForPrompt returns prompt blocks and enforces token budget trimming
+  ---
+  duration_ms: 1.591392
+  type: 'test'
+  ...
+# Subtest: isMemoryRetrievalEnabled supports global toggle and agent canary list
+ok 85 - isMemoryRetrievalEnabled supports global toggle and agent canary list
+  ---
+  duration_ms: 0.556485
+  type: 'test'
+  ...
+# Subtest: renderPromptWithMemoryContext injects bounded memory block before base prompt
+ok 86 - renderPromptWithMemoryContext injects bounded memory block before base prompt
+  ---
+  duration_ms: 0.90936
+  type: 'test'
+  ...
+# Subtest: runPruneCycle respects off mode
+ok 87 - runPruneCycle respects off mode
+  ---
+  duration_ms: 27.437545
+  type: 'test'
+  ...
+# Subtest: runPruneCycle respects dry-run mode
+ok 88 - runPruneCycle respects dry-run mode
+  ---
+  duration_ms: 0.809156
+  type: 'test'
+  ...
+# Subtest: runPruneCycle removes stale unpinned memories in active mode
+ok 89 - runPruneCycle removes stale unpinned memories in active mode
+  ---
+  duration_ms: 4.99665
+  type: 'test'
+  ...
+# Subtest: runPruneCycle starts scheduler if requested
+ok 90 - runPruneCycle starts scheduler if requested
+  ---
+  duration_ms: 1001.731574
+  type: 'test'
+  ...
+# (node:9378) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: createDbAdvisoryLockProvider acquires and releases postgres advisory locks
+ok 91 - createDbAdvisoryLockProvider acquires and releases postgres advisory locks
+  ---
+  duration_ms: 3.992449
+  type: 'test'
+  ...
+# Subtest: startMemoryMaintenanceScheduler runs all jobs and emits metrics including retries
+ok 92 - startMemoryMaintenanceScheduler runs all jobs and emits metrics including retries
+  ---
+  duration_ms: 9.964837
+  type: 'test'
+  ...
+# Subtest: startMemoryMaintenanceScheduler skips jobs when feature flags disable memory
+ok 93 - startMemoryMaintenanceScheduler skips jobs when feature flags disable memory
+  ---
+  duration_ms: 1.920273
+  type: 'test'
+  ...
+# Subtest: normalizeMemoryItem applies durable schema defaults and coercions
+ok 94 - normalizeMemoryItem applies durable schema defaults and coercions
+  ---
+  duration_ms: 2.527405
+  type: 'test'
+  ...
+# Subtest: validateMemoryItem reports field-level errors
+ok 95 - validateMemoryItem reports field-level errors
+  ---
+  duration_ms: 0.879263
+  type: 'test'
+  ...
+# Subtest: ingestEvents rejects invalid writes and logs structured validation details
+ok 96 - ingestEvents rejects invalid writes and logs structured validation details
+  ---
+  duration_ms: 4.607542
+  type: 'test'
+  ...
+# (node:9396) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: memoryStats with empty repository returns zero counts and rates
+ok 97 - memoryStats with empty repository returns zero counts and rates
+  ---
+  duration_ms: 2.49654
+  type: 'test'
+  ...
+# Subtest: memoryStats with populated repository returns correct counts and totals
+ok 98 - memoryStats with populated repository returns correct counts and totals
+  ---
+  duration_ms: 0.5094
+  type: 'test'
+  ...
+# Subtest: memoryStats calculates ingest throughput based on window
+ok 99 - memoryStats calculates ingest throughput based on window
+  ---
+  duration_ms: 7.702206
+  type: 'test'
+  ...
+# Subtest: memoryStats reflects deleted count from prune cycle
+ok 100 - memoryStats reflects deleted count from prune cycle
+  ---
+  duration_ms: 10.292929
+  type: 'test'
+  ...
+# Subtest: memoryStats handles windowMs parameter correctly
+ok 101 - memoryStats handles windowMs parameter correctly
+  ---
+  duration_ms: 0.565552
+  type: 'test'
+  ...
+# Subtest: loadMemoryPromptTemplates loads all memory prompt templates from disk
+ok 102 - loadMemoryPromptTemplates loads all memory prompt templates from disk
+  ---
+  duration_ms: 1.431887
+  type: 'test'
+  ...
+# Subtest: summarizeEvents retries with repair prompt when first response is malformed JSON
+ok 103 - summarizeEvents retries with repair prompt when first response is malformed JSON
+  ---
+  duration_ms: 2.510272
+  type: 'test'
+  ...
+# Subtest: summarizeEvents falls back to deterministic minimal summary with conservative importance when parsing fails twice
+ok 104 - summarizeEvents falls back to deterministic minimal summary with conservative importance when parsing fails twice
+  ---
+  duration_ms: 0.690226
+  type: 'test'
+  ...
+# Subtest: telemetry should not log to stdout or stderr by default
+ok 105 - telemetry should not log to stdout or stderr by default
+  ---
+  duration_ms: 71.478002
+  type: 'test'
+  ...
+# Subtest: telemetry should log to stderr when NODE_DEBUG=torch-memory is set
+ok 106 - telemetry should log to stderr when NODE_DEBUG=torch-memory is set
+  ---
+  duration_ms: 65.16538
+  type: 'test'
+  ...
+# Subtest: schema validation covers required fields, coercion, and rejection paths
+ok 107 - schema validation covers required fields, coercion, and rejection paths
+  ---
+  duration_ms: 2.857982
+  type: 'test'
+  ...
+# Subtest: summarizer parser accepts valid json and recovers after malformed json response
+ok 108 - summarizer parser accepts valid json and recovers after malformed json response
+  ---
+  duration_ms: 3.821169
+  type: 'test'
+  ...
+# Subtest: ingest integration persists memory records and links embeddings from event batches
+ok 109 - ingest integration persists memory records and links embeddings from event batches
+  ---
+  duration_ms: 2.630457
+  type: 'test'
+  ...
+# Subtest: retrieval ranking blends semantic, importance, and recency signals
+ok 110 - retrieval ranking blends semantic, importance, and recency signals
+  ---
+  duration_ms: 0.935401
+  type: 'test'
+  ...
+# Subtest: pruner policy protects pins, merges duplicates, and picks archive/delete outcomes
+ok 111 - pruner policy protects pins, merges duplicates, and picks archive/delete outcomes
+  ---
+  duration_ms: 1.476404
+  type: 'test'
+  ...
+# Subtest: scheduler smoke test handles mocked clock and lock contention
+ok 112 - scheduler smoke test handles mocked clock and lock contention
+  ---
+  duration_ms: 11.004413
+  type: 'test'
+  ...
+# Subtest: CLI Smoke Test
+    # Subtest: should print usage when no args provided
+    ok 1 - should print usage when no args provided
+      ---
+      duration_ms: 155.943355
+      type: 'test'
+      ...
+    # Subtest: should fail when checking without cadence
+    ok 2 - should fail when checking without cadence
+      ---
+      duration_ms: 152.441962
+      type: 'test'
+      ...
+    # Subtest: should include paused agents in check output
+    ok 3 - should include paused agents in check output
+      ---
+      duration_ms: 250.194657
+      type: 'test'
+      ...
+    1..3
+ok 113 - CLI Smoke Test
+  ---
+  duration_ms: 560.179699
+  type: 'suite'
+  ...
+# Initializing torch in /app/test-gitignore-Th2uXV/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-gitignore-Th2uXV/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# No package.json found in host root. Skipping script injection.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hash
+#   - Namespace: test-ns
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hash&namespace=test-ns&relays=wss%3A%2F%2Frelay.damus.io
+# Initializing torch in /app/test-gitignore-existing-BRAVr3/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Updated test-gitignore-existing-BRAVr3/torch/.gitignore: added node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# No package.json found in host root. Skipping script injection.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hash
+#   - Namespace: test-ns
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hash&namespace=test-ns&relays=wss%3A%2F%2Frelay.damus.io
+# Subtest: ops.mjs: cmdInit creates .gitignore with node_modules
+ok 114 - ops.mjs: cmdInit creates .gitignore with node_modules
+  ---
+  duration_ms: 70.871119
+  type: 'test'
+  ...
+# Subtest: ops.mjs: cmdInit appends to existing .gitignore
+ok 115 - ops.mjs: cmdInit appends to existing .gitignore
+  ---
+  duration_ms: 63.765676
+  type: 'test'
+  ...
+# No TORCH installation detected in this directory.
+# Looked for:
+#   - A torch/ subdirectory containing roster.json or bin/
+#   - A package.json with name "torch-lock" (root install)
+# Initializing torch in /app/test-ops-remove-4ufnuL/project-force/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-remove-4ufnuL/project-force/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-namespace-agent-lock
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# The following TORCH artifacts will be removed:
+#   - torch/  (TORCH install directory)
+#   - torch-config.json
+#   - .torch/  (prompt history)
+#   - src/proposals/  (governance proposals)
+#   - torch-lock npm package (via npm uninstall)
+# Removing TORCH...
+# No package.json found in host root. Skipping script injection.
+#   Removed torch/  (TORCH install directory)
+#   Removed torch-config.json
+#   Removed .torch/  (prompt history)
+#   Removed src/proposals/  (governance proposals)
+#   Removed empty src/ directory
+#   Running npm uninstall torch-lock...
+#   Uninstalled torch-lock package.
+# TORCH has been completely removed from this project.
+# If you used TORCH environment variables (NOSTR_LOCK_*, TORCH_*),
+# remember to remove them from your shell profile or CI configuration.
+# Initializing torch in /app/test-ops-remove-4ufnuL/project-runtime/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-remove-4ufnuL/project-runtime/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-namespace-agent-lock
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# No package.json found in host root. Skipping script injection.
+# The following TORCH artifacts will be removed:
+#   - torch/  (TORCH install directory)
+#   - torch-config.json
+#   - .torch/  (prompt history)
+#   - .scheduler-memory/  (memory store)
+#   - task-logs/  (scheduler logs)
+#   - src/proposals/  (governance proposals)
+#   - torch-lock npm package (via npm uninstall)
+# Removing TORCH...
+#   Removed torch/  (TORCH install directory)
+#   Removed torch-config.json
+#   Removed .torch/  (prompt history)
+#   Removed .scheduler-memory/  (memory store)
+#   Removed task-logs/  (scheduler logs)
+#   Removed src/proposals/  (governance proposals)
+#   Removed empty src/ directory
+#   Running npm uninstall torch-lock...
+#   Uninstalled torch-lock package.
+# TORCH has been completely removed from this project.
+# If you used TORCH environment variables (NOSTR_LOCK_*, TORCH_*),
+# remember to remove them from your shell profile or CI configuration.
+# Initializing torch in /app/test-ops-remove-4ufnuL/project-proposals/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-remove-4ufnuL/project-proposals/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-namespace-agent-lock
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# No package.json found in host root. Skipping script injection.
+# The following TORCH artifacts will be removed:
+#   - torch/  (TORCH install directory)
+#   - torch-config.json
+#   - .torch/  (prompt history)
+#   - src/proposals/  (governance proposals)
+#   - torch-lock npm package (via npm uninstall)
+# Removing TORCH...
+#   Removed torch/  (TORCH install directory)
+#   Removed torch-config.json
+#   Removed .torch/  (prompt history)
+#   Removed src/proposals/  (governance proposals)
+#   Removed empty src/ directory
+#   Running npm uninstall torch-lock...
+#   Uninstalled torch-lock package.
+# TORCH has been completely removed from this project.
+# If you used TORCH environment variables (NOSTR_LOCK_*, TORCH_*),
+# remember to remove them from your shell profile or CI configuration.
+# Initializing torch in /app/test-ops-remove-4ufnuL/project-scripts/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-remove-4ufnuL/project-scripts/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+#   Added script: "torch:dashboard"
+#   Added script: "torch:check"
+#   Added script: "torch:lock"
+#   Added script: "torch:health"
+#   Added script: "torch:memory:list"
+#   Added script: "torch:memory:inspect"
+# Updated package.json with convenience scripts.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-namespace-agent-lock
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# The following TORCH artifacts will be removed:
+#   - torch/  (TORCH install directory)
+#   - torch-config.json
+#   - .torch/  (prompt history)
+#   - src/proposals/  (governance proposals)
+#   - torch:* scripts from package.json
+#   - torch-lock npm package (via npm uninstall)
+# Removing TORCH...
+#   Removed torch/  (TORCH install directory)
+#   Removed torch-config.json
+#   Removed .torch/  (prompt history)
+#   Removed src/proposals/  (governance proposals)
+#   Removed empty src/ directory
+#   Removed script: "torch:dashboard"
+#   Removed script: "torch:check"
+#   Removed script: "torch:lock"
+#   Removed script: "torch:health"
+#   Removed script: "torch:memory:list"
+#   Removed script: "torch:memory:inspect"
+#   Updated package.json.
+#   Running npm uninstall torch-lock...
+#   Uninstalled torch-lock package.
+# TORCH has been completely removed from this project.
+# If you used TORCH environment variables (NOSTR_LOCK_*, TORCH_*),
+# remember to remove them from your shell profile or CI configuration.
+# Initializing torch in /app/test-ops-remove-4ufnuL/project-cancel/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-remove-4ufnuL/project-cancel/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-namespace-agent-lock
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# No package.json found in host root. Skipping script injection.
+# The following TORCH artifacts will be removed:
+#   - torch/  (TORCH install directory)
+#   - torch-config.json
+#   - .torch/  (prompt history)
+#   - src/proposals/  (governance proposals)
+#   - torch-lock npm package (via npm uninstall)
+# Removal cancelled.
+# Initializing torch in /app/test-ops-remove-4ufnuL/project-confirm/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-remove-4ufnuL/project-confirm/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-namespace-agent-lock
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# No package.json found in host root. Skipping script injection.
+# The following TORCH artifacts will be removed:
+#   - torch/  (TORCH install directory)
+#   - torch-config.json
+#   - .torch/  (prompt history)
+#   - src/proposals/  (governance proposals)
+#   - torch-lock npm package (via npm uninstall)
+# Removing TORCH...
+#   Removed torch/  (TORCH install directory)
+#   Removed torch-config.json
+#   Removed .torch/  (prompt history)
+#   Removed src/proposals/  (governance proposals)
+#   Removed empty src/ directory
+#   Running npm uninstall torch-lock...
+#   Uninstalled torch-lock package.
+# TORCH has been completely removed from this project.
+# If you used TORCH environment variables (NOSTR_LOCK_*, TORCH_*),
+# remember to remove them from your shell profile or CI configuration.
+# Subtest: cmdRemove reports nothing when no TORCH installation exists
+ok 116 - cmdRemove reports nothing when no TORCH installation exists
+  ---
+  duration_ms: 2.965619
+  type: 'test'
+  ...
+# Subtest: cmdRemove with --force removes torch/ directory
+ok 117 - cmdRemove with --force removes torch/ directory
+  ---
+  duration_ms: 918.562859
+  type: 'test'
+  ...
+# Subtest: cmdRemove removes runtime artifacts (task-logs, .scheduler-memory)
+ok 118 - cmdRemove removes runtime artifacts (task-logs, .scheduler-memory)
+  ---
+  duration_ms: 888.94358
+  type: 'test'
+  ...
+# Subtest: cmdRemove removes src/proposals/ and cleans empty src/
+ok 119 - cmdRemove removes src/proposals/ and cleans empty src/
+  ---
+  duration_ms: 877.630161
+  type: 'test'
+  ...
+# Subtest: cmdRemove cleans torch:* scripts from host package.json
+ok 120 - cmdRemove cleans torch:* scripts from host package.json
+  ---
+  duration_ms: 455.020397
+  type: 'test'
+  ...
+# Subtest: cmdRemove cancels when user declines confirmation
+ok 121 - cmdRemove cancels when user declines confirmation
+  ---
+  duration_ms: 45.797986
+  type: 'test'
+  ...
+# Subtest: cmdRemove confirmed via mockAnswers removes artifacts
+ok 122 - cmdRemove confirmed via mockAnswers removes artifacts
+  ---
+  duration_ms: 1392.284956
+  type: 'test'
+  ...
+# Initializing torch in /app/test-ops-uxpPOj/project1/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-uxpPOj/project1/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# No package.json found in host root. Skipping script injection.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hashtag
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# Initializing torch in /app/test-ops-uxpPOj/project2/torch...
+# Initializing torch in /app/test-ops-uxpPOj/project3/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-uxpPOj/project3/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hashtag
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# No package.json found in host root. Skipping script injection.
+# Updating torch configuration in /app/test-ops-uxpPOj/project3/torch...
+# Creating backup at torch/_backups/backup_2026-02-21T18-31-35-325Z...
+# Updating application directories...
+#   Updated src/
+#   Updated bin/
+#   Updated dashboard/
+#   Updated landing/
+#   Updated assets/
+#   Updated scripts/
+# Updating application files...
+#   Updated package.json
+#   Updated build.mjs
+#   Updated README.md
+#   Updated torch-config.example.json
+#   Updated TORCH.md
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Skipped roster.json (preserved)
+# Updating prompts...
+#   daily/: 0 added, 0 updated, 23 preserved
+#   weekly/: 0 added, 0 updated, 21 preserved
+# Update complete.
+# Initializing torch in /app/test-ops-uxpPOj/project4/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-uxpPOj/project4/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# No package.json found in host root. Skipping script injection.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hashtag
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# Updating torch configuration in /app/test-ops-uxpPOj/project4/torch...
+# Creating backup at torch/_backups/backup_2026-02-21T18-31-35-465Z...
+# Updating application directories...
+#   Updated src/
+#   Updated bin/
+#   Updated dashboard/
+#   Updated landing/
+#   Updated assets/
+#   Updated scripts/
+# Updating application files...
+#   Updated package.json
+#   Updated build.mjs
+#   Updated README.md
+#   Updated torch-config.example.json
+#   Updated TORCH.md
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Overwrote roster.json (forced)
+# Updating prompts...
+#   daily/: 0 added, 23 updated, 0 preserved
+#   weekly/: 0 added, 21 updated, 0 preserved
+# Update complete.
+# Initializing torch in /app/test-ops-uxpPOj/project5/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-uxpPOj/project5/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# No package.json found in host root. Skipping script injection.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hashtag
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# Updating torch configuration in /app/test-ops-uxpPOj/project5/torch...
+# Creating backup at torch/_backups/backup_2026-02-21T18-31-35-642Z...
+# Updating application directories...
+#   Updated src/
+#   Updated bin/
+#   Updated dashboard/
+#   Updated landing/
+#   Updated assets/
+#   Updated scripts/
+# Updating application files...
+#   Updated package.json
+#   Updated build.mjs
+#   Updated README.md
+#   Updated torch-config.example.json
+#   Updated TORCH.md
+# Updating static files...
+#   Updated META_PROMPTS.md
+#   Updated scheduler-flow.md
+#   Updated daily-scheduler.md
+#   Updated weekly-scheduler.md
+#   Skipped roster.json (preserved)
+# Updating prompts...
+#   daily/: 0 added, 0 updated, 23 preserved
+#   weekly/: 0 added, 0 updated, 21 preserved
+# Update complete.
+# Initializing torch in /app/test-ops-uxpPOj/project_roster/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-uxpPOj/project_roster/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# Initialization complete.
+# No package.json found in host root. Skipping script injection.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hashtag
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# Checking locks: namespace=test-namespace, cadence=daily, date=2026-02-21
+# Relays: wss://relay.damus.io
+# {"event":"relay_health_snapshot","reason":"query:periodic","relays":[{"relay":"wss://relay.damus.io","score":0.6,"sampleSize":0,"successRate":0.5,"timeoutRate":0,"averageLatencyMs":null,"failureStreak":0,"quarantined":false,"quarantineRemainingMs":0,"cooldownMs":30000,"lastResultAt":null},{"relay":"wss://relay.nostr.band","score":0.6,"sampleSize":0,"successRate":0.5,"timeoutRate":0,"averageLatencyMs":null,"failureStreak":0,"quarantined":false,"quarantineRemainingMs":0,"cooldownMs":30000,"lastResultAt":null},{"relay":"wss://relay.snort.social","score":0.6,"sampleSize":0,"successRate":0.5,"timeoutRate":0,"averageLatencyMs":null,"failureStreak":0,"quarantined":false,"quarantineRemainingMs":0,"cooldownMs":30000,"lastResultAt":null}]}
+# [query:primary] Querying 1 relays (wss://relay.damus.io)...
+# Initializing torch in /app/test-ops-uxpPOj/project_config_init/torch...
+# Copying application directories...
+#   Copied src/
+#   Copied bin/
+#   Copied dashboard/
+#   Copied landing/
+#   Copied assets/
+#   Copied scripts/
+# Copying application files...
+#   Copied package.json
+#   Copied build.mjs
+#   Copied README.md
+#   Copied torch-config.example.json
+#   Copied TORCH.md
+# Created torch/roster.json
+# Created torch/META_PROMPTS.md
+# Created torch/scheduler-flow.md
+# Created torch/daily-scheduler.md
+# Created torch/weekly-scheduler.md
+# Created 23 files in torch/prompts/daily/
+# Created 21 files in torch/prompts/weekly/
+# Created test-ops-uxpPOj/project_config_init/torch/.gitignore with node_modules
+# Saved configuration to torch-config.json
+# Created torch/TORCH_DASHBOARD.md
+# No package.json found in host root. Skipping script injection.
+# Initialization complete.
+# You can now customize the files in torch/
+# ● From torch-config.json:
+#   - Hashtag: test-hashtag
+#   - Namespace: test-namespace
+# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# Subtest: cmdInit creates directory structure and files
+ok 123 - cmdInit creates directory structure and files
+  ---
+  duration_ms: 54.010239
+  type: 'test'
+  ...
+# Subtest: cmdInit fails if directory exists without force
+ok 124 - cmdInit fails if directory exists without force
+  ---
+  duration_ms: 1.242325
+  type: 'test'
+  ...
+# Subtest: cmdUpdate preserves modified prompt
+ok 125 - cmdUpdate preserves modified prompt
+  ---
+  duration_ms: 145.904558
+  type: 'test'
+  ...
+# Subtest: cmdUpdate overwrites prompt with force
+ok 126 - cmdUpdate overwrites prompt with force
+  ---
+  duration_ms: 152.032199
+  type: 'test'
+  ...
+# Subtest: cmdUpdate creates backup
+ok 127 - cmdUpdate creates backup
+  ---
+  duration_ms: 181.739685
+  type: 'test'
+  ...
+# Subtest: torch-lock check respects local roster
+ok 128 - torch-lock check respects local roster
+  ---
+  duration_ms: 533.559624
+  type: 'test'
+  ...
+# Subtest: cmdInit creates torch-config.json with random namespace
+ok 129 - cmdInit creates torch-config.json with random namespace
+  ---
+  duration_ms: 45.156982
+  type: 'test'
+  ...
+# [publish:primary] Publishing to 3 relays (ws://127.0.0.1:37273, ws://127.0.0.1:40687, ws://127.0.0.1:44535)...
+#   Published to 1/3 relays (required=1, timeout=80ms)
+# Subtest: relay fanout quorum integration
+    # Subtest: passes with required=1 when one relay succeeds and two fail
+# [publish:primary] Publishing to 3 relays (ws://127.0.0.1:33223, ws://127.0.0.1:33753, ws://127.0.0.1:39565)...
+    ok 1 - passes with required=1 when one relay succeeds and two fail
+      ---
+      duration_ms: 139.616615
+      type: 'test'
+      ...
+    # Subtest: fails with quorum error for required=1 when all relays fail
+    ok 2 - fails with quorum error for required=1 when all relays fail
+      ---
+      duration_ms: 93.434037
+      type: 'test'
+      ...
+# [publish:primary] Publishing to 3 relays (ws://127.0.0.1:37567, ws://127.0.0.1:37811, ws://127.0.0.1:42413)...
+    # Subtest: fails with required=2 when only one relay succeeds
+    ok 3 - fails with required=2 when only one relay succeeds
+      ---
+      duration_ms: 91.510809
+      type: 'test'
+      ...
+# [publish:primary] Publishing to 3 relays (ws://127.0.0.1:34625, ws://127.0.0.1:41369, ws://127.0.0.1:41523)...
+#   Published to 2/3 relays (required=2, timeout=80ms)
+    # Subtest: passes when delayed successes reach quorum before timeout
+    ok 4 - passes when delayed successes reach quorum before timeout
+      ---
+      duration_ms: 89.781313
+      type: 'test'
+      ...
+    1..4
+ok 130 - relay fanout quorum integration
+  ---
+  duration_ms: 416.311492
+  type: 'suite'
+  ...
+# Subtest: RelayHealthManager
+    # Subtest: should isolate state between instances
+    ok 1 - should isolate state between instances
+      ---
+      duration_ms: 1.103656
+      type: 'test'
+      ...
+    # Subtest: should prioritize relays based on health
+    ok 2 - should prioritize relays based on health
+      ---
+      duration_ms: 1.784761
+      type: 'test'
+      ...
+    # Subtest: should reset state correctly
+    ok 3 - should reset state correctly
+      ---
+      duration_ms: 0.227887
+      type: 'test'
+      ...
+    # Subtest: should cache ranked results and invalidate on outcome
+    ok 4 - should cache ranked results and invalidate on outcome
+      ---
+      duration_ms: 0.585681
+      type: 'test'
+      ...
+    # Subtest: should invalidate cache when time passes quarantine expiry
+    ok 5 - should invalidate cache when time passes quarantine expiry
+      ---
+      duration_ms: 0.50384
+      type: 'test'
+      ...
+    1..5
+ok 131 - RelayHealthManager
+  ---
+  duration_ms: 5.798675
+  type: 'suite'
+  ...
+# Subtest: evaluateAlertThresholds
+    # Subtest: Happy Path: No alerts when thresholds are not met
+    ok 1 - Happy Path: No alerts when thresholds are not met
+      ---
+      duration_ms: 1.975957
+      type: 'test'
+      ...
+    # Subtest: All Relays Down: Triggers alert when duration equals threshold
+    ok 2 - All Relays Down: Triggers alert when duration equals threshold
+      ---
+      duration_ms: 0.531214
+      type: 'test'
+      ...
+    # Subtest: All Relays Down: Does NOT trigger alert just below threshold
+    ok 3 - All Relays Down: Does NOT trigger alert just below threshold
+      ---
+      duration_ms: 0.446417
+      type: 'test'
+      ...
+    # Subtest: Success Rate: Triggers alert when rate is strictly below threshold
+    ok 4 - Success Rate: Triggers alert when rate is strictly below threshold
+      ---
+      duration_ms: 0.434087
+      type: 'test'
+      ...
+    # Subtest: Success Rate: Does NOT trigger alert when rate equals threshold
+    ok 5 - Success Rate: Does NOT trigger alert when rate equals threshold
+      ---
+      duration_ms: 0.443649
+      type: 'test'
+      ...
+    # Subtest: Success Rate: Does NOT trigger alert when rate is above threshold
+    ok 6 - Success Rate: Does NOT trigger alert when rate is above threshold
+      ---
+      duration_ms: 0.368175
+      type: 'test'
+      ...
+    # Subtest: Multiple Alerts: Both conditions met
+    ok 7 - Multiple Alerts: Both conditions met
+      ---
+      duration_ms: 0.461479
+      type: 'test'
+      ...
+    # Subtest: Edge Case: Empty history (should not crash)
+    ok 8 - Edge Case: Empty history (should not crash)
+      ---
+      duration_ms: 0.62985
+      type: 'test'
+      ...
+    # Subtest: Edge Case: Empty history but current result is unhealthy
+    ok 9 - Edge Case: Empty history but current result is unhealthy
+      ---
+      duration_ms: 0.727855
+      type: 'test'
+      ...
+    1..9
+ok 132 - evaluateAlertThresholds
+  ---
+  duration_ms: 11.656962
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - basic statistics calculation
+ok 133 - summarizeHistory - basic statistics calculation
+  ---
+  duration_ms: 1.936138
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - handles empty history
+ok 134 - summarizeHistory - handles empty history
+  ---
+  duration_ms: 0.252814
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - respects time window for stats
+ok 135 - summarizeHistory - respects time window for stats
+  ---
+  duration_ms: 0.640055
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - allDownDurationMinutes considers outside window entries
+ok 136 - summarizeHistory - allDownDurationMinutes considers outside window entries
+  ---
+  duration_ms: 0.6213
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - allDownDurationMinutes is null if never healthy
+ok 137 - summarizeHistory - allDownDurationMinutes is null if never healthy
+  ---
+  duration_ms: 0.355654
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - allDownDurationMinutes is 0 if currently healthy
+ok 138 - summarizeHistory - allDownDurationMinutes is 0 if currently healthy
+  ---
+  duration_ms: 0.382715
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - handles malformed entries gracefully
+ok 139 - summarizeHistory - handles malformed entries gracefully
+  ---
+  duration_ms: 0.560262
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - handles valid timestamp but missing summary
+ok 140 - summarizeHistory - handles valid timestamp but missing summary
+  ---
+  duration_ms: 1.547855
+  type: 'test'
+  ...
+# Subtest: summarizeHistory - healthy entry with invalid timestamp results in NaN duration
+ok 141 - summarizeHistory - healthy entry with invalid timestamp results in NaN duration
+  ---
+  duration_ms: 0.554941
+  type: 'test'
+  ...
+# Subtest: Roster (Unit Tests with Dependency Injection)
+    # Subtest: returns fallback roster when no configuration or files exist
+    ok 1 - returns fallback roster when no configuration or files exist
+      ---
+      duration_ms: 2.403274
+      type: 'test'
+      ...
+    # Subtest: loads internal module roster if user/cwd rosters are missing
+    ok 2 - loads internal module roster if user/cwd rosters are missing
+      ---
+      duration_ms: 1.568743
+      type: 'test'
+      ...
+    # Subtest: loads roster from torch/roster.json (User Roster) if present
+    ok 3 - loads roster from torch/roster.json (User Roster) if present
+      ---
+      duration_ms: 1.136339
+      type: 'test'
+      ...
+    # Subtest: loads roster from roster.json (CWD Roster) if present and torch/roster.json is missing
+    ok 4 - loads roster from roster.json (CWD Roster) if present and torch/roster.json is missing
+      ---
+      duration_ms: 0.870719
+      type: 'test'
+      ...
+    # Subtest: falls back to default if roster file is malformed
+    ok 5 - falls back to default if roster file is malformed
+      ---
+      duration_ms: 0.484287
+      type: 'test'
+      ...
+    # Subtest: falls back to default if roster file is missing daily/weekly arrays
+    ok 6 - falls back to default if roster file is missing daily/weekly arrays
+      ---
+      duration_ms: 0.627692
+      type: 'test'
+      ...
+    # Subtest: prioritizes environment variables over file and config
+    ok 7 - prioritizes environment variables over file and config
+      ---
+      duration_ms: 2.318355
+      type: 'test'
+      ...
+    # Subtest: prioritizes config over file
+    ok 8 - prioritizes config over file
+      ---
+      duration_ms: 0.453683
+      type: 'test'
+      ...
+    # Subtest: handles multiple items in env var roster
+    ok 9 - handles multiple items in env var roster
+      ---
+      duration_ms: 0.655707
+      type: 'test'
+      ...
+    1..9
+ok 142 - Roster (Unit Tests with Dependency Injection)
+  ---
+  duration_ms: 12.8039
+  type: 'suite'
+  ...
+# Subtest: fails required memory policy when retrieval/storage evidence is missing
+ok 143 - fails required memory policy when retrieval/storage evidence is missing
+  ---
+  duration_ms: 822.052539
+  type: 'test'
+  ...
+# Subtest: accepts required memory policy when markers or artifacts are produced
+ok 144 - accepts required memory policy when markers or artifacts are produced
+  ---
+  duration_ms: 1375.472747
+  type: 'test'
+  ...
+# Subtest: records backend failure metadata when lock command exits with code 2
+ok 145 - records backend failure metadata when lock command exits with code 2
+  ---
+  duration_ms: 1013.509627
+  type: 'test'
+  ...
+# Subtest: defers backend failures in non-strict mode and reuses idempotency key on successful retry
+ok 146 - defers backend failures in non-strict mode and reuses idempotency key on successful retry
+  ---
+  duration_ms: 818.522009
+  type: 'test'
+  ...
+# Subtest: fails after exceeding non-strict deferral budget
+ok 147 - fails after exceeding non-strict deferral budget
+  ---
+  duration_ms: 324.04021
+  type: 'test'
+  ...
+# Subtest: strict lock mode fails immediately without deferral
+ok 148 - strict lock mode fails immediately without deferral
+  ---
+  duration_ms: 171.008068
+  type: 'test'
+  ...
+# Subtest: skips lock health preflight by default when not enabled
+ok 149 - skips lock health preflight by default when not enabled
+  ---
+  duration_ms: 584.543561
+  type: 'test'
+  ...
+# Subtest: fails scheduler with preflight metadata when lock health preflight is enabled
+ok 150 - fails scheduler with preflight metadata when lock health preflight is enabled
+  ---
+  duration_ms: 227.547359
+  type: 'test'
+  ...
+# Subtest: categorizes unreadable prompt files as prompt_parse_error
+ok 151 - categorizes unreadable prompt files as prompt_parse_error
+  ---
+  duration_ms: 163.694894
+  type: 'test'
+  ...
+# Subtest: categorizes invalid prompt schema as prompt_schema_error
+ok 152 - categorizes invalid prompt schema as prompt_schema_error
+  ---
+  duration_ms: 130.180221
+  type: 'test'
+  ...
+# Subtest: categorizes handoff runtime failures as execution_error
+ok 153 - categorizes handoff runtime failures as execution_error
+  ---
+  duration_ms: 584.30828
+  type: 'test'
+  ...
+# Subtest: retries lock acquisition for backend error and succeeds on a later attempt
+ok 154 - retries lock acquisition for backend error and succeeds on a later attempt
+  ---
+  duration_ms: 522.792819
+  type: 'test'
+  ...
+# Subtest: stops retrying after configured lock backend retries are exhausted
+ok 155 - stops retrying after configured lock backend retries are exhausted
+  ---
+  duration_ms: 106.567809
+  type: 'test'
+  ...
+# Subtest: does not use backend retry flow for exit code 3 lock conflicts
+ok 156 - does not use backend retry flow for exit code 3 lock conflicts
+  ---
+  duration_ms: 435.335416
+  type: 'test'
+  ...
+# Subtest: runs selected scheduler prompt through configured runner command
+ok 157 - runs selected scheduler prompt through configured runner command
+  ---
+  duration_ms: 444.594108
+  type: 'test'
+  ...
+# Subtest: propagates non-zero runner exit code
+ok 158 - propagates non-zero runner exit code
+  ---
+  duration_ms: 482.385955
+  type: 'test'
+  ...
+# Subtest: scheduler lock backend failure artifact matches required frontmatter schema
+ok 159 - scheduler lock backend failure artifact matches required frontmatter schema
+  ---
+  duration_ms: 177.879946
+  type: 'test'
+  ...
+# Subtest: schema contract catches missing required lock-backend field
+ok 160 - schema contract catches missing required lock-backend field
+  ---
+  duration_ms: 6.098239
+  type: 'test'
+  ...
+# Subtest: schema contract catches misnamed lock-backend key
+ok 161 - schema contract catches misnamed lock-backend key
+  ---
+  duration_ms: 1.484764
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: successful lock writes completed status snapshot
+ok 162 - lock preflight e2e: successful lock writes completed status snapshot
+  ---
+  duration_ms: 588.385982
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+ok 163 - lock preflight e2e: exit code 2 quorum failure persists failed backend status and prompt-not-started marker
+  ---
+  duration_ms: 181.587905
+  type: 'test'
+  ...
+# Subtest: lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+ok 164 - lock preflight e2e: non-lock failure exits failed without prompt parse/schema classification
+  ---
+  duration_ms: 169.293416
+  type: 'test'
+  ...
+# Subtest: Scheduler Ratchet Logic (Log Checking)
+    # Subtest: excludes agents completed today (daily)
+    ok 1 - excludes agents completed today (daily)
+      ---
+      duration_ms: 3.349451
+      type: 'test'
+      ...
+    # Subtest: excludes agents completed this week (weekly)
+    ok 2 - excludes agents completed this week (weekly)
+      ---
+      duration_ms: 4.372984
+      type: 'test'
+      ...
+    # Subtest: combines locked and completed agents in exclusion list
+    ok 3 - combines locked and completed agents in exclusion list
+      ---
+      duration_ms: 0.955829
+      type: 'test'
+      ...
+    # Subtest: ignores logs when --ignore-logs is set
+    ok 4 - ignores logs when --ignore-logs is set
+      ---
+      duration_ms: 0.443547
+      type: 'test'
+      ...
+    # Subtest: handles missing log directory gracefully
+    ok 5 - handles missing log directory gracefully
+      ---
+      duration_ms: 0.653688
+      type: 'test'
+      ...
+    1..5
+ok 165 - Scheduler Ratchet Logic (Log Checking)
+  ---
+  duration_ms: 11.433631
+  type: 'suite'
+  ...
+# Subtest: Scheduler cycle ordering guarantees
+    # Subtest: keeps optional preflight before lock-acquire and preserves handoff/artifact/validation/complete ordering
+    ok 1 - keeps optional preflight before lock-acquire and preserves handoff/artifact/validation/complete ordering
+      ---
+      duration_ms: 13.226203
+      type: 'test'
+      ...
+    # Subtest: includes lock backend failure metadata and classifier checkpoints
+    ok 2 - includes lock backend failure metadata and classifier checkpoints
+      ---
+      duration_ms: 2.62519
+      type: 'test'
+      ...
+    1..2
+ok 166 - Scheduler cycle ordering guarantees
+  ---
+  duration_ms: 16.532625
+  type: 'suite'
+  ...
+# Subtest: parseDateValue
+    # Subtest: parses a valid ISO string
+    ok 1 - parses a valid ISO string
+      ---
+      duration_ms: 1.290968
+      type: 'test'
+      ...
+    # Subtest: returns null for empty input
+    ok 2 - returns null for empty input
+      ---
+      duration_ms: 0.224265
+      type: 'test'
+      ...
+    # Subtest: returns null for invalid date strings
+    ok 3 - returns null for invalid date strings
+      ---
+      duration_ms: 0.176133
+      type: 'test'
+      ...
+    1..3
+ok 167 - parseDateValue
+  ---
+  duration_ms: 3.333298
+  type: 'suite'
+  ...
+# Subtest: isStrictSchedulerLogFilename
+    # Subtest: accepts valid completed log
+    ok 1 - accepts valid completed log
+      ---
+      duration_ms: 0.537633
+      type: 'test'
+      ...
+    # Subtest: accepts valid failed log
+    ok 2 - accepts valid failed log
+      ---
+      duration_ms: 0.236801
+      type: 'test'
+      ...
+    # Subtest: rejects deferred logs
+    ok 3 - rejects deferred logs
+      ---
+      duration_ms: 0.199687
+      type: 'test'
+      ...
+    # Subtest: rejects filenames without timestamp
+    ok 4 - rejects filenames without timestamp
+      ---
+      duration_ms: 0.3604
+      type: 'test'
+      ...
+    # Subtest: rejects plain text files
+    ok 5 - rejects plain text files
+      ---
+      duration_ms: 0.408045
+      type: 'test'
+      ...
+    # Subtest: rejects .scheduler-run-state.json
+    ok 6 - rejects .scheduler-run-state.json
+      ---
+      duration_ms: 0.452903
+      type: 'test'
+      ...
+    1..6
+ok 168 - isStrictSchedulerLogFilename
+  ---
+  duration_ms: 3.103658
+  type: 'suite'
+  ...
+# Subtest: parseAgentFromFilename
+    # Subtest: extracts agent name from completed log
+    ok 1 - extracts agent name from completed log
+      ---
+      duration_ms: 2.307433
+      type: 'test'
+      ...
+    # Subtest: extracts agent name from failed log
+    ok 2 - extracts agent name from failed log
+      ---
+      duration_ms: 0.35769
+      type: 'test'
+      ...
+    # Subtest: returns null for invalid filename
+    ok 3 - returns null for invalid filename
+      ---
+      duration_ms: 0.419371
+      type: 'test'
+      ...
+    1..3
+ok 169 - parseAgentFromFilename
+  ---
+  duration_ms: 3.753872
+  type: 'suite'
+  ...
+# Subtest: parseTimestampFromFilename
+    # Subtest: parses timestamp from canonical filename
+    ok 1 - parses timestamp from canonical filename
+      ---
+      duration_ms: 0.568927
+      type: 'test'
+      ...
+    # Subtest: returns null for non-canonical filename
+    ok 2 - returns null for non-canonical filename
+      ---
+      duration_ms: 0.469898
+      type: 'test'
+      ...
+    1..2
+ok 170 - parseTimestampFromFilename
+  ---
+  duration_ms: 1.411532
+  type: 'suite'
+  ...
+# Subtest: parseFrontmatterCreatedAt / parseFrontmatterAgent
+    # Subtest: reads created_at from frontmatter
+    ok 1 - reads created_at from frontmatter
+      ---
+      duration_ms: 1.429517
+      type: 'test'
+      ...
+    # Subtest: reads agent from frontmatter
+    ok 2 - reads agent from frontmatter
+      ---
+      duration_ms: 1.030727
+      type: 'test'
+      ...
+    # Subtest: returns null when no frontmatter
+    ok 3 - returns null when no frontmatter
+      ---
+      duration_ms: 0.25784
+      type: 'test'
+      ...
+    1..3
+ok 171 - parseFrontmatterCreatedAt / parseFrontmatterAgent
+  ---
+  duration_ms: 3.493396
+  type: 'suite'
+  ...
+# Subtest: buildRecentlyRunExclusionSet — scenarios
+    # Subtest: SCN-TWG-01: excludes agents with completed logs within 24-hour daily window
+    ok 1 - SCN-TWG-01: excludes agents with completed logs within 24-hour daily window
+      ---
+      duration_ms: 7.891238
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-02: does NOT exclude agents whose last run is outside the 24-hour window
+    ok 2 - SCN-TWG-02: does NOT exclude agents whose last run is outside the 24-hour window
+      ---
+      duration_ms: 5.065373
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-03: excludes agents with failed logs within the window
+    ok 3 - SCN-TWG-03: excludes agents with failed logs within the window
+      ---
+      duration_ms: 5.185915
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-04: cross-midnight scenario — agent ran 10 min before midnight, checked 10 min after
+    ok 4 - SCN-TWG-04: cross-midnight scenario — agent ran 10 min before midnight, checked 10 min after
+      ---
+      duration_ms: 5.959719
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-05: uses frontmatter created_at over filename timestamp when both present
+    ok 5 - SCN-TWG-05: uses frontmatter created_at over filename timestamp when both present
+      ---
+      duration_ms: 3.346444
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-06: weekly window uses 7-day threshold
+    ok 6 - SCN-TWG-06: weekly window uses 7-day threshold
+      ---
+      duration_ms: 4.971581
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-07: empty log directory returns empty set
+    ok 7 - SCN-TWG-07: empty log directory returns empty set
+      ---
+      duration_ms: 12.003791
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-08: non-existent directory returns empty set without throwing
+    ok 8 - SCN-TWG-08: non-existent directory returns empty set without throwing
+      ---
+      duration_ms: 1.056074
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-09: only the most recent log matters — agent excluded if any log is within window
+    ok 9 - SCN-TWG-09: only the most recent log matters — agent excluded if any log is within window
+      ---
+      duration_ms: 3.939481
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-10: mixed roster — correctly partitions in-window vs out-of-window agents
+    ok 10 - SCN-TWG-10: mixed roster — correctly partitions in-window vs out-of-window agents
+      ---
+      duration_ms: 10.181969
+      type: 'test'
+      ...
+    # Subtest: SCN-TWG-11: non-log files in directory are ignored
+    ok 11 - SCN-TWG-11: non-log files in directory are ignored
+      ---
+      duration_ms: 16.986334
+      type: 'test'
+      ...
+    1..11
+ok 172 - buildRecentlyRunExclusionSet — scenarios
+  ---
+  duration_ms: 162.730787
+  type: 'suite'
+  ...
+# Subtest: CADENCE_WINDOW_MS constants
+    # Subtest: daily window is exactly 24 hours
+    ok 1 - daily window is exactly 24 hours
+      ---
+      duration_ms: 0.575216
+      type: 'test'
+      ...
+    # Subtest: weekly window is exactly 7 days
+    ok 2 - weekly window is exactly 7 days
+      ---
+      duration_ms: 0.148875
+      type: 'test'
+      ...
+    1..2
+ok 173 - CADENCE_WINDOW_MS constants
+  ---
+  duration_ms: 1.44316
+  type: 'suite'
+  ...
+# Subtest: secureRandom
+    # Subtest: returns values in [0, 1)
+    ok 1 - returns values in [0, 1)
+      ---
+      duration_ms: 5.208161
+      type: 'test'
+      ...
+    # Subtest: returns varied values
+    ok 2 - returns varied values
+      ---
+      duration_ms: 0.621991
+      type: 'test'
+      ...
+    1..2
+ok 174 - secureRandom
+  ---
+  duration_ms: 8.30447
+  type: 'suite'
+  ...
+# Subtest: summarizes recent lock reliability by platform/cadence/backend/relay
+ok 175 - summarizes recent lock reliability by platform/cadence/backend/relay
+  ---
+  duration_ms: 134.351147
+  type: 'test'
+  ...
+# Subtest: loadTorchConfig (Unit Tests with Mocked FS)
+    # Subtest: loads valid config correctly
+    ok 1 - loads valid config correctly
+      ---
+      duration_ms: 6.796814
+      type: 'test'
+      ...
+    # Subtest: returns default config when file is missing
+    ok 2 - returns default config when file is missing
+      ---
+      duration_ms: 1.14108
+      type: 'test'
+      ...
+    # Subtest: throws error on malformed JSON
+    ok 3 - throws error on malformed JSON
+      ---
+      duration_ms: 1.615602
+      type: 'test'
+      ...
+    # Subtest: caches the config and ignores subsequent fs calls
+    ok 4 - caches the config and ignores subsequent fs calls
+      ---
+      duration_ms: 1.452335
+      type: 'test'
+      ...
+    # Subtest: returns null for empty string lists (new consistent behavior)
+    ok 5 - returns null for empty string lists (new consistent behavior)
+      ---
+      duration_ms: 1.499165
+      type: 'test'
+      ...
+    1..5
+ok 176 - loadTorchConfig (Unit Tests with Mocked FS)
+  ---
+  duration_ms: 15.263214
+  type: 'suite'
+  ...
+# Subtest: torch-config
+    # Subtest: getTorchConfigPath
+        # Subtest: returns default path when env var is not set
+        ok 1 - returns default path when env var is not set
+          ---
+          duration_ms: 2.261887
+          type: 'test'
+          ...
+        # Subtest: returns custom path when env var is set
+        ok 2 - returns custom path when env var is set
+          ---
+          duration_ms: 0.465504
+          type: 'test'
+          ...
+        1..2
+    ok 1 - getTorchConfigPath
+      ---
+      duration_ms: 5.925557
+      type: 'suite'
+      ...
+    # Subtest: parseTorchConfig
+        # Subtest: parses new lock backend knobs
+        ok 1 - parses new lock backend knobs
+          ---
+          duration_ms: 3.125059
+          type: 'test'
+          ...
+        1..1
+    ok 2 - parseTorchConfig
+      ---
+      duration_ms: 3.695363
+      type: 'suite'
+      ...
+    # Subtest: loadTorchConfig
+        # Subtest: throws fatal error for invalid relay URL
+        ok 1 - throws fatal error for invalid relay URL
+          ---
+          duration_ms: 26.380774
+          type: 'test'
+          ...
+        # Subtest: throws fatal error for invalid timeout range
+        ok 2 - throws fatal error for invalid timeout range
+          ---
+          duration_ms: 3.609766
+          type: 'test'
+          ...
+        # Subtest: throws error for malformed JSON
+        ok 3 - throws error for malformed JSON
+          ---
+          duration_ms: 4.045041
+          type: 'test'
+          ...
+        1..3
+    ok 3 - loadTorchConfig
+      ---
+      duration_ms: 35.713389
+      type: 'suite'
+      ...
+    # Subtest: backend getters
+        # Subtest: returns default relays
+        ok 1 - returns default relays
+          ---
+          duration_ms: 6.289817
+          type: 'test'
+          ...
+        # Subtest: validates env knob values
+        ok 2 - validates env knob values
+          ---
+          duration_ms: 5.844046
+          type: 'test'
+          ...
+        1..2
+    ok 4 - backend getters
+      ---
+      duration_ms: 13.228455
+      type: 'suite'
+      ...
+    1..4
+ok 177 - torch-config
+  ---
+  duration_ms: 60.693621
+  type: 'suite'
+  ...
+# Subtest: Async Utilities
+    # Subtest: withTimeout
+        # Subtest: resolves when promise completes before timeout
+        ok 1 - resolves when promise completes before timeout
+          ---
+          duration_ms: 11.410159
+          type: 'test'
+          ...
+        # Subtest: rejects when promise times out
+        ok 2 - rejects when promise times out
+          ---
+          duration_ms: 10.893265
+          type: 'test'
+          ...
+        # Subtest: clears timeout on success
+        ok 3 - clears timeout on success
+          ---
+          duration_ms: 0.661361
+          type: 'test'
+          ...
+        # Subtest: propagates original promise rejection
+        ok 4 - propagates original promise rejection
+          ---
+          duration_ms: 0.631794
+          type: 'test'
+          ...
+        1..4
+    ok 1 - withTimeout
+      ---
+      duration_ms: 26.004746
+      type: 'suite'
+      ...
+    1..1
+ok 178 - Async Utilities
+  ---
+  duration_ms: 26.930137
+  type: 'suite'
+  ...
+# (node:11299) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Date Utilities
+    # Subtest: todayDateStr
+        # Subtest: returns current date in YYYY-MM-DD format
+        ok 1 - returns current date in YYYY-MM-DD format
+          ---
+          duration_ms: 3.136952
+          type: 'test'
+          ...
+        1..1
+    ok 1 - todayDateStr
+      ---
+      duration_ms: 4.495589
+      type: 'suite'
+      ...
+    # Subtest: nowUnix
+        # Subtest: returns current unix timestamp
+        ok 1 - returns current unix timestamp
+          ---
+          duration_ms: 0.393649
+          type: 'test'
+          ...
+        1..1
+    ok 2 - nowUnix
+      ---
+      duration_ms: 0.69564
+      type: 'suite'
+      ...
+    # Subtest: getIsoWeekStr
+        # Subtest: returns correct ISO week for simple cases
+        ok 1 - returns correct ISO week for simple cases
+          ---
+          duration_ms: 0.45158
+          type: 'test'
+          ...
+        # Subtest: handles year boundaries correctly
+        ok 2 - handles year boundaries correctly
+          ---
+          duration_ms: 0.240768
+          type: 'test'
+          ...
+        # Subtest: handles leap years
+        ok 3 - handles leap years
+          ---
+          duration_ms: 0.406622
+          type: 'test'
+          ...
+        # Subtest: handles empty input (defaults to today)
+        ok 4 - handles empty input (defaults to today)
+          ---
+          duration_ms: 2.739587
+          type: 'test'
+          ...
+        # Subtest: handles invalid input gracefully
+        ok 5 - handles invalid input gracefully
+          ---
+          duration_ms: 0.734375
+          type: 'test'
+          ...
+        1..5
+    ok 3 - getIsoWeekStr
+      ---
+      duration_ms: 5.402338
+      type: 'suite'
+      ...
+    1..3
+ok 179 - Date Utilities
+  ---
+  duration_ms: 12.355672
+  type: 'suite'
+  ...
+# Subtest: Relay Utilities
+    # Subtest: mergeRelayList
+        # Subtest: merges two lists of relays without duplicates
+        ok 1 - merges two lists of relays without duplicates
+          ---
+          duration_ms: 1.200661
+          type: 'test'
+          ...
+        # Subtest: handles empty lists
+        ok 2 - handles empty lists
+          ---
+          duration_ms: 0.348395
+          type: 'test'
+          ...
+        1..2
+    ok 1 - mergeRelayList
+      ---
+      duration_ms: 1.880695
+      type: 'suite'
+      ...
+    1..1
+ok 180 - Relay Utilities
+  ---
+  duration_ms: 2.206346
+  type: 'suite'
+  ...
+# Subtest: Platform Utilities
+    # Subtest: detectPlatform
+        # Subtest: detects jules
+        ok 1 - detects jules
+          ---
+          duration_ms: 0.489079
+          type: 'test'
+          ...
+        # Subtest: detects codex
+        ok 2 - detects codex
+          ---
+          duration_ms: 0.2046
+          type: 'test'
+          ...
+        # Subtest: detects goose
+        ok 3 - detects goose
+          ---
+          duration_ms: 0.235751
+          type: 'test'
+          ...
+        # Subtest: detects claude via CLAUDE_API_KEY
+        ok 4 - detects claude via CLAUDE_API_KEY
+          ---
+          duration_ms: 0.20811
+          type: 'test'
+          ...
+        # Subtest: detects claude via ANTHROPIC_API_KEY
+        ok 5 - detects claude via ANTHROPIC_API_KEY
+          ---
+          duration_ms: 0.135272
+          type: 'test'
+          ...
+        # Subtest: detects gemini via GEMINI_API_KEY
+        ok 6 - detects gemini via GEMINI_API_KEY
+          ---
+          duration_ms: 0.12273
+          type: 'test'
+          ...
+        # Subtest: detects gemini via GOOGLE_API_KEY
+        ok 7 - detects gemini via GOOGLE_API_KEY
+          ---
+          duration_ms: 0.174365
+          type: 'test'
+          ...
+        # Subtest: detects antigravity via ANTIGRAVITY_API_KEY
+        ok 8 - detects antigravity via ANTIGRAVITY_API_KEY
+          ---
+          duration_ms: 0.181117
+          type: 'test'
+          ...
+        # Subtest: detects antigravity via ANTIGRAVITY_SESSION_ID
+        ok 9 - detects antigravity via ANTIGRAVITY_SESSION_ID
+          ---
+          duration_ms: 0.17097
+          type: 'test'
+          ...
+        # Subtest: detects qwen via QWEN_API_KEY
+        ok 10 - detects qwen via QWEN_API_KEY
+          ---
+          duration_ms: 0.217858
+          type: 'test'
+          ...
+        # Subtest: returns null if no platform detected
+        ok 11 - returns null if no platform detected
+          ---
+          duration_ms: 0.131949
+          type: 'test'
+          ...
+        1..11
+    ok 1 - detectPlatform
+      ---
+      duration_ms: 3.494761
+      type: 'suite'
+      ...
+    1..1
+ok 181 - Platform Utilities
+  ---
+  duration_ms: 3.650699
+  type: 'suite'
+  ...
+# Subtest: File Utilities
+    # Subtest: ensureDir
+        # Subtest: creates directory if it does not exist
+        ok 1 - creates directory if it does not exist
+          ---
+          duration_ms: 0.606523
+          type: 'test'
+          ...
+        # Subtest: does nothing if directory already exists
+        ok 2 - does nothing if directory already exists
+          ---
+          duration_ms: 0.352268
+          type: 'test'
+          ...
+        # Subtest: creates nested directories recursively
+        ok 3 - creates nested directories recursively
+          ---
+          duration_ms: 0.333753
+          type: 'test'
+          ...
+        1..3
+    ok 1 - ensureDir
+      ---
+      duration_ms: 3.331744
+      type: 'suite'
+      ...
+    1..1
+ok 182 - File Utilities
+  ---
+  duration_ms: 3.687747
+  type: 'suite'
+  ...
+# Subtest: String Utilities
+    # Subtest: relayListLabel
+        # Subtest: joins relay URLs with comma and space
+        ok 1 - joins relay URLs with comma and space
+          ---
+          duration_ms: 0.279733
+          type: 'test'
+          ...
+        # Subtest: handles single relay
+        ok 2 - handles single relay
+          ---
+          duration_ms: 0.152017
+          type: 'test'
+          ...
+        # Subtest: handles empty array
+        ok 3 - handles empty array
+          ---
+          duration_ms: 0.104143
+          type: 'test'
+          ...
+        1..3
+    ok 1 - relayListLabel
+      ---
+      duration_ms: 0.68474
+      type: 'suite'
+      ...
+    1..1
+ok 183 - String Utilities
+  ---
+  duration_ms: 0.830921
+  type: 'suite'
+  ...
+# Subtest: passes when artifacts include metadata and failure IDs map to unresolved known issue entries
+ok 184 - passes when artifacts include metadata and failure IDs map to unresolved known issue entries
+  ---
+  duration_ms: 114.683817
+  type: 'test'
+  ...
+# Subtest: fails when required metadata is missing from artifacts
+ok 185 - fails when required metadata is missing from artifacts
+  ---
+  duration_ms: 92.368116
+  type: 'test'
+  ...
+# Subtest: fails when failure identifiers are not cross-linked to known issues or incidents
+ok 186 - fails when failure identifiers are not cross-linked to known issues or incidents
+  ---
+  duration_ms: 103.21862
+  type: 'test'
+  ...
+1..186
+# tests 383
+# suites 58
+# pass 382
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 17078.524361
