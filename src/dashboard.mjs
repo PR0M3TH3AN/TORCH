@@ -37,10 +37,50 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const auth = await getDashboardAuth();
 
+  // Rate limiting state
+  const MAX_AUTH_ATTEMPTS = 5;
+  const BLOCK_DURATION_MS = 300000; // 5 minutes
+  const CLEANUP_INTERVAL_MS = 600000; // 10 minutes
+  const rateLimit = new Map(); // ip -> { attempts, blockExpires, lastSeen }
+
+  // Cleanup old entries
+  const cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [ip, data] of rateLimit.entries()) {
+      if (data.blockExpires && data.blockExpires < now) {
+        rateLimit.delete(ip);
+      } else if (!data.blockExpires && (now - data.lastSeen > CLEANUP_INTERVAL_MS)) {
+        rateLimit.delete(ip);
+      }
+    }
+  }, CLEANUP_INTERVAL_MS);
+
   const server = http.createServer(async (req, res) => {
     try {
     // Basic Auth check
     if (auth) {
+      const clientIp = req.socket.remoteAddress;
+      const now = Date.now();
+
+      // Check rate limit
+      const clientState = rateLimit.get(clientIp) || { attempts: 0, blockExpires: 0, lastSeen: now };
+
+      // Update last seen
+      clientState.lastSeen = now;
+
+      if (clientState.blockExpires > now) {
+        res.writeHead(429, {
+          ...SECURITY_HEADERS,
+          'Retry-After': Math.ceil((clientState.blockExpires - now) / 1000)
+        });
+        res.end('Too Many Requests');
+        return;
+      } else if (clientState.blockExpires) {
+        // Block expired, reset state
+        clientState.attempts = 0;
+        clientState.blockExpires = 0;
+      }
+
       const authHeader = req.headers.authorization;
       if (!authHeader) {
         res.writeHead(401, { ...SECURITY_HEADERS, 'WWW-Authenticate': 'Basic realm="TORCH Dashboard"' });
@@ -61,9 +101,21 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
       }
 
       if (!isValid) {
+        // Increment attempts
+        clientState.attempts += 1;
+        if (clientState.attempts >= MAX_AUTH_ATTEMPTS) {
+          clientState.blockExpires = Date.now() + BLOCK_DURATION_MS;
+        }
+        rateLimit.set(clientIp, clientState);
+
         res.writeHead(401, { ...SECURITY_HEADERS, 'WWW-Authenticate': 'Basic realm="TORCH Dashboard"' });
         res.end('Invalid credentials');
         return;
+      }
+
+      // Reset attempts on success
+      if (rateLimit.has(clientIp)) {
+        rateLimit.delete(clientIp);
       }
     }
 
@@ -217,6 +269,10 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
         res.end('Internal Server Error');
       }
     }
+  });
+
+  server.on('close', () => {
+    clearInterval(cleanupInterval);
   });
 
   return new Promise((resolve, reject) => {
