@@ -1,4 +1,4 @@
-import { randomUUID, randomInt } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { SimplePool } from 'nostr-tools/pool';
 import {
   getPublishTimeoutMs,
@@ -6,19 +6,9 @@ import {
   getRelayFallbacks,
   getMinActiveRelayPool,
 } from './torch-config.mjs';
-import { mergeRelayList } from './lock-utils.mjs';
+import { mergeRelayList, secureRandom, withTimeout } from './lock-utils.mjs';
 import { defaultHealthManager, buildRelayHealthConfig } from './relay-health-manager.mjs';
 import { relayListLabel } from './utils.mjs';
-
-function withTimeout(promise, timeoutMs, timeoutMessage) {
-  let timeoutHandle;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    if (timeoutHandle) clearTimeout(timeoutHandle);
-  });
-}
 
 const PUBLISH_ERROR_CODES = {
   TIMEOUT: 'publish_timeout',
@@ -110,8 +100,6 @@ function isTransientPublishCategory(category) {
     PUBLISH_ERROR_CODES.RELAY_UNAVAILABLE,
   ].includes(category);
 }
-
-export { secureRandom };
 
 function calculateBackoffDelayMs(attemptNumber, baseMs, capMs, randomFn = secureRandom) {
   const maxDelay = Math.min(capMs, baseMs * (2 ** Math.max(0, attemptNumber - 1)));
