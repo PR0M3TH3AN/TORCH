@@ -2,7 +2,8 @@ import { test, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { cmdInit, cmdRemove } from '../src/ops.mjs';
+import { cmdInit } from '../src/ops.mjs';
+import { cmdRemove } from '../src/cmd-remove.mjs';
 
 const MOCK_CONFIG = {
   installDir: 'torch',
