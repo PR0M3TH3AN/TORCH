@@ -69,7 +69,7 @@ test.describe.serial('TORCH Dashboard', () => {
     try {
       // We don't expect a response because the server dies
       await request.get('/shutdown', { timeout: 1000 }).catch(() => {});
-    } catch (e) {
+    } catch (_) {
       // Ignore
     }
     // Wait a bit for file write
