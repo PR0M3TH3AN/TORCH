@@ -39,7 +39,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-20
 
 ### Sandbox restrictions cause `npm test` failures (`listen EPERM` and `spawnSync /bin/sh EPERM`)
-- **Status:** Active
+- **Status:** Active (Monitoring - passed in 2026-02-22 run)
 - **Issue-ID:** KNOWN-ISSUE-sandbox-eprem-tests
 - **Area:** Test / Runtime
 - **Symptom:** Multiple tests fail in this sandbox due process restrictions, including:
@@ -50,7 +50,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Workaround:** Run affected tests in an environment that permits local socket binding and shell execution, or skip these cases during sandbox triage.
 - **Impact:** Medium — full `npm test` is red in sandbox even when core logic tests pass.
 - **Related notes:** `docs/agent-handoffs/incidents/2026-02-20-sandbox-test-permissions-eprem.md`
-- **Last verified:** 2026-02-20
+- **Last verified:** 2026-02-22
 
 ### Goose Desktop: hermit "text file busy" (ETXTBSY) blocks all `node`/`npm` commands
 - **Status:** Active (local workaround applied, upstream fix needed)
@@ -91,7 +91,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-20
 
 ### Recurring scheduler lock backend failures in recent task logs
-- **Status:** Monitoring
+- **Status:** Monitoring (lock:health passed 2026-02-22)
 - **Issue-ID:** KNOWN-ISSUE-relay-connectivity-sandbox
 - **Area:** Runtime
 - **Symptom:** Multiple scheduler runs fail with `Lock backend error` before prompt handoff/validation.
@@ -99,7 +99,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Workaround:** Run relay preflight (`npm run lock:health -- --cadence <daily|weekly>`) and inspect `task-logs/relay-health/<cadence>.jsonl` for trend/alert data before rerunning scheduler. If scheduler logs `All relays unhealthy preflight`, treat it as an incident signal, defer lock attempts, and escalate relay/network checks (DNS/TLS/connectivity).
 - **Impact:** Scheduled agent execution may be deferred early when all relays are unhealthy, preventing noisy lock retries until relay health recovers.
 - **Related notes:** `docs/agent-handoffs/learnings/2026-02-15-relay-health-preflight-job.md`
-- **Last verified:** 2026-02-20
+- **Last verified:** 2026-02-22
 
 ### Claude Code: outbound WebSocket blocked — scheduler cannot run from this environment
 - **Status:** Active (no code-level workaround)
@@ -110,7 +110,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Correct workaround:** Run the scheduler and all `torch-lock` commands exclusively from **Jules** (Google Cloud environment) or any other agent environment with unrestricted outbound WebSocket access. Do not attempt to run `lock:lock` / `lock:complete` from Claude Code sessions.
 - **Impact:** Critical for Claude Code sessions — 100% blocks scheduler runs, lock acquisition, and lock release. No impact on Jules-initiated runs.
 - **Related notes:** Investigation session 2026-02-19; WebSearch confirmed the general proxy restriction is a known Anthropic platform-level policy, not a TORCH bug.
-- **Last verified:** 2026-02-20 (not re-checkable from Claude environment in this run; Codex sandbox still shows relay DNS/WebSocket reachability failure via `npm run lock:health -- --cadence daily`)
+- **Last verified:** 2026-02-22 (not re-checkable from Claude environment; Codex sandbox passed `npm run lock:health` today)
 
 ### content-audit-agent targets missing /content directory
 - **Status:** Resolved
