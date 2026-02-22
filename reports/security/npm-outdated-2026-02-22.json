@@ -1,0 +1,9 @@
+{
+  "eslint": {
+    "current": "10.0.0",
+    "wanted": "10.0.1",
+    "latest": "10.0.1",
+    "dependent": "app",
+    "location": "/app/node_modules/eslint"
+  }
+}
