@@ -6,14 +6,39 @@ import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { DEFAULT_RELAYS } from './constants.mjs';
 import { ensureDir } from './utils.mjs';
+
+// Re-export cmdRemove for CLI consumption
 export { cmdRemove } from './cmd-remove.mjs';
+
+/**
+ * Torch Operations Module
+ *
+ * Handles the initialization (`torch-lock init`) and update (`torch-lock update`)
+ * workflows for scaffolding the Torch agent environment.
+ *
+ * Flow (Init):
+ * 1. Resolve configuration (interactive or mock).
+ * 2. Ensure installation directories exist.
+ * 3. Install application assets (src, bin, scripts, etc.).
+ * 4. Install Torch-specific assets (roster, prompts).
+ * 5. Configure `torch-config.json` and `.gitignore`.
+ * 6. Generate dashboard link.
+ * 7. Inject convenience scripts into host `package.json`.
+ *
+ * Flow (Update):
+ * 1. Detect installation directory.
+ * 2. Create a backup of the current installation.
+ * 3. Update application directories/files (overwrite).
+ * 4. Update static files (overwrite).
+ * 5. Update prompts (add new, preserve existing).
+ */
 
 const PKG_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-// Source paths (in the package)
+/** Source directory for prompts within the package. */
 const SRC_PROMPTS_DIR = path.join(PKG_ROOT, 'src', 'prompts');
 
-// Files to treat as "Static" (always overwrite on update, with transformations)
+/** Files to treat as "Static" (always overwrite on update, with transformations). */
 const STATIC_FILES = [
   'META_PROMPTS.md',
   'scheduler-flow.md',
@@ -21,13 +46,22 @@ const STATIC_FILES = [
   'weekly-scheduler.md',
 ];
 
-// Directories containing "Evolving" files (copy if missing, preserve if present)
+/** Directories containing "Evolving" files (copy if missing, preserve if present). */
 const EVOLVING_DIRS = ['daily', 'weekly'];
 
-// New constants for full application install
+/** Directories to sync from package root to install directory. */
 const APP_DIRS = ['src', 'bin', 'dashboard', 'landing', 'assets', 'scripts'];
+
+/** Individual files to sync from package root to install directory. */
 const APP_FILES = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json', 'TORCH.md'];
 
+/**
+ * Resolves the absolute paths for the installation.
+ *
+ * @param {string} root - The current working directory (project root).
+ * @param {string} installDirName - The name of the installation directory (e.g., 'torch' or '.').
+ * @returns {{root: string, torchDir: string, promptsDir: string, roster: string}} - Resolved paths.
+ */
 function getPaths(root, installDirName) {
     const torchDir = path.resolve(root, installDirName);
     return {
@@ -38,19 +72,29 @@ function getPaths(root, installDirName) {
     };
 }
 
+/**
+ * Recursively copies a directory.
+ *
+ * @param {string} src - Source directory path.
+ * @param {string} dest - Destination directory path.
+ */
 function copyDir(src, dest) {
     if (fs.existsSync(src)) {
         fs.cpSync(src, dest, { recursive: true });
     }
 }
 
+/**
+ * Transforms content by replacing source paths with installed paths.
+ *
+ * @param {string} content - The original file content.
+ * @param {string} installDirName - The name of the installation directory.
+ * @returns {string} - The transformed content.
+ */
 function transformContent(content, installDirName) {
   // Replace source paths with user paths
   // We assume the user is running from root, so 'src/prompts/daily/' becomes 'torch/prompts/daily/'
   // If installDirName is different, we should use that.
-  // Note: These replacements are somewhat fragile regexes.
-  // We'll replace 'src/' with 'installDirName/' essentially?
-  // The original code replaced 'src/prompts/' with 'torch/prompts/'.
 
   // If installDirName is '.', we want 'prompts/daily/'.
   // If installDirName is 'torch', we want 'torch/prompts/daily/'.
@@ -65,6 +109,16 @@ function transformContent(content, installDirName) {
     .replace(/TORCH\.md/g, `${prefix}TORCH.md`);
 }
 
+/**
+ * Copies a single file, optionally transforming content and overwriting.
+ *
+ * @param {string} src - Source file path.
+ * @param {string} dest - Destination file path.
+ * @param {boolean} [transform=false] - Whether to apply content transformations.
+ * @param {boolean} [overwrite=true] - Whether to overwrite existing files.
+ * @param {string} [installDirName='torch'] - The installation directory name (used for transform).
+ * @returns {boolean} - True if copied/overwritten, false if skipped or source missing.
+ */
 function copyFile(src, dest, transform = false, overwrite = true, installDirName = 'torch') {
   if (fs.existsSync(dest) && !overwrite) {
     return false; // Skipped
@@ -77,6 +131,12 @@ function copyFile(src, dest, transform = false, overwrite = true, installDirName
   return true; // Copied/Overwritten
 }
 
+/**
+ * Syncs application directories from package to install location.
+ *
+ * @param {string} torchDir - The target installation directory.
+ * @param {'Copied'|'Updated'} [verb='Copied'] - Verb for logging.
+ */
 function syncAppDirectories(torchDir, verb = 'Copied') {
   console.log(`${verb === 'Copied' ? 'Copying' : 'Updating'} application directories...`);
   for (const dir of APP_DIRS) {
@@ -89,6 +149,13 @@ function syncAppDirectories(torchDir, verb = 'Copied') {
   }
 }
 
+/**
+ * Syncs application files from package to install location.
+ *
+ * @param {string} torchDir - The target installation directory.
+ * @param {string} installDir - The relative installation path name.
+ * @param {'Copied'|'Updated'} [verb='Copied'] - Verb for logging.
+ */
 function syncAppFiles(torchDir, installDir, verb = 'Copied') {
   console.log(`${verb === 'Copied' ? 'Copying' : 'Updating'} application files...`);
   for (const file of APP_FILES) {
@@ -112,6 +179,12 @@ function syncAppFiles(torchDir, installDir, verb = 'Copied') {
   }
 }
 
+/**
+ * Interactively queries the user for initialization parameters.
+ *
+ * @param {string} cwd - Current working directory.
+ * @returns {Promise<{installDir: string, namespace: string, hashtag: string, relays: string[]}>} - User configuration.
+ */
 async function interactiveInit(cwd) {
   const rl = readline.createInterface({ input, output });
   const currentDirName = path.basename(cwd);
@@ -153,6 +226,12 @@ async function interactiveInit(cwd) {
   }
 }
 
+/**
+ * Validates the installation directory name for safety.
+ *
+ * @param {string} dir - The directory name to validate.
+ * @throws {Error} If the directory name contains invalid characters.
+ */
 function validateInstallDir(dir) {
   if (dir === '.') return;
 
@@ -163,6 +242,13 @@ function validateInstallDir(dir) {
   }
 }
 
+/**
+ * Resolves the configuration either interactively or from mock answers.
+ *
+ * @param {string} cwd - Current working directory.
+ * @param {Object} [mockAnswers] - Optional mock answers for testing.
+ * @returns {Promise<Object>} - Resolved configuration object.
+ */
 async function resolveConfiguration(cwd, mockAnswers) {
   let config;
   if (mockAnswers) {
@@ -175,6 +261,14 @@ async function resolveConfiguration(cwd, mockAnswers) {
   return config;
 }
 
+/**
+ * Ensures the necessary directories exist for installation.
+ *
+ * @param {Object} paths - Path object from `getPaths`.
+ * @param {boolean} force - Whether to force overwrite/creation.
+ * @param {string} installDir - Installation directory name.
+ * @throws {Error} If directory exists and is not empty (unless forced).
+ */
 function ensureInstallDirectory(paths, force, installDir) {
   if (fs.existsSync(paths.torchDir) && !force) {
      const entries = fs.readdirSync(paths.torchDir);
@@ -186,18 +280,16 @@ function ensureInstallDirectory(paths, force, installDir) {
   ensureDir(paths.promptsDir);
 
   // Ensure governance directories
-  // We assume standard structure src/proposals and .torch/prompt-history
-  // even if installed in a subdirectory, these are usually repo-level.
-  // But if installed in 'torch', maybe they should be in 'torch/src/proposals'?
-  // For now, we follow the pattern that prompts are managed where the scheduler expects them.
-  // If we are in this repo, it's src/prompts.
-  // If torch is initializing a new repo, it might put prompts in installDir/prompts.
-  // However, governance service currently hardcodes 'src/proposals'.
-  // So we ensure 'src/proposals' relative to root.
   ensureDir(path.join(paths.root, 'src', 'proposals'));
   ensureDir(path.join(paths.root, '.torch', 'prompt-history'));
 }
 
+/**
+ * Orchestrates the installation of application assets.
+ *
+ * @param {string} torchDir - Target directory.
+ * @param {string} installDir - Install directory name.
+ */
 function installAppAssets(torchDir, installDir) {
   // 1. Copy App Directories
   syncAppDirectories(torchDir, 'Copied');
@@ -206,6 +298,12 @@ function installAppAssets(torchDir, installDir) {
   syncAppFiles(torchDir, installDir, 'Copied');
 }
 
+/**
+ * Orchestrates the installation of Torch-specific assets (prompts, roster).
+ *
+ * @param {Object} paths - Paths object.
+ * @param {string} installDir - Install directory name.
+ */
 function installTorchAssets(paths, installDir) {
   // 3. Copy Roster
   const srcRoster = path.join(SRC_PROMPTS_DIR, 'roster.json');
@@ -242,6 +340,16 @@ function installTorchAssets(paths, installDir) {
   }
 }
 
+/**
+ * Creates or updates the `torch-config.json` file.
+ *
+ * @param {string} cwd - Current working directory.
+ * @param {Object} paths - Paths object.
+ * @param {string} installDir - Install directory name.
+ * @param {string} namespace - Nostr namespace.
+ * @param {string[]} relays - List of relays.
+ * @param {string} hashtag - Dashboard hashtag.
+ */
 function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
   // 6. Create/Update torch-config.json
   const configPath = path.join(paths.root, 'torch-config.json');
@@ -327,6 +435,11 @@ function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
   console.log(`Saved configuration to ${path.relative(cwd, configPath)}`);
 }
 
+/**
+ * Ensures `node_modules` is ignored in the target directory's `.gitignore`.
+ *
+ * @param {string} targetDir - The directory to check/update.
+ */
 function ensureGitIgnore(targetDir) {
   const gitIgnorePath = path.join(targetDir, '.gitignore');
   let content = '';
@@ -350,6 +463,12 @@ function ensureGitIgnore(targetDir) {
   }
 }
 
+/**
+ * Injects torch scripts into the host `package.json` if installed in a subdirectory.
+ *
+ * @param {Object} paths - Paths object.
+ * @param {string} installDir - Install directory name.
+ */
 function injectHostScriptsIfNeeded(paths, installDir) {
   // 7. Inject Scripts into Host Package.json
   // If we are NOT installing to '.', the host package.json is in paths.root
@@ -358,6 +477,14 @@ function injectHostScriptsIfNeeded(paths, installDir) {
   }
 }
 
+/**
+ * Main entry point for `torch-lock init`.
+ *
+ * @param {boolean} [force=false] - Force overwrite.
+ * @param {string} [cwd=process.cwd()] - Working directory.
+ * @param {Object} [mockAnswers=null] - Mock answers for testing.
+ * @returns {Promise<void>}
+ */
 export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = null) {
   const config = await resolveConfiguration(cwd, mockAnswers);
   const { installDir, namespace, relays } = config;
@@ -387,6 +514,15 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
   console.log(dashboardUrl);
 }
 
+/**
+ * Generates the `TORCH_DASHBOARD.md` file with a direct link to the dashboard.
+ *
+ * @param {Object} paths - Paths object.
+ * @param {string} namespace - Nostr namespace.
+ * @param {string[]} relays - List of relays.
+ * @param {string} hashtag - Dashboard hashtag.
+ * @returns {string} - The generated URL.
+ */
 function createDashboardLinkFile(paths, namespace, relays, hashtag) {
   const encodedRelays = relays.map(r => encodeURIComponent(r)).join('%2C');
   const dashboardUrl = `https://torch.thepr0m3th3an.net/dashboard/?hashtag=${hashtag}&namespace=${namespace}&relays=${encodedRelays}`;
@@ -413,6 +549,12 @@ To change these settings, edit \`torch-config.json\` in your project root.
   return dashboardUrl;
 }
 
+/**
+ * Modifies the host `package.json` to include `torch:*` convenience scripts.
+ *
+ * @param {string} hostRoot - Path to the host project root.
+ * @param {string} installDirName - Installation directory name.
+ */
 function injectScriptsIntoHost(hostRoot, installDirName) {
     const hostPkgPath = path.join(hostRoot, 'package.json');
     if (!fs.existsSync(hostPkgPath)) {
@@ -454,6 +596,13 @@ function injectScriptsIntoHost(hostRoot, installDirName) {
     }
 }
 
+/**
+ * Main entry point for `torch-lock update`.
+ *
+ * @param {boolean} [force=false] - Force overwrite.
+ * @param {string} [cwd=process.cwd()] - Working directory.
+ * @throws {Error} If torch installation is not found.
+ */
 export function cmdUpdate(force = false, cwd = process.cwd()) {
   // Update logic needs to know WHERE torch is installed.
   // We can look for torch directory? Or assume 'torch'?
