@@ -67,6 +67,9 @@
     "validate:scheduler-failure-schema": "node --test test/scheduler-lock-failure-schema.contract.test.mjs",
     "test:ci-resilience": "node --test test/lock-acquisition-resilience.integration.test.mjs",
     "test:extended-main": "npm run test:integration:e2e && npm run test:ci-resilience",
+    "test:playwright": "playwright test",
+    "test:playwright:coverage": "rm -rf coverage/playwright/tmp && mkdir -p coverage/playwright/tmp && CI=true playwright test && npx c8 report --temp-directory coverage/playwright/tmp --report-dir coverage/playwright --reporter text --reporter json --all --src src",
+    "test:playwright:ui": "playwright test --ui",
     "torch:memory:list": "node bin/torch-lock.mjs list-memories",
     "torch:memory:inspect": "node bin/torch-lock.mjs inspect-memory",
     "torch:remove": "node bin/torch-lock.mjs remove"
@@ -77,6 +80,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.58.2",
+    "c8": "^10.1.3",
     "eslint": "^10.0.1",
     "globals": "^17.3.0"
   }

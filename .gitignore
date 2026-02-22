@@ -26,3 +26,8 @@ reports/performance/benchmark-*.txt
 test_output_full.txt
 benchmark-after.txt
 benchmark-baseline.txt
+
+# Coverage
+coverage/
+playwright-report/
+test-results/

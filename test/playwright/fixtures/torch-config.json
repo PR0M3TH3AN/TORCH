@@ -1,0 +1,30 @@
+{
+  "nostrLock": {
+    "namespace": "test-torch",
+    "relays": ["wss://relay.damus.io"],
+    "relayFallbacks": [],
+    "ttlSeconds": 60,
+    "queryTimeoutMs": 5000,
+    "publishTimeoutMs": 5000,
+    "minSuccessfulRelayPublishes": 1,
+    "minActiveRelayPool": 1
+  },
+  "dashboard": {
+    "auth": "admin:password",
+    "defaultCadenceView": "daily",
+    "defaultStatusView": "active",
+    "relays": ["wss://relay.damus.io"],
+    "namespace": "test-torch",
+    "hashtag": "test-torch-lock"
+  },
+  "scheduler": {
+    "firstPromptByCadence": {
+      "daily": "src/prompts/daily/agent.md",
+      "weekly": "src/prompts/weekly/agent.md"
+    },
+    "paused": {
+      "daily": [],
+      "weekly": []
+    }
+  }
+}
