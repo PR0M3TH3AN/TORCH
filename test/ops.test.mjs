@@ -2,8 +2,12 @@ import { test, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+import { WebSocketServer } from 'ws';
 import { cmdInit, cmdUpdate } from '../src/ops.mjs';
+
+const execAsync = promisify(exec);
 
 const MOCK_CONFIG = {
   installDir: 'torch',
@@ -115,44 +119,59 @@ test('cmdUpdate creates backup', async () => {
 });
 
 test('torch-lock check respects local roster', async () => {
-  const projectRoot = path.join(tempBase, 'project_roster');
-  fs.mkdirSync(projectRoot, { recursive: true });
+  const wss = new WebSocketServer({ port: 0 });
+  const port = wss.address().port;
+  const mockRelayUrl = `ws://127.0.0.1:${port}`;
 
-  // Init
-  await cmdInit(false, projectRoot, MOCK_CONFIG);
-
-  // Modify roster
-  const rosterPath = path.join(projectRoot, 'torch', 'roster.json');
-  const roster = JSON.parse(fs.readFileSync(rosterPath, 'utf8'));
-  roster.daily.push('custom-agent-007');
-  fs.writeFileSync(rosterPath, JSON.stringify(roster, null, 2));
-
-  // Run CLI
-  const binPath = path.resolve(process.cwd(), 'bin/torch-lock.mjs');
-
-  const output = execSync(`${process.execPath} ${binPath} check --cadence daily`, {
-      cwd: projectRoot,
-      encoding: 'utf8'
+  wss.on('connection', (ws) => {
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message);
+        if (data[0] === 'REQ') {
+          const subId = data[1];
+          ws.send(JSON.stringify(['EOSE', subId]));
+        }
+      } catch (_err) {
+        // ignore
+      }
+    });
   });
 
-  const result = JSON.parse(output);
-  assert.ok(result.available.includes('custom-agent-007'), 'Custom agent found in roster');
+  try {
+    const projectRoot = path.join(tempBase, 'project_roster');
+    fs.mkdirSync(projectRoot, { recursive: true });
+
+    // Use local mock relay
+    const localConfig = { ...MOCK_CONFIG, relays: [mockRelayUrl] };
+
+    // Init
+    await cmdInit(false, projectRoot, localConfig);
+
+    // Modify roster
+    const rosterPath = path.join(projectRoot, 'torch', 'roster.json');
+    const roster = JSON.parse(fs.readFileSync(rosterPath, 'utf8'));
+    roster.daily.push('custom-agent-007');
+    fs.writeFileSync(rosterPath, JSON.stringify(roster, null, 2));
+
+    // Run CLI
+    const binPath = path.resolve(process.cwd(), 'bin/torch-lock.mjs');
+
+    const { stdout } = await execAsync(`${process.execPath} ${binPath} check --cadence daily`, {
+        cwd: projectRoot,
+        encoding: 'utf8',
+        env: { ...process.env, NOSTR_LOCK_RELAYS: undefined, NOSTR_LOCK_RELAY_FALLBACKS: '' }
+    });
+
+    const result = JSON.parse(stdout);
+    assert.ok(result.available.includes('custom-agent-007'), 'Custom agent found in roster');
+  } finally {
+    wss.close();
+  }
 });
 
 test('cmdInit creates torch-config.json with random namespace', async () => {
   const projectRoot = path.join(tempBase, 'project_config_init');
   fs.mkdirSync(projectRoot, { recursive: true });
-
-  // Do NOT pass mockAnswers here to test random namespace generation,
-  // but we know it hangs.
-  // Wait, if I want to test random namespace, I MUST let it call interactiveInit?
-  // No, I should probably change cmdInit to allow optional parts of config or just test the random part separately.
-
-  // Actually, for this test, let's just pass a partial mock if possible?
-  // No, cmdInit takes full mockAnswers.
-
-  // I'll skip this test's random part or just accept it uses the mock.
-  // Actually, if I pass a mock, it WON'T test random namespace.
 
   await cmdInit(false, projectRoot, MOCK_CONFIG);
 
