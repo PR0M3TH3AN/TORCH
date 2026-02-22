@@ -1347,7 +1347,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 if (!response.ok) throw new Error('Failed to load roster');
                 const roster = await response.json();
 
-                container.innerHTML = ''; // Clear loading state
+                container.replaceChildren(); // Clear loading state
 
                 // Flatten roster into a single list with schedule info
                 const allAgents = [];
@@ -1421,17 +1421,47 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         const card = document.createElement('div');
                         card.className = 'functional-agent-card';
 
-                        card.innerHTML = `
-                            <div class="functional-agent-header">
-                                <div class="functional-agent-title-group">
-                                    <span class="functional-agent-icon">${icon}</span>
-                                    <span class="functional-agent-title">${escapeHtml(agent.title)}</span>
-                                </div>
-                                <span class="functional-agent-schedule">${agent.schedule}</span>
-                            </div>
-                            <div class="functional-agent-desc">${escapeHtml(agent.description)}</div>
-                            <button class="view-prompt-btn" onclick="openAgentModal('${agent.agentName}')">View Prompt</button>
-                        `;
+                        // Header
+                        const header = document.createElement('div');
+                        header.className = 'functional-agent-header';
+
+                        const titleGroup = document.createElement('div');
+                        titleGroup.className = 'functional-agent-title-group';
+
+                        const iconSpan = document.createElement('span');
+                        iconSpan.className = 'functional-agent-icon';
+                        iconSpan.textContent = icon;
+
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'functional-agent-title';
+                        titleSpan.textContent = agent.title;
+
+                        titleGroup.appendChild(iconSpan);
+                        titleGroup.appendChild(titleSpan);
+
+                        const scheduleSpan = document.createElement('span');
+                        scheduleSpan.className = 'functional-agent-schedule';
+                        scheduleSpan.textContent = agent.schedule;
+
+                        header.appendChild(titleGroup);
+                        header.appendChild(scheduleSpan);
+
+                        // Description
+                        const descDiv = document.createElement('div');
+                        descDiv.className = 'functional-agent-desc';
+                        descDiv.textContent = agent.description;
+
+                        // Button
+                        const btn = document.createElement('button');
+                        btn.className = 'view-prompt-btn';
+                        btn.textContent = 'View Prompt';
+                        // Use function reference for safety instead of inline onclick string
+                        btn.onclick = () => window.openAgentModal(agent.agentName);
+
+                        card.appendChild(header);
+                        card.appendChild(descDiv);
+                        card.appendChild(btn);
+
                         grid.appendChild(card);
                     });
 
@@ -1440,7 +1470,11 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
 
             } catch (error) {
                 console.error('Error fetching agents:', error);
-                container.innerHTML = `<p class="text-center" style="color: var(--danger)">Error loading agents: ${error.message}</p>`;
+                const p = document.createElement('p');
+                p.className = 'text-center';
+                p.style.color = 'var(--danger)';
+                p.textContent = `Error loading agents: ${error.message}`;
+                container.replaceChildren(p);
             }
         }
 
