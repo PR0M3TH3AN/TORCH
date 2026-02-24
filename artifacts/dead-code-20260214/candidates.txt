@@ -1,4 +1,0 @@
-src/nostr-lock.mjs
-src/torch-config.mjs
-build.mjs
-test/nostr-lock.test.mjs

@@ -14,7 +14,7 @@ export { relayListLabel } from './utils.mjs';
  * @param {Object} deps - Dependency injection for testing
  * @returns {Promise<Set<string>>} - Set of agent names that have completed their task
  */
-export async function getCompletedAgents(cadence, logDir, deps) {
+export async function getCompletedAgents(cadence, logDir, deps = {}) {
   const { readdir = fs.readdir, getDateStr = todayDateStr, getIsoWeek = getIsoWeekStr } = deps;
   const completed = new Set();
   const targetDir = path.join(logDir, cadence);
