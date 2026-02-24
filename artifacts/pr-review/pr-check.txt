@@ -1,6 +1,0 @@
-{
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/pulls/pulls#list-pull-requests",
-  "status": "404"
-}
-PR check completed (likely failed/empty due to no auth/repo info).

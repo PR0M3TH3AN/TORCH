@@ -1,3 +1,0 @@
-Candidate: src/services/memory/db-adapter.js
-Evidence: grep -r 'db-adapter' . returned only the file itself. 'createMemoryRepository' is exported but not imported anywhere.
-Rationale: Unused export, file not imported.
