@@ -20,6 +20,11 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
+// Default to npm test patterns if no args provided
+if (testArgs.length === 0) {
+  testArgs.push('test/*.test.mjs', 'test/*.test.js');
+}
+
 async function runTests(i) {
   console.log(`Run ${i + 1}/${RUNS}...`);
   return new Promise((resolve) => {
