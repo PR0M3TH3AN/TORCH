@@ -1,0 +1,150 @@
+{
+  "generatedAt": "2026-02-23T01:06:03.112Z",
+  "config": {
+    "relay": {
+      "protocol": "ws:",
+      "hostname": "localhost",
+      "port": "9999"
+    },
+    "relaySummary": "ws://localhost:9999",
+    "dryRun": true,
+    "clients": 1000,
+    "durationSec": 10,
+    "rateEps": 20,
+    "mixMetadata": 0.2,
+    "seed": null,
+    "connectConcurrency": 25,
+    "maxConnections": 250,
+    "maxInflight": 300,
+    "publishTimeoutMs": 15000,
+    "metadataParts": 4
+  },
+  "results": {
+    "attempted": 200,
+    "succeeded": 200,
+    "failed": 0,
+    "successRate": 1,
+    "throughputEps": 19.998,
+    "backpressureDrops": 0,
+    "inFlightPeak": 2,
+    "latency": {
+      "count": 200,
+      "minMs": 5.203,
+      "avgMs": 14.467850000000004,
+      "p50Ms": 14.242,
+      "p90Ms": 22.238,
+      "p95Ms": 23.286,
+      "p99Ms": 24.489,
+      "maxMs": 24.688
+    },
+    "eventLoopLag": {
+      "avgMs": 0.396,
+      "p95Ms": 2
+    },
+    "errorBreakdown": {},
+    "topStackTraces": {},
+    "resource": {
+      "samples": [
+        {
+          "tSec": 5,
+          "rssMb": 78.06,
+          "heapUsedMb": 10.09,
+          "heapTotalMb": 19.35,
+          "cpuPercent": 17.4
+        },
+        {
+          "tSec": 10,
+          "rssMb": 78.21,
+          "heapUsedMb": 10.27,
+          "heapTotalMb": 19.35,
+          "cpuPercent": 13.72
+        }
+      ],
+      "sampleCount": 2,
+      "maxRssMb": 78.21,
+      "maxHeapUsedMb": 10.27,
+      "avgCpuPercent": 15.56,
+      "cpuUserMs": 1492.56,
+      "cpuSystemMs": 63.908
+    },
+    "throughputSeries": [
+      {
+        "second": 0,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 1,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 2,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 3,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 4,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 5,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 6,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 7,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 8,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      },
+      {
+        "second": 9,
+        "attempted": 20,
+        "succeeded": 20,
+        "failed": 0,
+        "backpressureDrops": 0
+      }
+    ],
+    "hotFunctions": "not measured",
+    "startedAtIso": "2026-02-23T01:05:53.110Z",
+    "completedAtIso": "2026-02-23T01:06:03.112Z",
+    "runDurationSec": 10.001
+  },
+  "remediation": [
+    "No significant bottlenecks observed in this run; increase load gradually and repeat to find saturation point."
+  ]
+}

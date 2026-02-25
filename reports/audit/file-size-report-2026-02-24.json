@@ -1,0 +1,32 @@
+{
+  "oversized_files": [
+    {"file": "README.md", "lines": 302, "excess": 2},
+    {"file": "TORCH.md", "lines": 593, "excess": 293},
+    {"file": "dashboard/app.js", "lines": 835, "excess": 535},
+    {"file": "dashboard/styles.css", "lines": 372, "excess": 72},
+    {"file": "docs/proposals/node-based-prompt-editor.md", "lines": 307, "excess": 7},
+    {"file": "docs/proposals/plan-agent-architecture.md", "lines": 543, "excess": 243},
+    {"file": "landing/index.html", "lines": 1567, "excess": 1267},
+    {"file": "perf/constants-refactor/candidates.json", "lines": 1668, "excess": 1368},
+    {"file": "reports/test-audit/flakiness-matrix.json", "lines": 766, "excess": 466},
+    {"file": "scripts/agent/load-test.mjs", "lines": 641, "excess": 341},
+    {"file": "scripts/agent/run-scheduler-cycle.mjs", "lines": 1355, "excess": 1055},
+    {"file": "scripts/agent/scheduler-utils.mjs", "lines": 322, "excess": 22},
+    {"file": "scripts/agent/verify-run-artifacts.mjs", "lines": 375, "excess": 75},
+    {"file": "src/lib.mjs", "lines": 436, "excess": 136},
+    {"file": "src/lock-publisher.mjs", "lines": 440, "excess": 140},
+    {"file": "src/ops.mjs", "lines": 717, "excess": 417},
+    {"file": "src/services/governance/index.js", "lines": 364, "excess": 64},
+    {"file": "src/services/memory/index.js", "lines": 566, "excess": 266},
+    {"file": "src/services/memory/pruner.js", "lines": 320, "excess": 20},
+    {"file": "src/services/memory/scheduler.js", "lines": 318, "excess": 18},
+    {"file": "src/torch-config.mjs", "lines": 312, "excess": 12},
+    {"file": "test/governance.test.mjs", "lines": 375, "excess": 75},
+    {"file": "test/lib.test.mjs", "lines": 434, "excess": 134},
+    {"file": "test/lock-ops.test.mjs", "lines": 433, "excess": 133},
+    {"file": "test/memory-formatter.test.mjs", "lines": 441, "excess": 141},
+    {"file": "test/run-scheduler-cycle-memory-policy.test.mjs", "lines": 724, "excess": 424},
+    {"file": "test/scheduler-time-window.test.mjs", "lines": 311, "excess": 11}
+  ],
+  "total_excess_lines": 7737
+}

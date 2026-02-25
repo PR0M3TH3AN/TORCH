@@ -164,7 +164,7 @@
         }
 
         @media (max-width: 640px) {
-            .meta-prompts {
+            .meta-prompts, .agent-showcase {
                 padding: 0 1rem;
             }
         }
@@ -667,7 +667,7 @@
 
         .functional-agent-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1.5rem;
         }
 
@@ -809,7 +809,7 @@
 </head>
 <body>
 
-    <div class="background-decoration">
+    <div class="background-decoration" aria-hidden="true">
         <svg viewBox="0 0 1440 1024" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
             <defs>
                 <linearGradient id="warmGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -874,8 +874,8 @@
         <div class="install-container scroll-reveal">
             <h2 class="mb-8 text-text-strong" style="font-size: 2rem;">Choose Your Agent</h2>
 
-            <div class="agent-selector">
-                <div id="card-jules" onclick="selectAgent('jules')" class="agent-card active" style="cursor: pointer;">
+            <div class="agent-selector" role="radiogroup" aria-label="Select an Agent">
+                <div id="card-jules" onclick="selectAgent('jules')" class="agent-card active" style="cursor: pointer;" role="radio" aria-checked="true" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">Jules</span>
                         <span class="agent-status">Active</span>
@@ -883,7 +883,7 @@
                     <p class="agent-desc">Web-based tool with Auto-Scheduler. Optimized for Google's latest coding agent. <a href="https://jules.google/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-codex" onclick="selectAgent('codex')" class="agent-card" style="cursor: pointer;">
+                <div id="card-codex" onclick="selectAgent('codex')" class="agent-card" style="cursor: pointer;" role="radio" aria-checked="false" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">Codex CLI</span>
                         <span class="agent-status">Active</span>
@@ -891,7 +891,7 @@
                     <p class="agent-desc">Advanced reasoning for complex tasks. (Requires full access permissions) <a href="https://openai.com/blog/openai-codex" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-opencode" onclick="selectAgent('opencode')" class="agent-card" style="cursor: pointer;">
+                <div id="card-opencode" onclick="selectAgent('opencode')" class="agent-card" style="cursor: pointer;" role="radio" aria-checked="false" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">OpenCode CLI</span>
                         <span class="agent-status">Active</span>
@@ -899,7 +899,7 @@
                     <p class="agent-desc">Open source models running locally. <a href="https://opencode.ai/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-claude" onclick="selectAgent('claude')" class="agent-card" style="cursor: pointer;">
+                <div id="card-claude" onclick="selectAgent('claude')" class="agent-card" style="cursor: pointer;" role="radio" aria-checked="false" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">Claude Code CLI</span>
                         <span class="agent-status">Active</span>
@@ -907,7 +907,7 @@
                     <p class="agent-desc">Long-context understanding and safety. (CLI Required, needs cronjob) <a href="https://claude.ai/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-gemini" onclick="selectAgent('gemini')" class="agent-card" style="cursor: pointer;">
+                <div id="card-gemini" onclick="selectAgent('gemini')" class="agent-card" style="cursor: pointer;" role="radio" aria-checked="false" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">Gemini CLI</span>
                         <span class="agent-status">Active</span>
@@ -915,7 +915,7 @@
                     <p class="agent-desc">Google's multimodal AI model. (CLI Required, needs cronjob) <a href="https://deepmind.google/technologies/gemini/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-qwen" onclick="selectAgent('qwen')" class="agent-card" style="cursor: pointer;">
+                <div id="card-qwen" onclick="selectAgent('qwen')" class="agent-card" style="cursor: pointer;" role="radio" aria-checked="false" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">Qwen Coder CLI</span>
                         <span class="agent-status">Active</span>
@@ -923,7 +923,7 @@
                     <p class="agent-desc">Alibaba's open weights coding model. (CLI Required, needs cronjob) <a href="https://qwenlm.github.io/" target="_blank" onclick="event.stopPropagation()">Learn more</a>.</p>
                 </div>
 
-                <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;">
+                <div id="card-antigravity" onclick="selectAgent('antigravity')" class="agent-card" style="cursor: pointer;" role="radio" aria-checked="false" tabindex="0">
                     <div class="agent-header">
                         <span class="agent-name">Antigravity IDE</span>
                         <span class="agent-status">Active</span>
@@ -1013,6 +1013,27 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                     <h3>Persistent Memory</h3>
                     <p>Agents that remember. TORCH maintains a semantic history of decisions, preventing loops and regressions.</p>
                 </div>
+            </div>
+        </section>
+
+        <section class="hook-memory scroll-reveal" style="max-width: 800px; margin: 4rem auto; padding: 0 2rem; text-align: center;">
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--text-strong);">Hook memory into your existing agents</h2>
+            <p style="font-size: 1.1rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6;">
+                Add these instructions to your agent's system prompt (e.g. in <code>AGENTS.md</code> or <code>CLAUDE.md</code>) to enable the TORCH memory system.
+            </p>
+
+            <div class="install-code-wrapper multiline" style="margin: 0 auto; text-align: left;">
+                <code id="memory-hook-code">## TORCH Memory Integration
+You have access to the TORCH memory system.
+1. READ: Check `.scheduler-memory/latest/${cadence}/memories.md` for past learnings.
+2. WRITE: Before exiting, save new insights to `memory-update.md` so future runs can learn from this session.</code>
+                <button class="copy-install-btn" onclick="copyToClipboard('memory-hook-code', this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy
+                </button>
             </div>
         </section>
 
@@ -1321,7 +1342,11 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
             'telemetry-agent': '📡',
             'test-coverage-agent': '☔',
             'ui-ux-agent': '🖼️',
-            'weekly-synthesis-agent': '🧠'
+            'weekly-synthesis-agent': '🧠',
+            'proposal-triage-agent': '🗳️',
+            'plan-agent': '🔭',
+            'builder-agent': '🏗️',
+            'governance-agent': '⚖️'
         };
 
         const AGENT_CATEGORIES = {
@@ -1343,7 +1368,7 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                 if (!response.ok) throw new Error('Failed to load roster');
                 const roster = await response.json();
 
-                container.innerHTML = ''; // Clear loading state
+                container.replaceChildren(); // Clear loading state
 
                 // Flatten roster into a single list with schedule info
                 const allAgents = [];
@@ -1417,17 +1442,47 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                         const card = document.createElement('div');
                         card.className = 'functional-agent-card';
 
-                        card.innerHTML = `
-                            <div class="functional-agent-header">
-                                <div class="functional-agent-title-group">
-                                    <span class="functional-agent-icon">${icon}</span>
-                                    <span class="functional-agent-title">${escapeHtml(agent.title)}</span>
-                                </div>
-                                <span class="functional-agent-schedule">${agent.schedule}</span>
-                            </div>
-                            <div class="functional-agent-desc">${escapeHtml(agent.description)}</div>
-                            <button class="view-prompt-btn" onclick="openAgentModal('${agent.agentName}')">View Prompt</button>
-                        `;
+                        // Header
+                        const header = document.createElement('div');
+                        header.className = 'functional-agent-header';
+
+                        const titleGroup = document.createElement('div');
+                        titleGroup.className = 'functional-agent-title-group';
+
+                        const iconSpan = document.createElement('span');
+                        iconSpan.className = 'functional-agent-icon';
+                        iconSpan.textContent = icon;
+
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'functional-agent-title';
+                        titleSpan.textContent = agent.title;
+
+                        titleGroup.appendChild(iconSpan);
+                        titleGroup.appendChild(titleSpan);
+
+                        const scheduleSpan = document.createElement('span');
+                        scheduleSpan.className = 'functional-agent-schedule';
+                        scheduleSpan.textContent = agent.schedule;
+
+                        header.appendChild(titleGroup);
+                        header.appendChild(scheduleSpan);
+
+                        // Description
+                        const descDiv = document.createElement('div');
+                        descDiv.className = 'functional-agent-desc';
+                        descDiv.textContent = agent.description;
+
+                        // Button
+                        const btn = document.createElement('button');
+                        btn.className = 'view-prompt-btn';
+                        btn.textContent = 'View Prompt';
+                        // Use function reference for safety instead of inline onclick string
+                        btn.onclick = () => window.openAgentModal(agent.agentName);
+
+                        card.appendChild(header);
+                        card.appendChild(descDiv);
+                        card.appendChild(btn);
+
                         grid.appendChild(card);
                     });
 
@@ -1436,7 +1491,11 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
 
             } catch (error) {
                 console.error('Error fetching agents:', error);
-                container.innerHTML = `<p class="text-center" style="color: var(--danger)">Error loading agents: ${error.message}</p>`;
+                const p = document.createElement('p');
+                p.className = 'text-center';
+                p.style.color = 'var(--danger)';
+                p.textContent = `Error loading agents: ${error.message}`;
+                container.replaceChildren(p);
             }
         }
 
@@ -1489,14 +1548,28 @@ npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz &
                  .replace(/'/g, "&#039;");
         }
 
+        // Handle keyboard navigation for agent cards
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
+                }
+            });
+        });
+
         function selectAgent(agent) {
             // Remove active class from all cards
-            document.querySelectorAll('.agent-card').forEach(card => card.classList.remove('active'));
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('active');
+                card.setAttribute('aria-checked', 'false');
+            });
 
             // Add active class to selected card
             const selectedCard = document.getElementById('card-' + agent);
             if (selectedCard) {
                 selectedCard.classList.add('active');
+                selectedCard.setAttribute('aria-checked', 'true');
             }
 
             // Update prompt text

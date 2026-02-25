@@ -6,19 +6,19 @@
     ]
   },
   {
-    "file": "test/memory-cache.test.mjs",
-    "issues": [
-      "Found setTimeout()"
-    ]
-  },
-  {
-    "file": "test/memory.test.js",
+    "file": "test/playwright/dashboard.spec.js",
     "issues": [
       "Found setTimeout()"
     ]
   },
   {
     "file": "test/relay-fanout-quorum.integration.test.mjs",
+    "issues": [
+      "Found setTimeout()"
+    ]
+  },
+  {
+    "file": "test/utils-async.test.mjs",
     "issues": [
       "Found setTimeout()"
     ]

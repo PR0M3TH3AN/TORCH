@@ -37,6 +37,8 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const auth = await getDashboardAuth();
 
+  let gracefulShutdown;
+
   const server = http.createServer(async (req, res) => {
     try {
     // Basic Auth check
@@ -70,6 +72,14 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
     // URL parsing
     const url = new URL(req.url, `http://${req.headers.host}`);
     let pathname = url.pathname;
+
+    // Special case: /shutdown (only if coverage is enabled)
+    if (pathname === '/shutdown' && process.env.NODE_V8_COVERAGE) {
+      res.writeHead(200, SECURITY_HEADERS);
+      res.end('Shutting down');
+      gracefulShutdown();
+      return;
+    }
 
     // Redirect / to /dashboard/
     if (pathname === '/' || pathname === '/dashboard') {
@@ -230,6 +240,26 @@ export async function cmdDashboard(port = DEFAULT_DASHBOARD_PORT, host = '127.0.
       }
       console.log(`Serving files from ${packageRoot}`);
       console.log(`Using configuration from ${process.cwd()}`);
+      console.log(`NODE_V8_COVERAGE: ${process.env.NODE_V8_COVERAGE}`);
+
+      gracefulShutdown = () => {
+        console.error('Shutting down dashboard server...');
+        fsp.writeFile('shutdown.log', `SIGTERM received. Coverage dir: ${process.env.NODE_V8_COVERAGE}\n`).catch(() => {});
+        server.closeAllConnections(); // Close existing connections (including /shutdown request)
+        server.close(() => {
+          console.error('Dashboard server closed.');
+          process.exit(0);
+        });
+        // Force close after timeout if connections linger
+        setTimeout(() => {
+          console.error('Forcing shutdown after timeout');
+          process.exit(1);
+        }, 5000).unref();
+      };
+
+      process.on('SIGTERM', gracefulShutdown);
+      process.on('SIGINT', gracefulShutdown);
+
       resolve(server);
     });
     server.on('error', reject);

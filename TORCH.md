@@ -84,6 +84,31 @@ Use the following folders as lightweight coordination artifacts:
 **Decision note:** Decision, Alternatives considered, Rationale, Consequences/follow-ups.
 **Test log:** Command, Result (pass/fail/warn), Notes (environmental limits, retries, artifacts).
 
+### Long-term Memory
+
+While `src/context` and `src/todo` are ephemeral (per session), TORCH provides a durable memory system for transferring knowledge across runs and agents.
+
+#### Reading Memory
+At the start of a session, the scheduler retrieves relevant memories based on your agent identity and current prompt.
+- **Source:** `.scheduler-memory/latest/<cadence>/memories.md`
+- **Action:** Read this file to learn from past agents (e.g., "The integration test suite is flaky on the login step", "Use `node:test` instead of Jest").
+
+#### Writing Memory
+To save a learning for future agents, create a memory file before finishing your task.
+- **File:** `memory-update.md` (in the repository root).
+- **Content:** Concise, high-value insights.
+- **Mechanism:** The scheduler will automatically ingest this file after your run completes.
+
+**Good Memories:**
+- "Fix for `EADDRINUSE` in tests: ensure server.close() is called in `after()`."
+- "Project preference: Always use named exports for components."
+- "Constraint: Do not upgrade `dependency-x` past v2.0 due to breaking change Y."
+
+**Bad Memories:**
+- "I updated file X." (Use git history for this).
+- "Running tests..." (Use task logs).
+- Large code blocks or entire file dumps.
+
 ### Knowledge-sharing protocol
 
 #### What belongs where
@@ -548,10 +573,13 @@ If you are developing `torch-lock` itself:
 - `npm run lock:health -- --cadence daily` (relay websocket + publish/read probe; writes history to `task-logs/relay-health/`)
 - `npm run lock:complete` (manually complete a task)
 - `npm run dashboard:serve`
-- `npm test` (run unit tests)
+- `npm test` (run validation, integration, and unit tests)
 - `npm run test:unit:lock-backend` (run lock backend unit tests)
 - `npm run test:extended-main` (run extended integration tests)
-- `npm run validate:scheduler` (validate scheduler roster and prompts)
+- `npm run test:playwright` (run Playwright tests)
+- `npm run test:playwright:coverage` (run Playwright tests with coverage)
+- `npm run test:playwright:ui` (run Playwright tests in UI mode)
+- `npm run validate:scheduler` (validate scheduler roster, prompts, flow parity, and failure schema)
 - `npm run lint` (run linter)
 - `npm run scheduler:daily` (run full daily scheduler cycle)
 - `npm run scheduler:weekly` (run full weekly scheduler cycle)
