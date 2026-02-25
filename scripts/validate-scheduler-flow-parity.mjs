@@ -61,7 +61,7 @@ const invariants = [
       ],
       flow: [
         'Roster source: `src/prompts/roster.json`',
-        'Read `scheduler.firstPromptByCadence.<cadence>` from `torch-config.json` if present.',
+        'Read `scheduler.firstPromptByCadence.<cadence>` from repository-root `torch-config.json` if present.',
         'All roster tasks currently claimed by other agents',
       ],
     },
@@ -119,7 +119,7 @@ const invariants = [
       meta: [
         'If any validation command exits non-zero, do not call `lock:complete`',
         'Publish completion before writing `_completed.md`',
-        'Only after step 10 succeeds, write final task log (`_completed.md`',
+        'Only after step 11 succeeds, write final task log (`_completed.md`',
       ],
       flow: [
         'step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes)',

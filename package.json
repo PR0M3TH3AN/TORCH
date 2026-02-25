@@ -42,6 +42,7 @@
     "skills/",
     "dashboard/",
     "assets/",
+    "eslint.config.mjs",
     "torch-config.example.json",
     "README.md",
     "TORCH.md",

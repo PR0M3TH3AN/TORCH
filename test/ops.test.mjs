@@ -33,6 +33,7 @@ test('cmdInit creates directory structure and files', async () => {
   assert.ok(fs.existsSync(path.join(torchDir, 'prompts', 'daily')), 'daily prompts created');
   assert.ok(fs.existsSync(path.join(torchDir, 'roster.json')), 'roster created');
   assert.ok(fs.existsSync(path.join(torchDir, 'META_PROMPTS.md')), 'META_PROMPTS.md created');
+  assert.ok(fs.existsSync(path.join(torchDir, 'eslint.config.mjs')), 'eslint config copied');
 
   // Check content transformation
   const metaPrompts = fs.readFileSync(path.join(torchDir, 'META_PROMPTS.md'), 'utf8');

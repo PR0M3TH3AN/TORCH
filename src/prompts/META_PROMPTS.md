@@ -21,7 +21,10 @@ MUST 0: Normalize execution context before any other step:
   - `script_prefix = npm run --prefix torch`
   - `path_prefix = torch/`
 - Else stop and report: `Unable to locate TORCH scheduler files (checked src/prompts and torch/src/prompts).`
+- Ensure dependencies are installed before continuing:
+  - If `<path_prefix>node_modules` does not exist, run `npm install` (host-repo mode example: `npm install --prefix torch`).
 - Apply `script_prefix` to every `lock:*` command below and apply `path_prefix` to every repository path below.
+- `torch-config.json` is always resolved at repository root (do not apply `path_prefix` to it).
 
 MUST 1: Set cadence config to:
 - cadence = daily
@@ -48,7 +51,7 @@ MUST 3: Run these commands in this order:
      a) YAML frontmatter key `agent`.
      b) Filename format `<timestamp>__<agent-name>__<status>.md`.
    - If no valid previous log exists (missing file, parse failure, or agent not in roster):
-     - Read `scheduler.firstPromptByCadence.daily` from `<path_prefix>torch-config.json` if present.
+     - Read `scheduler.firstPromptByCadence.daily` from `torch-config.json` (repository root) if present.
      - If that agent is in roster, start there.
      - Otherwise set `start_index = 0`.
    - Else set `start_index = (index(previous_agent)+1) mod roster_length`.
@@ -62,27 +65,28 @@ MUST 3: Run these commands in this order:
 5) Claim via repository lock:
    AGENT_PLATFORM=<platform> <script_prefix> lock:lock -- --agent <agent-name> --cadence daily
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
-6) Execute selected prompt from <path_prefix>src/prompts/daily/ (spawned agent work only; completion publish and final task log writing remain scheduler-owned)
-7) Run required memory workflow for this cadence:
+6) Run required memory workflow for this cadence:
    - Before execution, run the retrieval command if configured:
      `scheduler.memoryPolicyByCadence.daily.retrieveCommand`
-   - After execution, run the storage command if configured:
-     `scheduler.memoryPolicyByCadence.daily.storeCommand`
-   - Emit or collect verifiable evidence for both steps using configured markers/artifacts.
-8) Validate memory evidence:
+7) Execute selected prompt from <path_prefix>src/prompts/daily/ (spawned agent work only; completion publish and final task log writing remain scheduler-owned)
+8) After execution, run the storage command if configured:
+   - `scheduler.memoryPolicyByCadence.daily.storeCommand`
+   - Emit or collect verifiable evidence for both retrieval and storage steps using configured markers/artifacts.
+9) Validate memory evidence:
    - Confirm retrieval evidence exists (marker and/or artifact file).
    - Confirm storage evidence exists (marker and/or artifact file).
    - If `scheduler.memoryPolicyByCadence.daily.mode` is `required`, fail the run if either check is missing.
-9) Run repository checks (for example: npm run lint)
+10) Run repository checks (for example: npm run lint)
+   - Do not apply `script_prefix` to repository checks unless you explicitly intend to validate the TORCH package itself.
    - If any validation command exits non-zero, do not call `lock:complete`.
    - Instead, write `_failed.md` with the failing command and reason, then stop.
-10) Publish completion before writing `_completed.md` (only after step 9 passes):
+11) Publish completion before writing `_completed.md` (only after step 10 passes):
    AGENT_PLATFORM=<platform> <script_prefix> lock:complete -- --agent <agent-name> --cadence daily
    (Equivalent command allowed: torch-lock complete --agent <agent-name> --cadence daily)
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
-11) Only after step 10 succeeds, write final task log (`_completed.md` for success). For any failure in step 9 or step 10, write `_failed.md`, then stop.
-12) Print a final summary message to stdout.
+12) Only after step 11 succeeds, write final task log (`_completed.md` for success). For any failure in step 10 or step 11, write `_failed.md`, then stop.
+13) Print a final summary message to stdout.
     - Status: [Success/Failure]
     - Agent: [Agent Name]
     - Prompt: [Prompt Path]
@@ -99,7 +103,7 @@ MUST 3: Run these commands in this order:
    Worked example (failed validation, no completion publish):
    - `AGENT_PLATFORM=codex <script_prefix> lock:lock -- --agent content-audit-agent --cadence daily`
    - execute selected prompt work
-   - `<script_prefix> lint` exits non-zero (or `<script_prefix> test` exits non-zero)
+   - `npm run lint` exits non-zero (or `npm run test` exits non-zero)
    - write `<path_prefix>task-logs/daily/<timestamp>__content-audit-agent__failed.md` with failure reason
    - stop without running `AGENT_PLATFORM=codex <script_prefix> lock:complete -- --agent content-audit-agent --cadence daily`
    - print final summary (Status: Failed, Reason: <reason>)
@@ -124,7 +128,10 @@ MUST 0: Normalize execution context before any other step:
   - `script_prefix = npm run --prefix torch`
   - `path_prefix = torch/`
 - Else stop and report: `Unable to locate TORCH scheduler files (checked src/prompts and torch/src/prompts).`
+- Ensure dependencies are installed before continuing:
+  - If `<path_prefix>node_modules` does not exist, run `npm install` (host-repo mode example: `npm install --prefix torch`).
 - Apply `script_prefix` to every `lock:*` command below and apply `path_prefix` to every repository path below.
+- `torch-config.json` is always resolved at repository root (do not apply `path_prefix` to it).
 
 MUST 1: Set cadence config to:
 - cadence = weekly
@@ -151,7 +158,7 @@ MUST 3: Run these commands in this order:
      a) YAML frontmatter key `agent`.
      b) Filename format `<timestamp>__<agent-name>__<status>.md`.
    - If no valid previous log exists (missing file, parse failure, or agent not in roster):
-     - Read `scheduler.firstPromptByCadence.weekly` from `<path_prefix>torch-config.json` if present.
+     - Read `scheduler.firstPromptByCadence.weekly` from `torch-config.json` (repository root) if present.
      - If that agent is in roster, start there.
      - Otherwise set `start_index = 0`.
    - Else set `start_index = (index(previous_agent)+1) mod roster_length`.
@@ -165,27 +172,28 @@ MUST 3: Run these commands in this order:
 5) Claim via repository lock:
    AGENT_PLATFORM=<platform> <script_prefix> lock:lock -- --agent <agent-name> --cadence weekly
    Exit 0 = lock acquired, proceed. Exit 3 = race lost, go back to step 3.
-6) Execute selected prompt from <path_prefix>src/prompts/weekly/ (spawned agent work only; completion publish and final task log writing remain scheduler-owned)
-7) Run required memory workflow for this cadence:
+6) Run required memory workflow for this cadence:
    - Before execution, run the retrieval command if configured:
      `scheduler.memoryPolicyByCadence.weekly.retrieveCommand`
-   - After execution, run the storage command if configured:
-     `scheduler.memoryPolicyByCadence.weekly.storeCommand`
-   - Emit or collect verifiable evidence for both steps using configured markers/artifacts.
-8) Validate memory evidence:
+7) Execute selected prompt from <path_prefix>src/prompts/weekly/ (spawned agent work only; completion publish and final task log writing remain scheduler-owned)
+8) After execution, run the storage command if configured:
+   - `scheduler.memoryPolicyByCadence.weekly.storeCommand`
+   - Emit or collect verifiable evidence for both retrieval and storage steps using configured markers/artifacts.
+9) Validate memory evidence:
    - Confirm retrieval evidence exists (marker and/or artifact file).
    - Confirm storage evidence exists (marker and/or artifact file).
    - If `scheduler.memoryPolicyByCadence.weekly.mode` is `required`, fail the run if either check is missing.
-9) Run repository checks (for example: npm run lint)
+10) Run repository checks (for example: npm run lint)
+   - Do not apply `script_prefix` to repository checks unless you explicitly intend to validate the TORCH package itself.
    - If any validation command exits non-zero, do not call `lock:complete`.
    - Instead, write `_failed.md` with the failing command and reason, then stop.
-10) Publish completion before writing `_completed.md` (only after step 9 passes):
+11) Publish completion before writing `_completed.md` (only after step 10 passes):
    AGENT_PLATFORM=<platform> <script_prefix> lock:complete -- --agent <agent-name> --cadence weekly
    (Equivalent command allowed: torch-lock complete --agent <agent-name> --cadence weekly)
    - Exit 0: continue.
    - Exit non-zero: fail the run, write `_failed.md` with a clear completion-publish failure reason and retry guidance, then stop.
-11) Only after step 10 succeeds, write final task log (`_completed.md` for success). For any failure in step 9 or step 10, write `_failed.md`, then stop.
-12) Print a final summary message to stdout.
+12) Only after step 11 succeeds, write final task log (`_completed.md` for success). For any failure in step 10 or step 11, write `_failed.md`, then stop.
+13) Print a final summary message to stdout.
     - Status: [Success/Failure]
     - Agent: [Agent Name]
     - Prompt: [Prompt Path]
@@ -202,7 +210,7 @@ MUST 3: Run these commands in this order:
    Worked example (failed validation, no completion publish):
    - `AGENT_PLATFORM=codex <script_prefix> lock:lock -- --agent bug-reproducer-agent --cadence weekly`
    - execute selected prompt work
-   - `<script_prefix> lint` exits non-zero (or `<script_prefix> test` exits non-zero)
+   - `npm run lint` exits non-zero (or `npm run test` exits non-zero)
    - write `<path_prefix>task-logs/weekly/<timestamp>__bug-reproducer-agent__failed.md` with failure reason
    - stop without running `AGENT_PLATFORM=codex <script_prefix> lock:complete -- --agent bug-reproducer-agent --cadence weekly`
    - print final summary (Status: Failed, Reason: <reason>)

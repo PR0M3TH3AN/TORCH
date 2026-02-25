@@ -141,8 +141,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      2. Otherwise parse filename convention `<timestamp>__<agent-name>__<status>.md` and take `<agent-name>`.
    - If no valid `latest_file` exists, or parsing fails, or `previous_agent` is not in `roster`, treat as first run fallback.
    - First run fallback:
-     - Read `scheduler.firstPromptByCadence.<cadence>` from `torch-config.json` if present.
-     - In host-repo mode, resolve this as `<path_prefix>torch-config.json`.
+     - Read `scheduler.firstPromptByCadence.<cadence>` from repository-root `torch-config.json` if present.
      - If that agent exists in `roster`, set `start_index = index(configured_agent)`.
      - Otherwise set `start_index = 0`.
    - Otherwise: `start_index = (index(previous_agent in roster) + 1) mod len(roster)`.

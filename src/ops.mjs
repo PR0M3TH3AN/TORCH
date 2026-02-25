@@ -53,7 +53,7 @@ const EVOLVING_DIRS = ['daily', 'weekly'];
 const APP_DIRS = ['src', 'bin', 'dashboard', 'landing', 'assets', 'scripts'];
 
 /** Individual files to sync from package root to install directory. */
-const APP_FILES = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json', 'TORCH.md'];
+const APP_FILES = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json', 'TORCH.md', 'eslint.config.mjs'];
 
 /**
  * Resolves the absolute paths for the installation.
