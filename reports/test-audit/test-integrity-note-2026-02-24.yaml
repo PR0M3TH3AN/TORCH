@@ -1,0 +1,16 @@
+test_integrity_note:
+  change_type: "refactor_tests"
+  scenarios:
+    - id: SCN-AUDIT-TOOLING
+      given: "A developer runs the flaky check tool without arguments"
+      when: "The tool executes"
+      then: "It defaults to the standard test suite (test/*.test.mjs, test/*.test.js) and excludes incompatible runners (Playwright)"
+  observable_outcomes:
+    - "scripts/test-audit/run-flaky-check.mjs runs successfully without arguments"
+  determinism_controls:
+    - "Explicit file selection for node test runner"
+  anti_cheat_rationale:
+    prevents:
+      - "Running incompatible tests leads to false positives in audit reports"
+  relaxation:
+    did_relax_any_assertion: false

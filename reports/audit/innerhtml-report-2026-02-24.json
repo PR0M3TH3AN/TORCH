@@ -1,0 +1,7 @@
+{
+  "assignments": [
+    {"file": "dashboard/app.js", "count": 1},
+    {"file": "landing/index.html", "count": 1}
+  ],
+  "total_assignments": 2
+}
