@@ -210,6 +210,110 @@ test('accepts required memory policy when markers or artifacts are produced', { 
   await fs.access(path.join(fixture.root, '.scheduler-memory', 'store-daily.ok'));
 });
 
+test('host-mode scheduler resolves parent config and rewrites torch-prefixed node commands', { concurrency: false }, async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'scheduler-host-mode-'));
+  const torchDir = path.join(root, 'torch');
+  const scriptsDir = path.join(torchDir, 'scripts', 'agent');
+  const binDir = path.join(root, 'bin');
+
+  await fs.mkdir(path.join(torchDir, 'src', 'prompts', 'daily'), { recursive: true });
+  await fs.mkdir(path.join(torchDir, 'scripts', 'memory'), { recursive: true });
+  await fs.mkdir(scriptsDir, { recursive: true });
+  await fs.mkdir(binDir, { recursive: true });
+
+  try {
+    await fs.symlink(path.resolve('node_modules'), path.join(torchDir, 'node_modules'));
+  } catch {
+    // no-op
+  }
+
+  await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
+  await fs.copyFile(path.resolve('src/utils.mjs'), path.join(torchDir, 'src', 'utils.mjs'));
+  await fs.copyFile(path.resolve('src/torch-config.mjs'), path.join(torchDir, 'src', 'torch-config.mjs'));
+  await fs.copyFile(path.resolve('src/constants.mjs'), path.join(torchDir, 'src', 'constants.mjs'));
+  await fs.copyFile(path.resolve('src/relay-health.mjs'), path.join(torchDir, 'src', 'relay-health.mjs'));
+  await fs.copyFile(path.resolve('src/lock-ops.mjs'), path.join(torchDir, 'src', 'lock-ops.mjs'));
+
+  await fs.writeFile(path.join(torchDir, 'scripts', 'agent', 'verify-run-artifacts.mjs'), '#!/usr/bin/env node\nprocess.exit(0);\n', 'utf8');
+  await fs.writeFile(path.join(torchDir, 'src', 'prompts', 'roster.json'), JSON.stringify({ daily: ['agent-a'] }, null, 2), 'utf8');
+  await fs.writeFile(path.join(torchDir, 'src', 'prompts', 'daily', 'agent-a.md'), '# agent-a\n', 'utf8');
+
+  await fs.writeFile(
+    path.join(torchDir, 'scripts', 'memory', 'retrieve.mjs'),
+    'import fs from "node:fs/promises"; await fs.mkdir(".scheduler-memory", { recursive: true }); await fs.writeFile(".scheduler-memory/retrieve-daily.ok", "ok\\n", "utf8"); console.log("MEMORY_RETRIEVED");\n',
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(torchDir, 'scripts', 'memory', 'store.mjs'),
+    'import fs from "node:fs/promises"; await fs.mkdir(".scheduler-memory", { recursive: true }); await fs.writeFile(".scheduler-memory/store-daily.ok", "ok\\n", "utf8"); console.log("MEMORY_STORED");\n',
+    'utf8',
+  );
+  await fs.writeFile(
+    path.join(torchDir, 'scripts', 'agent', 'run-selected-prompt.mjs'),
+    '#!/usr/bin/env node\nconsole.log("HANDOFF_OK");\n',
+    'utf8',
+  );
+
+  await fs.writeFile(
+    path.join(root, 'torch-config.json'),
+    JSON.stringify({
+      scheduler: {
+        firstPromptByCadence: { daily: 'agent-a' },
+        handoffCommandByCadence: { daily: 'node torch/scripts/agent/run-selected-prompt.mjs' },
+        validationCommandsByCadence: { daily: ['true'] },
+        memoryPolicyByCadence: {
+          daily: {
+            mode: 'required',
+            retrieveCommand: 'node torch/scripts/memory/retrieve.mjs',
+            storeCommand: 'node torch/scripts/memory/store.mjs',
+            retrieveSuccessMarkers: ['MEMORY_RETRIEVED'],
+            storeSuccessMarkers: ['MEMORY_STORED'],
+            retrieveArtifacts: ['.scheduler-memory/retrieve-daily.ok'],
+            storeArtifacts: ['.scheduler-memory/store-daily.ok'],
+          },
+        },
+      },
+    }, null, 2),
+    'utf8',
+  );
+
+  await fs.writeFile(
+    path.join(binDir, 'npm'),
+    `#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$1" != "run" ]]; then
+  exit 1
+fi
+case "$2" in
+  lock:check:daily)
+    echo '{"excluded":[]}'
+    ;;
+  lock:lock|lock:complete|lint)
+    ;;
+  *)
+    ;;
+esac
+`,
+    'utf8',
+  );
+  await fs.chmod(path.join(binDir, 'npm'), 0o755);
+
+  const result = await runNode(path.join(scriptsDir, 'run-scheduler-cycle.mjs'), ['--cadence', 'daily'], {
+    cwd: torchDir,
+    env: {
+      ...process.env,
+      PATH: `${binDir}:${process.env.PATH}`,
+    },
+  });
+
+  assert.equal(result.code, 0, `stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  assert.match(result.stdout, /Status:\s+completed/);
+  await fs.access(path.join(torchDir, '.scheduler-memory', 'retrieve-daily.ok'));
+  await fs.access(path.join(torchDir, '.scheduler-memory', 'store-daily.ok'));
+});
+
 test('records backend failure metadata when lock command exits with code 2', { concurrency: false }, async () => {
   const fixture = await setupFixture({
     memoryPolicy: { mode: 'optional' },

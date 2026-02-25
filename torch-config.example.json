@@ -26,6 +26,10 @@
       "daily": "scheduler-update-agent",
       "weekly": "bug-reproducer-agent"
     },
+    "handoffCommandByCadence": {
+      "daily": "node torch/scripts/agent/run-selected-prompt.mjs",
+      "weekly": "node torch/scripts/agent/run-selected-prompt.mjs"
+    },
     "memoryPolicyByCadence": {
       "daily": {
         "mode": "required",

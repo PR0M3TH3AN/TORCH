@@ -41,6 +41,7 @@
 // Source of truth: numbered MUST steps 2 and 4-16 in src/prompts/scheduler-flow.md are
 // implemented by this script; step 3 (policy-file read) is best-effort and non-fatal.
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -72,6 +73,7 @@ import {
 } from './scheduler-lock.mjs';
 
 import { detectPlatform } from '../../src/utils.mjs';
+import { getTorchConfigPath } from '../../src/torch-config.mjs';
 
 const VALID_CADENCES = new Set(['daily', 'weekly']);
 const ALL_EXCLUDED_REASON = 'All roster tasks currently claimed by other agents';
@@ -328,9 +330,31 @@ function selectNextAgent({ roster, excludedSet, previousAgent, firstPrompt }) {
  * @returns {Promise<Object>} Normalized scheduler config object.
  */
 async function getSchedulerConfig(cadence, { isInteractive }) {
-  const cfg = await readJson(path.resolve(process.cwd(), 'torch-config.json'), {});
+  const configPath = getTorchConfigPath();
+  const cfg = await readJson(configPath, {});
+  const configDir = path.dirname(configPath);
+  const runtimeDir = process.cwd();
+
+  const resolveNodeCommand = (command) => {
+    if (typeof command !== 'string') return command;
+    const trimmed = command.trim();
+    if (!trimmed.startsWith('node ')) return trimmed;
+    const parts = trimmed.split(/\s+/);
+    if (parts.length < 2) return trimmed;
+    const scriptArg = parts[1];
+    if (!scriptArg || scriptArg.startsWith('-') || path.isAbsolute(scriptArg)) return trimmed;
+    const absoluteScriptPath = path.resolve(configDir, scriptArg);
+    if (!fsSync.existsSync(absoluteScriptPath)) return trimmed;
+    const rewrittenScriptPath = path.relative(runtimeDir, absoluteScriptPath).split(path.sep).join('/');
+    if (!rewrittenScriptPath || rewrittenScriptPath.startsWith('..')) return trimmed;
+    parts[1] = rewrittenScriptPath;
+    return parts.join(' ');
+  };
+
   const scheduler = cfg.scheduler || {};
-  const handoffCommand = scheduler.handoffCommandByCadence?.[cadence] || null;
+  const defaultHandoffCommand = resolveNodeCommand('node scripts/agent/run-selected-prompt.mjs');
+  const handoffCommandRaw = scheduler.handoffCommandByCadence?.[cadence] || defaultHandoffCommand;
+  const handoffCommand = resolveNodeCommand(handoffCommandRaw);
   const missingHandoffCommandForMode = !isInteractive && !handoffCommand;
   const memoryPolicyRaw = scheduler.memoryPolicyByCadence?.[cadence] || {};
   const mode = memoryPolicyRaw.mode === 'required' ? 'required' : 'optional';
@@ -390,10 +414,10 @@ async function getSchedulerConfig(cadence, { isInteractive }) {
     memoryPolicy: {
       mode,
       retrieveCommand: typeof memoryPolicyRaw.retrieveCommand === 'string' && memoryPolicyRaw.retrieveCommand.trim()
-        ? memoryPolicyRaw.retrieveCommand.trim()
+        ? resolveNodeCommand(memoryPolicyRaw.retrieveCommand.trim())
         : null,
       storeCommand: typeof memoryPolicyRaw.storeCommand === 'string' && memoryPolicyRaw.storeCommand.trim()
-        ? memoryPolicyRaw.storeCommand.trim()
+        ? resolveNodeCommand(memoryPolicyRaw.storeCommand.trim())
         : null,
       retrieveSuccessMarkers: normalizeStringList(memoryPolicyRaw.retrieveSuccessMarkers, ['MEMORY_RETRIEVED']),
       storeSuccessMarkers: normalizeStringList(memoryPolicyRaw.storeSuccessMarkers, ['MEMORY_STORED']),

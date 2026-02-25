@@ -381,9 +381,15 @@ function configureTorch(cwd, paths, installDir, namespace, relays, hashtag) {
 
   // Configure memory policy with correct paths
   if (!configData.scheduler) configData.scheduler = {};
+  if (!configData.scheduler.handoffCommandByCadence) {
+    configData.scheduler.handoffCommandByCadence = {};
+  }
   // Always ensure memory policy exists and points to the correct scripts
   // We use the installDir to construct the path
   const scriptPrefix = installDir === '.' ? '' : `${installDir}/`;
+  const handoffPath = `node ${scriptPrefix}scripts/agent/run-selected-prompt.mjs`;
+  configData.scheduler.handoffCommandByCadence.daily = handoffPath;
+  configData.scheduler.handoffCommandByCadence.weekly = handoffPath;
 
   if (!configData.scheduler.memoryPolicyByCadence) {
     configData.scheduler.memoryPolicyByCadence = {};

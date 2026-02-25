@@ -182,4 +182,14 @@ test('cmdInit creates torch-config.json with random namespace', async () => {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   assert.strictEqual(config.nostrLock.namespace, 'test-namespace', 'Namespace should match mock');
   assert.strictEqual(config.dashboard.hashtag, 'test-hashtag', 'Hashtag should match mock');
+  assert.strictEqual(
+    config.scheduler.handoffCommandByCadence.daily,
+    'node torch/scripts/agent/run-selected-prompt.mjs',
+    'daily handoff command should be configured for host installs',
+  );
+  assert.strictEqual(
+    config.scheduler.handoffCommandByCadence.weekly,
+    'node torch/scripts/agent/run-selected-prompt.mjs',
+    'weekly handoff command should be configured for host installs',
+  );
 });
