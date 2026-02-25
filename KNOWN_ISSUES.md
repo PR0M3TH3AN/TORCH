@@ -39,7 +39,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-23 (verified: passes in Jules environment)
 
 ### Sandbox restrictions cause `npm test` failures (`listen EPERM` and `spawnSync /bin/sh EPERM`)
-- **Status:** Active
+- **Status:** Active (Monitoring - passed in 2026-02-22 run)
 - **Issue-ID:** KNOWN-ISSUE-sandbox-eprem-tests
 - **Area:** Test / Runtime
 - **Symptom:** Multiple tests fail in this sandbox due process restrictions, including:
@@ -91,7 +91,7 @@ Track only **active, reproducible, unresolved** issues.
 - **Last verified:** 2026-02-20
 
 ### Recurring scheduler lock backend failures in recent task logs
-- **Status:** Monitoring
+- **Status:** Monitoring (lock:health passed 2026-02-22)
 - **Issue-ID:** KNOWN-ISSUE-relay-connectivity-sandbox
 - **Area:** Runtime
 - **Symptom:** Multiple scheduler runs fail with `Lock backend error` before prompt handoff/validation.
