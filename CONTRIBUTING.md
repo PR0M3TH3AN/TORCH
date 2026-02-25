@@ -7,6 +7,15 @@ Thank you for your interest in contributing to TORCH!
 - Node.js (v22+)
 - npm
 
+## User Onboarding Reference
+
+Use this exact happy-path command sequence when onboarding TORCH into another repository:
+
+```bash
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz \
+  && npx --no-install torch-lock init
+```
+
 ## Setup
 
 1.  Clone the repository.

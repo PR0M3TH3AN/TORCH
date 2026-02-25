@@ -233,15 +233,18 @@
         .prompt-content pre {
             margin: 0;
             padding: 1.5rem;
+            overflow: auto;
         }
 
         .prompt-content code {
+            display: block;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 0.85rem;
             color: #e6edf3;
             line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-all;
+            white-space: pre;
+            word-break: normal;
+            overflow-wrap: normal;
         }
 
         footer {
@@ -783,16 +786,18 @@
         #promptModal .modal-body pre {
             margin: 0;
             padding: 1.5rem;
+            overflow: auto;
         }
 
         #promptModal .modal-body code {
+            display: block;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 0.9rem;
             color: #e6edf3;
             line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-all;
-            overflow-wrap: break-word;
+            white-space: pre;
+            word-break: normal;
+            overflow-wrap: normal;
         }
 
         #promptModal .close-prompt {
@@ -932,11 +937,12 @@
                 </div>
             </div>
 
-            <p class="install-label" style="margin-top: 1rem;">Copy this prompt to onboard TORCH:</p>
+            <p class="install-label" style="margin-top: 1rem;">Copy this happy-path prompt to onboard TORCH:</p>
+            <p class="text-muted" style="margin-top: 0; margin-bottom: 0.75rem; font-size: 0.85rem;">Requires Node.js 22+.</p>
             <div class="install-code-wrapper multiline">
                 <code id="install-cmd">Hey Jules, can you install and setup TORCH into this repo? Here is the install command:
 
-npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init</code>
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init</code>
                 <button class="copy-install-btn" onclick="copyToClipboard('install-cmd', this, true)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -1187,15 +1193,38 @@ You have access to the TORCH memory system.
         // Fetch and Render Markdown
         async function fetchDocs() {
             try {
-                const response = await fetch('../src/docs/TORCH.md');
-                if (!response.ok) {
-                    throw new Error('Failed to load documentation');
-                }
-                const text = await response.text();
+                const docPaths = [
+                    '../README.md',
+                    '../TORCH.md',
+                    '../src/docs/TORCH.md'
+                ];
 
-                // Configure marked options if needed (e.g., highlighting)
-                // Using simple rendering for now
-                // TRUSTED SOURCE: The content comes from a local file (../src/docs/TORCH.md) and is required to be rendered as HTML.
+                let text = null;
+                let lastError = null;
+
+                for (const docPath of docPaths) {
+                    try {
+                        const response = await fetch(docPath);
+                        if (!response.ok) {
+                            continue;
+                        }
+                        text = await response.text();
+                        break;
+                    } catch (err) {
+                        lastError = err;
+                    }
+                }
+
+                if (!text) {
+                    if (lastError) {
+                        throw lastError;
+                    }
+                    throw new Error('Failed to load documentation markdown');
+                }
+
+                marked.setOptions({
+                    gfm: true
+                });
                 contentDiv.innerHTML = marked.parse(text);
                 docsLoaded = true;
             } catch (error) {
@@ -1290,7 +1319,40 @@ You have access to the TORCH memory system.
             });
         }
 
+        async function resolveOfflineBundleTemplate() {
+            const offlineLink = document.querySelector('a[download][href*="OFFLINE_BUNDLE_FILENAME"]');
+            const offlineCode = document.getElementById('offline-cmd');
+            if (!offlineCode) {
+                return;
+            }
+
+            const unresolvedToken = '{{OFFLINE_BUNDLE_FILENAME}}';
+            if (!offlineCode.textContent.includes(unresolvedToken) && (!offlineLink || !offlineLink.getAttribute('href')?.includes(unresolvedToken))) {
+                return;
+            }
+
+            let bundleName = 'torch-offline-bundle.tgz';
+            try {
+                const response = await fetch('../package.json');
+                if (response.ok) {
+                    const pkg = await response.json();
+                    if (pkg?.name && pkg?.version) {
+                        bundleName = `${pkg.name}-${pkg.version}.tgz`;
+                    }
+                }
+            } catch (error) {
+                console.warn('Unable to resolve offline bundle filename from package.json:', error);
+            }
+
+            if (offlineLink) {
+                offlineLink.setAttribute('href', bundleName);
+                offlineLink.setAttribute('download', bundleName);
+            }
+            offlineCode.textContent = `npm install ./${bundleName}`;
+        }
+
         // Initialize Meta Prompts
+        resolveOfflineBundleTemplate();
         fetchMetaPrompts();
 
         // Initialize Agent Showcase
@@ -1577,19 +1639,19 @@ You have access to the TORCH memory system.
             let promptText = '';
 
             if (agent === 'jules') {
-                promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey Jules, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             } else if (agent === 'codex') {
-                promptText = "Hey Codex, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey Codex, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             } else if (agent === 'opencode') {
-                promptText = "Hey OpenCode, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey OpenCode, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             } else if (agent === 'claude') {
-                promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey Claude, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             } else if (agent === 'gemini') {
-                promptText = "Hey Gemini, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey Gemini, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             } else if (agent === 'qwen') {
-                promptText = "Hey Qwen, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey Qwen, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             } else if (agent === 'antigravity') {
-                promptText = "Hey Antigravity, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init";
+                promptText = "Hey Antigravity, can you install and setup TORCH into this repo? Here is the install command:\n\nnpm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx --no-install torch-lock init";
             }
 
             if (installCmd) {

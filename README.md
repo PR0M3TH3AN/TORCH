@@ -16,8 +16,21 @@ TORCH isn't just another script—it's an operating system for your AI workforce
 
 ## Installation
 
+Prerequisites:
+
+- Node.js 22 or newer
+
+First 5 minutes:
+
 ```bash
-npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz \
+  && npx --no-install torch-lock init
+
+# sanity check (optional, but recommended)
+npx --no-install torch-lock check --cadence daily
+
+# start dashboard
+npx --no-install torch-lock dashboard --port 4173 --host 127.0.0.1
 ```
 
 > TORCH is distributed from GitHub tarballs and is not currently published to the npm registry.
