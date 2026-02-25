@@ -69,9 +69,27 @@ export function getTorchConfigPath() {
   if (explicitPath) return path.resolve(process.cwd(), explicitPath);
 
   const localPath = path.resolve(process.cwd(), DEFAULT_CONFIG_PATH);
-  if (fs.existsSync(localPath)) return localPath;
-
   const parentPath = path.resolve(process.cwd(), '..', DEFAULT_CONFIG_PATH);
+  const cwdBaseName = path.basename(process.cwd());
+  const parentPkgPath = path.resolve(process.cwd(), '..', 'package.json');
+  let parentLooksLikeHostRepo = false;
+
+  try {
+    if (fs.existsSync(parentPkgPath)) {
+      const parentPkgRaw = fs.readFileSync(parentPkgPath, 'utf8');
+      const parentPkg = JSON.parse(parentPkgRaw);
+      parentLooksLikeHostRepo = parentPkg && typeof parentPkg.name === 'string' && parentPkg.name !== 'torch-lock';
+    }
+  } catch {
+    parentLooksLikeHostRepo = false;
+  }
+
+  // Host-repo mode: when running from "<repo>/torch", prefer parent config.
+  if (cwdBaseName === 'torch' && parentLooksLikeHostRepo && fs.existsSync(parentPath)) {
+    return parentPath;
+  }
+
+  if (fs.existsSync(localPath)) return localPath;
   if (fs.existsSync(parentPath)) return parentPath;
 
   return localPath;

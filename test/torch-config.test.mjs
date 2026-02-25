@@ -19,10 +19,12 @@ import { DEFAULT_RELAYS } from '../src/constants.mjs';
 describe('torch-config', () => {
   describe('getTorchConfigPath', () => {
     const originalEnv = process.env.TORCH_CONFIG_PATH;
+    const originalCwd = process.cwd();
 
     after(() => {
       if (originalEnv === undefined) delete process.env.TORCH_CONFIG_PATH;
       else process.env.TORCH_CONFIG_PATH = originalEnv;
+      process.chdir(originalCwd);
     });
 
     it('returns default path when env var is not set', () => {
@@ -33,6 +35,24 @@ describe('torch-config', () => {
     it('returns custom path when env var is set', () => {
       process.env.TORCH_CONFIG_PATH = 'custom-config.json';
       assert.strictEqual(getTorchConfigPath(), path.resolve(process.cwd(), 'custom-config.json'));
+    });
+
+    it('prefers parent torch-config.json in host-repo mode when cwd is <repo>/torch', () => {
+      delete process.env.TORCH_CONFIG_PATH;
+
+      const fixtureRoot = fs.mkdtempSync(path.join(process.cwd(), 'test-torch-config-host-'));
+      const hostPkgPath = path.join(fixtureRoot, 'package.json');
+      const parentConfigPath = path.join(fixtureRoot, 'torch-config.json');
+      const torchDir = path.join(fixtureRoot, 'torch');
+      const localConfigPath = path.join(torchDir, 'torch-config.json');
+
+      fs.mkdirSync(torchDir, { recursive: true });
+      fs.writeFileSync(hostPkgPath, JSON.stringify({ name: 'seedpass', version: '1.0.0' }), 'utf8');
+      fs.writeFileSync(parentConfigPath, JSON.stringify({ nostrLock: { namespace: 'parent' } }), 'utf8');
+      fs.writeFileSync(localConfigPath, JSON.stringify({ nostrLock: { namespace: 'local' } }), 'utf8');
+
+      process.chdir(torchDir);
+      assert.strictEqual(getTorchConfigPath(), path.resolve(parentConfigPath));
     });
   });
 
