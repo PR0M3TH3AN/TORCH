@@ -74,6 +74,8 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      - `script_prefix = npm run --prefix torch`
      - `path_prefix = torch/`
    - Else stop with: `Unable to locate TORCH scheduler files (checked src/prompts and torch/src/prompts).`
+   - Ensure dependencies are installed:
+     - If `<path_prefix>node_modules` does not exist, run `npm install` (applying `<path_prefix>` if needed, e.g. `npm install --prefix torch`).
    - Apply `script_prefix` to all `lock:*` invocations and apply `path_prefix` to scheduler paths.
 
 1. Set cadence variables before any command:
