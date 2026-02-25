@@ -35,6 +35,43 @@ npx --no-install torch-lock dashboard --port 4173 --host 127.0.0.1
 
 > TORCH is distributed from GitHub tarballs and is not currently published to the npm registry.
 
+### Upgrade TORCH In An Existing Repository
+
+Use this when the repository already has a `torch/` directory:
+
+```bash
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz
+npx --no-install torch-lock update --force
+npm install --prefix torch
+npm run --prefix torch lock:check:daily -- --json --quiet
+```
+
+Use this for first-time setup in a repository without `torch/`:
+
+```bash
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz
+npx --no-install torch-lock init --force
+npm install --prefix torch
+npm run --prefix torch lock:check:daily -- --json --quiet
+```
+
+One-liner (auto-detect existing vs new install):
+
+```bash
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && \
+if [ -d torch ]; then npx --no-install torch-lock update --force; else npx --no-install torch-lock init --force; fi && \
+npm install --prefix torch && \
+npm run --prefix torch lock:check:daily -- --json --quiet
+```
+
+Post-upgrade validation checklist:
+
+1. Confirm root config exists: `test -f torch-config.json`.
+2. Confirm handoff defaults exist: `rg -n "handoffCommandByCadence" torch-config.json`.
+3. Confirm host install dependencies exist: `test -d torch/node_modules`.
+4. Run one scheduler cycle (expected to fail on Linux simulation due to artifact checks, but not due to missing config/handoff):
+   - `AGENT_PLATFORM=linux npm run --prefix torch scheduler:daily`
+
 ## Development
 
 For instructions on how to contribute to TORCH, including building, testing, and linting, please see [CONTRIBUTING.md](CONTRIBUTING.md).
