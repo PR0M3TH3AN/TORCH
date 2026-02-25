@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomInt } from 'node:crypto';
 import { todayDateStr, getIsoWeekStr } from './utils.mjs';
 
-export { relayListLabel } from './utils.mjs';
+export { relayListLabel, mergeRelayList } from './utils.mjs';
 
 /**
  * Scans the local log directory to identify agents that have already completed their task
@@ -14,7 +14,25 @@ export { relayListLabel } from './utils.mjs';
  * @param {Object} deps - Dependency injection for testing
  * @returns {Promise<Set<string>>} - Set of agent names that have completed their task
  */
-export async function getCompletedAgents(cadence, logDir, deps = {}) {
+/**
+ * Promisified timeout wrapper.
+ *
+ * @param {Promise} promise - The promise to wrap.
+ * @param {number} timeoutMs - Timeout in milliseconds.
+ * @param {string} timeoutMessage - Error message on timeout.
+ * @returns {Promise} - The result of the promise or a timeout error.
+ */
+export function withTimeout(promise, timeoutMs, timeoutMessage) {
+  let timeoutHandle;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  });
+}
+
+export async function getCompletedAgents(cadence, logDir, deps) {
   const { readdir = fs.readdir, getDateStr = todayDateStr, getIsoWeek = getIsoWeekStr } = deps;
   const completed = new Set();
   const targetDir = path.join(logDir, cadence);
@@ -49,21 +67,6 @@ export async function getCompletedAgents(cadence, logDir, deps = {}) {
   }
 
   return completed;
-}
-
-export function withTimeout(promise, timeoutMs, timeoutMessage = 'Operation timed out') {
-  let timer;
-  const timeoutPromise = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
-  });
-  return Promise.race([
-    promise.finally(() => clearTimeout(timer)),
-    timeoutPromise,
-  ]);
-}
-
-export function mergeRelayList(primaryRelays, fallbackRelays) {
-  return [...new Set([...primaryRelays, ...fallbackRelays])];
 }
 
 const MAX_RANDOM = 281474976710655; // 2**48 - 1
