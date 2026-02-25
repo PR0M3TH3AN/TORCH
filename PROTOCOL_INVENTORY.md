@@ -7,10 +7,10 @@ This file tracks external protocol specifications and libraries used in this rep
 | Protocol / Spec | Implementation Points | Compliance Status | Notes |
 | :--- | :--- | :--- | :--- |
 | **NIP-01** (Basic Protocol) | `src/lib.mjs`, `src/lock-ops.mjs`, `src/relay-health.mjs` | Compliant | Uses `nostr-tools` for event creation, signing, and relay communication. |
-| **NIP-04** (Encrypted Direct Message) | N/A | Unknown | Not explicitly used in lock logic, but mentioned in test prompts. |
+| **NIP-04** (Encrypted Direct Message) | N/A | Not Implemented | No usage found in codebase. |
 | **NIP-33** (Parameterized Replaceable Events) | `src/lock-ops.mjs` | Compliant | Defines the mechanics for Kind 30078 updates (d-tags). |
 | **NIP-40** (Expiration Timestamp) | `src/lock-ops.mjs` | Compliant | Parses `expiration` tag to filter active locks. |
-| **NIP-42** (Authentication) | N/A | Unknown | Not currently implemented in lock logic. |
+| **NIP-42** (Authentication) | N/A | Not Implemented | No usage found in codebase. |
 | **NIP-78** (Application-specific Data) | `src/lock-ops.mjs` | Compliant | Uses Kind 30078 for distributed lock state. |
 
 ## Other Protocols
