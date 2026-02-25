@@ -186,35 +186,52 @@ function syncAppFiles(torchDir, installDir, verb = 'Copied') {
  * @returns {Promise<{installDir: string, namespace: string, hashtag: string, relays: string[]}>} - User configuration.
  */
 async function interactiveInit(cwd) {
-  const rl = readline.createInterface({ input, output });
   const currentDirName = path.basename(cwd);
+  let defaultDir = 'torch';
+  if (currentDirName === 'torch') {
+    defaultDir = '.';
+  }
+  const randomSuffix = crypto.randomBytes(4).toString('hex');
+  const defaultNamespace = `torch-${randomSuffix}`;
+  const defaultHashtag = `${defaultNamespace}-agent-lock`;
+
+  if (!input.isTTY) {
+    return {
+      installDir: defaultDir,
+      namespace: defaultNamespace,
+      hashtag: defaultHashtag,
+      relays: DEFAULT_RELAYS,
+    };
+  }
+
+  const rl = readline.createInterface({ input, output });
+  const askWithDefault = async (prompt, fallback) => {
+    try {
+      const answer = await rl.question(prompt);
+      return answer.trim() || fallback;
+    } catch {
+      // In non-interactive/piped sessions EOF can arrive mid-flow.
+      // Treat it as "accept defaults" so init still completes deterministically.
+      return fallback;
+    }
+  };
 
   console.log('\n🔥 TORCH Initialization 🔥\n');
 
   try {
     // 1. Install Directory
-    let defaultDir = 'torch';
-    if (currentDirName === 'torch') {
-      defaultDir = '.';
-    }
-
-    const dirAnswer = await rl.question(`Install directory (default: ${defaultDir}): `);
-    const installDir = dirAnswer.trim() || defaultDir;
+    const installDir = await askWithDefault(`Install directory (default: ${defaultDir}): `, defaultDir);
 
     // 2. Namespace
-    const randomSuffix = crypto.randomBytes(4).toString('hex');
-    const defaultNamespace = `torch-${randomSuffix}`;
-    const namespaceAnswer = await rl.question(`Nostr Namespace (default: ${defaultNamespace}): `);
-    const namespace = namespaceAnswer.trim() || defaultNamespace;
+    const namespace = await askWithDefault(`Nostr Namespace (default: ${defaultNamespace}): `, defaultNamespace);
 
     // 3. Hashtag
     const defaultHashtag = `${namespace}-agent-lock`;
-    const hashtagAnswer = await rl.question(`Nostr Hashtag (default: ${defaultHashtag}): `);
-    const hashtag = hashtagAnswer.trim() || defaultHashtag;
+    const hashtag = await askWithDefault(`Nostr Hashtag (default: ${defaultHashtag}): `, defaultHashtag);
 
     // 4. Relays
     console.log(`\nDefault Relays:\n  ${DEFAULT_RELAYS.join('\n  ')}`);
-    const relaysAnswer = await rl.question('Enter relays (comma-separated) or press Enter to use defaults: ');
+    const relaysAnswer = await askWithDefault('Enter relays (comma-separated) or press Enter to use defaults: ', '');
     let relays = DEFAULT_RELAYS;
     if (relaysAnswer.trim()) {
       relays = relaysAnswer.split(',').map(r => r.trim()).filter(Boolean);
