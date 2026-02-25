@@ -51,6 +51,14 @@ export async function getCompletedAgents(cadence, logDir, deps) {
   return completed;
 }
 
+/**
+ * Promisified timeout wrapper.
+ *
+ * @param {Promise} promise - The promise to wrap.
+ * @param {number} timeoutMs - Timeout in milliseconds.
+ * @param {string} timeoutMessage - Error message on timeout.
+ * @returns {Promise} - The result of the promise or a timeout error.
+ */
 export function withTimeout(promise, timeoutMs, timeoutMessage) {
   let timeoutHandle;
   const timeoutPromise = new Promise((_, reject) => {

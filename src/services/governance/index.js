@@ -220,8 +220,9 @@ export async function applyProposal(id) {
 
   // Git Commit (optional)
   try {
-    // We use execFileSync for git operations to avoid command injection
-    // Ensure we are in repo root? cwd is repo root.
+    // We use execFileSync for git operations to avoid command injection.
+    // Explicitly using the array form ensures arguments are passed directly to the spawned process
+    // without shell interpretation, preventing command injection attacks via 'meta.target' or 'commitMsg'.
     execFileSync('git', ['add', meta.target]);
     const commitMsg = `feat(prompts): apply proposal ${id} by ${meta.author}`;
     execFileSync('git', ['commit', '-m', commitMsg]);
@@ -354,6 +355,9 @@ export async function rollbackPrompt(target, hashOrStrategy = 'latest') {
   // Fallback to Git
   try {
     const commit = hashOrStrategy === 'latest' ? 'HEAD' : hashOrStrategy;
+    if (commit.startsWith('-')) {
+      throw new Error(`Invalid commit/strategy: ${commit} (cannot start with '-')`);
+    }
     execFileSync('git', ['checkout', commit, '--', target]);
     return { success: true, source: 'git', restored: commit };
   } catch (e) {

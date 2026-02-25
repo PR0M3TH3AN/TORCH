@@ -2,7 +2,12 @@ import { describe, it, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
+<<<<<<< HEAD
 import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform, relayListLabel, mergeRelayList } from '../src/utils.mjs';
+=======
+import { getIsoWeekStr, todayDateStr, nowUnix, ensureDir, detectPlatform, relayListLabel } from '../src/utils.mjs';
+import { mergeRelayList } from '../src/lock-utils.mjs';
+>>>>>>> origin/main
 
 describe('Date Utilities', () => {
   describe('todayDateStr', () => {
