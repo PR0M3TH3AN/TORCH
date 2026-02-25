@@ -66,29 +66,39 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
 ## Numbered MUST Procedure
 
+0. Normalize execution context before any command:
+   - If `src/prompts/scheduler-flow.md` exists in the current working directory:
+     - `script_prefix = npm run`
+     - `path_prefix = ` (empty)
+   - Else if `torch/src/prompts/scheduler-flow.md` exists:
+     - `script_prefix = npm run --prefix torch`
+     - `path_prefix = torch/`
+   - Else stop with: `Unable to locate TORCH scheduler files (checked src/prompts and torch/src/prompts).`
+   - Apply `script_prefix` to all `lock:*` invocations and apply `path_prefix` to scheduler paths.
+
 1. Set cadence variables before any command:
    - `cadence` = `daily` or `weekly`
-   - `log_dir` = `task-logs/<cadence>/`
-   - `prompt_dir` = `src/prompts/<cadence>/`
+   - `log_dir` = `<path_prefix>task-logs/<cadence>/`
+   - `prompt_dir` = `<path_prefix>src/prompts/<cadence>/`
 
    Note: branch naming (for example `agents/<cadence>/`) is orchestration-level behavior and is not used by `run-scheduler-cycle.mjs`.
 
 2. Run preflight to build the exclusion set:
 
    ```bash
-   if daily: `npm run lock:check:daily -- --json --quiet`; if weekly: `npm run lock:check:weekly -- --json --quiet`
+   if daily: `<script_prefix> lock:check:daily -- --json --quiet`; if weekly: `<script_prefix> lock:check:weekly -- --json --quiet`
    ```
 
    Canonical exclusion rule:
-   - Use `excluded` from the `npm run lock:check:<cadence>` JSON output.
+   - Use `excluded` from the `<script_prefix> lock:check:<cadence>` JSON output.
    - If `excluded` is unavailable, fallback to the union of `locked`, `paused`, and `completed` from that same JSON payload.
 
-   Goose Desktop note: `npm run lock:check:<cadence>` can emit large hermit wrapper logs. Use `--json --quiet` (as documented above). If the command still fails due to Goose hermit issues, apply the PATH workaround in `KNOWN_ISSUES.md` before rerunning.
+   Goose Desktop note: `<script_prefix> lock:check:<cadence>` can emit large hermit wrapper logs. Use `--json --quiet` (as documented above). If the command still fails due to Goose hermit issues, apply the PATH workaround in `KNOWN_ISSUES.md` before rerunning.
 
 3. Read policy file(s) once before the run loop. This step is conditional: if `TORCH.md` is missing, continue without failing.
 
    ```bash
-   test -f TORCH.md && cat TORCH.md || echo "No TORCH.md found; continuing"
+   test -f <path_prefix>TORCH.md && cat <path_prefix>TORCH.md || echo "No TORCH.md found; continuing"
    ```
 
 4. Bootstrap log directories before listing files:
@@ -100,7 +110,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 5. When lock health preflight is enabled (`scheduler.lockHealthPreflight: true` or env `SCHEDULER_LOCK_HEALTH_PREFLIGHT=1`), verify relay/query health before selecting an agent or calling `lock:lock`:
 
    ```bash
-   npm run lock:health -- --cadence <cadence>
+   <script_prefix> lock:health -- --cadence <cadence>
    ```
 
    - Escape hatch: set `SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT=1` to skip this check for local/offline workflows.
@@ -121,6 +131,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    Selection algorithm (MUST be followed exactly):
 
    - Roster source: `src/prompts/roster.json` and the key matching `<cadence>`.
+   - Resolve that source path as `<path_prefix>src/prompts/roster.json`.
    - Let `roster` be that ordered array and `excluded` be the set from step 2's canonical exclusion rule.
    - Let `latest_file` be the lexicographically last filename in `<log_dir>`.
    - Determine `previous_agent` from `latest_file` using this precedence:
@@ -129,6 +140,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - If no valid `latest_file` exists, or parsing fails, or `previous_agent` is not in `roster`, treat as first run fallback.
    - First run fallback:
      - Read `scheduler.firstPromptByCadence.<cadence>` from `torch-config.json` if present.
+     - In host-repo mode, resolve this as `<path_prefix>torch-config.json`.
      - If that agent exists in `roster`, set `start_index = index(configured_agent)`.
      - Otherwise set `start_index = 0`.
    - Otherwise: `start_index = (index(previous_agent in roster) + 1) mod len(roster)`.
@@ -163,7 +175,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
    ```bash
    AGENT_PLATFORM=<platform> \
-   npm run lock:lock -- --agent <agent-name> --cadence <cadence>
+   <script_prefix> lock:lock -- --agent <agent-name> --cadence <cadence>
    ```
 
    - Exit `0`: lock acquired, continue.
@@ -179,7 +191,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
      - `lock_stderr_excerpt` (redacted stderr snippet)
      - `lock_stdout_excerpt` (redacted stdout snippet)
      - Include `failure_class: backend_unavailable` and `failure_category: lock_backend_error` for both deferred and failed backend-unavailable lock outcomes.
-    - Include recommended auto-remediation text in `detail`: retry window, `npm run lock:health -- --cadence <cadence>`, and incident runbook link.
+    - Include recommended auto-remediation text in `detail`: retry window, `<script_prefix> lock:health -- --cadence <cadence>`, and incident runbook link.
    - Keep generic reason text for compatibility, but append actionable retry guidance in `detail` using the command from `lock_command`.
 
 9. Execute `<prompt_dir>/<prompt-file>` end-to-end via configured handoff command.
@@ -217,7 +229,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
     - Scheduler runs `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes`.
     - If artifact verification exits non-zero: write `_failed.md` and stop.
 
-12. Run repository checks (for example: `npm run lint`).
+12. Run repository checks (for example: `<script_prefix> lint`).
 
     - If any validation command exits non-zero: **fail the run immediately**, write `_failed.md` with the failing command and reason, and stop.
     - step 12 MUST NOT be executed (`lock:complete` is forbidden until validation passes).
@@ -227,13 +239,13 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
     ```bash
     AGENT_PLATFORM=<platform> \
-    npm run lock:complete -- --agent <agent-name> --cadence <cadence>
+    <script_prefix> lock:complete -- --agent <agent-name> --cadence <cadence>
     ```
 
     (Equivalent invocation is allowed: `torch-lock complete --agent <agent-name> --cadence <cadence>`.)
 
     - Exit `0`: completion published successfully; continue to step 14.
-    - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry npm run lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
+    - Exit non-zero: **fail the run**, write `_failed.md` with a clear reason that completion publish failed and retry guidance (for example: `Retry <script_prefix> lock:complete -- --agent <agent-name> --cadence <cadence> after verifying relay connectivity`), then stop.
 
 14. Create final task log only after step 13 succeeds (scheduler-owned):
 
@@ -260,19 +272,19 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
 
 Worked post-task example (MUST order):
 
-1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
-2. Execute `src/prompts/daily/content-audit-agent.md`
+1. `AGENT_PLATFORM=codex <script_prefix> lock:lock -- --agent content-audit-agent --cadence daily`
+2. Execute `<path_prefix>src/prompts/daily/content-audit-agent.md`
 3. `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes`
-4. `AGENT_PLATFORM=codex npm run lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
-5. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
+4. `AGENT_PLATFORM=codex <script_prefix> lock:complete -- --agent content-audit-agent --cadence daily` (complete, permanent)
+5. Write `<path_prefix>task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__completed.md`
 6. Print final summary (Status: Success, Learnings: <content>)
 
 Worked validation-failure example (MUST behavior):
 
-1. `AGENT_PLATFORM=codex npm run lock:lock -- --agent content-audit-agent --cadence daily`
-2. Execute `src/prompts/daily/content-audit-agent.md`
+1. `AGENT_PLATFORM=codex <script_prefix> lock:lock -- --agent content-audit-agent --cadence daily`
+2. Execute `<path_prefix>src/prompts/daily/content-audit-agent.md`
 3. `node scripts/agent/verify-run-artifacts.mjs --since <run-start-iso> --check-failure-notes` passes
-4. `npm run lint` exits non-zero (or `npm test` exits non-zero)
-5. Write `task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__failed.md` with the failing command and reason
-6. Stop the run **without** calling `npm run lock:complete -- --agent content-audit-agent --cadence daily`
+4. `<script_prefix> lint` exits non-zero (or `<script_prefix> test` exits non-zero)
+5. Write `<path_prefix>task-logs/daily/2026-02-14T10-00-00Z__content-audit-agent__failed.md` with the failing command and reason
+6. Stop the run **without** calling `<script_prefix> lock:complete -- --agent content-audit-agent --cadence daily`
 7. Print final summary (Status: Failed, Reason: <reason>)
