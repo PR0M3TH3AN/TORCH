@@ -193,3 +193,37 @@ test('cmdInit creates torch-config.json with random namespace', async () => {
     'weekly handoff command should be configured for host installs',
   );
 });
+
+test('cmdInit upserts TORCH memory integration into existing AGENTS.md and CLAUDE.md', async () => {
+  const projectRoot = path.join(tempBase, 'project_memory_hook_init');
+  fs.mkdirSync(projectRoot, { recursive: true });
+
+  const agentsPath = path.join(projectRoot, 'AGENTS.md');
+  const claudePath = path.join(projectRoot, 'CLAUDE.md');
+  fs.writeFileSync(agentsPath, '# Team Policy\n\nKeep tests strict.\n', 'utf8');
+  fs.writeFileSync(claudePath, '# Local Guidance\n\nFollow repo conventions.\n', 'utf8');
+
+  await cmdInit(false, projectRoot, MOCK_CONFIG);
+
+  const agentsContent = fs.readFileSync(agentsPath, 'utf8');
+  const claudeContent = fs.readFileSync(claudePath, 'utf8');
+  assert.ok(agentsContent.includes('## TORCH Memory Integration'), 'AGENTS.md should include memory heading');
+  assert.ok(claudeContent.includes('## TORCH Memory Integration'), 'CLAUDE.md should include memory heading');
+  assert.ok(agentsContent.includes('Keep tests strict.'), 'AGENTS.md existing content should be preserved');
+  assert.ok(claudeContent.includes('Follow repo conventions.'), 'CLAUDE.md existing content should be preserved');
+});
+
+test('cmdUpdate keeps TORCH memory integration idempotent', async () => {
+  const projectRoot = path.join(tempBase, 'project_memory_hook_update');
+  fs.mkdirSync(projectRoot, { recursive: true });
+
+  const agentsPath = path.join(projectRoot, 'AGENTS.md');
+  fs.writeFileSync(agentsPath, '# Agent Rules\n', 'utf8');
+
+  await cmdInit(false, projectRoot, MOCK_CONFIG);
+  await cmdUpdate(false, projectRoot);
+
+  const agentsContent = fs.readFileSync(agentsPath, 'utf8');
+  const headingMatches = agentsContent.match(/## TORCH Memory Integration/g) ?? [];
+  assert.strictEqual(headingMatches.length, 1, 'Memory integration block should not be duplicated');
+});
