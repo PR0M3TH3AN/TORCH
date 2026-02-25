@@ -17,7 +17,7 @@ export function parseArgs(argv) {
     dryRun: false,
     force: false,
     port: DEFAULT_DASHBOARD_PORT,
-    host: null,
+    host: undefined,
     logDir: 'task-logs',
     ignoreLogs: false,
     id: null,

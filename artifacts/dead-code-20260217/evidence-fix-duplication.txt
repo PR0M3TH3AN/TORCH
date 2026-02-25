@@ -1,3 +1,0 @@
-Candidate: scripts/fix-duplication.mjs
-Evidence: grep -r 'fix-duplication' . returned only the file itself.
-Rationale: Standalone script, not imported, seems one-off.

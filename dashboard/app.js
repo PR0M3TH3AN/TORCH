@@ -559,6 +559,18 @@ function createLockCard(lock, now) {
   return card;
 }
 
+let renderPending = false;
+function scheduleRender() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => {
+    renderPending = false;
+    if (isAlive() && !document.hidden) {
+      renderLocks();
+    }
+  });
+}
+
 function renderLocks() {
   if (!isAlive()) return;
 
@@ -709,12 +721,12 @@ function connectToRelay(url) {
       }
 
       appendRawLog(event);
-      renderLocks();
+      scheduleRender();
     }
 
     // NIP-01: ["EOSE", subId] — end of stored events
     if (data[0] === 'EOSE') {
-      renderLocks();
+      scheduleRender();
     }
   });
 

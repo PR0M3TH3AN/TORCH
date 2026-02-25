@@ -26,6 +26,30 @@
       "daily": "scheduler-update-agent",
       "weekly": "bug-reproducer-agent"
     },
+    "handoffCommandByCadence": {
+      "daily": "node torch/scripts/agent/run-selected-prompt.mjs",
+      "weekly": "node torch/scripts/agent/run-selected-prompt.mjs"
+    },
+    "handoffPolicyByCadence": {
+      "daily": {
+        "maxAttempts": 2,
+        "retryBackoffMs": 1000,
+        "retryOnPatterns": [
+          "stream disconnected",
+          "timeout",
+          "temporarily unavailable"
+        ],
+        "fallbackPlatform": "linux"
+      },
+      "weekly": {
+        "maxAttempts": 2,
+        "retryBackoffMs": 1000
+      }
+    },
+    "runnerHealthCommandByCadence": {
+      "daily": "command -v codex >/dev/null 2>&1",
+      "weekly": "command -v codex >/dev/null 2>&1"
+    },
     "memoryPolicyByCadence": {
       "daily": {
         "mode": "required",
@@ -38,10 +62,12 @@
           "MEMORY_STORED"
         ],
         "retrieveArtifacts": [
-          ".scheduler-memory/latest/daily/retrieve.ok"
+          ".scheduler-memory/latest/daily/retrieve.ok",
+          ".scheduler-memory/latest/daily/retrieve.json"
         ],
         "storeArtifacts": [
-          ".scheduler-memory/latest/daily/store.ok"
+          ".scheduler-memory/latest/daily/store.ok",
+          ".scheduler-memory/latest/daily/store.json"
         ]
       },
       "weekly": {
@@ -55,10 +81,12 @@
           "MEMORY_STORED"
         ],
         "retrieveArtifacts": [
-          ".scheduler-memory/latest/weekly/retrieve.ok"
+          ".scheduler-memory/latest/weekly/retrieve.ok",
+          ".scheduler-memory/latest/weekly/retrieve.json"
         ],
         "storeArtifacts": [
-          ".scheduler-memory/latest/weekly/store.ok"
+          ".scheduler-memory/latest/weekly/store.ok",
+          ".scheduler-memory/latest/weekly/store.json"
         ]
       }
     },

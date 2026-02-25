@@ -1,6 +1,0 @@
-{
-  "target": "parseLockEvent",
-  "seed": 12345,
-  "iterations": 10000,
-  "failures": []
-}

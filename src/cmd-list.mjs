@@ -2,26 +2,36 @@ import {
   getRelays as _getRelays,
   getNamespace as _getNamespace,
 } from './torch-config.mjs';
+import {
+  VALID_CADENCES,
+} from './constants.mjs';
+import { todayDateStr, nowUnix } from './utils.mjs';
 import { getRoster as _getRoster } from './roster.mjs';
 import { queryLocks as _queryLocks } from './lock-ops.mjs';
-import { todayDateStr as _todayDateStr, nowUnix as _nowUnix } from './utils.mjs';
 
+/**
+ * Lists all active locks for the specified cadence (or all cadences if null).
+ * It prints a formatted table to stdout with lock age, TTL, and event ID.
+ *
+ * @param {string|null} cadence - Filter by cadence ('daily', 'weekly') or null for all
+ * @param {Object} [deps] - Dependency injection
+ * @returns {Promise<void>}
+ */
 export async function cmdList(cadence, deps = {}) {
   const {
-      getRelays = _getRelays,
-      getNamespace = _getNamespace,
-      getRoster = _getRoster,
-      queryLocks = _queryLocks,
-      todayDateStr = _todayDateStr,
-      nowUnix = _nowUnix,
-      log = console.log,
-      error = console.error,
+    getRelays = _getRelays,
+    getNamespace = _getNamespace,
+    queryLocks = _queryLocks,
+    getRoster = _getRoster,
+    getDateStr = todayDateStr,
+    log = console.log,
+    error = console.error
   } = deps;
 
   const relays = await getRelays();
   const namespace = await getNamespace();
-  const dateStr = todayDateStr();
-  const cadences = cadence ? [cadence] : ['daily', 'weekly'];
+  const dateStr = getDateStr();
+  const cadences = cadence ? [cadence] : [...VALID_CADENCES];
 
   error(`Listing active locks: namespace=${namespace}, cadences=${cadences.join(', ')}`);
 
@@ -46,13 +56,19 @@ export async function cmdList(cadence, deps = {}) {
     for (const lock of sorted) {
       const age = nowUnix() - lock.createdAt;
       const ageMin = Math.round(age / 60);
-      const remaining = lock.expiresAt ? lock.expiresAt - nowUnix() : null;
-      const remainMin = remaining ? Math.round(remaining / 60) : '?';
+
+      let remainMin = '?';
+      if (lock.status === 'completed') {
+          remainMin = 'done';
+      } else if (lock.expiresAt) {
+          const remaining = lock.expiresAt - nowUnix();
+          remainMin = Math.round(remaining / 60);
+      }
 
       log(
         `  ${(lock.agent ?? 'unknown').padEnd(30)} ` +
           `age: ${String(ageMin).padStart(4)}m  ` +
-          `ttl: ${String(remainMin).padStart(4)}m  ` +
+          `ttl: ${String(remainMin).padStart(4)}  ` +
           `platform: ${lock.platform ?? '?'}  ` +
           `event: ${lock.eventId?.slice(0, 12)}...`,
       );
