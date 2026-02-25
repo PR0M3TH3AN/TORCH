@@ -151,5 +151,5 @@ grep '"torch:' package.json
 If you want to re-install TORCH later:
 
 ```bash
-npm install https://github.com/PR0M3TH3AN/TORCH/archive/refs/heads/main.tar.gz && npx torch-lock init
+npm install https://github.com/PR0M3TH3AN/TORCH/archive/<commit-sha>.tar.gz --force && npx torch-lock init
 ```
