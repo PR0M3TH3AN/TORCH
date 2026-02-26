@@ -85,9 +85,16 @@ function getPaths(root, installDirName) {
  * @param {string} dest - Destination directory path.
  */
 function copyDir(src, dest) {
-    if (fs.existsSync(src)) {
-        fs.cpSync(src, dest, { recursive: true });
+    if (!fs.existsSync(src)) return false;
+
+    const normalizedSrc = path.resolve(src);
+    const normalizedDest = path.resolve(dest);
+    if (normalizedSrc === normalizedDest) {
+      return false;
     }
+
+    fs.cpSync(src, dest, { recursive: true });
+    return true;
 }
 
 /**
@@ -149,8 +156,12 @@ function syncAppDirectories(torchDir, verb = 'Copied') {
     const src = path.join(PKG_ROOT, dir);
     const dest = path.join(torchDir, dir);
     if (fs.existsSync(src)) {
-      copyDir(src, dest);
-      console.log(`  ${verb} ${dir}/`);
+      const copied = copyDir(src, dest);
+      if (copied) {
+        console.log(`  ${verb} ${dir}/`);
+      } else {
+        console.log(`  Skipped ${dir}/ (source and destination are identical)`);
+      }
     }
   }
 }
@@ -177,6 +188,11 @@ function syncAppFiles(torchDir, installDir, verb = 'Copied') {
           console.log('  Skipping package.json update (installed in root).');
           continue;
         }
+      }
+
+      if (path.resolve(src) === path.resolve(dest)) {
+        console.log(`  Skipped ${file} (source and destination are identical)`);
+        continue;
       }
 
       fs.copyFileSync(src, dest);

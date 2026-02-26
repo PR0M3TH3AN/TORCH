@@ -2,6 +2,7 @@ import { test, after } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { WebSocketServer } from 'ws';
@@ -117,6 +118,32 @@ test('cmdUpdate creates backup', async () => {
 
   const backupContent = fs.readdirSync(path.join(backupRoot, backupName));
   assert.ok(backupContent.includes('roster.json'), 'Backup contains roster.json');
+});
+
+test('cmdUpdate succeeds when running from package root install (src and dest identical)', async () => {
+  const fixtureRoot = path.join(tempBase, 'project_self_root');
+  fs.mkdirSync(fixtureRoot, { recursive: true });
+
+  const dirsToCopy = ['src', 'bin', 'dashboard', 'landing', 'assets', 'scripts'];
+  const filesToCopy = ['package.json', 'build.mjs', 'README.md', 'torch-config.example.json', 'TORCH.md', 'eslint.config.mjs'];
+
+  for (const dir of dirsToCopy) {
+    fs.cpSync(path.join(process.cwd(), dir), path.join(fixtureRoot, dir), { recursive: true });
+  }
+  for (const file of filesToCopy) {
+    fs.copyFileSync(path.join(process.cwd(), file), path.join(fixtureRoot, file));
+  }
+
+  const moduleUrl = pathToFileURL(path.join(fixtureRoot, 'src', 'ops.mjs'));
+  const { cmdUpdate: fixtureCmdUpdate } = await import(moduleUrl.href);
+
+  await assert.doesNotReject(async () => {
+    await fixtureCmdUpdate(true, fixtureRoot);
+  }, 'update should not fail when package root is install target');
+
+  const backupRoot = path.join(fixtureRoot, '_backups');
+  assert.ok(fs.existsSync(backupRoot), '_backups directory created for package-root update');
+  assert.ok(fs.readdirSync(backupRoot).length > 0, 'backup entry created for package-root update');
 });
 
 test('torch-lock check respects local roster', async () => {
