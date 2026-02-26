@@ -193,7 +193,7 @@ ok 11 - cmdList
 # ● From torch-config.json:
 #   - Hashtag: test-namespace-agent-lock
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # The following TORCH artifacts will be removed:
 #   - torch/  (TORCH install directory)
 #   - torch-config.json
@@ -241,7 +241,7 @@ ok 11 - cmdList
 #   - Hashtag: test-namespace-agent-lock
 #   - Namespace: test-namespace
 # No package.json found in host root. Skipping script injection.
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # The following TORCH artifacts will be removed:
 #   - torch/  (TORCH install directory)
 #   - torch-config.json
@@ -292,7 +292,7 @@ ok 11 - cmdList
 # ● From torch-config.json:
 #   - Hashtag: test-namespace-agent-lock
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # No package.json found in host root. Skipping script injection.
 # The following TORCH artifacts will be removed:
 #   - torch/  (TORCH install directory)
@@ -347,7 +347,7 @@ ok 11 - cmdList
 # ● From torch-config.json:
 #   - Hashtag: test-namespace-agent-lock
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # The following TORCH artifacts will be removed:
 #   - torch/  (TORCH install directory)
 #   - torch-config.json
@@ -402,7 +402,7 @@ ok 11 - cmdList
 # ● From torch-config.json:
 #   - Hashtag: test-namespace-agent-lock
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # No package.json found in host root. Skipping script injection.
 # The following TORCH artifacts will be removed:
 #   - torch/  (TORCH install directory)
@@ -440,7 +440,7 @@ ok 11 - cmdList
 # ● From torch-config.json:
 #   - Hashtag: test-namespace-agent-lock
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-namespace-agent-lock&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # No package.json found in host root. Skipping script injection.
 # The following TORCH artifacts will be removed:
 #   - torch/  (TORCH install directory)
@@ -1050,7 +1050,7 @@ ok 35 - SCN-rollback-hash: rollbackPrompt --strategy <fragment> restores matchin
 # ● From torch-config.json:
 #   - Hashtag: ns-agent-lock
 #   - Namespace: ns
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
+# https://www.torchagent.ai/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
 # Initializing torch in /app/test_validation_env...
 # Copying application directories...
 #   Copied src/
@@ -1081,7 +1081,7 @@ ok 35 - SCN-rollback-hash: rollbackPrompt --strategy <fragment> restores matchin
 # ● From torch-config.json:
 #   - Hashtag: ns-agent-lock
 #   - Namespace: ns
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
+# https://www.torchagent.ai/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
 # Initializing torch in /app/test_validation_env/path/to/torch...
 # Copying application directories...
 #   Copied src/
@@ -1118,7 +1118,7 @@ ok 35 - SCN-rollback-hash: rollbackPrompt --strategy <fragment> restores matchin
 # ● From torch-config.json:
 #   - Hashtag: ns-agent-lock
 #   - Namespace: ns
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
+# https://www.torchagent.ai/dashboard/?hashtag=ns-agent-lock&namespace=ns&relays=
 # Subtest: cmdInit should validate install directory name
     # Subtest: should reject directory with semicolon
     ok 1 - should reject directory with semicolon
@@ -2169,7 +2169,7 @@ ok 120 - CLI Smoke Test
 # ● From torch-config.json:
 #   - Hashtag: test-hash
 #   - Namespace: test-ns
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hash&namespace=test-ns&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hash&namespace=test-ns&relays=wss%3A%2F%2Frelay.damus.io
 # Initializing torch in /app/test-gitignore-existing-VGMykL/torch...
 # Copying application directories...
 #   Copied src/
@@ -2200,7 +2200,7 @@ ok 120 - CLI Smoke Test
 # ● From torch-config.json:
 #   - Hashtag: test-hash
 #   - Namespace: test-ns
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hash&namespace=test-ns&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hash&namespace=test-ns&relays=wss%3A%2F%2Frelay.damus.io
 # Subtest: ops.mjs: cmdInit creates .gitignore with node_modules
 ok 121 - ops.mjs: cmdInit creates .gitignore with node_modules
   ---
@@ -2243,7 +2243,7 @@ ok 122 - ops.mjs: cmdInit appends to existing .gitignore
 # ● From torch-config.json:
 #   - Hashtag: test-hashtag
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # Initializing torch in /app/test-ops-ipeamR/project2/torch...
 # Initializing torch in /app/test-ops-ipeamR/project3/torch...
 # Copying application directories...
@@ -2275,7 +2275,7 @@ ok 122 - ops.mjs: cmdInit appends to existing .gitignore
 # ● From torch-config.json:
 #   - Hashtag: test-hashtag
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # Updating torch configuration in /app/test-ops-ipeamR/project3/torch...
 # Creating backup at torch/_backups/backup_2026-02-25T01-11-03-793Z...
 # Updating application directories...
@@ -2331,7 +2331,7 @@ ok 122 - ops.mjs: cmdInit appends to existing .gitignore
 # ● From torch-config.json:
 #   - Hashtag: test-hashtag
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # Updating torch configuration in /app/test-ops-ipeamR/project4/torch...
 # Creating backup at torch/_backups/backup_2026-02-25T01-11-04-053Z...
 # Updating application directories...
@@ -2387,7 +2387,7 @@ ok 122 - ops.mjs: cmdInit appends to existing .gitignore
 #   - Hashtag: test-hashtag
 # No package.json found in host root. Skipping script injection.
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # Updating torch configuration in /app/test-ops-ipeamR/project5/torch...
 # Creating backup at torch/_backups/backup_2026-02-25T01-11-04-271Z...
 # Updating application directories...
@@ -2442,7 +2442,7 @@ ok 122 - ops.mjs: cmdInit appends to existing .gitignore
 # ● From torch-config.json:
 #   - Hashtag: test-hashtag
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=ws%3A%2F%2F127.0.0.1%3A45047
+# https://www.torchagent.ai/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=ws%3A%2F%2F127.0.0.1%3A45047
 # No package.json found in host root. Skipping script injection.
 # Subtest: cmdInit creates directory structure and files
 ok 123 - cmdInit creates directory structure and files
@@ -2504,7 +2504,7 @@ ok 127 - cmdUpdate creates backup
 # ● From torch-config.json:
 #   - Hashtag: test-hashtag
 #   - Namespace: test-namespace
-# https://torch.thepr0m3th3an.net/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
+# https://www.torchagent.ai/dashboard/?hashtag=test-hashtag&namespace=test-namespace&relays=wss%3A%2F%2Frelay.damus.io
 # Subtest: torch-lock check respects local roster
 ok 128 - torch-lock check respects local roster
   ---
