@@ -1,0 +1,166 @@
+--- /usr/lib/goose/resources/bin/node-setup-common.sh	2025-10-28 11:13:27.000000000 -0400
++++ /home/user/.local/goose-fix/bin/node-setup-common.sh	2026-02-15 13:17:19.900379075 -0500
+@@ -2,68 +2,107 @@
+ 
+ # Common setup script for node and npx
+ # This script sets up hermit and node.js environment
++#
++# PATCHED: Fixes "text file busy" (ETXTBSY) during hermit init.
++# Root cause: `hermit init` overwrites its own binary (replaces the ~20MB ELF
++# with a ~1.5KB shell stub). On Linux, you cannot write to a binary that is
++# currently being executed, so `hermit init` fails with ETXTBSY when the
++# downloaded hermit binary is the one running the init command.
++#
++# Fix: Copy the hermit binary to a temp location, run init from the copy
++# (so the executing binary differs from the write target), then clean up.
++# Also adds flock to prevent concurrent downloads.
++#
++# See: docs/agent-handoffs/incidents/2026-02-15-hermit-text-file-busy.md
+ 
+-# Enable strict mode to exit on errors and unset variables
+ set -euo pipefail
+ 
+-# Set log file
+ LOG_FILE="/tmp/mcp.log"
+-
+-# Clear the log file at the start
+ > "$LOG_FILE"
+ 
+-# Function for logging
+ log() {
+     local MESSAGE="$1"
+     echo "$(date +'%Y-%m-%d %H:%M:%S') - $MESSAGE" | tee -a "$LOG_FILE" >&2
+ }
+ 
+-# Trap errors and log them before exiting
+ trap 'log "An error occurred. Exiting with status $?."' ERR
+ 
+-log "Starting node setup (common)."
++log "Starting node setup (common) [patched]."
+ 
+-# Ensure ~/.config/goose/mcp-hermit/bin exists
+-log "Creating directory ~/.config/goose/mcp-hermit/bin if it does not exist."
+ mkdir -p ~/.config/goose/mcp-hermit/bin
+-
+-# Change to the ~/.config/goose/mcp-hermit directory
++# Save the original working directory — hermit init requires cd but we must
++# restore it so that the caller's relative paths still work.
++_GOOSE_ORIG_CWD="$(pwd)"
+ log "Changing to directory ~/.config/goose/mcp-hermit."
+ cd ~/.config/goose/mcp-hermit
+ 
++# ── Hermit install with flock + atomic write + copy-for-init ──────────
++HERMIT_BIN=~/.config/goose/mcp-hermit/bin/hermit
++HERMIT_LOCK=~/.config/goose/mcp-hermit/install.lock
++
++# Acquire an exclusive file lock so concurrent node/npx invocations
++# do not race to download or init hermit simultaneously.
++exec 9>"$HERMIT_LOCK"
++if ! flock -w 30 9; then
++    log "WARNING: Could not acquire hermit install lock within 30s; proceeding anyway."
++fi
++
++NEEDS_INIT=0
+ 
+-# Check if hermit binary exists and download if not
+-if [ ! -f ~/.config/goose/mcp-hermit/bin/hermit ]; then
+-    log "Hermit binary not found. Downloading hermit binary."
++if [ ! -f "$HERMIT_BIN" ]; then
++    log "Hermit binary not found. Downloading hermit binary (atomic)."
++    HERMIT_TMP=$(mktemp ~/.config/goose/mcp-hermit/bin/.hermit-download.XXXXXX)
+     curl -fsSL "https://github.com/cashapp/hermit/releases/download/stable/hermit-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').gz" \
+-        | gzip -dc > ~/.config/goose/mcp-hermit/bin/hermit && chmod +x ~/.config/goose/mcp-hermit/bin/hermit
+-    log "Hermit binary downloaded and made executable."
++        | gzip -dc > "$HERMIT_TMP"
++    chmod +x "$HERMIT_TMP"
++    mv -f "$HERMIT_TMP" "$HERMIT_BIN"
++    sync
++    log "Hermit binary downloaded and made executable (atomic)."
++    NEEDS_INIT=1
++elif file "$HERMIT_BIN" 2>/dev/null | grep -q "ELF"; then
++    # Binary exists but is still the full ELF (init hasn't run yet)
++    log "Hermit binary exists but is uninitialized ELF. Will run init."
++    NEEDS_INIT=1
++fi
++
++if [ "$NEEDS_INIT" -eq 1 ]; then
++    log "Initializing hermit (copy-for-init to avoid ETXTBSY)."
++    # hermit init overwrites its own binary, which fails with ETXTBSY
++    # if the running binary IS the binary being overwritten.
++    # Fix: copy to temp location, run init from the copy.
++    HERMIT_INIT_COPY=$(mktemp /tmp/.hermit-init-copy.XXXXXX)
++    cp "$HERMIT_BIN" "$HERMIT_INIT_COPY"
++    chmod +x "$HERMIT_INIT_COPY"
++
++    if "$HERMIT_INIT_COPY" init >> "$LOG_FILE" 2>&1; then
++        log "hermit init succeeded (via copy)."
++    else
++        log "ERROR: hermit init failed even with copy-for-init. Check $LOG_FILE for details."
++        rm -f "$HERMIT_INIT_COPY"
++        flock -u 9
++        exit 1
++    fi
++    rm -f "$HERMIT_INIT_COPY"
+ else
+-    log "Hermit binary already exists. Skipping download."
++    log "Hermit already initialized. Skipping init."
+ fi
+ 
++# Release the install lock
++flock -u 9
+ 
+ log "setting hermit cache to be local for MCP servers"
+ mkdir -p ~/.config/goose/mcp-hermit/cache
+ export HERMIT_STATE_DIR=~/.config/goose/mcp-hermit/cache
+ 
+-
+-# Update PATH
+ export PATH=~/.config/goose/mcp-hermit/bin:$PATH
+ log "Updated PATH to include ~/.config/goose/mcp-hermit/bin."
+ 
+-
+-# Verify hermit installation
+ log "Checking for hermit in PATH."
+ which hermit >> "$LOG_FILE"
+ 
+-# Initialize hermit
+-log "Initializing hermit."
+-hermit init >> "$LOG_FILE"
+-
+ # Install Node.js using hermit
+ log "Installing Node.js with hermit."
+-hermit install node >> "$LOG_FILE"
++hermit install node >> "$LOG_FILE" 2>&1
+ 
+ # Verify installations
+ log "Verifying installation locations:"
+@@ -71,15 +110,12 @@
+ log "node: $(which node)"
+ log "npx: $(which npx)"
+ 
+-
+ log "Checking for GOOSE_NPM_REGISTRY and GOOSE_NPM_CERT environment variables for custom npm registry setup..."
+-# Check if GOOSE_NPM_REGISTRY is set and accessible
+ if [ -n "${GOOSE_NPM_REGISTRY:-}" ] && curl -s --head --fail "$GOOSE_NPM_REGISTRY" > /dev/null; then
+     log "Checking custom goose registry availability: $GOOSE_NPM_REGISTRY"
+     log "$GOOSE_NPM_REGISTRY is accessible. Using it for npm registry."
+     export NPM_CONFIG_REGISTRY="$GOOSE_NPM_REGISTRY"
+ 
+-    # Check if GOOSE_NPM_CERT is set and accessible
+     if [ -n "${GOOSE_NPM_CERT:-}" ] && curl -s --head --fail "$GOOSE_NPM_CERT" > /dev/null; then
+         log "Downloading certificate from: $GOOSE_NPM_CERT"
+         curl -sSL -o ~/.config/goose/mcp-hermit/cert.pem "$GOOSE_NPM_CERT"
+@@ -92,10 +128,12 @@
+     else
+         log "GOOSE_NPM_CERT is either not set or not accessible. Skipping certificate setup."
+     fi
+-
+ else
+     log "GOOSE_NPM_REGISTRY is either not set or not accessible. Falling back to default npm registry."
+     export NPM_CONFIG_REGISTRY="https://registry.npmjs.org/"
+ fi
+ 
++# Restore the original working directory so callers' relative paths work
++cd "$_GOOSE_ORIG_CWD"
++
+ log "Node setup (common) completed successfully."

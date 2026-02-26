@@ -1,0 +1,62 @@
+{
+  "nostrLock": {
+    "namespace": "torch",
+    "relays": [
+      "wss://relay.damus.io",
+      "wss://nos.lol",
+      "wss://relay.primal.net"
+    ],
+    "ttlSeconds": 7200,
+    "queryTimeoutMs": 15000
+  },
+  "dashboard": {
+    "defaultCadenceView": "all",
+    "defaultStatusView": "all"
+  },
+  "scheduler": {
+    "firstPromptByCadence": {
+      "daily": "scheduler-update-agent",
+      "weekly": "bug-reproducer-agent"
+    },
+    "handoffCommandByCadence": {
+      "daily": "node scripts/agent/run-selected-prompt.mjs",
+      "weekly": "node scripts/agent/run-selected-prompt.mjs"
+    },
+    "memoryPolicyByCadence": {
+      "daily": {
+        "mode": "required",
+        "retrieveCommand": "node scripts/memory/retrieve.mjs",
+        "storeCommand": "node scripts/memory/store.mjs",
+        "retrieveSuccessMarkers": [
+          "MEMORY_RETRIEVED"
+        ],
+        "storeSuccessMarkers": [
+          "MEMORY_STORED"
+        ],
+        "retrieveArtifacts": [
+          ".scheduler-memory/latest/daily/retrieve.ok"
+        ],
+        "storeArtifacts": [
+          ".scheduler-memory/latest/daily/store.ok"
+        ]
+      },
+      "weekly": {
+        "mode": "required",
+        "retrieveCommand": "node scripts/memory/retrieve.mjs",
+        "storeCommand": "node scripts/memory/store.mjs",
+        "retrieveSuccessMarkers": [
+          "MEMORY_RETRIEVED"
+        ],
+        "storeSuccessMarkers": [
+          "MEMORY_STORED"
+        ],
+        "retrieveArtifacts": [
+          ".scheduler-memory/latest/weekly/retrieve.ok"
+        ],
+        "storeArtifacts": [
+          ".scheduler-memory/latest/weekly/store.ok"
+        ]
+      }
+    }
+  }
+}
