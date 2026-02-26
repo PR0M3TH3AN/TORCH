@@ -565,6 +565,14 @@
             transform: translateY(0);
         }
 
+        /* Keep critical sections visible on mobile even if reveal observer is unreliable. */
+        @media (max-width: 768px) {
+            .scroll-reveal {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
         /* Core Capabilities Section */
         .core-capabilities {
             max-width: 1200px;
