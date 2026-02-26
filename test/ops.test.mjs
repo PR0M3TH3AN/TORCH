@@ -46,7 +46,7 @@ test('cmdInit creates directory structure and files', async () => {
   const dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
   assert.ok(dashboardContent.includes('test-hashtag'), 'Dashboard content contains hashtag');
   assert.ok(dashboardContent.includes('test-namespace'), 'Dashboard content contains namespace');
-  assert.ok(dashboardContent.includes('https://torch.thepr0m3th3an.net/dashboard/'), 'Dashboard content contains link');
+  assert.ok(dashboardContent.includes('https://www.torchagent.ai/dashboard/'), 'Dashboard content contains link');
 });
 
 test('cmdInit fails if directory exists without force', async () => {

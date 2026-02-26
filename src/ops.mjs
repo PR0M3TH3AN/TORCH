@@ -603,7 +603,7 @@ export async function cmdInit(force = false, cwd = process.cwd(), mockAnswers = 
  * @returns {string} - The generated URL.
  */
 function createDashboardLinkFile(paths, namespace, relays, hashtag) {
-  const dashboardUrl = `https://torch.thepr0m3th3an.net/dashboard/?hashtag=${hashtag}`;
+  const dashboardUrl = `https://www.torchagent.ai/dashboard/?hashtag=${hashtag}`;
 
   const content = `# TORCH Dashboard
 
