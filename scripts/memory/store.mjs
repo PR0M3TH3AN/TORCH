@@ -35,9 +35,7 @@ const cliArgs = process.argv.slice(2);
 const fileArgIndex = cliArgs.indexOf('--file');
 const explicitFile = fileArgIndex !== -1 ? cliArgs[fileArgIndex + 1] : null;
 const envFile = process.env.SCHEDULER_MEMORY_FILE;
-const defaultFile = 'memory-update.md';
-
-const targetFile = explicitFile || (envFile && existsSync(envFile) ? envFile : (existsSync(defaultFile) ? defaultFile : null));
+const targetFile = explicitFile || (envFile && existsSync(envFile) ? envFile : null);
 
 if (targetFile) {
     try {
@@ -71,7 +69,7 @@ if (memoryContent) {
 } else {
     // No memory file found — skip ingest rather than storing meaningless placeholder events.
     // Placeholder events pollute the store and degrade retrieval quality on future runs.
-    console.warn(`No memory input found (checked --file, env SCHEDULER_MEMORY_FILE=${envFile}, and default ${defaultFile}). Skipping ingest.`);
+    console.warn(`No memory input found (checked --file and env SCHEDULER_MEMORY_FILE=${envFile}). Skipping ingest.`);
 }
 
 try {

@@ -57,7 +57,7 @@ Every agent prompt invoked by the schedulers (daily/weekly) MUST enforce this co
    - Write only facts that will help the **same agent** on its **next run**. Skip meta-commentary about the task structure.
    - Run configured memory storage workflow after prompt execution (for example via `scheduler.memoryPolicyByCadence.<cadence>.storeCommand`)
    - Storage command MUST call real memory services (`src/services/memory/index.js#ingestEvents`, which uses ingestor/summarizer pipeline) and MUST emit deterministic marker `MEMORY_STORED`.
-   - Storage command MUST ingest content from the file at `$SCHEDULER_MEMORY_FILE` (or fallback to `memory-update.md` if present).
+  - Storage command MUST ingest content from the file at `$SCHEDULER_MEMORY_FILE`.
    - Storage command MUST write cadence-scoped evidence artifacts:
      - `.scheduler-memory/store-<cadence>.ok`
      - `.scheduler-memory/store-<cadence>.json` containing operation inputs/outputs (`agentId`, input event count, stored count, generated summaries).

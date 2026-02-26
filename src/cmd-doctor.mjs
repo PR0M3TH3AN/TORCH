@@ -4,7 +4,7 @@ import { detectTorchInstallDir } from './cmd-remove.mjs';
 
 const MEMORY_HEADING = '## TORCH Memory Integration';
 const MEMORY_READ_LINE = '`.scheduler-memory/latest/${cadence}/memories.md`';
-const MEMORY_WRITE_LINE = '`memory-update.md`';
+const MEMORY_WRITE_LINE = '`$SCHEDULER_MEMORY_FILE`';
 
 function parseMajorNodeVersion(version) {
   const major = Number.parseInt(String(version).split('.')[0], 10);

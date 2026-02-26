@@ -59,7 +59,7 @@ const MEMORY_INTEGRATION_HEADING = '## TORCH Memory Integration';
 const MEMORY_INTEGRATION_BLOCK = `${MEMORY_INTEGRATION_HEADING}
 You have access to the TORCH memory system.
 1. READ: Check \`.scheduler-memory/latest/\${cadence}/memories.md\` for past learnings.
-2. WRITE: Before exiting, save new insights to \`memory-update.md\` so future runs can learn from this session.`;
+2. WRITE: Before exiting, save new insights to \`$SCHEDULER_MEMORY_FILE\` (for example \`memory-updates/<timestamp>__<agent>.md\`) so future runs can learn from this session.`;
 
 /**
  * Resolves the absolute paths for the installation.

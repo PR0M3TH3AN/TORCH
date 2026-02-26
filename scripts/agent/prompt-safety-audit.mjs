@@ -8,9 +8,13 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 const DAILY_DIR = path.join(ROOT_DIR, 'src/prompts/daily');
 const WEEKLY_DIR = path.join(ROOT_DIR, 'src/prompts/weekly');
 const REPORT_DIR = path.join(ROOT_DIR, 'reports/prompt-safety');
+const MEMORY_DIR = path.join(ROOT_DIR, 'memory-updates');
 
 if (!fs.existsSync(REPORT_DIR)) {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
+}
+if (!fs.existsSync(MEMORY_DIR)) {
+  fs.mkdirSync(MEMORY_DIR, { recursive: true });
 }
 
 const SAFETY_KEYWORDS = [
@@ -96,8 +100,9 @@ function runAudit() {
       memoryContent += `Flagged prompts: ${results.filter(r => r.status === 'NEEDS_REVIEW').map(r => r.filename).join(', ')}\n`;
   }
 
-  fs.writeFileSync(path.join(ROOT_DIR, 'memory-update.md'), memoryContent);
-  console.log('Memory update written to memory-update.md');
+  const memoryFile = path.join(MEMORY_DIR, `${timestamp}__prompt-safety-audit-agent.md`);
+  fs.writeFileSync(memoryFile, memoryContent);
+  console.log(`Memory update written to ${memoryFile}`);
 }
 
 runAudit();

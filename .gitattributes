@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Reduce merge conflicts for append-style memory artifacts.
+memory-updates/*.md merge=union
+.scheduler-memory/latest/daily/memories.md merge=union
+.scheduler-memory/latest/weekly/memories.md merge=union
