@@ -102,3 +102,25 @@ test('fails when failure identifiers are not cross-linked to known issues or inc
   assert.equal(result.code, 1);
   assert.match(result.stderr, /not cross-linked/i);
 });
+
+test('fails when artifact filenames contain Windows-invalid characters', async () => {
+  const root = await setupFixture();
+  await writeArtifacts(root, { includeMetadata: true });
+  await fs.writeFile(path.join(root, 'KNOWN_ISSUES.md'), '_No active issues currently documented._\n', 'utf8');
+
+  const validPath = path.join(root, 'src', 'test_logs', 'TEST_LOG_1.md');
+  const invalidPath = path.join(root, 'src', 'test_logs', 'TEST_LOG_2026-02-15T01:03:31Z.md');
+  const content = await fs.readFile(validPath, 'utf8');
+  await fs.writeFile(invalidPath, content, 'utf8');
+  await fs.unlink(validPath);
+
+  const result = await runVerify(root, [
+    '--agent', 'docs-agent',
+    '--cadence', 'daily',
+    '--prompt-path', 'src/prompts/daily/docs-agent.md',
+  ]);
+
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /invalid filename characters/i);
+  assert.match(result.stderr, /TEST_LOG_2026-02-15T01:03:31Z\.md/);
+});
