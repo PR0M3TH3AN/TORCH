@@ -1,0 +1,9 @@
+{
+  "nostr-tools": {
+    "current": "2.23.1",
+    "wanted": "2.23.1",
+    "latest": "2.23.2",
+    "dependent": "app",
+    "location": "/app/node_modules/nostr-tools"
+  }
+}
