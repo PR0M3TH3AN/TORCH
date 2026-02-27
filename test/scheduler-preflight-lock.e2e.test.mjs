@@ -45,8 +45,12 @@ async function setupFixture({ lockShellBody = ':', schedulerPolicy = {} }) {
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-config.mjs'), path.join(scriptsDir, 'scheduler-config.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-logger.mjs'), path.join(scriptsDir, 'scheduler-logger.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-state.mjs'), path.join(scriptsDir, 'scheduler-state.mjs'));
   await fs.copyFile(path.resolve('src/utils.mjs'), path.join(root, 'src', 'utils.mjs'));
   await fs.copyFile(path.resolve('src/constants.mjs'), path.join(root, 'src', 'constants.mjs'));
+  await fs.copyFile(path.resolve('src/torch-config.mjs'), path.join(root, 'src', 'torch-config.mjs')); // Required by scheduler-config.mjs
   await fs.writeFile(
     path.join(scriptsDir, 'verify-run-artifacts.mjs'),
     '#!/usr/bin/env node\nprocess.exit(0);\n',
