@@ -8,16 +8,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import util from 'node:util';
 
-/*
- * Memory service flow:
- * 1) `ingestEvents` validates/transforms raw events via `ingestMemoryWindow`, persists records, and clears retrieval cache.
- * 2) `getRelevantMemories` applies cached lookup + ranking, updates usage timestamps, emits telemetry/metrics, and caches results.
- * 3) Admin flows (`runPruneCycle`, pin/unpin, merge, list/inspect/stats) mutate or inspect the same backing store.
+/**
+ * @fileoverview Central coordinator for the Agent Memory Service.
  *
- * Key invariants:
- * - `memoryStore` is the process-local source of truth and is asynchronously persisted to `.scheduler-memory/memory-store.json`.
- * - Any mutation that affects retrieval semantics clears the in-memory cache.
- * - Save operations are serialized/coalesced (`currentSavePromise` + `pendingSavePromise`) so concurrent writes do not overlap.
+ * This module orchestrates the core memory operations:
+ * - **Ingestion**: Validating, processing, and persisting new memory events.
+ * - **Retrieval**: Fetching and ranking relevant memories for agent queries.
+ * - **Pruning**: Removing stale, unpinned memories to maintain store health.
+ * - **Persistence**: Managing the in-memory store and its asynchronous serialization to disk.
+ *
+ * Flow Summary:
+ * 1. `ingestEvents`: Transforms raw events -> persisted memory records. Clears cache.
+ * 2. `getRelevantMemories`: Checks cache -> ranks candidates -> updates usage stats -> caches result.
+ * 3. `runPruneCycle`: Identifies stale records -> removes them (if mode='on') -> persists changes.
+ *
+ * Invariants:
+ * - The `memoryStore` Map is the single source of truth for the process.
+ * - Writes to disk are serialized to prevent corruption.
+ * - Retrieval cache is invalidated on any state mutation.
  */
 
 const MEMORY_FILE_PATH = path.join(process.cwd(), '.scheduler-memory', 'memory-store.json');
@@ -38,12 +46,20 @@ function loadMemoryStore() {
   return new Map();
 }
 
+// Serialization queue for file writes
 let currentSavePromise = null;
 let pendingSavePromise = null;
 let pendingSaveResolve = null;
 let lastSaveTime = 0;
 const MIN_SAVE_INTERVAL_MS = 1000;
 
+/**
+ * Performs the actual disk write operation.
+ * Implements a throttle to avoid excessive disk I/O.
+ * Uses atomic rename (write temp -> rename) to ensure data integrity.
+ *
+ * @param {Map} store - The memory store to persist.
+ */
 async function performSave(store) {
   try {
     const now = Date.now();
@@ -63,6 +79,8 @@ async function performSave(store) {
     console.error('Failed to save memory store:', err);
   } finally {
     currentSavePromise = null;
+    // If a save was requested while we were saving, trigger it now.
+    // This coalesces multiple pending saves into a single subsequent write.
     if (pendingSavePromise) {
       const resolve = pendingSaveResolve;
       pendingSavePromise = null;
@@ -72,11 +90,21 @@ async function performSave(store) {
   }
 }
 
+/**
+ * Queues a save operation for the memory store.
+ * Ensures that only one write happens at a time (mutex-like behavior).
+ *
+ * @param {Map} store - The memory store to persist.
+ * @returns {Promise<void>} Resolves when the save corresponding to this request completes.
+ */
 async function saveMemoryStore(store) {
+  // If a save is already pending in the queue, return that promise.
+  // This effectively debounces rapid-fire save requests.
   if (pendingSavePromise) {
     return pendingSavePromise;
   }
 
+  // If a save is currently in progress, queue a new one.
   if (currentSavePromise) {
     pendingSavePromise = new Promise((resolve) => {
       pendingSaveResolve = resolve;
@@ -84,6 +112,7 @@ async function saveMemoryStore(store) {
     return pendingSavePromise;
   }
 
+  // Otherwise, start saving immediately.
   currentSavePromise = performSave(store);
   return currentSavePromise;
 }
@@ -91,6 +120,7 @@ async function saveMemoryStore(store) {
 const memoryStore = loadMemoryStore();
 const cache = createMemoryCache();
 
+// Versioning for internal cache invalidation of the values array
 let storeVersion = 0;
 let cachedMemoriesArray = null;
 let cachedMemoriesVersion = -1;
@@ -116,6 +146,7 @@ const memoryRepository = {
     const updated = { ...existing, last_seen: lastSeen };
     memoryStore.set(id, updated);
     storeVersion++;
+    // Fire-and-forget save for usage updates to avoid blocking retrieval
     saveMemoryStore(memoryStore).catch((err) => console.error('Failed to save memory usage update:', err));
     return updated;
   },
@@ -255,6 +286,7 @@ export async function ingestEvents(events, options = {}) {
       }
     },
   });
+  // Invalidate cache because new data might affect query results
   cache.clear();
   return records;
 }
@@ -297,6 +329,7 @@ export async function getRelevantMemories(params) {
     : getMemoriesArray();
 
   const ranked = await ranker(source, queryParams);
+  // Async update of last_seen timestamps
   await updateMemoryUsage(repository, ranked.map((memory) => memory.id));
   cacheProvider.set(cacheKey, ranked);
 
@@ -355,6 +388,7 @@ export async function runPruneCycle(options = {}) {
     return { pruned: [], candidates: prunable, mode: 'dry-run' };
   }
 
+  // Deletion logic
   for (const memory of prunable) {
     memoryStore.delete(memory.id);
   }
@@ -420,6 +454,7 @@ export async function unpinMemory(id, options = {}) {
 
 /**
  * Marks one memory as merged into another.
+ * This effectively archives the source memory, as merged memories are filtered out by default.
  *
  * @param {string} id - Source memory identifier to mark as merged.
  * @param {string} mergedInto - Destination memory identifier.
@@ -483,6 +518,7 @@ export async function inspectMemory(id, options = {}) {
 
 /**
  * Simulates prune selection without deleting data.
+ * Useful for admin dashboards to preview what would be cleaned up.
  *
  * @param {{ retentionMs?: number, now?: number, repository?: typeof memoryRepository }} [options] - Dry-run selection controls.
  * @returns {Promise<{ dryRun: true, retentionMs: number, candidateCount: number, candidates: Array<{ id: string, agent_id: string, type: string, pinned: boolean, last_seen: number, merged_into?: string | null }> }>} Dry-run summary and redacted candidates.
