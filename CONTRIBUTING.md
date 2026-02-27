@@ -61,6 +61,14 @@ For integration/resilience tests:
 npm run test:extended-main
 ```
 
+### Formatting
+
+To automatically format the codebase:
+
+```bash
+npm run format
+```
+
 ### Linting
 
 Ensure your code follows the project's style guidelines:

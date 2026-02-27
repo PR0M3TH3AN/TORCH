@@ -87,6 +87,7 @@ Quick start:
 ```bash
 npm install
 npm run build
+npm run format
 npm test
 ```
 
