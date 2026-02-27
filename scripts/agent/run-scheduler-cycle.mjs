@@ -41,20 +41,14 @@
 // Source of truth: numbered MUST steps 2 and 4-16 in src/prompts/scheduler-flow.md are
 // implemented by this script; step 3 (policy-file read) is best-effort and non-fatal.
 import fs from 'node:fs/promises';
-import fsSync from 'node:fs';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
 
 import {
   runCommand,
   parseJsonFromOutput,
   readJson,
-  normalizeStringList,
   parseNonNegativeInt,
-  parseBooleanFlag,
   excerptText,
-  getRunDateKey,
-  toYamlScalar,
   buildRecentlyRunExclusionSet,
   parseDateValue,
   parseFrontmatterCreatedAt,
@@ -72,10 +66,25 @@ import {
   summarizeLockFailureReasons,
 } from './scheduler-lock.mjs';
 
-import { detectPlatform } from '../../src/utils.mjs';
-import { getTorchConfigPath } from '../../src/torch-config.mjs';
+import {
+  VALID_CADENCES,
+  parseArgs,
+  getSchedulerConfig,
+} from './scheduler-config.mjs';
 
-const VALID_CADENCES = new Set(['daily', 'weekly']);
+import {
+  ts,
+  writeLog,
+  exitWithSummary,
+  categorizeFailureMetadata,
+} from './scheduler-logger.mjs';
+
+import {
+  readRunState,
+  writeRunState,
+  createIdempotencyKey,
+} from './scheduler-state.mjs';
+
 const ALL_EXCLUDED_REASON = 'All roster tasks currently claimed by other agents';
 const FAILURE_CATEGORY = {
   PROMPT_PARSE: 'prompt_parse_error',
@@ -83,65 +92,6 @@ const FAILURE_CATEGORY = {
   LOCK_BACKEND: 'lock_backend_error',
   EXECUTION: 'execution_error',
 };
-
-/**
- * Parses CLI arguments into a structured options object.
- * Supports both positional cadence (`daily`|`weekly`) and named flags.
- * Falls back to AGENT_PLATFORM env var or auto-detected platform for platform.
- *
- * @param {string[]} argv - process.argv slice (args after the script name)
- * @returns {{ cadence: string|null, platform: string, model: string|null }}
- */
-function parseArgs(argv) {
-  const args = { cadence: null, platform: process.env.AGENT_PLATFORM || detectPlatform() || 'unknown', model: process.env.AGENT_MODEL || null };
-  for (let i = 0; i < argv.length; i += 1) {
-    const value = argv[i];
-    if (!value.startsWith('--') && !args.cadence) {
-      args.cadence = value;
-      continue;
-    }
-    if (value === '--cadence') {
-      args.cadence = argv[i + 1] || null;
-      i += 1;
-      continue;
-    }
-    if (value === '--platform') {
-      args.platform = argv[i + 1] || args.platform;
-      i += 1;
-    }
-    if (value === '--model') {
-      args.model = argv[i + 1] || args.model;
-      i += 1;
-    }
-  }
-  return args;
-}
-
-/**
- * Returns an ISO 8601 timestamp string safe for use as a filename component.
- * Colons are replaced with dashes and milliseconds are stripped.
- * Example output: `2026-02-20T07-00-00Z`
- *
- * @returns {string}
- */
-function ts() {
-  return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '-');
-}
-
-/**
- * Builds a metadata object that includes a standardized `failure_category` field.
- * Used by writeLog() to attach structured failure classification to task logs.
- *
- * @param {string} failureCategory - One of FAILURE_CATEGORY values (e.g. 'lock_backend_error').
- * @param {Object} [extraMetadata={}] - Additional key/value pairs to merge.
- * @returns {Object}
- */
-function categorizeFailureMetadata(failureCategory, extraMetadata = {}) {
-  return {
-    failure_category: failureCategory,
-    ...extraMetadata,
-  };
-}
 
 /**
  * Validates that a prompt file is readable and contains a valid markdown heading
@@ -306,289 +256,6 @@ function selectNextAgent({ roster, excludedSet, previousAgent, firstPrompt }) {
     }
   }
   return null;
-}
-
-/**
- * Loads and normalizes scheduler configuration for the given cadence.
- * Merges torch-config.json settings with environment variable overrides.
- *
- * Configuration covers:
- *  - handoffCommand: shell command to execute the selected agent's prompt.
- *  - validationCommands: commands that must pass before lock:complete (default: npm run lint).
- *  - lockRetry: maxRetries, backoffMs, jitterMs for lock acquisition retries.
- *  - lockHealthPreflight: whether to probe relay health before lock acquisition.
- *  - lockFailurePolicy: strictLock, degradedLockRetryWindowMs, maxDeferrals.
- *  - memoryPolicy: mode (required|optional), retrieve/store commands, markers, artifacts.
- *
- * Environment variable overrides (all optional):
- *  SCHEDULER_LOCK_MAX_RETRIES, SCHEDULER_LOCK_BACKOFF_MS, SCHEDULER_LOCK_JITTER_MS,
- *  SCHEDULER_LOCK_HEALTH_PREFLIGHT, SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT,
- *  SCHEDULER_STRICT_LOCK, SCHEDULER_DEGRADED_LOCK_RETRY_WINDOW_MS, SCHEDULER_MAX_DEFERRALS
- *
- * @param {string} cadence - 'daily'|'weekly'
- * @param {{ isInteractive: boolean }} options
- * @returns {Promise<Object>} Normalized scheduler config object.
- */
-async function getSchedulerConfig(cadence, { isInteractive }) {
-  const configPath = getTorchConfigPath();
-  const cfg = await readJson(configPath, {});
-  const configDir = path.dirname(configPath);
-  const runtimeDir = process.cwd();
-
-  const resolveNodeCommand = (command) => {
-    if (typeof command !== 'string') return command;
-    const trimmed = command.trim();
-    if (!trimmed.startsWith('node ')) return trimmed;
-    const parts = trimmed.split(/\s+/);
-    if (parts.length < 2) return trimmed;
-    const scriptArg = parts[1];
-    if (!scriptArg || scriptArg.startsWith('-') || path.isAbsolute(scriptArg)) return trimmed;
-    const absoluteScriptPath = path.resolve(configDir, scriptArg);
-    if (!fsSync.existsSync(absoluteScriptPath)) return trimmed;
-    const rewrittenScriptPath = path.relative(runtimeDir, absoluteScriptPath).split(path.sep).join('/');
-    if (!rewrittenScriptPath || rewrittenScriptPath.startsWith('..')) return trimmed;
-    parts[1] = rewrittenScriptPath;
-    return parts.join(' ');
-  };
-
-  const scheduler = cfg.scheduler || {};
-  const defaultHandoffCommand = resolveNodeCommand('node scripts/agent/run-selected-prompt.mjs');
-  const handoffCommandRaw = scheduler.handoffCommandByCadence?.[cadence] || defaultHandoffCommand;
-  const handoffCommand = resolveNodeCommand(handoffCommandRaw);
-  const missingHandoffCommandForMode = !isInteractive && !handoffCommand;
-  const memoryPolicyRaw = scheduler.memoryPolicyByCadence?.[cadence] || {};
-  const mode = memoryPolicyRaw.mode === 'required' ? 'required' : 'optional';
-  const lockRetryRaw = scheduler.lockRetry || {};
-  const maxRetries = parseNonNegativeInt(
-    process.env.SCHEDULER_LOCK_MAX_RETRIES,
-    parseNonNegativeInt(lockRetryRaw.maxRetries, 2),
-  );
-  const backoffMs = parseNonNegativeInt(
-    process.env.SCHEDULER_LOCK_BACKOFF_MS,
-    parseNonNegativeInt(lockRetryRaw.backoffMs, 250),
-  );
-  const jitterMs = parseNonNegativeInt(
-    process.env.SCHEDULER_LOCK_JITTER_MS,
-    parseNonNegativeInt(lockRetryRaw.jitterMs, 75),
-  );
-  const lockHealthPreflightFromConfig = parseBooleanFlag(scheduler.lockHealthPreflight, false);
-  const lockHealthPreflightEnabled = parseBooleanFlag(
-    process.env.SCHEDULER_LOCK_HEALTH_PREFLIGHT,
-    lockHealthPreflightFromConfig,
-  );
-  const lockHealthPreflightSkip = parseBooleanFlag(process.env.SCHEDULER_SKIP_LOCK_HEALTH_PREFLIGHT, false);
-  const strictLock = parseBooleanFlag(
-    process.env.SCHEDULER_STRICT_LOCK,
-    parseBooleanFlag(scheduler.strict_lock, true),
-  );
-  const degradedLockRetryWindowMs = parseNonNegativeInt(
-    process.env.SCHEDULER_DEGRADED_LOCK_RETRY_WINDOW_MS,
-    parseNonNegativeInt(scheduler.degraded_lock_retry_window, 3600000),
-  );
-  const maxDeferrals = parseNonNegativeInt(
-    process.env.SCHEDULER_MAX_DEFERRALS,
-    parseNonNegativeInt(scheduler.max_deferrals, 3),
-  );
-
-  return {
-    firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null,
-    handoffCommand,
-    missingHandoffCommandForMode,
-    validationCommands: Array.isArray(scheduler.validationCommandsByCadence?.[cadence])
-      ? scheduler.validationCommandsByCadence[cadence].filter((cmd) => typeof cmd === 'string' && cmd.trim())
-      : ['npm run lint'],
-    lockRetry: {
-      maxRetries,
-      backoffMs,
-      jitterMs,
-    },
-    lockHealthPreflight: {
-      enabled: lockHealthPreflightEnabled,
-      skip: lockHealthPreflightSkip,
-    },
-    lockFailurePolicy: {
-      strictLock,
-      degradedLockRetryWindowMs,
-      maxDeferrals,
-    },
-    memoryPolicy: {
-      mode,
-      retrieveCommand: typeof memoryPolicyRaw.retrieveCommand === 'string' && memoryPolicyRaw.retrieveCommand.trim()
-        ? resolveNodeCommand(memoryPolicyRaw.retrieveCommand.trim())
-        : null,
-      storeCommand: typeof memoryPolicyRaw.storeCommand === 'string' && memoryPolicyRaw.storeCommand.trim()
-        ? resolveNodeCommand(memoryPolicyRaw.storeCommand.trim())
-        : null,
-      retrieveSuccessMarkers: normalizeStringList(memoryPolicyRaw.retrieveSuccessMarkers, ['MEMORY_RETRIEVED']),
-      storeSuccessMarkers: normalizeStringList(memoryPolicyRaw.storeSuccessMarkers, ['MEMORY_STORED']),
-      retrieveArtifacts: normalizeStringList(memoryPolicyRaw.retrieveArtifacts),
-      storeArtifacts: normalizeStringList(memoryPolicyRaw.storeArtifacts),
-    },
-  };
-}
-
-/**
- * Reads persisted scheduler run-state for the current UTC day.
- * Run-state is used to track lock deferral metadata across multiple invocations
- * within the same day (e.g., retry window tracking for non-strict lock failures).
- *
- * If the state file is missing, unreadable, or belongs to a previous day, returns
- * a fresh default state. State is keyed by `run_date` (YYYY-MM-DD UTC).
- *
- * @param {string} cadence - 'daily'|'weekly'
- * @returns {Promise<{ statePath: string, state: { run_date: string, lock_deferral: Object|null } }>}
- */
-async function readRunState(cadence) {
-  const statePath = path.resolve(process.cwd(), 'task-logs', cadence, '.scheduler-run-state.json');
-  const fallback = { run_date: getRunDateKey(), lock_deferral: null };
-  const raw = await readJson(statePath, fallback);
-  if (!raw || typeof raw !== 'object') {
-    return { statePath, state: fallback };
-  }
-
-  if (raw.run_date !== getRunDateKey()) {
-    return { statePath, state: fallback };
-  }
-
-  return {
-    statePath,
-    state: {
-      run_date: raw.run_date,
-      lock_deferral: raw.lock_deferral && typeof raw.lock_deferral === 'object' ? raw.lock_deferral : null,
-    },
-  };
-}
-
-/**
- * Persists scheduler run-state to disk (JSON file).
- * Creates parent directories if they do not exist.
- *
- * @param {string} statePath - Absolute path to the state file.
- * @param {Object} state - State object to serialize.
- * @returns {Promise<void>}
- */
-async function writeRunState(statePath, state) {
-  await fs.mkdir(path.dirname(statePath), { recursive: true });
-  await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-}
-
-/**
- * Generates a unique idempotency key for a deferred lock attempt.
- * The key is stable across retries for the same agent/cadence/date combination
- * by being stored in run-state and reused on subsequent invocations.
- *
- * @param {{ cadence: string, selectedAgent: string, runDate: string }} params
- * @returns {string}
- */
-function createIdempotencyKey({ cadence, selectedAgent, runDate }) {
-  return `${cadence}:${selectedAgent}:${runDate}:${randomUUID()}`;
-}
-
-/**
- * Writes a task log file to `task-logs/<cadence>/` with YAML frontmatter.
- * File naming: `<ts>__<agent>__<status>.md`
- *
- * The frontmatter includes cadence, agent, status, reason, created_at, platform,
- * and any additional metadata fields. The file body repeats key fields as bullets
- * for human readability.
- *
- * These files are read by getLatestFile(), cmdCheck(), and the dashboard.
- *
- * @param {{ cadence: string, agent: string, status: string, reason: string,
- *           detail?: string, platform?: string, metadata?: Object }} params
- * @returns {Promise<string>} The filename (not full path) of the written log.
- */
-async function writeLog({ cadence, agent, status, reason, detail, platform, metadata = {} }) {
-  const logDir = path.resolve(process.cwd(), 'task-logs', cadence);
-  await fs.mkdir(logDir, { recursive: true });
-  const file = `${ts()}__${agent}__${status}.md`;
-  const mergedMetadata = {
-    platform: platform || process.env.AGENT_PLATFORM || 'unknown',
-    ...metadata,
-  };
-
-  const body = [
-    '---',
-    `cadence: ${cadence}`,
-    `agent: ${agent}`,
-    `status: ${status}`,
-    `reason: ${toYamlScalar(reason)}`,
-    detail ? `detail: ${toYamlScalar(detail)}` : null,
-    `created_at: ${new Date().toISOString()}`,
-    `timestamp: ${new Date().toISOString()}`,
-    ...Object.entries(mergedMetadata)
-      .filter(([, value]) => value !== undefined && value !== null && value !== '')
-      .map(([key, value]) => `${key}: ${toYamlScalar(value)}`),
-    '---',
-    '',
-    `# Scheduler ${status}`,
-    '',
-    `- reason: ${reason}`,
-    detail ? `- detail: ${detail}` : null,
-    ...Object.entries(mergedMetadata)
-      .filter(([, value]) => value !== undefined && value !== null && value !== '')
-      .map(([key, value]) => `- ${key}: ${value}`),
-    '',
-  ].filter(Boolean).join('\n');
-  await fs.writeFile(path.join(logDir, file), body, 'utf8');
-  return file;
-}
-
-/**
- * Prints a human-readable run summary to stdout.
- * Includes status, agent, prompt path, platform, reason, and the contents of
- * the memory update file (up to 2000 characters, truncated if longer).
- *
- * @param {{ status: string, agent: string, promptPath: string|null, reason: string,
- *           detail?: string, memoryFile?: string, platform: string }} params
- * @returns {Promise<void>}
- */
-async function printRunSummary({ status, agent, promptPath, reason, detail, memoryFile, platform }) {
-  let learnings = 'No learnings recorded.';
-  if (memoryFile) {
-    try {
-      const content = await fs.readFile(memoryFile, 'utf8');
-      if (content.trim()) {
-        learnings = content.trim();
-        if (learnings.length > 2000) {
-          learnings = learnings.slice(0, 2000) + '\n... (truncated)';
-        }
-      }
-    } catch {
-      // ignore read errors
-    }
-  }
-
-  process.stdout.write('\n================================================================================\n');
-  process.stdout.write('Scheduler Run Summary\n');
-  process.stdout.write('================================================================================\n');
-  process.stdout.write(`Status:    ${status}\n`);
-  process.stdout.write(`Agent:     ${agent}\n`);
-  process.stdout.write(`Prompt:    ${promptPath || '(none)'}\n`);
-  process.stdout.write(`Platform:  ${platform}\n`);
-  process.stdout.write(`Reason:    ${reason}\n`);
-  if (detail) {
-    process.stdout.write(`Detail:    ${detail}\n`);
-  }
-  process.stdout.write('\nLearnings / Discoveries:\n');
-  process.stdout.write(`${learnings}\n`);
-  process.stdout.write('================================================================================\n\n');
-}
-
-/**
- * Prints the run summary then terminates the process with the given exit code.
- * All normal and failure exit paths in main() go through this function to ensure
- * a summary is always printed before exit.
- *
- * @param {number} code - Exit code (0 = success, 1 = general failure, 2 = backend error).
- * @param {Object|null} summaryData - Data passed to printRunSummary, or null to skip.
- * @returns {Promise<never>}
- */
-async function exitWithSummary(code, summaryData) {
-  if (summaryData) {
-    await printRunSummary(summaryData);
-  }
-  process.exit(code);
 }
 
 async function main() {

@@ -4,6 +4,8 @@ const FILES = {
   meta: 'src/prompts/META_PROMPTS.md',
   flow: 'src/prompts/scheduler-flow.md',
   scheduler: 'scripts/agent/run-scheduler-cycle.mjs',
+  schedulerConfig: 'scripts/agent/scheduler-config.mjs',
+  schedulerLogger: 'scripts/agent/scheduler-logger.mjs',
 };
 
 function collectMissing(text, requiredSnippets) {
@@ -42,6 +44,7 @@ const invariants = [
         'canonical exclusion rule',
       ],
     },
+    // Logic remains in main scheduler script
     schedulerSnippets: [
       "runCommand('npm', ['run', `lock:check:${cadence}`",
       'checkPayload.excluded',
@@ -65,12 +68,16 @@ const invariants = [
         'All roster tasks currently claimed by other agents',
       ],
     },
+    // Logic split: roster loading in main, config loading in scheduler-config.mjs
     schedulerSnippets: [
       "readJson(path.resolve(process.cwd(), 'src/prompts/roster.json')",
       'parseFrontmatterAgent(content) || parseAgentFromFilename(latestFile)',
-      'scheduler.firstPromptByCadence?.[cadence]',
       'ALL_EXCLUDED_REASON',
       "reason: ALL_EXCLUDED_REASON",
+    ],
+    // This snippet moved to scheduler-config.mjs
+    configFileSnippets: [
+      'firstPrompt: scheduler.firstPromptByCadence?.[cadence] || null',
     ],
   },
   {
@@ -164,6 +171,10 @@ const invariants = [
       ],
     },
     schedulerSnippets: [
+      // This logic moved to scheduler-logger.mjs
+      'exitWithSummary', // Still called in main script
+    ],
+    loggerFileSnippets: [
       'async function printRunSummary',
       'async function exitWithSummary',
       'await printRunSummary(summaryData)',
@@ -173,10 +184,12 @@ const invariants = [
 ];
 
 
-const [meta, flow, scheduler] = await Promise.all([
+const [meta, flow, scheduler, schedulerConfig, schedulerLogger] = await Promise.all([
   readFile(FILES.meta, 'utf8'),
   readFile(FILES.flow, 'utf8'),
   readFile(FILES.scheduler, 'utf8'),
+  readFile(FILES.schedulerConfig, 'utf8'),
+  readFile(FILES.schedulerLogger, 'utf8'),
 ]);
 
 const errors = [];
@@ -196,9 +209,25 @@ for (const invariant of invariants) {
     }
   }
 
-  const missingScheduler = collectMissing(scheduler, invariant.schedulerSnippets);
-  for (const snippet of missingScheduler) {
-    errors.push(`[${invariant.name}] ${FILES.scheduler} missing checkpoint snippet: ${snippet}`);
+  if (invariant.schedulerSnippets) {
+    const missingScheduler = collectMissing(scheduler, invariant.schedulerSnippets);
+    for (const snippet of missingScheduler) {
+      errors.push(`[${invariant.name}] ${FILES.scheduler} missing checkpoint snippet: ${snippet}`);
+    }
+  }
+
+  if (invariant.configFileSnippets) {
+    const missingConfig = collectMissing(schedulerConfig, invariant.configFileSnippets);
+    for (const snippet of missingConfig) {
+      errors.push(`[${invariant.name}] ${FILES.schedulerConfig} missing checkpoint snippet: ${snippet}`);
+    }
+  }
+
+  if (invariant.loggerFileSnippets) {
+    const missingLogger = collectMissing(schedulerLogger, invariant.loggerFileSnippets);
+    for (const snippet of missingLogger) {
+      errors.push(`[${invariant.name}] ${FILES.schedulerLogger} missing checkpoint snippet: ${snippet}`);
+    }
   }
 
   if (invariant.orderedSchedulerSnippets) {
