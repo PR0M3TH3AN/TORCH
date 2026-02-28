@@ -1,0 +1,11 @@
+--- app.js
++++ app.js
+@@ -321,7 +321,7 @@
+ function renderSummary(allLocks) {
+   summaryContainer.replaceChildren();
+   if (!isAlive()) return;
+-  summaryContainer.innerHTML = ''; // Clear fallback
++  summaryContainer.textContent = ''; // Clear fallback
+
+   const now = nowUnix();
+   let active = 0, expired = 0, completed = 0;
