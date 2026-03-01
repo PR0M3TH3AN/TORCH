@@ -42,6 +42,15 @@ export function parseArgs(argv) {
     status: null,
     list: false,
     output: null,
+    topic: null,
+    runId: null,
+    message: null,
+    messageFile: null,
+    eventsDir: null,
+    schemaPath: null,
+    createdAt: null,
+    source: null,
+    project: null,
   };
   let i = 0;
 
@@ -50,6 +59,10 @@ export function parseArgs(argv) {
     i = 1;
     // Support subcommands for 'proposal'
     if (args.command === 'proposal' && argv.length > 1 && !argv[1].startsWith('-')) {
+      args.subcommand = argv[1];
+      i = 2;
+    }
+    if (args.command === 'memory' && argv.length > 1 && !argv[1].startsWith('-')) {
       args.subcommand = argv[1];
       i = 2;
     }
@@ -147,6 +160,42 @@ export function parseArgs(argv) {
       args.target = argv[++i];
     } else if (arg.startsWith('--target=')) {
       args.target = arg.split('=')[1];
+    } else if (arg === '--topic') {
+      args.topic = argv[++i];
+    } else if (arg.startsWith('--topic=')) {
+      args.topic = arg.split('=')[1];
+    } else if (arg === '--run-id') {
+      args.runId = argv[++i];
+    } else if (arg.startsWith('--run-id=')) {
+      args.runId = arg.split('=')[1];
+    } else if (arg === '--message') {
+      args.message = argv[++i];
+    } else if (arg.startsWith('--message=')) {
+      args.message = arg.split('=')[1];
+    } else if (arg === '--message-file') {
+      args.messageFile = argv[++i];
+    } else if (arg.startsWith('--message-file=')) {
+      args.messageFile = arg.split('=')[1];
+    } else if (arg === '--events-dir') {
+      args.eventsDir = argv[++i];
+    } else if (arg.startsWith('--events-dir=')) {
+      args.eventsDir = arg.split('=')[1];
+    } else if (arg === '--schema-path') {
+      args.schemaPath = argv[++i];
+    } else if (arg.startsWith('--schema-path=')) {
+      args.schemaPath = arg.split('=')[1];
+    } else if (arg === '--created-at') {
+      args.createdAt = argv[++i];
+    } else if (arg.startsWith('--created-at=')) {
+      args.createdAt = arg.split('=')[1];
+    } else if (arg === '--source') {
+      args.source = argv[++i];
+    } else if (arg.startsWith('--source=')) {
+      args.source = arg.split('=')[1];
+    } else if (arg === '--project') {
+      args.project = argv[++i];
+    } else if (arg.startsWith('--project=')) {
+      args.project = arg.split('=')[1];
     } else if (arg === '--content') {
       args.content = argv[++i];
     } else if (arg.startsWith('--content=')) {

@@ -49,6 +49,7 @@ Commands:
   init      [--force]                              Initialize torch/ directory in current project
   update    [--force]                              Update torch/ configuration (backups, merges)
   remove    [--force]                              Remove all TORCH files and configuration from project
+  memory    <add|build|verify>                     Append/build/verify append-only memory events
 
   list-memories           [--agent <id>] [--type <type>] [--tags <a,b>] [--pinned <true|false>] [--full]
   inspect-memory          --id <memoryId>
@@ -65,6 +66,9 @@ Options:
   --json          Emit compact single-line JSON
   --json-file     Write JSON output to a file path
   --quiet         Suppress stderr progress logs (pairs well with --json)
+  --events-dir    Memory events directory (default: memory/events)
+  --schema-path   Memory event schema path (default: memory/schema/memory-event.schema.json)
+  --output        Output path for generated memory markdown (default: memory_update.md)
 
 Environment:
   NOSTR_LOCK_NAMESPACE      Namespace prefix for lock tags (default: torch)
@@ -80,4 +84,5 @@ Exit codes:
   0  Success
   1  Usage error
   2  Relay/network error
-  3  Lock denied (already locked or race lost)`;
+  3  Lock denied (already locked or race lost)
+  4  Memory contract validation failed`;

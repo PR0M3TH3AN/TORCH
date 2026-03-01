@@ -149,6 +149,18 @@ npm run scheduler:weekly
 The `torch-lock` CLI also supports memory operations:
 
 ```bash
+# Append one schema-validated memory event (append-only)
+npx --no-install torch-lock memory add \
+  --agent codex \
+  --topic memory \
+  --message "Lock preflight failed on relay outage; rerun with fallback relays."
+
+# Build deterministic memory_update.md from memory/events/**/*.json
+npx --no-install torch-lock memory build
+
+# Verify schema + duplicates + determinism + generated-file no-diff
+npx --no-install torch-lock memory verify
+
 # List memories (optional filters: --agent, --type, --tags, --pinned)
 npx --no-install torch-lock list-memories --limit 5
 
@@ -162,6 +174,12 @@ npx --no-install torch-lock unpin-memory --id <memory-id>
 # Check memory stats
 npx --no-install torch-lock memory-stats
 ```
+
+Memory event contract:
+- Source: `memory/events/YYYY/MM/DD/<timestamp>_<id>.json` (append-only).
+- Schema: `memory/schema/memory-event.schema.json`.
+- Generated file: `memory_update.md` with auto-generated header.
+- Full contract: `docs/memory-events-contract.md`.
 
 ### Prompt Governance & Versioning CLI
 

@@ -78,3 +78,31 @@ test('parseArgs should parse memory flags with equals', () => {
   assert.strictEqual(args.limit, 10);
   assert.strictEqual(args.offset, 5);
 });
+
+test('parseArgs should parse memory subcommands and event contract flags', () => {
+  const args = parseArgs([
+    'memory',
+    'add',
+    '--agent', 'codex',
+    '--topic', 'memory',
+    '--message', 'hello',
+    '--run-id', 'run_1',
+    '--events-dir', 'memory/events',
+    '--schema-path', 'memory/schema/memory-event.schema.json',
+    '--created-at', '2026-03-01T15:20:11Z',
+    '--source', 'scheduler',
+    '--project', 'TORCH',
+  ]);
+
+  assert.strictEqual(args.command, 'memory');
+  assert.strictEqual(args.subcommand, 'add');
+  assert.strictEqual(args.agent, 'codex');
+  assert.strictEqual(args.topic, 'memory');
+  assert.strictEqual(args.message, 'hello');
+  assert.strictEqual(args.runId, 'run_1');
+  assert.strictEqual(args.eventsDir, 'memory/events');
+  assert.strictEqual(args.schemaPath, 'memory/schema/memory-event.schema.json');
+  assert.strictEqual(args.createdAt, '2026-03-01T15:20:11Z');
+  assert.strictEqual(args.source, 'scheduler');
+  assert.strictEqual(args.project, 'TORCH');
+});

@@ -45,6 +45,7 @@ import { cmdCheck } from './cmd-check.mjs';
 import { cmdList } from './cmd-list.mjs';
 import { cmdComplete } from './cmd-complete.mjs';
 import { cmdDoctor } from './cmd-doctor.mjs';
+import { cmdMemoryAdd, cmdMemoryBuild, cmdMemoryVerify } from './cmd-memory.mjs';
 
 useWebSocketImplementation(WebSocket);
 
@@ -401,6 +402,27 @@ const COMMAND_HANDLERS = {
     } else {
       await cmdBackup({ output: args.output });
     }
+  },
+  memory: async (args) => {
+    if (!args.subcommand) {
+      console.error('ERROR: Missing subcommand for memory (add, build, verify)');
+      throw new ExitError(1, 'Missing subcommand');
+    }
+    if (args.subcommand === 'add') {
+      await cmdMemoryAdd(args);
+      return;
+    }
+    if (args.subcommand === 'build') {
+      await cmdMemoryBuild(args);
+      return;
+    }
+    if (args.subcommand === 'verify') {
+      await cmdMemoryVerify(args);
+      return;
+    }
+
+    console.error(`ERROR: Unknown memory subcommand: ${args.subcommand}`);
+    throw new ExitError(1, 'Unknown memory subcommand');
   },
 };
 

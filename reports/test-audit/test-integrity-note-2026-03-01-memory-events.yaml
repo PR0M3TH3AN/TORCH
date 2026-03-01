@@ -1,0 +1,36 @@
+test_integrity_note:
+  change_type: "new_tests"
+  scenarios:
+    - id: SCN-memory-event-add-append-only
+      given: "A repo with memory schema configured"
+      when: "An operator runs `torch-lock memory add`"
+      then: "Exactly one new schema-valid event file is created in a dated append-only path"
+    - id: SCN-memory-build-deterministic-order
+      given: "Multiple memory event files with sortable timestamps and IDs"
+      when: "An operator runs `torch-lock memory build`"
+      then: "Generated markdown is deterministic and sorted by created_at then id"
+    - id: SCN-memory-verify-no-diff-gate
+      given: "A hand-edited or stale generated memory markdown file"
+      when: "An operator runs `torch-lock memory verify`"
+      then: "Verification fails with a contract error requiring rebuild"
+    - id: SCN-memory-verify-duplicate-id
+      given: "Two events share the same id"
+      when: "An operator runs `torch-lock memory verify`"
+      then: "Verification fails and reports duplicate id"
+  observable_outcomes:
+    - "JSON event files written at memory/events/YYYY/MM/DD/<timestamp>_<id>.json"
+    - "Generated memory_update.md includes deterministic header and ordering"
+    - "CLI returns non-zero ExitError code 4 on contract violations"
+  determinism_controls:
+    - "Fixed created_at values in tests"
+    - "Stable sort key contract (created_at, id, relative_path)"
+    - "Byte-level equality checks for generated output"
+  anti_cheat_rationale:
+    prevents:
+      - "hard-coded return value"
+      - "over-mocking internal logic"
+      - "snapshot rubber-stamping"
+      - "retry/sleep-based flake masking"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""

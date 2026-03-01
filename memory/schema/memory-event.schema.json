@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://torch.local/schemas/memory-event.schema.json",
+  "title": "TORCH Memory Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "created_at",
+    "project",
+    "agent",
+    "topic",
+    "content"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUIDv7",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "UTC timestamp in RFC3339 format",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "project": {
+      "type": "string",
+      "const": "TORCH"
+    },
+    "agent": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-zA-Z0-9_.-]+$"
+    },
+    "topic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "tags": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "uniqueItems": true
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  }
+}

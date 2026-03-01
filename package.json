@@ -38,6 +38,7 @@
     "scripts/check-innerhtml.mjs",
     "scripts/test-audit/",
     "scripts/memory/",
+    "memory/schema/",
     "migrations/",
     "skills/",
     "dashboard/",
@@ -75,6 +76,9 @@
     "test:playwright:ui": "playwright test --ui",
     "torch:memory:list": "node bin/torch-lock.mjs list-memories",
     "torch:memory:inspect": "node bin/torch-lock.mjs inspect-memory",
+    "torch:memory:add": "node bin/torch-lock.mjs memory add",
+    "torch:memory:build": "node bin/torch-lock.mjs memory build",
+    "torch:memory:verify": "node bin/torch-lock.mjs memory verify",
     "torch:remove": "node bin/torch-lock.mjs remove"
   },
   "dependencies": {

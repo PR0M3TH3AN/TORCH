@@ -94,10 +94,11 @@ At the start of a session, the scheduler retrieves relevant memories based on yo
 - **Action:** Read this file to learn from past agents (e.g., "The integration test suite is flaky on the login step", "Use `node:test` instead of Jest").
 
 #### Writing Memory
-To save a learning for future agents, create a memory file before finishing your task.
-- **File:** `memory-update.md` (in the repository root).
-- **Content:** Concise, high-value insights.
-- **Mechanism:** The scheduler will automatically ingest this file after your run completes.
+To save a learning for future agents, write an append-only memory event and rebuild generated memory docs.
+- **Source of truth:** `memory/events/YYYY/MM/DD/<timestamp>_<id>.json` (append-only, never edit old events).
+- **Generated output:** `memory_update.md` (auto-generated; do not hand-edit).
+- **Commands:** `torch-lock memory add`, `torch-lock memory build`, `torch-lock memory verify`.
+- **Mechanism:** `memory verify` enforces schema validity, duplicate-id protection, deterministic rendering, and no-diff output checks.
 
 **Good Memories:**
 - "Fix for `EADDRINUSE` in tests: ensure server.close() is called in `after()`."
