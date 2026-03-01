@@ -78,6 +78,72 @@ Post-upgrade validation checklist:
    - `rg -n "cwdBaseName === 'torch' && fs.existsSync\\(parentPath\\)" node_modules/torch-lock/src/torch-config.mjs`
    - `rg -n "cwdBaseName === 'torch' && fs.existsSync\\(parentPath\\)" torch/src/torch-config.mjs`
 
+### Reusable Agent Prompt: Upgrade TORCH
+
+Use this prompt in a project repository when you want an AI agent to perform a safe TORCH upgrade:
+
+```md
+You are updating TORCH in this repository to the latest pinned version.
+
+Goal:
+- Upgrade TORCH safely.
+- Keep behavior stable.
+- Validate the new memory event pipeline (`torch-lock memory add/build/verify`).
+
+Constraints:
+- Do not weaken or edit tests to make CI pass.
+- Make minimal, reviewable changes.
+- Use pinned TORCH commit tarball, never a moving branch tarball.
+
+Steps:
+
+1) Create a branch
+- `git checkout -b chore/update-torch-393ba35`
+
+2) Install new TORCH package (pinned)
+- `npm install https://github.com/PR0M3TH3AN/TORCH/archive/393ba35.tar.gz --force`
+
+3) Apply TORCH files into repo
+- If `torch/` already exists:
+  - `npx --no-install torch-lock update --force`
+- Else (fresh setup):
+  - `npx --no-install torch-lock init --force`
+
+4) Install/update TORCH runtime deps
+- If TORCH is installed under `torch/`:
+  - `npm install --prefix torch`
+- If installed in root, run normal install:
+  - `npm install`
+
+5) Validate lock/scheduler basics
+- `npm run --prefix torch lock:check:daily -- --json --quiet` (or root equivalent)
+- `npx --no-install torch-lock doctor`
+
+6) Validate new memory contract (required)
+- Ensure schema exists: `memory/schema/memory-event.schema.json`
+- Run:
+  - `npx --no-install torch-lock memory build`
+  - `npx --no-install torch-lock memory verify`
+- If verify fails, fix root cause (schema/path/duplicate/out-of-date), do not bypass checks.
+
+7) Run project validation
+- Run the project’s standard checks (at minimum lint + tests).
+- Record exact commands run and pass/fail outcomes.
+
+8) Commit
+- Stage only relevant update files.
+- Commit message:
+  - `chore(torch): update to 393ba35 and enable memory event verify pipeline`
+
+9) Report back
+Provide:
+- Files changed
+- Commands run
+- Validation results
+- Any migration notes (especially memory-related changes)
+- Risks/follow-ups
+```
+
 ## Development
 
 For instructions on how to contribute to TORCH, including building, testing, and linting, please see [CONTRIBUTING.md](CONTRIBUTING.md).
