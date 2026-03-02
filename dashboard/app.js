@@ -104,7 +104,14 @@ async function fetchDocs() {
             throw new Error('Failed to load documentation');
         }
         const text = await response.text();
-        contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(text));
+
+        const cleanHtml = DOMPurify.sanitize(marked.parse(text));
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(cleanHtml, "text/html");
+        contentDiv.replaceChildren(...doc.body.childNodes);
+
+
         docsLoaded = true;
     } catch (error) {
         console.error(error);

@@ -7,9 +7,8 @@ const DEFAULT_TARGET_EXTENSIONS = ['.js', '.mjs', '.ts', '.html'];
 const DEFAULT_EXCLUDED_FILES = [];
 
 const BASELINE = {
-  "dashboard/app.js": 1,
   "landing/index.html": 1,
-  "total": 2
+  "total": 1
 };
 
 function countInnerHTML(filePath) {
