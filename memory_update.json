@@ -1,0 +1,4 @@
+{
+  "learnings": "Documented the core data flow of the dashboard frontend in dashboard/app.js. Learned that the frontend cascade prioritizes URL params over localStorage, then torch-config.json, before falling back to static defaults. It establishes NIP-01 subscriptions requesting REQ filters over 7 days for the configured hashtag.",
+  "status": "success"
+}
