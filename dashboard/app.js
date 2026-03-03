@@ -2,6 +2,18 @@
 import { KIND_APP_DATA } from '../src/constants.mjs';
 import { createElement } from './domUtils.js';
 
+/**
+ * Main Execution Flow:
+ * 1. Setup UI (Modals, Event Listeners) and configuration defaults.
+ * 2. `bootstrap()` loads `torch-config.json` and parses local storage prefs.
+ * 3. `init()` loops over configured relays and calls `connectToRelay()`.
+ * 4. WebSocket handlers listen for `LOCK_EVENT_KIND` events via NIP-01 REQ.
+ * 5. Incoming events are parsed (`parseLockEvent()`), de-duplicated by `dTag`, and stored.
+ * 6. `scheduleRender()` debounces layout updates.
+ * 7. `renderLocks()` creates and injects cards mapping to current system locks.
+ * 8. A periodic interval re-renders the UI to update TTl progress bars.
+ */
+
 // -----------------------------------------------------------------------
 // Modal Logic
 // -----------------------------------------------------------------------
@@ -97,6 +109,11 @@ window.onclick = function(event) {
     }
 }
 
+/**
+ * Fetches the TORCH.md file and renders it into the DOM using marked and DOMPurify.
+ * Renders an error message to the user if the fetch fails.
+ * @returns {Promise<void>}
+ */
 async function fetchDocs() {
     try {
         const response = await fetch('../src/docs/TORCH.md');
@@ -153,6 +170,11 @@ function normalizeStatus(value) {
     : DASHBOARD_DEFAULTS.defaultStatusView;
 }
 
+/**
+ * Loads the dashboard configuration from a local torch-config.json file.
+ * Returns an empty object if no config is found or readable.
+ * @returns {Promise<Object>} The parsed torch-config object
+ */
 async function loadTorchConfigFile() {
   const configCandidates = ['../torch-config.json', './torch-config.json'];
 
@@ -169,6 +191,13 @@ async function loadTorchConfigFile() {
   return {};
 }
 
+/**
+ * Resolves configuration properties cascading from highest precedence (URL parameters),
+ * to intermediate precedence (LocalStorage), then `torch-config.json`, and finally falling
+ * back to hardcoded defaults.
+ * @param {Object} [torchConfig={}] - The JSON structure from loadTorchConfigFile()
+ * @returns {Object} A resolved settings dictionary containing namespace, hashtag, and relays.
+ */
 function parseDashboardConfig(torchConfig = {}) {
   const params = new URLSearchParams(window.location.search);
 
@@ -683,6 +712,15 @@ function updateConnectionBadge() {
   }
 }
 
+/**
+ * Establishes a WebSocket connection to the given Nostr relay and negotiates
+ * a NIP-01 subscription requesting historic events within a 7 day window that
+ * match the current LOCK_EVENT_KIND and configured hashtag.
+ * Incoming events are pushed to global state lockStore and render is triggered.
+ *
+ * Automatically attempts reconnection after 5000ms if closed abruptly.
+ * @param {string} url - Valid WebSocket URL to connect to.
+ */
 function connectToRelay(url) {
   if (!isAlive()) return;
 
@@ -817,6 +855,11 @@ if (refreshBtn) refreshBtn.addEventListener('click', () => {
 // -----------------------------------------------------------------------
 // Init
 // -----------------------------------------------------------------------
+
+/**
+ * Initializes the dashboard connections and logic using global settings resolved
+ * by bootstrap(). Connects to each websocket in the RELAYS array.
+ */
 function init() {
   if (!isAlive()) return;
 
@@ -827,6 +870,12 @@ function init() {
   }
 }
 
+/**
+ * Main application entrypoint. Loads async dependencies (`loadTorchConfigFile()`),
+ * resolves local overrides, populates config globals, updates the DOM filter fields
+ * with default options, and kicks off socket connectivity via `init()`.
+ * @returns {Promise<void>}
+ */
 async function bootstrap() {
   const torchConfig = await loadTorchConfigFile();
   DASHBOARD_CONFIG = parseDashboardConfig(torchConfig);
