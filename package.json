@@ -82,7 +82,7 @@
     "torch:remove": "node bin/torch-lock.mjs remove"
   },
   "dependencies": {
-    "nostr-tools": "2.23.1",
+    "nostr-tools": "2.23.3",
     "ws": "8.19.0"
   },
   "devDependencies": {
