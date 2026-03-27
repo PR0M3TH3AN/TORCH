@@ -79,6 +79,9 @@ async function setupFixture({
   }
 
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-config.mjs'), path.join(scriptsDir, 'scheduler-config.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-logger.mjs'), path.join(scriptsDir, 'scheduler-logger.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-state.mjs'), path.join(scriptsDir, 'scheduler-state.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-config.mjs'), path.join(scriptsDir, 'scheduler-config.mjs'));
@@ -231,6 +234,9 @@ test('host-mode scheduler resolves parent config and rewrites torch-prefixed nod
   }
 
   await fs.copyFile(SOURCE_SCRIPT, path.join(scriptsDir, 'run-scheduler-cycle.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-config.mjs'), path.join(scriptsDir, 'scheduler-config.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-logger.mjs'), path.join(scriptsDir, 'scheduler-logger.mjs'));
+  await fs.copyFile(path.resolve('scripts/agent/scheduler-state.mjs'), path.join(scriptsDir, 'scheduler-state.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-utils.mjs'), path.join(scriptsDir, 'scheduler-utils.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-lock.mjs'), path.join(scriptsDir, 'scheduler-lock.mjs'));
   await fs.copyFile(path.resolve('scripts/agent/scheduler-config.mjs'), path.join(scriptsDir, 'scheduler-config.mjs'));
