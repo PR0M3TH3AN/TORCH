@@ -2,10 +2,11 @@
 
 ## Community-Funded Stewardship, Feature Development, and Open-Source Project Incubation
 
-**Status:** Draft v0.1  
+**Status:** Draft v0.2 (2026-08-03)  
 **Product:** TORCH — Task Orchestration via Relay-Coordinated Handoff  
 **Relationship:** TORCH operates as a BitUnlock tenant  
-**Purpose:** Expand TORCH from community-funded analysis and maintenance into a complete development network for improving existing software, delivering new features, and incubating new open-source projects.
+**Purpose:** Expand TORCH from community-funded analysis and maintenance into a complete development network for improving existing software, delivering new features, and incubating new open-source projects.  
+**Companions:** [`V2_ARCHITECTURE_BRIDGE.md`](./V2_ARCHITECTURE_BRIDGE.md) (verified code-reality mapping), [`INCREMENTAL_DEV_PLAN.md`](./INCREMENTAL_DEV_PLAN.md) (cross-repo staged execution). v0.2 folds the bridge's §4.5 corrections into this document; see the Changelog at the end.
 
 ---
 
@@ -790,6 +791,8 @@ Although this still creates responsibility for a bearer credential, the exposure
 - No withdrawal to TORCH.
 - Refund to the sponsor or original funding destination.
 
+**v0.2 gate:** Mode B places a bearer credential under TORCH gateway custody. It is deferred until the provider gateway exists **and** its handling of session keys passes a durable-custody design review meeting the criteria from the BitUnlock Cashu post-mortem (`bitunlock/docs/CASHU_MICROPAYMENTS_PLAN.md` §8a): custody of the bearer value must be designed first-class before any code handles it. Until then, a sponsor who prefers Routstr may still fund a session and deliver the key **directly into the runner environment** — that is Mode A delivery, and TORCH never touches the credential.
+
 ---
 
 ## 14.3 Mode C — Pledge First, Pay When Work Is Ready
@@ -811,7 +814,7 @@ A sponsor may publish or sign a pledge:
 }
 ```
 
-The pledge is not money held by TORCH.
+The pledge is not money held by TORCH — and cannot be money held anywhere else in the stack either. BitUnlock has no holds, no escrow, and explicitly rejects both (`bitunlock/docs/BITUNLOCK_SPEC.md`); a pledge is therefore a **TORCH-side signed Nostr event**, nothing more. Settlement happens just-in-time as an ordinary BitUnlock purchase when the milestone goes ready.
 
 When a milestone is approved and ready to execute:
 
@@ -840,7 +843,7 @@ Sponsor
 
 No recipient holds another recipient’s funds.
 
-This may require a future BitUnlock payment-plan extension supporting more than the current seller-and-service arrangement, or a coordinated set of linked invoices with one idempotency key.
+**v0.2 correction:** this is confirmed to require a BitUnlock **protocol version change**, not an extension. BitUnlock's payment roles are frozen at seller + service (`PAYMENT_ROLES` in `src/protocol/constants.ts`), and its constants explicitly forbid routing payment to arbitrary third parties. Mode D therefore belongs to Phase E only, may never be needed if per-milestone single-leg plus accrual billing proves sufficient, and **nothing in earlier phases may depend on it**. The nearer-term alternative is a coordinated set of linked invoices with one idempotency key, which needs no protocol change.
 
 A settlement contract should define:
 
@@ -912,7 +915,7 @@ The reserve should represent prepaid services or restricted donations, not a gen
 
 ## 15. Recommended First Economic Architecture
 
-The first practical release should combine Modes A, B, and C.
+The first practical release should combine Modes A and C. (v0.2: Mode B is deferred behind the custody gate in §14.2 — in Phase A, TORCH holds no provider credential of any kind.)
 
 ### Campaign discovery
 
@@ -931,7 +934,7 @@ The first practical release should combine Modes A, B, and C.
 The sponsor chooses:
 
 1. Supply a limited OpenRouter or NanoGPT key.
-2. Fund an ephemeral Routstr session.
+2. Fund a Routstr session and deliver the session key directly into the runner environment (no TORCH custody).
 3. Use personal inference.
 4. Purchase a TORCH-operated task ticket as a fallback.
 
@@ -947,6 +950,7 @@ The sponsor chooses:
 - TORCH coordination fee is paid through a separate BitUnlock product or linked invoice.
 - BitUnlock earns its normal successful-payment fee.
 - The compute principal never enters TORCH’s general wallet in the preferred paths.
+- Campaign state tracking **polls** BitUnlock order status; BitUnlock has no webhooks today. Signed lifecycle events arrive with a later BitUnlock increment (dev plan Stage 2), and polling remains the reconciliation authority even then.
 
 This model is not as frictionless as a pooled account, but it is much safer for an early community system.
 
@@ -972,10 +976,11 @@ TORCH may charge a disclosed percentage or fixed minimum for:
 
 Illustrative launch structure:
 
-- Fixed minimum for very small tasks.
-- Percentage fee for larger milestones.
+- Percentage fee with a fixed minimum, **priced and collected per milestone or per campaign — never per task**.
 - Lower rate for public open-source campaigns.
 - Higher rate for private or commercial campaigns.
+
+**v0.2 correction — fee granularity:** BitUnlock's fee policy has a 10-sat per-order floor plus per-order invoice overhead, and no micro-fee rail exists (the Cashu attempt was reverted with its economics blocker unsolved). Sub-1000-sat per-task fees are uneconomical. Each milestone's coordination fee is one BitUnlock static-product purchase.
 
 ## 16.2 Verification fee
 
@@ -990,7 +995,7 @@ A campaign may reserve a separate verification budget and TORCH may charge for:
 - Maintainer-ready synthesis.
 - Security disclosure handling.
 
-Verification should appear as a separate economic line rather than being silently taken from the implementation budget.
+Verification should appear as a separate economic line rather than being silently taken from the implementation budget. Concretely (v0.2): it is a **second BitUnlock static product** purchased alongside the coordination fee — not a payment split, which BitUnlock does not support.
 
 ## 16.3 Maintainer subscriptions
 
@@ -1077,7 +1082,7 @@ BitUnlock can earn from:
 - Human-contributor access or claim tickets.
 - Subscription payments.
 - Premium recovery and reporting.
-- Future multi-recipient settlement plans.
+- Future multi-recipient settlement plans (Phase E; requires a BitUnlock protocol version change — see §14.4).
 
 BitUnlock’s value is not merely holding or routing money. It provides:
 
@@ -1124,10 +1129,12 @@ Instead:
  2,000 → sponsor-controlled reserve or explicit broker
 ```
 
+The five-way direct routing shown above is the Phase E aspiration; until then, TORCH's fee and the verification reserve are ordinary two-role BitUnlock orders, and the compute principal follows Mode A (sponsor-owned, never routed through TORCH at all).
+
 At campaign completion:
 
-- Unused provider balance returns to the sponsor where possible.
-- TORCH’s earned fee is final once the contracted coordination work occurs.
+- Unused provider balance returns to the sponsor where possible — **at the provider layer** (a Routstr session refund, or sponsor-owned OpenRouter credit that simply stays with the sponsor). BitUnlock itself has no refund path, by design.
+- TORCH’s earned fee is final once the contracted coordination work occurs. Any goodwill return of a TORCH fee is an off-platform act, not a protocol feature.
 - BitUnlock’s fee follows its signed service policy.
 - Verification funds are released only for completed verification work.
 - Any nonrefundable component is disclosed before payment.
@@ -1309,7 +1316,6 @@ A convenient pooled wallet may gradually become a general user-balance system.
 - Integration agents.
 - Maintainer acceptance gates.
 - Sponsor-supplied limited provider keys.
-- Routstr ephemeral sessions.
 
 ### Phase C — Community Build network
 
@@ -1317,6 +1323,7 @@ A convenient pooled wallet may gradually become a general user-balance system.
 - Pledges rather than upfront deposits.
 - Human testing.
 - Direct worker/provider settlement.
+- Routstr ephemeral sessions via the TORCH provider gateway (Mode B, after the §14.2 custody design review).
 - Advanced notifications.
 - Organization subscriptions.
 
@@ -1355,7 +1362,7 @@ Pilot requirements:
 - One approved feature contract.
 - Three to five milestones.
 - TORCH-operated workers.
-- Sponsor-supplied limited OpenRouter key or Routstr session.
+- Sponsor-supplied limited OpenRouter key or prefunded Routstr session, delivered directly into the runner environment — TORCH holds no provider credential.
 - Separate BitUnlock payment for TORCH coordination.
 - One independent verifier.
 - No pooled campaign wallet.
@@ -1432,6 +1439,8 @@ Economic principle:
 - Routstr supports Lightning- or Cashu-funded ephemeral sessions, OpenAI-compatible requests, and refunding unused session value.
 - Routstr provider nodes may set a disclosed markup over upstream model costs.
 - FinCEN guidance distinguishes users purchasing goods or services from businesses engaged in accepting and transmitting convertible virtual currency, but the application to any particular TORCH structure is fact-specific.
+- BitUnlock constraints in this document (no splits, no refunds, no escrow/holds, no webhooks, frozen payment roles, fee floor, Cashu revert) were verified against the BitUnlock codebase on 2026-08-03; see `V2_ARCHITECTURE_BRIDGE.md` §4 for file-level citations.
+- The BitUnlock repository currently has **no license** ("all rights reserved") and its `@bitunlock/protocol` / `@bitunlock/sdk` packages are unpublished; TORCH must vendor them, so a license or vendoring grant is a Stage 0 blocker (dev plan item B0.2) for any open-source TORCH release.
 
 Official documentation reviewed:
 
@@ -1444,3 +1453,23 @@ Official documentation reviewed:
 - https://docs.routstr.com/client/payments/
 - https://docs.routstr.com/provider/quickstart/
 - https://www.fincen.gov/resources/statutes-regulations/guidance/application-fincens-regulations-persons-administering
+
+---
+
+## 27. Changelog
+
+### v0.2 (2026-08-03)
+
+Folded the code-reality corrections from `V2_ARCHITECTURE_BRIDGE.md` §4.5 after verifying TORCH 1.x and BitUnlock against their codebases:
+
+1. Mode D (direct multi-party settlement) confirmed as a BitUnlock protocol version change; Phase E only; nothing earlier may depend on it (§14.4, §17).
+2. Pledges are TORCH-side signed Nostr events exclusively; BitUnlock has no holds or escrow (§14.3).
+3. Coordination and verification fees are milestone-grained, never per-task; each is its own BitUnlock static-product purchase (§16.1, §16.2).
+4. Campaign order tracking is poll-driven until BitUnlock ships lifecycle webhooks, and polling remains the reconciliation authority (§15).
+5. Refund language scoped: unused compute returns at the provider layer; BitUnlock never refunds; TORCH fee returns are off-platform (§18).
+6. Phase A is Mode A only — TORCH holds no provider credential; Mode B gated behind a durable-custody design review per the Cashu post-mortem (§14.2, §15, §23, §24).
+7. Recorded the BitUnlock license/vendoring blocker (§26).
+
+### v0.1 (2026-08-03)
+
+Initial draft.
