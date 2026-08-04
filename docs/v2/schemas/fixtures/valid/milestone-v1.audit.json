@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "torch.milestone.v1",
+  "id": "ms_pilot-audit-001",
+  "campaignId": "camp_pilot-stewardship-001",
+  "title": "Entropy source audit",
+  "objective": "Enumerate and verify every randomness source in the wallet's key-generation path.",
+  "deliverables": [
+    "Signed evidence bundle listing every randomness call site",
+    "Failing test demonstrating any discovered fallback path",
+    "Maintainer-ready report"
+  ],
+  "dependencies": [],
+  "acceptanceScenarios": [
+    "Given the audited commit, when the verification suite runs, then every randomness call site is attributed to a CSPRNG or flagged with a reproducible failing test."
+  ],
+  "funding": {
+    "targetSats": 100000,
+    "coordinationFeeSats": 8000,
+    "verificationReserveSats": 7000,
+    "maxProviderSpendSats": 82000
+  },
+  "humanApprovalGate": "maintainer",
+  "status": "approved",
+  "securityReviewRequired": true,
+  "stopConditions": [
+    "Maintainer withdraws consent",
+    "Spending ceiling reached"
+  ]
+}

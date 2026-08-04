@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "torch.pledge.v1",
+  "campaignId": "camp_pilot-stewardship-001",
+  "milestoneId": "ms_pilot-audit-001",
+  "sponsor": "npub1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6r8p3c",
+  "maximumSats": 25000,
+  "expiresAt": 1788307200,
+  "conditions": {
+    "maintainerApproved": true,
+    "minimumOtherFundingSats": 50000,
+    "milestoneStatus": "ready"
+  }
+}

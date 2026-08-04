@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://torch.local/schemas/v2/task-contract-v1.schema.json",
+  "title": "TORCH Task Contract",
+  "description": "The bounded unit a worker executes. Spec: DEVELOPMENT_NETWORK_SPEC.md §8. The sha256 of the canonical serialized contract is carried in lock events as taskContractHash; every evidence bundle records it as part of promptBundleDigest provenance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "campaignId",
+    "milestoneId",
+    "repoUrl",
+    "gitCommit",
+    "role",
+    "rolePromptHash",
+    "scope",
+    "toolPermissions",
+    "validationCommands",
+    "spendingCeiling",
+    "publicationPolicy",
+    "expiresAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "torch.task-contract.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^tc_[a-z0-9-]{6,64}$"
+    },
+    "campaignId": {
+      "type": "string",
+      "pattern": "^camp_[a-z0-9-]{6,64}$"
+    },
+    "milestoneId": {
+      "type": "string",
+      "pattern": "^ms_[a-z0-9-]{6,64}$"
+    },
+    "repoUrl": {
+      "type": "string",
+      "pattern": "^https://",
+      "maxLength": 512
+    },
+    "gitCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "role": {
+      "type": "string",
+      "description": "Agent role name from the role library (spec §7), e.g. implementation, integration, independent-verifier",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "rolePromptHash": {
+      "type": "string",
+      "description": "sha256 of the role prompt file, matching the promptHash provenance already carried by 1.x lock events",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "featureContractVersion": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "charterVersion": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedPaths"],
+      "properties": {
+        "allowedPaths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "forbiddenPaths": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "toolPermissions": {
+      "type": "array",
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    },
+    "validationCommands": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "spendingCeiling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "amount"],
+      "properties": {
+        "unit": {
+          "enum": ["sats", "usd-cents", "tokens"]
+        },
+        "amount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "outputSchemaRef": {
+      "type": "string",
+      "maxLength": 256
+    },
+    "publicationPolicy": {
+      "enum": ["private-report", "draft-pr", "public-pr-after-approval"]
+    },
+    "expiresAt": {
+      "type": "integer",
+      "description": "Unix seconds",
+      "minimum": 0
+    }
+  }
+}

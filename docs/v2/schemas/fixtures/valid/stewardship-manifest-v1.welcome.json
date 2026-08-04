@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "torch.stewardship-manifest.v1",
+  "status": "welcome",
+  "acceptedWork": ["security-analysis", "test-generation", "bug-fix", "documentation"],
+  "requires": {
+    "humanSponsor": true,
+    "aiDisclosure": true,
+    "linkedIssue": true,
+    "reproducibleTests": true
+  },
+  "security": {
+    "publicVulnerabilityPrs": false,
+    "privateReporting": "github-security-advisory"
+  },
+  "validation": {
+    "commands": ["npm test", "npm run lint"]
+  },
+  "funding": {
+    "donatedCompute": true,
+    "providers": ["openrouter", "routstr"],
+    "lightningAddress": "project@example.com"
+  },
+  "contact": "https://github.com/example/wallet/discussions"
+}

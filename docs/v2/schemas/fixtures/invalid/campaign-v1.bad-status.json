@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "torch.campaign.v1",
+  "id": "camp_pilot-stewardship-001",
+  "mode": "stewardship",
+  "projectName": "Example Wallet",
+  "repoUrl": "https://github.com/example/wallet",
+  "gitCommit": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "maintainer": "npub1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6r8p3c",
+  "status": "paused",
+  "scopeSummary": "Scope.",
+  "contributionCategories": ["security-analysis"],
+  "disclosurePolicy": "private-report",
+  "spendingCeilingSats": 100000,
+  "createdAt": 1785715200
+}

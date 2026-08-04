@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://torch.local/schemas/v2/campaign-v1.schema.json",
+  "title": "TORCH Campaign",
+  "description": "A funded unit of welcome work on one project at one commit. Spec: DEVELOPMENT_NETWORK_SPEC.md §3, §5. Foundry campaigns must also reference a charter via charterRef; cross-field rules are enforced by the campaign service, not this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "mode",
+    "projectName",
+    "repoUrl",
+    "gitCommit",
+    "maintainer",
+    "status",
+    "scopeSummary",
+    "contributionCategories",
+    "disclosurePolicy",
+    "spendingCeilingSats",
+    "createdAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "torch.campaign.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^camp_[a-z0-9-]{6,64}$"
+    },
+    "mode": {
+      "enum": ["stewardship", "build", "foundry"]
+    },
+    "projectName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "repoUrl": {
+      "type": "string",
+      "pattern": "^https://",
+      "maxLength": 512
+    },
+    "gitCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "maintainer": {
+      "type": "string",
+      "description": "Durable actor identity of the consenting maintainer or steward",
+      "pattern": "^npub1[02-9ac-hj-np-z]{58}$"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "open",
+        "funded",
+        "executing",
+        "verifying",
+        "complete",
+        "stopped",
+        "cancelled"
+      ]
+    },
+    "scopeSummary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "contributionCategories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "security-analysis",
+          "bug-fix",
+          "fuzzing",
+          "test-generation",
+          "documentation",
+          "dependency-maintenance",
+          "performance",
+          "accessibility",
+          "feature",
+          "refactor",
+          "release-prep"
+        ]
+      }
+    },
+    "disclosurePolicy": {
+      "enum": [
+        "private-security-advisory",
+        "private-report",
+        "public-after-fix",
+        "public"
+      ]
+    },
+    "spendingCeilingSats": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "milestones": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^ms_[a-z0-9-]{6,64}$"
+      }
+    },
+    "charterRef": {
+      "type": "string",
+      "maxLength": 512
+    },
+    "createdAt": {
+      "type": "integer",
+      "description": "Unix seconds",
+      "minimum": 0
+    }
+  }
+}

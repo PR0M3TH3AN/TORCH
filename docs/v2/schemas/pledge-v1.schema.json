@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://torch.local/schemas/v2/pledge-v1.schema.json",
+  "title": "TORCH Pledge",
+  "description": "A conditional support signal, never money. Spec: DEVELOPMENT_NETWORK_SPEC.md §14.3 — BitUnlock has no holds or escrow, so a pledge exists only as the content of a signed Nostr event published by the sponsor. The event pubkey must equal the sponsor field (service-layer check). Settlement happens just-in-time as an ordinary BitUnlock purchase.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "campaignId",
+    "sponsor",
+    "maximumSats",
+    "expiresAt"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "torch.pledge.v1"
+    },
+    "campaignId": {
+      "type": "string",
+      "pattern": "^camp_[a-z0-9-]{6,64}$"
+    },
+    "milestoneId": {
+      "type": "string",
+      "pattern": "^ms_[a-z0-9-]{6,64}$"
+    },
+    "sponsor": {
+      "type": "string",
+      "pattern": "^npub1[02-9ac-hj-np-z]{58}$"
+    },
+    "maximumSats": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "expiresAt": {
+      "type": "integer",
+      "description": "Unix seconds; an unfulfilled pledge simply expires",
+      "minimum": 0
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maintainerApproved": {
+          "type": "boolean"
+        },
+        "minimumOtherFundingSats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "milestoneStatus": {
+          "enum": ["approved", "funded", "ready"]
+        }
+      }
+    }
+  }
+}

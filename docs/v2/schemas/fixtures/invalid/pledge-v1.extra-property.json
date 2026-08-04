@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "torch.pledge.v1",
+  "campaignId": "camp_pilot-stewardship-001",
+  "sponsor": "npub1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6r8p3c",
+  "maximumSats": 25000,
+  "expiresAt": 1788307200,
+  "custodialBalanceSats": 25000
+}

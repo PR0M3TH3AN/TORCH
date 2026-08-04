@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://torch.local/schemas/v2/milestone-v1.schema.json",
+  "title": "TORCH Milestone",
+  "description": "The primary funding unit. Spec: DEVELOPMENT_NETWORK_SPEC.md §5. Fees are milestone-grained (spec §16.1): each milestone's coordination fee and verification reserve are individual BitUnlock static-product purchases.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "campaignId",
+    "title",
+    "objective",
+    "deliverables",
+    "dependencies",
+    "acceptanceScenarios",
+    "funding",
+    "humanApprovalGate",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "torch.milestone.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^ms_[a-z0-9-]{6,64}$"
+    },
+    "campaignId": {
+      "type": "string",
+      "pattern": "^camp_[a-z0-9-]{6,64}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "deliverables": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Milestone IDs that must be approved before tasks under this milestone may exist",
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^ms_[a-z0-9-]{6,64}$"
+      }
+    },
+    "acceptanceScenarios": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "funding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetSats",
+        "coordinationFeeSats",
+        "verificationReserveSats",
+        "maxProviderSpendSats"
+      ],
+      "properties": {
+        "targetSats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coordinationFeeSats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verificationReserveSats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxProviderSpendSats": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "humanApprovalGate": {
+      "description": "Which human role must approve this milestone before downstream work exists",
+      "enum": ["maintainer", "steward", "security-reviewer"]
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "approved",
+        "funded",
+        "ready",
+        "executing",
+        "verifying",
+        "complete",
+        "stopped"
+      ]
+    },
+    "securityReviewRequired": {
+      "type": "boolean"
+    },
+    "stopConditions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://torch.local/schemas/v2/stewardship-manifest-v1.schema.json",
+  "title": "TORCH Stewardship Manifest (ai-contributions)",
+  "description": "The public, repo-committed manifest through which a project declares what AI-assisted contributions it welcomes and on what terms. Spec: DEVELOPMENT_NETWORK_SPEC.md §3.1. Intended location in a consuming repo: .github/ai-contributions.json (or referenced from AI_CONTRIBUTING.md). Independently useful without any other TORCH machinery.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "acceptedWork",
+    "requires",
+    "security",
+    "validation"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "torch.stewardship-manifest.v1"
+    },
+    "status": {
+      "enum": ["welcome", "by-invitation", "closed"]
+    },
+    "acceptedWork": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "security-analysis",
+          "bug-fix",
+          "fuzzing",
+          "test-generation",
+          "documentation",
+          "dependency-maintenance",
+          "performance",
+          "accessibility",
+          "feature",
+          "refactor",
+          "release-prep"
+        ]
+      }
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "humanSponsor",
+        "aiDisclosure",
+        "linkedIssue",
+        "reproducibleTests"
+      ],
+      "properties": {
+        "humanSponsor": { "type": "boolean" },
+        "aiDisclosure": { "type": "boolean" },
+        "linkedIssue": { "type": "boolean" },
+        "reproducibleTests": { "type": "boolean" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["publicVulnerabilityPrs", "privateReporting"],
+      "properties": {
+        "publicVulnerabilityPrs": {
+          "type": "boolean"
+        },
+        "privateReporting": {
+          "type": "string",
+          "description": "Where security findings go, e.g. github-security-advisory or a contact URL",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commands"],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "funding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "donatedCompute": { "type": "boolean" },
+        "providers": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 64 }
+        },
+        "lightningAddress": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "contact": {
+      "type": "string",
+      "maxLength": 256
+    }
+  }
+}

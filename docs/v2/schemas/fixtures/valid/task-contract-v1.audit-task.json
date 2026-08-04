@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "torch.task-contract.v1",
+  "id": "tc_entropy-callsites-001",
+  "campaignId": "camp_pilot-stewardship-001",
+  "milestoneId": "ms_pilot-audit-001",
+  "repoUrl": "https://github.com/example/wallet",
+  "gitCommit": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "role": "independent-verifier",
+  "rolePromptHash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+  "scope": {
+    "allowedPaths": ["src/crypto/", "src/keygen/"],
+    "forbiddenPaths": ["docs/"]
+  },
+  "toolPermissions": ["read", "run-tests"],
+  "validationCommands": ["npm test"],
+  "spendingCeiling": {
+    "unit": "sats",
+    "amount": 20000
+  },
+  "publicationPolicy": "private-report",
+  "expiresAt": 1785801600
+}

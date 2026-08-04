@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "torch.milestone.v1",
+  "id": "ms_pilot-audit-001",
+  "campaignId": "camp_pilot-stewardship-001",
+  "title": "Entropy source audit",
+  "objective": "Audit randomness sources.",
+  "deliverables": ["Report"],
+  "dependencies": [],
+  "acceptanceScenarios": ["Given X, when Y, then Z."],
+  "funding": {
+    "targetSats": -1,
+    "coordinationFeeSats": 8000,
+    "verificationReserveSats": 7000,
+    "maxProviderSpendSats": 82000
+  },
+  "humanApprovalGate": "maintainer",
+  "status": "approved"
+}

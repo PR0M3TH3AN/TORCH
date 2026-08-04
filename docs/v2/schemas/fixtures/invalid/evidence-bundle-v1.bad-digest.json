@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "torch.evidence-bundle.v1",
+  "id": "ev_entropy-run-001",
+  "taskContractId": "tc_entropy-callsites-001",
+  "campaignId": "camp_pilot-stewardship-001",
+  "milestoneId": "ms_pilot-audit-001",
+  "actor": "npub1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6r8p3c",
+  "gitCommit": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "promptBundleDigest": "not-a-sha256",
+  "startedAt": 1785715200,
+  "completedAt": 1785722400,
+  "validationResults": [
+    { "command": "npm test", "exitCode": 0, "ok": true }
+  ],
+  "artifacts": {
+    "context": {
+      "path": "src/context/CONTEXT_x.md",
+      "sha256": "fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9"
+    },
+    "todo": {
+      "path": "src/todo/TODO_x.md",
+      "sha256": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+    },
+    "decisions": {
+      "path": "src/decisions/DECISIONS_x.md",
+      "sha256": "3fdba35f04dc8c462986c992bcf875546257113072a909c162f7e470e581e278"
+    },
+    "testLogs": {
+      "path": "src/test_logs/TEST_LOG_x.md",
+      "sha256": "8f14e45fceea167a5a36dedd4bea2543c8f4f7e470e581e2783fdba35f04dc8c"
+    }
+  }
+}

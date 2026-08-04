@@ -50,7 +50,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run validate:scheduler && npm run test:integration:e2e && node --test --test-timeout=30000 test/*.test.mjs test/*.test.js",
+    "test": "npm run validate:scheduler && npm run validate:v2 && npm run test:integration:e2e && node --test --test-timeout=30000 test/*.test.mjs test/*.test.js",
+    "validate:v2": "node scripts/validate-v2-contracts.mjs",
     "test:unit:lock-backend": "node --test test/lock-ops.test.mjs test/lock-ops-publish-retry.test.mjs",
     "lock:check:daily": "node bin/torch-lock.mjs check --cadence daily",
     "lock:check:weekly": "node bin/torch-lock.mjs check --cadence weekly",
