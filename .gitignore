@@ -31,3 +31,8 @@ benchmark-baseline.txt
 coverage/
 playwright-report/
 test-results/
+
+# Agent runtime state (local only)
+memory-update.json
+memory-update.md
+.claude/

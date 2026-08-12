@@ -20,6 +20,7 @@ We treat tests as **behavioral specifications** expressed as **scenarios**:
 2) **Never change expected behavior to match buggy output** (“rubber-stamp the snapshot”, “update golden”, “adjust assertion”) unless it is a **spec correction** (see below).
 3) Do not “fix” flaky tests with retries, sleeps, timeouts, or looser assertions. **Remove nondeterminism** instead (control time, randomness, IO, network).
 4) Prefer black-box assertions at system boundaries; avoid tests that merely mirror internal logic.
+5) Do not “hard-code to the test” (single fixtures, single input paths, brittle constants), and do not mock so heavily that tests can pass with a broken system.
 
 ### Definitions
 
