@@ -155,3 +155,10 @@ All agents that generate reports must adhere to the following directory structur
 *   Use Markdown (`.md`) for human-readable reports.
 *   Use JSON (`.json`) or Log (`.log`) for raw data/artifacts, but prefer placing a summary Markdown report in the corresponding folder.
 *   Naming convention: `<type>-report-YYYY-MM-DD.md` (e.g., `daily-perf-report-2024-01-01.md`).
+
+## Repo memory
+
+Curated agent memory lives in `.agents/` (index: `.agents/MEMORY.md`). Read it
+before substantive work. Propose additions as files in `.agents/proposals/`;
+trusted memory under `.agents/memory/` changes only through reviewed commits.
+Code, tests, and configuration always outrank memory.

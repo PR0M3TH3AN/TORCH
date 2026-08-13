@@ -127,3 +127,12 @@ When modifying tests, follow the test integrity protocol in `CLAUDE.md`. Tests a
 ## Reporting Issues
 
 If you encounter bugs or have feature requests, please open an issue on GitHub.
+
+## AI-assisted contributions
+
+AI-assisted changes are subject to the same testing, security, and review
+requirements as any other change; the contributor remains responsible for
+understanding what they submit. Do not submit unvalidated generated code,
+credentials, or agent-generated trusted memory without evidence and review.
+The canonical backlog and planning rules are in `AGENTS.md`; durable agent
+plans live under `.agents/plans/`.

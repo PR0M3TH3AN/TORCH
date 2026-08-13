@@ -36,3 +36,7 @@ test-results/
 memory-update.json
 memory-update.md
 .claude/
+
+# Agent-local memory state (never committed)
+.agents/private/
+.agents/state/
