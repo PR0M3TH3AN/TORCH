@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { fileHash } from './files.mjs';
@@ -110,6 +110,33 @@ export function diagnoseProject({ repository, env = process.env }) {
         findings.push({
           severity: problem === 'worktree-dirty' || problem.startsWith('unique-commits:') ? 'warning' : 'error',
           code: 'WORKTREE_PROBLEM', area: entry.area, path: entry.path, problem,
+        });
+      }
+    }
+    const managerWorktree = (manifest.external ?? []).find((entry) =>
+      entry.type === 'worktree' && entry.area === 'session-manager');
+    if (managerWorktree) {
+      const backlogRoot = join(managerWorktree.path, '.torch', 'backlog');
+      if (!existsSync(backlogRoot)) {
+        findings.push({ severity: 'error', code: 'BACKLOG_DIRECTORY_MISSING', path: backlogRoot });
+      } else {
+        const tasks = [];
+        for (const name of readdirSync(backlogRoot).filter((entry) => entry.endsWith('.json'))) {
+          try {
+            const task = parseJsonYaml(join(backlogRoot, name));
+            if (task.schema !== 'torch.dev/backlog-item/v1alpha1' || !task.id || !task.state) throw new Error('invalid task schema');
+            if (!['completed', 'cancelled'].includes(task.state)) {
+              tasks.push({ id: task.id, state: task.state, owner: task.owner, revision: task.revision });
+            }
+          } catch (error) {
+            findings.push({
+              severity: 'error', code: 'BACKLOG_TASK_INVALID', path: join(backlogRoot, name), message: error.message,
+            });
+          }
+        }
+        if (tasks.length) findings.push({
+          severity: tasks.some((task) => task.state === 'blocked') ? 'warning' : 'info',
+          code: 'BACKLOG_ACTIVITY', tasks,
         });
       }
     }

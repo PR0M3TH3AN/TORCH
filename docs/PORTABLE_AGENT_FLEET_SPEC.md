@@ -921,6 +921,14 @@ Owner decisions affecting future work MUST be recorded durably. Chat messages
 alone are insufficient. Project source, tests, approved configuration, and
 accepted decision records outrank summaries and generated prompts.
 
+Implementation checkpoint (2026-09-27): backlog items are revisioned JSON
+records in the Session Manager's tracked worktree. The service and equivalent
+CLI/MCP operations enforce transition, owner, dependency, and concurrent-write
+rules; publish assignments and blockers through durable messaging; surface
+active work in doctor; and require a landed integration record at the same
+commit before completion. Keeping management records in the manager worktree
+prevents backlog activity from dirtying canonical main.
+
 ## 18. Checks and evidence
 
 Projects declare checks as commands with optional resources and applicability.
@@ -1377,10 +1385,10 @@ Implementation checkpoint (2026-09-27): isolated version installation,
 reserved validation receipts, declared state compatibility, an atomic active
 symlink, activation journaling, interruption reconciliation, exact rollback,
 and approval-gated CLI operations are implemented and scenario-tested. The
-candidate CLI requires named acceptance evidence and currently fails closed on
-the not-yet-implemented durable backlog lifecycle. The exit gate remains open
-until that lifecycle exists and an installed stable TORCH manages this source
-repository; candidate code does not receive a hidden self-hosting exception.
+candidate CLI requires named acceptance evidence, including the implemented
+tracked backlog-through-integration lifecycle. The exit gate remains open
+until an installed stable TORCH manages this source repository; candidate code
+does not receive a hidden self-hosting exception.
 
 ### Stage 7: COMBATRIG re-import
 

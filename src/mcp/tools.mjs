@@ -28,6 +28,10 @@ export const TORCH_CORE_MCP_TOOL_NAMES = Object.freeze([
 
 export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   ...TORCH_CORE_MCP_TOOL_NAMES,
+  'torch_list_backlog',
+  'torch_get_backlog_task',
+  'torch_create_backlog_task',
+  'torch_transition_backlog_task',
   'torch_list_checks',
   'torch_list_check_receipts',
   'torch_plan_check',
@@ -61,7 +65,7 @@ function claimedIdentity(controlPlane, actorId, claim, field) {
 }
 
 export function createTorchToolset(controlPlane, {
-  actorId, checkService, resourceService, integrationService,
+  actorId, backlogService, checkService, resourceService, integrationService,
 } = {}) {
   const tools = new Map([
     ['torch_identity', {
@@ -175,6 +179,52 @@ export function createTorchToolset(controlPlane, {
       }),
     }],
   ]);
+  if (backlogService) {
+    tools.set('torch_list_backlog', {
+      description: 'List durable tracked backlog tasks, optionally filtered by state or owner.',
+      schema: { state: z.string().min(1).optional(), owner: z.string().min(1).optional() },
+      invoke: (input) => ({ tasks: backlogService.list(input) }),
+    });
+    tools.set('torch_get_backlog_task', {
+      description: 'Read one durable tracked backlog task and its transition history.',
+      schema: { task_id: z.string().min(1) },
+      invoke: ({ task_id: taskId }) => backlogService.get(taskId),
+    });
+    tools.set('torch_create_backlog_task', {
+      description: 'Create proposed work as the bound Session Manager identity.',
+      schema: {
+        actor_id: z.string().min(1).optional(), title: z.string().min(1), description: z.string().min(1),
+        priority: z.enum(['urgent', 'high', 'normal', 'low']).optional(),
+        affected_domains: z.array(z.string().min(1)).optional(),
+        dependencies: z.array(z.string().min(1)).optional(),
+        acceptance_criteria: z.array(z.string().min(1)).min(1),
+      },
+      invoke: ({
+        actor_id: actorIdClaim, affected_domains: affectedDomains,
+        acceptance_criteria: acceptanceCriteria, ...input
+      }) => backlogService.create({
+        ...input, affectedDomains, acceptanceCriteria,
+        actorId: claimedIdentity(controlPlane, actorId, actorIdClaim, 'actor_id'),
+      }),
+    });
+    tools.set('torch_transition_backlog_task', {
+      description: 'Apply one revision-checked backlog state transition under bound Fleet authority.',
+      schema: {
+        task_id: z.string().min(1), actor_id: z.string().min(1).optional(), to: z.string().min(1),
+        expected_revision: z.number().int().min(1), owner: z.string().min(1).optional(),
+        evidence: z.array(z.string().min(1)).optional(), commit: z.string().min(1).optional(),
+        integration_request: z.string().min(1).optional(), blocked_reason: z.string().min(1).optional(),
+        note: z.string().min(1).optional(),
+      },
+      invoke: ({
+        task_id: taskId, actor_id: actorIdClaim, expected_revision: expectedRevision,
+        integration_request: integrationRequest, blocked_reason: blockedReason, ...input
+      }) => backlogService.transition({
+        ...input, taskId, expectedRevision, integrationRequest, blockedReason,
+        actorId: claimedIdentity(controlPlane, actorId, actorIdClaim, 'actor_id'),
+      }),
+    });
+  }
   if (checkService) {
     tools.set('torch_list_checks', {
       description: 'List approved project check definitions.', schema: {},
@@ -291,7 +341,7 @@ export function callTorchTool(controlPlane, name, input = {}, options = {}) {
 }
 
 export function createTorchMcpServer(controlPlane, {
-  actorId, checkService, resourceService, integrationService,
+  actorId, backlogService, checkService, resourceService, integrationService,
 } = {}) {
   controlPlane.assertIdentity(actorId);
   const server = new McpServer(
@@ -301,7 +351,7 @@ export function createTorchMcpServer(controlPlane, {
     },
   );
   for (const [name, tool] of createTorchToolset(controlPlane, {
-    actorId, checkService, resourceService, integrationService,
+    actorId, backlogService, checkService, resourceService, integrationService,
   })) {
     server.registerTool(name, { description: tool.description, inputSchema: tool.schema }, async (input) => {
       try {

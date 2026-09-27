@@ -2,6 +2,7 @@
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { resolve } from 'node:path';
 import { CheckService } from '../checks/service.mjs';
+import { BacklogService } from '../backlog/service.mjs';
 import { IntegrationService } from '../integration/service.mjs';
 import { openControlPlane } from '../control-plane/service.mjs';
 import { ResourceService } from '../resources/service.mjs';
@@ -21,8 +22,11 @@ controlPlane.assertIdentity(actorId);
 const resourceService = new ResourceService({ repositoryRoot, controlPlane });
 const checkService = new CheckService({ repositoryRoot, controlPlane, resourceService });
 const integrationService = new IntegrationService({ repositoryRoot, controlPlane, checkService });
+const backlogService = new BacklogService({
+  repositoryRoot, controlPlane, integrationLookup: (requestId) => integrationService.get(requestId),
+});
 const handle = serveStdio(() => createTorchMcpServer(controlPlane, {
-  actorId, checkService, resourceService, integrationService,
+  actorId, backlogService, checkService, resourceService, integrationService,
 }), {
   onerror: (error) => console.error(`TORCH MCP: ${error.message}`),
 });

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import test from 'node:test';
 
 const CLI = new URL('../../bin/torch.mjs', import.meta.url).pathname;
@@ -21,7 +21,7 @@ function repo() {
 function run(root, args) {
   return spawnSync(process.execPath, [CLI, ...args], {
     cwd: root,
-    env: { ...process.env, XDG_DATA_HOME: join(root, '.data') },
+    env: { ...process.env, XDG_DATA_HOME: join(tmpdir(), `${basename(root)}-data`) },
     encoding: 'utf8',
   });
 }
@@ -155,4 +155,44 @@ test('SCN-cli-self-host: candidate acceptance, atomic upgrade, and rollback requ
   const rolledBack = run(root, ['rollback', '--yes', '--json']);
   assert.equal(rolledBack.status, 0, rolledBack.stderr || rolledBack.stdout);
   assert.equal(JSON.parse(rolledBack.stdout).activeVersion, '1.0.0');
+});
+
+test('SCN-cli-backlog: public commands create, transition, assign, and list tracked work', () => {
+  const root = repo();
+  const proposalPath = join(root, 'fleet-proposal.json');
+  run(root, ['domains', '--output', proposalPath, '--json']);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  proposal.review = {
+    status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
+  };
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  assert.equal(run(root, ['install', '--proposal', proposalPath, '--yes', '--json']).status, 0);
+  execFileSync('git', ['-C', root, 'add', '.torch', 'fleet-proposal.json']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'install torch']);
+  const worktreeParent = join(tmpdir(), `${basename(root)}-worktrees`);
+  const worktrees = run(root, ['worktrees', '--parent', worktreeParent, '--yes', '--json']);
+  assert.equal(worktrees.status, 0, worktrees.stderr || worktrees.stdout);
+
+  const created = run(root, [
+    'backlog', 'create', '--area', 'session-manager', '--title', 'CLI task',
+    '--description', 'Exercise public lifecycle.', '--accept', 'Assigned to owner',
+    '--domains', proposal.domains[0].id, '--json',
+  ]);
+  assert.equal(created.status, 0, created.stderr || created.stdout);
+  let task = JSON.parse(created.stdout);
+  for (const transition of [
+    ['ready'],
+    ['assigned', '--owner', proposal.domains[0].id],
+  ]) {
+    const result = run(root, [
+      'backlog', 'transition', '--task', task.id, '--area', 'session-manager',
+      '--state', ...transition, '--revision', String(task.revision), '--json',
+    ]);
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    task = JSON.parse(result.stdout);
+  }
+  assert.equal(task.state, 'assigned');
+  assert.equal(task.owner, proposal.domains[0].id);
+  const listed = JSON.parse(run(root, ['backlog', 'list', '--state', 'assigned', '--json']).stdout);
+  assert.equal(listed.tasks[0].id, task.id);
 });

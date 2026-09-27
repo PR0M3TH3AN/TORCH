@@ -30,6 +30,7 @@ and the first Claude reference-fleet path:
 - purge protection for dirty and uniquely committed domain work.
 - SQLite-backed stable Fleet identities and presence;
 - durable direct/group messages with per-recipient acknowledgement;
+- revision-checked tracked backlog tasks with dependencies, evidence, and landed-commit completion;
 - live ownership, neighbours, handoff, coordination, completion, and blocker operations;
 - equivalent CLI and identity-bound MCP surfaces;
 - current MCP stdio interoperability through the official protocol SDK;
@@ -99,7 +100,8 @@ node bin/torch.mjs down --yes --json
 ```
 
 The CLI fallback exposes `agents`, `who-owns`, `message`, `inbox`, `ack`,
-`status`, `complete`, `blocked`, `coordinate`, and `handoff`. MCP hosts launch
+`status`, `complete`, `blocked`, `coordinate`, `handoff`, and the tracked
+`backlog` lifecycle. MCP hosts launch
 `torch-mcp --root /path/to/repository --area <fleet-id>` and receive the same
 service operations, identity-bound to that Fleet area.
 
@@ -119,10 +121,9 @@ node bin/torch.mjs upgrade --version 0.1.0-alpha.0 --yes --json
 node bin/torch.mjs rollback --dry-run --json
 ```
 
-The current source cannot yet satisfy its own complete candidate gate because
-the durable backlog lifecycle is still staged work. This is an intentional
-fail-closed dependency, not a waived acceptance check. Bootstrapping an
-installed stable TORCH to manage this repository also remains open.
+The candidate gate requires named evidence for backlog-through-integration,
+not merely a green process exit. Bootstrapping an installed stable TORCH to
+manage this repository remains open.
 
 Persistent domain sessions also create a context-locality opportunity: each
 specialist can keep its relevant working set hot instead of one general session

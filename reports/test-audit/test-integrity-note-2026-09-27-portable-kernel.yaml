@@ -62,6 +62,10 @@ test_integrity_note:
       given: an installed project using no MCP-capable runtime
       when: an agent sends, reads, acknowledges, reports status, and queries ownership through CLI
       then: each operation observes the same durable control-plane state
+    - id: SCN-cli-backlog
+      given: an installed fleet with Session Manager and worker worktrees
+      when: public CLI commands create, ready, assign, and list a tracked task
+      then: revisioned backlog state changes in the manager worktree and the assigned owner is visible through the same service
     - id: SCN-cli-self-host
       given: two isolated candidate artifacts with complete named acceptance evidence
       when: an owner plans, builds, activates, upgrades, and rolls back through the CLI
@@ -73,7 +77,7 @@ test_integrity_note:
     - id: SCN-mcp-stdio
       given: an installed TORCH project and an MCP host process
       when: the host performs the initialize handshake and lists tools over stdio
-      then: the official MCP transport identifies TORCH and advertises the exact 14-tool contract
+      then: the official MCP transport identifies TORCH and advertises the complete configured tool contract
     - id: SCN-claude-adapter
       given: a Claude runtime adapter with a virtualized command runner
       when: sessions are planned and runtime state is queried
@@ -94,6 +98,10 @@ test_integrity_note:
       given: one approved Codex worker domain and one Claude Session Manager with stable Fleet identities
       when: the mixed fleet starts and winds down through virtualized runtime boundaries
       then: provider-specific commands and runtime IDs remain separate, the manager starts last, Codex completes idle, and only resident processes are stopped
+    - id: SCN-backlog-lifecycle
+      given: tracked tasks in the Session Manager worktree with domain owners, dependencies, and an integration lookup
+      when: tasks move through assignment, work, blocking, verification, readiness, landing, and completion
+      then: authority and optimistic revisions are enforced, concurrent locks fail closed, dependencies gate assignment, doctor observes active work, and completion requires the same landed commit
     - id: SCN-candidate-isolation
       given: an inactive candidate in a namespace separate from project and stable runtime state
       when: acceptance is incomplete, complete, or the accepted files are later modified
@@ -142,6 +150,7 @@ test_integrity_note:
     - virtualized Claude command runner with no provider calls
     - virtualized Codex command runner and deterministic JSONL events with no provider calls
     - local stdio MCP child process with bounded response timeout
+    - deterministic backlog IDs, revisions, clocks, and injected integration lookup
     - shell-free fixture checks with controlled exit codes
     - injected resource clock and identifiers
     - local-only bare Git remote with no network dependency
@@ -157,6 +166,9 @@ test_integrity_note:
       - in-memory-only messaging that disappears on restart
       - runtime session IDs masquerading as durable Fleet identities
       - messages or handoffs silently granting authority
+      - workers creating tasks, changing owners, or completing work without a landed matching commit
+      - concurrent backlog writers silently overwriting a newer task revision
+      - management backlog files dirtying canonical main instead of the manager worktree
       - repository content redirecting machine-local database writes
       - MCP and CLI drifting onto separate business logic
       - launch plans that execute provider commands during preview

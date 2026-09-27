@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
+import { BacklogService } from '../../src/backlog/service.mjs';
 import { createLocalCanonical, classifyRecoverability, planLocalCanonical } from '../../src/canonical/local.mjs';
 import { CheckService } from '../../src/checks/service.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
@@ -69,6 +70,25 @@ test('SCN-native-integration: exact receipts plus manager authority land only an
     repositoryRoot: context.root, controlPlane: control, checkService: checks,
     idFactory: () => `integration-${++id}`,
   });
+  const backlog = new BacklogService({
+    repositoryRoot: context.root, controlPlane: control,
+    idFactory: () => `integration-task-${++id}`,
+    integrationLookup: (requestId) => integration.get(requestId),
+  });
+  let task = backlog.create({
+    actorId: 'session-manager', title: 'Land bounded domain change',
+    description: 'Exercise backlog through exact integration.', affectedDomains: [context.worker],
+    acceptanceCriteria: ['Exact receipt and landed commit match.'],
+  });
+  for (const transition of [
+    { actorId: 'session-manager', to: 'ready' },
+    { actorId: 'session-manager', to: 'assigned', owner: context.worker },
+    { actorId: context.worker, to: 'in_progress' },
+    { actorId: context.worker, to: 'verification', commit: receipt.commit, evidence: ['verify-pass receipt'] },
+    { actorId: context.worker, to: 'ready_to_integrate' },
+  ]) {
+    task = backlog.transition({ taskId: task.id, expectedRevision: task.revision, ...transition });
+  }
   const request = integration.request({ areaId: context.worker, commit: receipt.commit });
   assert.equal(request.state, 'ready');
   assert.throws(
@@ -81,6 +101,11 @@ test('SCN-native-integration: exact receipts plus manager authority land only an
   assert.equal(landed.state, 'landed');
   assert.equal(execFileSync('git', ['-C', context.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), receipt.commit);
   assert.equal(readFileSync(join(context.root, 'app.js'), 'utf8'), 'export const value = 2;\n');
+  task = backlog.transition({
+    taskId: task.id, actorId: 'session-manager', to: 'completed', expectedRevision: task.revision,
+    integrationRequest: landed.id,
+  });
+  assert.equal(task.state, 'completed');
 
   writeFileSync(join(context.worktree.path, 'app.js'), 'export const value = 3;\n');
   execFileSync('git', ['-C', context.worktree.path, 'add', 'app.js']);

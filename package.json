@@ -6,6 +6,7 @@
   "main": "src/cli.mjs",
   "exports": {
     ".": "./src/cli.mjs",
+    "./backlog": "./src/backlog/service.mjs",
     "./adapters/claude": "./src/adapters/claude.mjs",
     "./adapters/codex": "./src/adapters/codex.mjs",
     "./canonical/local": "./src/canonical/local.mjs",
@@ -45,6 +46,7 @@
     "bin/torch.mjs",
     "src/cli.mjs",
     "src/adapters/",
+    "src/backlog/",
     "src/canonical/",
     "src/checks/",
     "src/control-plane/",
@@ -63,8 +65,8 @@
     "test": "node --test --test-timeout=30000 test/fleet/*.test.mjs",
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs",
-    "format": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet --fix",
-    "lint": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet"
+    "format": "eslint src/adapters src/backlog src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet --fix",
+    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",

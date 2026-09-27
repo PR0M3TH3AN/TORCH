@@ -1,4 +1,5 @@
 import { analyzeRepository } from './kernel/analyze.mjs';
+import { BacklogService } from './backlog/service.mjs';
 import { createClaudeAdapter } from './adapters/claude.mjs';
 import { createCodexAdapter } from './adapters/codex.mjs';
 import { CheckService } from './checks/service.mjs';
@@ -43,6 +44,10 @@ Usage:
   torch blocked --area <id> --summary <text> [--task <id>] [--evidence <text>] [--path <path>] [--commit <sha>] [--json]
   torch coordinate --from <id> --body <text> [--with <id,id>] [--task <id>] [--path <path>] [--json]
   torch handoff --from <id> [--to <id>] (--path <path> | --task <id>) --reason <text> [--json]
+  torch backlog list [--state <state>] [--owner <id>] [--json]
+  torch backlog get --task <id> [--json]
+  torch backlog create --area <id> --title <text> --description <text> --accept <text,...> [--priority <priority>] [--domains <id,...>] [--depends <task,...>] [--json]
+  torch backlog transition --task <id> --area <id> --state <state> --revision <n> [--owner <id>] [--evidence <text,...>] [--commit <sha>] [--integration <id>] [--reason <text>] [--note <text>] [--json]
   torch checks list [--json]
   torch checks receipts [--commit <sha>] [--id <check>] [--area <id>] [--json]
   torch checks plan --id <check> --area <id> [--json]
@@ -81,6 +86,10 @@ function optionValue(argv, name) {
   if (direct) return direct.slice(name.length + 1);
   const index = argv.indexOf(name);
   return index >= 0 ? argv[index + 1] : undefined;
+}
+
+function commaList(value) {
+  return (value ?? '').split(',').map((item) => item.trim()).filter(Boolean);
 }
 
 function loadProposal(cwd, proposalPath) {
@@ -441,6 +450,45 @@ export async function runCli(argv = process.argv.slice(2), {
         path: optionValue(argv, '--path'), task: optionValue(argv, '--task'), reason: optionValue(argv, '--reason'),
       })), { json });
       return 0;
+    }
+    if (command === 'backlog') {
+      const operation = argv[1] ?? 'list';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const resources = new ResourceService({ repositoryRoot: repository.root, controlPlane: control });
+        const checks = new CheckService({
+          repositoryRoot: repository.root, controlPlane: control, resourceService: resources,
+        });
+        const integration = new IntegrationService({
+          repositoryRoot: repository.root, controlPlane: control, checkService: checks,
+        });
+        const backlog = new BacklogService({
+          repositoryRoot: repository.root, controlPlane: control,
+          integrationLookup: (requestId) => integration.get(requestId),
+        });
+        if (operation === 'list') print({ tasks: backlog.list({
+          state: optionValue(argv, '--state'), owner: optionValue(argv, '--owner'),
+        }) }, { json });
+        else if (operation === 'get') print(backlog.get(optionValue(argv, '--task')), { json });
+        else if (operation === 'create') print(backlog.create({
+          actorId: optionValue(argv, '--area'), title: optionValue(argv, '--title'),
+          description: optionValue(argv, '--description'), priority: optionValue(argv, '--priority') ?? 'normal',
+          acceptanceCriteria: commaList(optionValue(argv, '--accept')),
+          affectedDomains: commaList(optionValue(argv, '--domains')),
+          dependencies: commaList(optionValue(argv, '--depends')),
+        }), { json });
+        else if (operation === 'transition') print(backlog.transition({
+          taskId: optionValue(argv, '--task'), actorId: optionValue(argv, '--area'),
+          to: optionValue(argv, '--state'), expectedRevision: Number(optionValue(argv, '--revision')),
+          owner: optionValue(argv, '--owner'), evidence: commaList(optionValue(argv, '--evidence')),
+          commit: optionValue(argv, '--commit'), integrationRequest: optionValue(argv, '--integration'),
+          blockedReason: optionValue(argv, '--reason'), note: optionValue(argv, '--note'),
+        }), { json });
+        else throw new TorchError(`Unknown backlog operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
     }
     if (command === 'checks') {
       const operation = argv[1] ?? 'list';
