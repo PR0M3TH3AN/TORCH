@@ -86,7 +86,35 @@ TORCH MUST:
 13. coordinate scarce shared resources explicitly;
 14. install, detach, uninstall, upgrade, and roll back safely;
 15. manage development of its own successor from a stable installed release;
-16. re-import COMBATRIG without special-case orchestration code.
+16. re-import COMBATRIG without special-case orchestration code;
+17. preserve domain-local context as a focused working set instead of forcing
+    one general session to repeatedly evict and reload unrelated project areas.
+
+### 3.1 Context locality and the hot-cache hypothesis
+
+Persistent domain sessions SHOULD keep the context most relevant to their
+owned area warm: architecture, recent changes, decisions, failure modes,
+neighbors, and active backlog. The Session Manager keeps routing and fleet
+state rather than absorbing every domain's implementation detail. This
+partitioning is expected to reduce context churn when the project switches
+between unrelated tasks and may reduce provider cache reads, cache writes,
+input tokens, latency, and cost.
+
+This is a product hypothesis, not yet a performance claim. TORCH MUST keep
+durable project truth outside model context, and SHOULD measure comparable
+single-session and persistent-domain workflows before advertising savings.
+Measurements SHOULD record, where a runtime exposes them:
+
+- uncached and cached input tokens;
+- cache creation/write and cache read tokens;
+- prompt size at fresh start and resume;
+- time and turns to first useful action after a task switch;
+- context compactions or reloads;
+- cost per completed, verified backlog item;
+- quality or rework regressions that could invalidate a cheaper run.
+
+Telemetry MUST be local and opt-in unless project policy explicitly selects an
+external sink. TORCH MUST distinguish measured provider data from estimates.
 
 ## 4. Non-goals
 
@@ -996,6 +1024,12 @@ It SHOULD report:
 - canonical Git and forge availability;
 - local-only versus off-machine recoverability;
 - installation-manifest inconsistencies.
+
+Where runtimes expose usage data, observability SHOULD also report context
+locality by Fleet identity: cached versus uncached input, cache creation and
+read volume, compactions, resumed prompt size, and cost per verified item.
+These metrics MUST identify whether they are measured or estimated and MUST
+not treat a smaller prompt as success when verification quality declined.
 
 Doctor output MUST distinguish observation from recommended action. Repair
 commands require explicit invocation and normal authority checks.

@@ -1,17 +1,21 @@
 import { analyzeRepository } from './kernel/analyze.mjs';
 import { createClaudeAdapter } from './adapters/claude.mjs';
+import { CheckService } from './checks/service.mjs';
+import { classifyRecoverability, createLocalCanonical, planLocalCanonical } from './canonical/local.mjs';
 import { openControlPlane } from './control-plane/service.mjs';
 import { spawnSync } from 'node:child_process';
 import { diagnoseProject } from './kernel/doctor.mjs';
 import { asErrorRecord, TorchError } from './kernel/errors.mjs';
 import { inspectRepository } from './kernel/git.mjs';
 import { installProject, planInstall, uninstallProject } from './kernel/install.mjs';
+import { IntegrationService } from './integration/service.mjs';
 import { proposeDomains } from './kernel/domains.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { writeNewFile } from './kernel/files.mjs';
 import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
 import { planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lifecycle.mjs';
+import { ResourceService } from './resources/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -37,6 +41,24 @@ Usage:
   torch blocked --area <id> --summary <text> [--task <id>] [--evidence <text>] [--path <path>] [--commit <sha>] [--json]
   torch coordinate --from <id> --body <text> [--with <id,id>] [--task <id>] [--path <path>] [--json]
   torch handoff --from <id> [--to <id>] (--path <path> | --task <id>) --reason <text> [--json]
+  torch checks list [--json]
+  torch checks receipts [--commit <sha>] [--id <check>] [--area <id>] [--json]
+  torch checks plan --id <check> --area <id> [--json]
+  torch checks run --id <check> --area <id> --yes [--json]
+  torch resources list [--json]
+  torch resources status --id <resource> [--json]
+  torch resources acquire --id <resource> --area <id> [--json]
+  torch resources release --id <resource> --area <id> [--json]
+  torch resources cancel --id <resource> --area <id> [--json]
+  torch integrate list [--state <state>] [--json]
+  torch integrate request --area <id> [--commit <sha>] [--json]
+  torch integrate evaluate --request <id> [--json]
+  torch integrate authorize --request <id> --area <id> [--json]
+  torch integrate plan --request <id> --area <id> [--json]
+  torch integrate land --request <id> --area <id> --yes [--json]
+  torch canonical plan [--json]
+  torch canonical create --yes [--json]
+  torch recoverability [--commit <sha>] [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -276,6 +298,108 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
         sender: optionValue(argv, '--from'), recipient: optionValue(argv, '--to') ?? 'session-manager',
         path: optionValue(argv, '--path'), task: optionValue(argv, '--task'), reason: optionValue(argv, '--reason'),
       })), { json });
+      return 0;
+    }
+    if (command === 'checks') {
+      const operation = argv[1] ?? 'list';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const resources = new ResourceService({ repositoryRoot: repository.root, controlPlane: control });
+        const checks = new CheckService({
+          repositoryRoot: repository.root, controlPlane: control, resourceService: resources,
+        });
+        if (operation === 'list') print({ checks: checks.listChecks() }, { json });
+        else if (operation === 'receipts') print({ receipts: checks.receipts({
+          commit: optionValue(argv, '--commit'), checkId: optionValue(argv, '--id'),
+          areaId: optionValue(argv, '--area'),
+        }) }, { json });
+        else if (operation === 'plan') print(checks.plan({
+          checkId: optionValue(argv, '--id'), areaId: optionValue(argv, '--area'),
+        }), { json });
+        else if (operation === 'run') {
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Configured check execution requires an explicit --yes.', { code: 'APPROVAL_REQUIRED' });
+          }
+          print(checks.run({ checkId: optionValue(argv, '--id'), areaId: optionValue(argv, '--area') }), { json });
+        } else throw new TorchError(`Unknown checks operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'resources') {
+      const operation = argv[1] ?? 'list';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const resources = new ResourceService({ repositoryRoot: repository.root, controlPlane: control });
+        const resourceId = optionValue(argv, '--id');
+        const areaId = optionValue(argv, '--area');
+        if (operation === 'list') print({ resources: resources.list() }, { json });
+        else if (operation === 'status') print(resources.status(resourceId), { json });
+        else if (operation === 'acquire') print(resources.acquire({ resourceId, areaId }), { json });
+        else if (operation === 'release') print(resources.release({ resourceId, areaId }), { json });
+        else if (operation === 'cancel') print(resources.cancel({ resourceId, areaId }), { json });
+        else throw new TorchError(`Unknown resources operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'integrate') {
+      const operation = argv[1] ?? 'list';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const resources = new ResourceService({ repositoryRoot: repository.root, controlPlane: control });
+        const checks = new CheckService({
+          repositoryRoot: repository.root, controlPlane: control, resourceService: resources,
+        });
+        const integration = new IntegrationService({
+          repositoryRoot: repository.root, controlPlane: control, checkService: checks,
+        });
+        const requestId = optionValue(argv, '--request');
+        const actorId = optionValue(argv, '--area');
+        if (operation === 'list') print({ requests: integration.list({ state: optionValue(argv, '--state') }) }, { json });
+        else if (operation === 'request') print(integration.request({
+          areaId: actorId, commit: optionValue(argv, '--commit'),
+        }), { json });
+        else if (operation === 'evaluate') print(integration.evaluate(requestId), { json });
+        else if (operation === 'authorize') print(integration.authorize({ requestId, actorId }), { json });
+        else if (operation === 'plan') print(integration.planLanding({ requestId, actorId }), { json });
+        else if (operation === 'land') {
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Landing changes canonical main. Review integrate plan, then re-run with --yes.', {
+              code: 'APPROVAL_REQUIRED',
+            });
+          }
+          print(integration.land({ requestId, actorId }), { json });
+        } else throw new TorchError(`Unknown integrate operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'canonical') {
+      const operation = argv[1] ?? 'plan';
+      if (operation === 'plan') {
+        const plan = planLocalCanonical({ repositoryRoot: repository.root });
+        print(plan, { json });
+        return plan.canProceed ? 0 : 1;
+      }
+      if (operation === 'create') {
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Local canonical creation changes Git configuration. Review canonical plan, then use --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(createLocalCanonical({ repositoryRoot: repository.root }), { json });
+        return 0;
+      }
+      throw new TorchError(`Unknown canonical operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+    }
+    if (command === 'recoverability') {
+      print(classifyRecoverability({
+        repositoryRoot: repository.root, commit: optionValue(argv, '--commit') ?? 'HEAD',
+      }), { json });
       return 0;
     }
     if (command === 'uninstall') {

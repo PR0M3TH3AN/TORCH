@@ -82,6 +82,22 @@ test_integrity_note:
       given: a launch failure or a domain reporting active work
       when: startup or wind-down is attempted
       then: manager launch is prevented after worker failure and active work blocks shutdown
+    - id: SCN-exact-sha-checks
+      given: approved shell-free checks and a clean managed worktree
+      when: passing, failing, and dirty-input checks are requested
+      then: receipts name the exact commit, failures remain failures, and dirty inputs are refused
+    - id: SCN-resource-fifo
+      given: two Fleet identities competing for a capacity-one browser resource
+      when: they acquire, queue, release, expire, and cancel
+      then: FIFO order is preserved, stale leases remain visible without being stolen, and cancellation leaks nothing
+    - id: SCN-native-integration
+      given: a converged domain commit with every required exact-SHA receipt
+      when: the domain requests integration and the Session Manager authorizes and lands it
+      then: main fast-forwards only while source, target, receipts, cleanliness, and authority remain valid
+    - id: SCN-local-canonical
+      given: an installed project with no forge or remote
+      when: the owner creates a local canonical Git store and later makes and pushes another commit
+      then: TORCH distinguishes one-disk from local-remote recoverability without claiming off-machine backup
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
@@ -93,6 +109,10 @@ test_integrity_note:
     - CLI and MCP output over real process boundaries
     - runtime command plans and execution order
     - local resume snapshot and presence transitions
+    - immutable check receipt commit and result
+    - resource holder, FIFO position, expiry, and cancellation state
+    - canonical main SHA before and after authorized landing
+    - Git remote configuration and recoverability grade
   determinism_controls:
     - isolated temporary Git repositories
     - fixed test Git identity
@@ -101,6 +121,9 @@ test_integrity_note:
     - injected UUID sequence and clock where ordering matters
     - virtualized Claude command runner with no provider calls
     - local stdio MCP child process with bounded response timeout
+    - shell-free fixture checks with controlled exit codes
+    - injected resource clock and identifiers
+    - local-only bare Git remote with no network dependency
   anti_cheat_rationale:
     prevents:
       - init that silently writes files
@@ -115,6 +138,10 @@ test_integrity_note:
       - MCP and CLI drifting onto separate business logic
       - launch plans that execute provider commands during preview
       - manager-first startup or manager-first shutdown
+      - passing receipts detached from the commit actually measured
+      - unfair or automatically stolen resource leases
+      - integration based on branch labels, stale checks, or stale main
+      - a same-disk bare repository mislabeled as off-machine recovery
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

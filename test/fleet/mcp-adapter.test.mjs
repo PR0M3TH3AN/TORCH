@@ -10,7 +10,9 @@ import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
-import { callTorchTool, createTorchToolset, TORCH_MCP_TOOL_NAMES } from '../../src/mcp/tools.mjs';
+import {
+  callTorchTool, createTorchToolset, TORCH_CORE_MCP_TOOL_NAMES, TORCH_MCP_TOOL_NAMES,
+} from '../../src/mcp/tools.mjs';
 
 const MCP_SERVER = new URL('../../src/mcp/server.mjs', import.meta.url).pathname;
 
@@ -35,7 +37,7 @@ function fixture() {
 test('SCN-mcp-parity: every specified MCP tool exists and invokes the same durable service as CLI callers', () => {
   const context = fixture();
   const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
-  assert.deepEqual([...createTorchToolset(control).keys()], TORCH_MCP_TOOL_NAMES);
+  assert.deepEqual([...createTorchToolset(control).keys()], TORCH_CORE_MCP_TOOL_NAMES);
   const sent = callTorchTool(control, 'torch_send_message', {
     sender: 'session-manager', recipient: context.worker, body: 'MCP-visible task', task: 'TASK-MCP',
   });

@@ -51,6 +51,9 @@ export function diagnoseProject({ repository, env = process.env }) {
     if (existsSync(databasePath)) {
       try {
         const database = new DatabaseSync(databasePath, { readOnly: true });
+        const hasTable = (name) => Boolean(database.prepare(`
+          SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?
+        `).get(name));
         const unacknowledged = database.prepare(`
           SELECT COUNT(*) AS count
           FROM messages m
@@ -66,6 +69,36 @@ export function diagnoseProject({ repository, env = process.env }) {
           findings.push({ severity: 'warning', code: 'MESSAGE_BACKLOG', unacknowledged });
         }
         if (present.length > 0) findings.push({ severity: 'info', code: 'FLEET_PRESENCE', agents: present });
+        if (hasTable('resource_leases')) {
+          const leases = database.prepare(`
+            SELECT resource_id, area_id, acquired_at, expires_at
+            FROM resource_leases WHERE released_at IS NULL ORDER BY resource_id, acquired_at
+          `).all();
+          const queue = database.prepare(`
+            SELECT resource_id, area_id, requested_at
+            FROM resource_requests WHERE state = 'waiting' ORDER BY resource_id, requested_at
+          `).all();
+          if (leases.length || queue.length) {
+            findings.push({
+              severity: leases.some((lease) => Date.parse(lease.expires_at) <= Date.now()) ? 'warning' : 'info',
+              code: 'RESOURCE_ACTIVITY', leases, queue,
+            });
+          }
+        }
+        if (hasTable('check_receipts')) {
+          const receipts = database.prepare(`
+            SELECT check_id, area_id, result, finished_at
+            FROM check_receipts WHERE commit_sha = ? ORDER BY check_id, finished_at DESC
+          `).all(repository.head);
+          if (receipts.length) findings.push({ severity: 'info', code: 'HEAD_CHECK_RECEIPTS', commit: repository.head, receipts });
+        }
+        if (hasTable('integration_requests')) {
+          const requests = database.prepare(`
+            SELECT id, source_area, source_commit, state, reason
+            FROM integration_requests WHERE state NOT IN ('landed', 'superseded') ORDER BY created_at, id
+          `).all();
+          if (requests.length) findings.push({ severity: 'info', code: 'INTEGRATION_QUEUE', requests });
+        }
         database.close();
       } catch (error) {
         findings.push({ severity: 'error', code: 'CONTROL_PLANE_INVALID', path: databasePath, message: error.message });

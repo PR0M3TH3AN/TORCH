@@ -7,12 +7,16 @@
   "exports": {
     ".": "./src/cli.mjs",
     "./adapters/claude": "./src/adapters/claude.mjs",
+    "./canonical/local": "./src/canonical/local.mjs",
+    "./checks": "./src/checks/service.mjs",
     "./control-plane": "./src/control-plane/service.mjs",
     "./kernel/analyze": "./src/kernel/analyze.mjs",
     "./kernel/git": "./src/kernel/git.mjs",
     "./kernel/install": "./src/kernel/install.mjs",
     "./kernel/worktrees": "./src/kernel/worktrees.mjs",
+    "./integration": "./src/integration/service.mjs",
     "./mcp": "./src/mcp/tools.mjs",
+    "./resources": "./src/resources/service.mjs",
     "./runtime/lifecycle": "./src/runtime/lifecycle.mjs"
   },
   "bin": {
@@ -39,9 +43,13 @@
     "bin/torch.mjs",
     "src/cli.mjs",
     "src/adapters/",
+    "src/canonical/",
+    "src/checks/",
     "src/control-plane/",
     "src/kernel/",
+    "src/integration/",
     "src/mcp/",
+    "src/resources/",
     "src/runtime/",
     "docs/PORTABLE_AGENT_FLEET_SPEC.md",
     "README.md",
@@ -51,8 +59,8 @@
     "test": "node --test --test-timeout=30000 test/fleet/*.test.mjs",
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs",
-    "format": "eslint src/adapters src/control-plane src/kernel src/mcp src/runtime src/cli.mjs bin/torch.mjs test/fleet --fix",
-    "lint": "eslint src/adapters src/control-plane src/kernel src/mcp src/runtime src/cli.mjs bin/torch.mjs test/fleet"
+    "format": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/cli.mjs bin/torch.mjs test/fleet --fix",
+    "lint": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/cli.mjs bin/torch.mjs test/fleet"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",

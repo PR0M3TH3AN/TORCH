@@ -249,6 +249,13 @@ export function proposeDomains({ repository, analysis }) {
     review: { status: 'pending', reviewedAt: null, reviewedBy: null, notes: [] },
     domains,
     collisions: collisions.sort((a, b) => b.score - a.score || a.domains.join(':').localeCompare(b.domains.join(':'))),
+    checks: analysis.inventory.checks.map((check) => ({
+      id: slug(check.name), title: check.name, command: 'npm', args: ['run', check.name],
+      source: { type: 'package-script', command: check.command }, resources: [],
+    })),
+    resources: analysis.inventory.scarceResources.map((id) => ({
+      id, capacity: 1, queue: 'fifo', max_hold_seconds: 3600,
+    })),
     architecture: graph,
   };
 }

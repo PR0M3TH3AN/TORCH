@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { resolve } from 'node:path';
+import { CheckService } from '../checks/service.mjs';
+import { IntegrationService } from '../integration/service.mjs';
 import { openControlPlane } from '../control-plane/service.mjs';
+import { ResourceService } from '../resources/service.mjs';
 import { createTorchMcpServer } from './tools.mjs';
 
 function optionValue(argv, name) {
@@ -15,7 +18,12 @@ const repositoryRoot = resolve(optionValue(process.argv.slice(2), '--root') ?? p
 const actorId = optionValue(process.argv.slice(2), '--area');
 const controlPlane = openControlPlane({ repositoryRoot });
 controlPlane.assertIdentity(actorId);
-const handle = serveStdio(() => createTorchMcpServer(controlPlane, { actorId }), {
+const resourceService = new ResourceService({ repositoryRoot, controlPlane });
+const checkService = new CheckService({ repositoryRoot, controlPlane, resourceService });
+const integrationService = new IntegrationService({ repositoryRoot, controlPlane, checkService });
+const handle = serveStdio(() => createTorchMcpServer(controlPlane, {
+  actorId, checkService, resourceService, integrationService,
+}), {
   onerror: (error) => console.error(`TORCH MCP: ${error.message}`),
 });
 

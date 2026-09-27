@@ -31,14 +31,19 @@ and the first Claude reference-fleet path:
 - SQLite-backed stable Fleet identities and presence;
 - durable direct/group messages with per-recipient acknowledgement;
 - live ownership, neighbours, handoff, coordination, completion, and blocker operations;
-- equivalent CLI and 14-tool MCP surfaces;
+- equivalent CLI and identity-bound MCP surfaces;
 - current MCP stdio interoperability through the official protocol SDK;
 - an explicit-capability Claude adapter with durable-message fallback;
 - worker-first/Session-Manager-last fresh start and resume planning;
 - safe wind-down with active-work refusal and local resume snapshots.
+- shell-free configured checks with exact-commit receipts;
+- transactional FIFO resource queues and leases;
+- a native integration queue with durable authorization and fast-forward main protection;
+- a local bare canonical Git option with honest one-disk/local-remote grading;
+- mutation audit events tied to project and Fleet identity.
 
-Checks, scarce-resource leases, integration policy, Codex portability,
-self-hosting, COMBATRIG re-import, and the Fleet Console remain staged work.
+Codex portability, self-hosting, COMBATRIG re-import, scheduling, richer
+observability, and the Fleet Console remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -90,6 +95,15 @@ The CLI fallback exposes `agents`, `who-owns`, `message`, `inbox`, `ack`,
 `status`, `complete`, `blocked`, `coordinate`, and `handoff`. MCP hosts launch
 `torch-mcp --root /path/to/repository --area <fleet-id>` and receive the same
 service operations, identity-bound to that Fleet area.
+
+Local verification and convergence use `torch checks`, `torch resources`, and
+`torch integrate`. A project without a forge can preview and create its bare
+canonical store with `torch canonical plan` and `torch canonical create --yes`.
+
+Persistent domain sessions also create a context-locality opportunity: each
+specialist can keep its relevant working set hot instead of one general session
+reloading unrelated project areas. TORCH treats cache/token savings as a
+measurement hypothesis until provider usage and verified task outcomes prove it.
 
 This is still an alpha. The lifecycle is scenario-tested with a virtualized
 Claude boundary; a paid live-Claude multi-domain acceptance run remains an

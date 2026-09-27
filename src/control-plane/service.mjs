@@ -164,9 +164,19 @@ function initializeSchema(database) {
       status TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS audit_events (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      actor_id TEXT NOT NULL,
+      operation TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT,
+      details TEXT,
+      created_at TEXT NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS messages_recipient_created
       ON messages(recipient_id, created_at, id);
-    PRAGMA user_version = 1;
+    PRAGMA user_version = 2;
   `);
 }
 
@@ -320,6 +330,7 @@ export class ControlPlane {
       record.id, record.projectId, record.sender, record.recipient, record.kind,
       record.createdAt, record.body, refs.task, refs.path, refs.commit, refs.handoff,
     );
+    this.audit({ actorId: senderId, operation: 'message.send', entityType: 'message', entityId: record.id });
     return record;
   }
 
@@ -353,6 +364,7 @@ export class ControlPlane {
       INSERT INTO message_acks (message_id, area_id, acknowledged_at) VALUES (?, ?, ?)
       ON CONFLICT(message_id, area_id) DO UPDATE SET acknowledged_at = excluded.acknowledged_at
     `).run(id, recipientId, acknowledgedAt);
+    this.audit({ actorId: recipientId, operation: 'message.ack', entityType: 'message', entityId: id });
     return { messageId: id, recipient: recipientId, acknowledgedAt };
   }
 
@@ -375,6 +387,10 @@ export class ControlPlane {
       optionalText(runtime, 'runtime'), optionalText(runtimeSessionId, 'runtimeSessionId'),
       normalizedState, optionalText(summary, 'summary'), optionalText(task, 'task'), now, now, id,
     );
+    this.audit({
+      actorId: id, operation: 'presence.report', entityType: 'identity', entityId: id,
+      details: { state: normalizedState },
+    });
     return this.identity(id);
   }
 
@@ -393,6 +409,7 @@ export class ControlPlane {
       report.id, report.projectId, report.areaId, report.kind, report.summary,
       report.task, report.evidence, report.createdAt,
     );
+    this.audit({ actorId: id, operation: `report.${kind}`, entityType: 'report', entityId: report.id });
     return report;
   }
 
@@ -455,12 +472,50 @@ export class ControlPlane {
         sender: senderId, recipient: recipientId, kind: 'handoff-request', body: handoff.reason,
         references: { path: pathRef, task: taskRef, handoff: handoff.id },
       });
+      this.audit({
+        actorId: senderId, operation: 'handoff.request', entityType: 'handoff', entityId: handoff.id,
+        details: { recipient: recipientId, path: pathRef, task: taskRef },
+      });
       this.database.exec('COMMIT');
       return { ...handoff, messageId: message.id };
     } catch (error) {
       this.database.exec('ROLLBACK');
       throw error;
     }
+  }
+
+  audit({ actorId, operation, entityType, entityId = null, details = null } = {}) {
+    const actor = this.assertIdentity(actorId);
+    const event = {
+      id: this.idFactory(), projectId: this.projectId, actorId: actor,
+      operation: requiredText(operation, 'operation'), entityType: requiredText(entityType, 'entityType'),
+      entityId: optionalText(entityId, 'entityId'), details, createdAt: this.clock().toISOString(),
+    };
+    this.database.prepare(`
+      INSERT INTO audit_events (
+        id, project_id, actor_id, operation, entity_type, entity_id, details, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      event.id, event.projectId, event.actorId, event.operation, event.entityType,
+      event.entityId, details ? JSON.stringify(details) : null, event.createdAt,
+    );
+    return event;
+  }
+
+  readAudit({ actorId, limit = 100 } = {}) {
+    const normalizedLimit = Number.isInteger(limit) && limit > 0 && limit <= 1000 ? limit : 100;
+    const rows = actorId
+      ? this.database.prepare(`
+        SELECT * FROM audit_events WHERE actor_id = ? ORDER BY created_at DESC, id DESC LIMIT ?
+      `).all(this.assertIdentity(actorId), normalizedLimit)
+      : this.database.prepare(`
+        SELECT * FROM audit_events ORDER BY created_at DESC, id DESC LIMIT ?
+      `).all(normalizedLimit);
+    return rows.map((row) => ({
+      id: row.id, projectId: row.project_id, actorId: row.actor_id,
+      operation: row.operation, entityType: row.entity_type, entityId: row.entity_id,
+      details: row.details ? JSON.parse(row.details) : null, createdAt: row.created_at,
+    }));
   }
 }
 

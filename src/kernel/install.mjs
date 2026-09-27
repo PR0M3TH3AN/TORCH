@@ -35,6 +35,13 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
     },
     synchronization: { strategy: 'dispatcher-managed', auto_merge_worktrees: false },
     runtimes: { default: 'claude', claude: { model: 'opus', background: true } },
+    checks: proposal.checks ?? [],
+    resources: proposal.resources ?? [],
+    integration: {
+      provider: 'torch', target: repository.branch || 'main', require_current_main: true,
+      required_checks: (proposal.checks ?? []).map((check) => check.id),
+      landing_authority: ['session-manager'],
+    },
     session_manager: { id: 'session-manager', start_last: true },
     domains: proposal.domains.map((domain) => ({
       id: domain.id,
