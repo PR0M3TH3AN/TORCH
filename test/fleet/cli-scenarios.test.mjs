@@ -155,6 +155,14 @@ test('SCN-cli-lifecycle-surface: runtime selection, selective startup, capture, 
   const doctor = run(root, ['doctor', '--json']);
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
   assert.equal(JSON.parse(doctor.stdout).findings.some((finding) => finding.code === 'FLEET_DETACHED'), true);
+  const uninstallPlan = run(root, ['uninstall', '--dry-run', '--json']);
+  assert.equal(uninstallPlan.status, 0, uninstallPlan.stderr || uninstallPlan.stdout);
+  assert.equal(JSON.parse(uninstallPlan.stdout).action, 'uninstall');
+  assert.equal(JSON.parse(run(root, ['uninstall', '--json']).stdout).error, 'APPROVAL_REQUIRED');
+  const uninstalled = run(root, ['uninstall', '--yes', '--json']);
+  assert.equal(uninstalled.status, 0, uninstalled.stderr || uninstalled.stdout);
+  assert.equal(JSON.parse(uninstalled.stdout).mutationPerformed, true);
+  assert.equal(existsSync(join(root, '.torch', 'torch.yaml')), true);
   const unapprovedPurge = run(root, ['uninstall', '--purge', '--json']);
   assert.equal(unapprovedPurge.status, 2);
   assert.equal(JSON.parse(unapprovedPurge.stdout).error, 'APPROVAL_REQUIRED');

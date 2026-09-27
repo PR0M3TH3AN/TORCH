@@ -32,6 +32,8 @@ and the first Claude reference-fleet path:
 - conservative, explicitly confirmed purge that validates the exact local
   state path and distinguishes owned history from live sessions, locks,
   leases, guards, landing, persistent launchers, and unknown files;
+- reversible ordinary uninstall that winds down the Fleet, safely removes
+  owned persistent schedule launchers, and preserves organization and history;
 - reviewed worktree plans with branch/path collision protection;
 - isolated branches and worktrees with locally ignored task markers;
 - purge protection for dirty and uniquely committed domain work.

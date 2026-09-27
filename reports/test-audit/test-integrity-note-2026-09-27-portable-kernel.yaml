@@ -18,6 +18,10 @@ test_integrity_note:
       given: an installed TORCH project whose managed configuration was edited by its owner
       when: a purge is requested
       then: TORCH refuses destructive cleanup and preserves the modified file
+    - id: SCN-purge-protects-local-identity
+      given: an installation whose machine-local project metadata no longer matches its ownership manifest
+      when: a purge is planned or requested
+      then: TORCH refuses deletion and preserves the mismatched local state for explicit remediation
     - id: SCN-cli-install-approval
       given: a Git repository without TORCH
       when: install is invoked without a reviewed approval flag
@@ -200,8 +204,8 @@ test_integrity_note:
       then: missing approval is refused and the activated identity is queryable through the ordinary Fleet CLI
     - id: SCN-cli-lifecycle-surface
       given: an approved installed Fleet with isolated worktrees
-      when: an operator selects runtimes, previews selected startup, reads list and brief output, captures state, and detaches
-      then: the documented lifecycle commands share durable state, preserve the organization and worktrees, and require approval before stopping integrations
+      when: an operator selects runtimes, previews selected startup, reads list and brief output, captures state, detaches, and performs ordinary uninstall
+      then: the documented lifecycle commands share durable state, preserve the organization and worktrees, and require approval before stopping sessions or removing owned runtime integrations
     - id: SCN-install-runtime-selection
       given: an approved Fleet proposal with declared runtime assignments
       when: installation selects its enabled runtime adapters

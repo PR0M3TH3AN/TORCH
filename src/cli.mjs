@@ -1149,15 +1149,55 @@ export async function runCli(argv = process.argv.slice(2), {
       }
     }
     if (command === 'uninstall') {
-      if (argv.includes('--purge') && !argv.includes('--dry-run') && !argv.includes('--yes')) {
-        throw new TorchError('Purging TORCH removes tracked configuration, managed worktrees, and local state. Review --dry-run, then re-run with --purge --yes.', {
+      const purge = argv.includes('--purge');
+      const dryRun = argv.includes('--dry-run');
+      if (!dryRun && !argv.includes('--yes')) {
+        throw new TorchError(purge
+          ? 'Purging TORCH removes tracked configuration, managed worktrees, and local state. Review --dry-run, then re-run with --purge --yes.'
+          : 'Uninstall stops the Fleet and removes owned persistent runtime integrations while preserving project state. Review --dry-run, then re-run with --yes.', {
           code: 'APPROVAL_REQUIRED',
         });
       }
+      if (!purge) {
+        const control = openControlPlane({ repositoryRoot: repository.root, env });
+        try {
+          const stoppers = runtimeStoppers(spawn);
+          const fleet = planFleetDetach({
+            repositoryRoot: repository.root, controlPlane: control, adapters: stoppers,
+          });
+          const launcher = new ScheduleLauncherService({ repositoryRoot: repository.root, env });
+          const runtimeIntegrations = launcher.planRemoval();
+          const plan = {
+            action: 'uninstall', projectId: fleet.projectId, fleet, runtimeIntegrations,
+            blockers: [...fleet.blockers, ...runtimeIntegrations.blockers],
+            canProceed: fleet.canProceed && runtimeIntegrations.canProceed,
+            preserved: ['tracked organization', 'worktrees', 'branches', 'local state'],
+            mutationPerformed: false,
+          };
+          if (dryRun) {
+            print(plan, { json });
+            return plan.canProceed ? 0 : 1;
+          }
+          if (!plan.canProceed) throw new TorchError('TORCH uninstall stopped because active work or changed runtime integrations remain', {
+            code: 'UNSAFE_TO_UNINSTALL', details: plan.blockers,
+          });
+          const detached = detachFleet({
+            plan: fleet, controlPlane: control, stopRuntime: (action) => stopThrough(stoppers, action),
+          });
+          const removedRuntimeIntegrations = launcher.remove();
+          print({
+            ...plan, detached, removedRuntimeIntegrations,
+            mutationPerformed: true,
+          }, { json });
+          return 0;
+        } finally {
+          control.close();
+        }
+      }
       const result = uninstallProject({
         repository,
-        purge: argv.includes('--purge'),
-        dryRun: argv.includes('--dry-run'),
+        purge,
+        dryRun,
         env,
       });
       print(result, { json });

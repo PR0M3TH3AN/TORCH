@@ -141,14 +141,27 @@ export class ScheduleLauncherService {
     };
   }
 
+  planRemoval() {
+    const manifest = readInstallManifest(this.repositoryRoot);
+    const units = (manifest.external ?? []).filter((entry) => entry.type === 'systemd-user-unit');
+    const blockers = units
+      .filter((entry) => !existsSync(entry.path) || sha256(readFileSync(entry.path)) !== entry.sha256)
+      .map((entry) => ({ code: 'SCHEDULE_LAUNCHER_MODIFIED', path: entry.path }));
+    return {
+      action: 'remove-system-schedule-launcher',
+      units: units.map((entry) => ({ name: entry.name, path: entry.path })),
+      blockers, canProceed: blockers.length === 0, mutationPerformed: false,
+    };
+  }
+
   remove() {
+    const plan = this.planRemoval();
+    if (!plan.canProceed) throw new TorchError('Refusing to remove changed or missing system schedule launcher files', {
+      code: 'SCHEDULE_LAUNCHER_MODIFIED', details: plan.blockers.map((blocker) => blocker.path),
+    });
     const manifest = readInstallManifest(this.repositoryRoot);
     const units = (manifest.external ?? []).filter((entry) => entry.type === 'systemd-user-unit');
     if (!units.length) return { removed: [], changed: false, mutationPerformed: false };
-    const modified = units.filter((entry) => !existsSync(entry.path) || sha256(readFileSync(entry.path)) !== entry.sha256);
-    if (modified.length) throw new TorchError('Refusing to remove changed or missing system schedule launcher files', {
-      code: 'SCHEDULE_LAUNCHER_MODIFIED', details: modified.map((entry) => entry.path),
-    });
     const timer = units.find((entry) => entry.name.endsWith('.timer'));
     if (timer) runSystemctl(this.executor, ['disable', '--now', timer.name]);
     for (const entry of units) rmSync(entry.path);

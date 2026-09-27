@@ -133,6 +133,7 @@ test('SCN-system-schedule-launcher: exact-config user units install, dispatch, a
     ['--user', 'daemon-reload'], ['--user', 'enable'],
   ]);
   assert.equal(launcher.status().stale, false);
+  assert.equal(launcher.planRemoval().canProceed, true);
   assert.equal(planUninstall({ repository: inspectRepository(context.root), purge: true, env: context.env }).problems
     .some((problem) => problem.type === 'persistent-integration-installed'), true);
 
@@ -143,6 +144,12 @@ test('SCN-system-schedule-launcher: exact-config user units install, dispatch, a
     (error) => error.code === 'SCHEDULE_LAUNCHER_STALE',
   );
   writeFileSync(join(context.root, '.torch', 'torch.yaml'), originalConfig);
+
+  writeFileSync(installed.files[0].path, `${readFileSync(installed.files[0].path, 'utf8')}# owner change\n`);
+  const unsafeRemoval = launcher.planRemoval();
+  assert.equal(unsafeRemoval.canProceed, false);
+  assert.equal(unsafeRemoval.blockers[0].code, 'SCHEDULE_LAUNCHER_MODIFIED');
+  writeFileSync(installed.files[0].path, installed.files[0].content);
 
   const removed = launcher.remove();
   assert.equal(removed.mutationPerformed, true);

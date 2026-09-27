@@ -421,6 +421,13 @@ or installed persistent launchers. Historical messages and receipts therefore
 do not make reversal permanently impossible, while active or unowned state
 still blocks deletion.
 
+Ordinary CLI uninstall is also review-first and explicitly confirmed. It uses
+the same safe Fleet wind-down contract as detach, removes only manifest-owned
+persistent schedule launchers after verifying their content, and preserves the
+tracked organization, worktrees, branches, and local state so `torch up` can
+restore management. Missing or changed launcher files and active Fleet work
+fail closed before mutation.
+
 ## 10. Project analysis and bootstrap
 
 ### 10.1 Repository reconnaissance
