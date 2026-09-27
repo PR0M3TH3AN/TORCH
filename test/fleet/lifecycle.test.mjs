@@ -53,6 +53,7 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   assert.equal(fresh.actions.every((action) => action.mode === 'create'), true);
   assert.equal(fresh.actions.every((action) => action.mcp.args.includes(action.areaId)), true);
   assert.equal(fresh.actions.every((action) => action.launch.args.includes('--mcp-config')), true);
+  assert.match(fresh.actions.at(-1).launch.args.join(' '), /assess Fleet evolution/);
   assert.equal(fresh.mutationPerformed, false);
 
   const launches = [];

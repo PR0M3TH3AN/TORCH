@@ -73,7 +73,8 @@ and the first Claude reference-fleet path:
 - an owner-approved user-systemd launcher for system schedules, bound to the
   exact tracked configuration digest and recorded for exact reversal.
 - durable Fleet evolution: the Session Manager can propose a justified new
-  persistent domain, while owner approval gates the configuration commit,
+  persistent domain after a read-only assessment of recurring backlog,
+  handoff, and coordination signals, while owner approval gates the configuration commit,
   identity, prompt, branch, and worktree activation; it can also propose safe
   retirement when coordination cost exceeds continuing value, preserving the
   branch and refusing live, dirty, guarded, leased, or active work. Evidence-
@@ -222,11 +223,17 @@ organization, local state, branches, and worktrees. A later explicit `up`
 reattaches the selected runtime sessions.
 
 The Fleet can evolve when recurring work develops a coherent new boundary.
-The Session Manager may propose the domain through MCP or the CLI, but cannot
-approve or activate it. Owner approval and activation are deliberately
-separate, and runtime startup remains another explicit step:
+The Session Manager is instructed to run a read-only evolution assessment at
+startup, after backlog intake, and when repeated handoffs appear. The
+assessment surfaces conservative recurring-boundary signals without creating
+anything; the manager must inspect the repository and judge whether a durable
+session would actually improve context locality or ownership. It may then
+propose the domain through MCP or the CLI, but cannot approve or activate it.
+Owner approval and activation are deliberately separate, and runtime startup
+remains another explicit step:
 
 ```bash
+torch fleet assess --from session-manager --json
 torch fleet propose --from session-manager --proposal new-domain.json --json
 torch fleet approve --change <change-id> --by <owner> --yes --json
 torch fleet plan --change <change-id> --json

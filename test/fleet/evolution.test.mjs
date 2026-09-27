@@ -190,6 +190,26 @@ test('SCN-fleet-evolution: the manager proposes and owner activates a newly just
     idFactory: () => 'CHANGE-1',
   });
   const worker = control.listAgents().find((agent) => agent.areaId !== 'session-manager').areaId;
+  control.requestHandoff({
+    sender: worker, path: 'src/payments/intents.js',
+    reason: 'No current domain owns the payment intent boundary.',
+  });
+  control.requestHandoff({
+    sender: worker, path: 'src/payments/settlement.js',
+    reason: 'Settlement work again has no coherent owner.',
+  });
+  assert.throws(
+    () => evolution.assessDomainNeeds({ assessor: worker }),
+    (error) => error.code === 'FLEET_CHANGE_AUTHORITY_REQUIRED',
+  );
+  const assessment = callTorchTool(control, 'torch_assess_fleet_evolution', {}, {
+    actorId: 'session-manager', evolutionService: evolution,
+  });
+  assert.equal(assessment.recommendation.action, 'consider-new-domain');
+  assert.equal(assessment.signals[0].code, 'RECURRING_UNOWNED_PATH_BOUNDARY');
+  assert.equal(assessment.signals[0].boundary, 'src/payments');
+  assert.equal(assessment.mutationPerformed, false);
+  assert.equal(evolution.list().length, 0, 'assessment must not create a Fleet change');
   const request = {
     domain: {
       id: 'payments', title: 'Payment systems', kind: 'development',
@@ -296,6 +316,9 @@ test('SCN-cli-fleet-evolution: public CLI separates manager proposal, owner appr
   const run = (args) => spawnSync(process.execPath, [CLI, ...args], {
     cwd: context.root, env: context.env, encoding: 'utf8',
   });
+  const assessment = run(['fleet', 'assess', '--from', 'session-manager', '--json']);
+  assert.equal(assessment.status, 0, assessment.stderr || assessment.stdout);
+  assert.equal(JSON.parse(assessment.stdout).recommendation.action, 'retain-current-fleet');
   const proposedResult = run(['fleet', 'propose', '--from', 'session-manager', '--proposal', inputPath, '--json']);
   assert.equal(proposedResult.status, 0, proposedResult.stderr || proposedResult.stdout);
   const proposed = JSON.parse(proposedResult.stdout);

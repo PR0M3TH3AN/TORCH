@@ -180,8 +180,8 @@ test_integrity_note:
       then: planning remains read-only, execution requires authorization, provenance and evidence remain fixed, invented ownership and self-approval are rejected, and owner review remains required
     - id: SCN-fleet-evolution
       given: an installed Fleet whose Session Manager identifies recurring work without a coherent owner
-      when: it proposes a durable domain and the owner explicitly approves activation
-      then: TORCH commits the roster change, provisions its branch and clean worktree, exposes the identity to existing and restarted control-plane clients, and can start only that identity through a virtualized adapter
+      when: repeated durable handoffs trigger advisory assessment, the manager proposes a domain, and the owner explicitly approves activation
+      then: assessment is read-only and manager-only, while approved activation commits the roster change, provisions its branch and clean worktree, exposes the identity to existing and restarted control-plane clients, and can start only that identity through a virtualized adapter
     - id: SCN-fleet-retirement
       given: a persistent specialist whose recurring work no longer justifies its coordination cost
       when: the Session Manager proposes retirement and the owner approves it
@@ -244,6 +244,7 @@ test_integrity_note:
     - bootstrap trust boundary, unassigned components, unmatched specification signals, and pending output contract
     - provider plan isolation, explicit execution authority, parsed proposal, semantic findings, and retained pending review state
     - durable Fleet-change state, owner approval, configuration commit, clean worktree, prompt, live identity discovery, and isolated runtime start plan
+    - recurring boundary signals, advisory recommendation, unchanged change ledger, and manager-only assessment authority
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
     - unchanged Git status and absent database before and after console observation
@@ -315,6 +316,7 @@ test_integrity_note:
       - bootstrap silently calling a paid model or copying COMBATRIG domains
       - an architect provider inheriting project instructions, mutating the repository, inventing evidence, or approving its own organization
       - a worker expanding the roster or the Session Manager activating a domain without owner approval
+      - advisory Fleet assessment silently creating a proposal, identity, worktree, or runtime session
       - transient one-off work causing silent unbounded Fleet growth
       - COMBATRIG compatibility inventing path ownership to force a green migration
       - a disconnected dashboard inventing state or creating it during observation

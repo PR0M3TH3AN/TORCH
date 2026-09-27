@@ -722,6 +722,17 @@ control-plane processes MUST discover the new identity without discarding
 durable state. Fleet evolution MUST also support future merge and retirement
 proposals so session count cannot grow without review.
 
+Implementation checkpoint (2026-09-27): the Session Manager startup prompt
+requires a read-only `torch_assess_fleet_evolution` pass after reconciliation
+and when new backlog or repeated boundary friction appears. The assessment
+summarizes open backlog, handoffs, coordination requests, pending Fleet
+changes, recurring unowned path boundaries, and recurring multi-domain work.
+Its conservative threshold can recommend considering a domain, but it never
+creates a proposal and explicitly requires the manager to inspect repository
+evidence and coordination cost. The manager can then propose through the
+identity-bound MCP tool or equivalent CLI; owner approval, activation, and
+quota-consuming runtime start remain separate gates.
+
 The owner SHOULD not need to operate many independent agent inboxes. Routine
 peer coordination stays inside the Fleet.
 

@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFile
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
+import { BacklogService } from '../backlog/service.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { ensureTaskIgnored, removeTaskIgnore } from '../kernel/worktrees.mjs';
 import { loadProjectConfig } from '../kernel/config.mjs';
@@ -205,6 +206,22 @@ function stableDomain(domain) {
   return JSON.stringify(domain);
 }
 
+function pathBoundary(path) {
+  const parts = path.replaceAll('\\', '/').split('/').filter(Boolean);
+  if (parts.length <= 1) return parts[0] ?? path;
+  return parts.slice(0, 2).join('/');
+}
+
+function grouped(items, keyFor) {
+  const groups = new Map();
+  for (const item of items) {
+    const key = keyFor(item);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  return groups;
+}
+
 export class FleetEvolutionService {
   constructor({ repositoryRoot, controlPlane, clock = () => new Date(), idFactory = randomUUID } = {}) {
     if (!controlPlane) throw new TorchError('Fleet evolution requires the TORCH control plane', { code: 'CONTROL_PLANE_REQUIRED' });
@@ -231,6 +248,86 @@ export class FleetEvolutionService {
       ? this.database.prepare('SELECT * FROM fleet_changes WHERE state = ? ORDER BY created_at, id').all(state)
       : this.database.prepare('SELECT * FROM fleet_changes ORDER BY created_at, id').all();
     return rows.map(rowToChange);
+  }
+
+  assessDomainNeeds({ assessor } = {}) {
+    const actor = this.controlPlane.assertIdentity(assessor);
+    if (actor !== 'session-manager') {
+      throw new TorchError('Only the Session Manager may assess persistent Fleet boundaries', {
+        code: 'FLEET_CHANGE_AUTHORITY_REQUIRED', details: { actor },
+      });
+    }
+    const activeStates = new Set([
+      'proposed', 'ready', 'assigned', 'in_progress', 'blocked', 'verification', 'ready_to_integrate',
+    ]);
+    const tasks = new BacklogService({
+      repositoryRoot: this.repositoryRoot, controlPlane: this.controlPlane,
+    }).list().filter((task) => activeStates.has(task.state));
+    const handoffs = this.database.prepare(`
+      SELECT id, sender_id AS sender, recipient_id AS recipient, path_ref AS path,
+        task_ref AS task, reason, created_at AS createdAt
+      FROM handoffs WHERE status = 'requested' ORDER BY created_at, id
+    `).all();
+    const coordination = this.database.prepare(`
+      SELECT id, sender_id AS sender, task_ref AS task, path_ref AS path,
+        body, created_at AS createdAt
+      FROM messages WHERE kind = 'coordination-request' ORDER BY created_at, id
+    `).all();
+    const unownedHandoffs = handoffs.filter((handoff) => handoff.path
+      && this.controlPlane.whoOwns({ path: handoff.path }).owners.length === 0);
+    const signals = [];
+    for (const [boundary, entries] of grouped(unownedHandoffs, (handoff) => pathBoundary(handoff.path))) {
+      if (entries.length < 2) continue;
+      signals.push({
+        code: 'RECURRING_UNOWNED_PATH_BOUNDARY', boundary, count: entries.length,
+        evidence: entries.map((entry) => `handoff:${entry.id}:${entry.path}`),
+        interpretation: 'Repeated handoffs touch the same unowned path boundary.',
+      });
+    }
+    const multiDomain = tasks.filter((task) => task.affectedDomains.length > 1);
+    for (const [domains, entries] of grouped(multiDomain, (task) => [...task.affectedDomains].sort().join(','))) {
+      if (entries.length < 2) continue;
+      signals.push({
+        code: 'RECURRING_MULTI_DOMAIN_WORK', domains: domains.split(','), count: entries.length,
+        evidence: entries.map((entry) => `backlog:${entry.id}`),
+        interpretation: 'The same domain set repeatedly shares active backlog work.',
+      });
+    }
+    const unassigned = tasks.filter((task) => !task.owner);
+    const blocked = tasks.filter((task) => task.state === 'blocked');
+    const proposedChanges = this.list({ state: 'proposed' });
+    const recommendation = signals.length ? {
+      action: 'consider-new-domain',
+      reason: 'Recurring boundary evidence may justify a persistent specialist.',
+      requiresManagerJudgment: true,
+      requiresOwnerApproval: true,
+      nextTool: 'torch_propose_domain',
+    } : {
+      action: 'retain-current-fleet',
+      reason: 'No repeated structural signal currently crosses the conservative proposal threshold.',
+      requiresManagerJudgment: true,
+      requiresOwnerApproval: true,
+      nextTool: null,
+    };
+    return {
+      schema: 'torch.dev/fleet-evolution-assessment/v1alpha1',
+      assessedAt: this.clock().toISOString(), assessor: actor, recommendation,
+      signals,
+      evidence: {
+        openBacklog: tasks.map((task) => ({
+          id: task.id, state: task.state, owner: task.owner, affectedDomains: task.affectedDomains,
+        })),
+        unassignedBacklog: unassigned.map((task) => task.id),
+        blockedBacklog: blocked.map((task) => task.id),
+        requestedHandoffs: handoffs,
+        coordinationRequests: coordination,
+        proposedFleetChanges: proposedChanges.map((change) => ({
+          id: change.id, type: change.type, domainId: change.domain?.id ?? null,
+        })),
+      },
+      guardrail: 'This assessment is advisory. Inspect repository evidence and coordination cost before proposing; assessment never creates, approves, activates, or starts a session.',
+      mutationPerformed: false,
+    };
   }
 
   proposeDomain({ proposer, domain: input, rationale, expectedBenefit: benefitInput, evidence } = {}) {

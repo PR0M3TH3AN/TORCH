@@ -130,6 +130,7 @@ Usage:
   torch schedules launcher <plan|status|install|remove> [--yes] [--json]
   torch fleet changes [--state <state>] [--json]
   torch fleet get --change <id> [--json]
+  torch fleet assess [--from session-manager] [--json]
   torch fleet propose --from session-manager --proposal <path> [--json]
   torch fleet propose-retirement --from session-manager --proposal <path> [--json]
   torch fleet propose-merge --from session-manager --proposal <path> [--json]
@@ -702,6 +703,9 @@ export async function runCli(argv = process.argv.slice(2), {
         const changeId = optionValue(argv, '--change');
         if (operation === 'changes') print({ changes: evolution.list({ state: optionValue(argv, '--state') }) }, { json });
         else if (operation === 'get') print(evolution.get(changeId), { json });
+        else if (operation === 'assess') print(evolution.assessDomainNeeds({
+          assessor: optionValue(argv, '--from') ?? 'session-manager',
+        }), { json });
         else if (operation === 'propose') {
           const input = loadJsonFile(cwd, optionValue(argv, '--proposal'), {
             label: 'Fleet domain proposal', code: 'FLEET_PROPOSAL_INVALID',

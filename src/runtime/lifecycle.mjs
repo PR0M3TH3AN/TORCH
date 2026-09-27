@@ -70,8 +70,8 @@ function promptPaths(stateRoot, worktree, areaId) {
 function startupMessage(areaId, fresh) {
   if (areaId === 'session-manager') {
     return fresh
-      ? 'Start the TORCH Fleet. Inspect live roster, messages, worktrees, and backlog before dispatch.'
-      : 'Resume the TORCH Fleet from durable state. Reconcile live status before dispatch.';
+      ? 'Start the TORCH Fleet. Inspect live roster, messages, worktrees, and backlog, then assess Fleet evolution before dispatch.'
+      : 'Resume the TORCH Fleet from durable state. Reconcile live status and assess Fleet evolution before dispatch.';
   }
   return fresh
     ? 'Start this TORCH domain. Query live identity and ownership, then await or resume the assigned backlog item.'

@@ -55,6 +55,7 @@ export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   'torch_run_schedule',
   'torch_list_fleet_changes',
   'torch_get_fleet_change',
+  'torch_assess_fleet_evolution',
   'torch_propose_domain',
   'torch_propose_domain_retirement',
   'torch_propose_domain_merge',
@@ -408,6 +409,13 @@ export function createTorchToolset(controlPlane, {
       description: 'Read one durable Fleet organization change and its owner-approval state.',
       schema: { change_id: z.string().min(1) },
       invoke: ({ change_id: changeId }) => evolutionService.get(changeId),
+    });
+    tools.set('torch_assess_fleet_evolution', {
+      description: 'Inspect durable backlog, handoff, coordination, and pending-change evidence for recurring boundaries that may merit a new persistent domain. Advisory and read-only.',
+      schema: { assessor: z.string().min(1).optional() },
+      invoke: ({ assessor }) => evolutionService.assessDomainNeeds({
+        assessor: claimedIdentity(controlPlane, actorId, assessor, 'assessor'),
+      }),
     });
     tools.set('torch_propose_domain', {
       description: 'Propose an evidence-backed persistent domain as the bound Session Manager. This never approves or activates it.',
