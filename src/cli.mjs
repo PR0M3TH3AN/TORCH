@@ -109,7 +109,10 @@ Usage:
   torch fleet get --change <id> [--json]
   torch fleet propose --from session-manager --proposal <path> [--json]
   torch fleet propose-retirement --from session-manager --proposal <path> [--json]
+  torch fleet propose-merge --from session-manager --proposal <path> [--json]
+  torch fleet propose-split --from session-manager --proposal <path> [--json]
   torch fleet approve --change <id> --by <owner> --yes [--json]
+  torch fleet reject --change <id> --by <owner> --reason <text> --yes [--json]
   torch fleet plan --change <id> [--json]
   torch fleet activate --change <id> --by <owner> --yes [--json]
   torch fleet start --change <id> [--fresh] [--dry-run] --yes [--json]
@@ -200,6 +203,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['ai-fleet-bootstrap', ['SCN-ai-fleet-bootstrap']],
     ['ai-fleet-planning', ['SCN-ai-fleet-planning']],
     ['fleet-evolution', ['SCN-fleet-evolution', 'SCN-cli-fleet-evolution']],
+    ['fleet-boundary-evolution', ['SCN-fleet-boundary-evolution']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -637,11 +641,37 @@ export async function runCli(argv = process.argv.slice(2), {
             ...input, areaId: input.area_id ?? input.areaId,
             proposer: optionValue(argv, '--from') ?? input.proposer,
           }), { json });
+        } else if (operation === 'propose-merge' || operation === 'propose-split') {
+          const input = loadJsonFile(cwd, optionValue(argv, '--proposal'), {
+            label: 'Fleet boundary proposal', code: 'FLEET_PROPOSAL_INVALID',
+          });
+          const request = {
+            ...input,
+            proposer: optionValue(argv, '--from') ?? input.proposer,
+            sourceDomains: input.sourceDomains ?? input.source_domains,
+            resultDomains: input.resultDomains ?? input.result_domains,
+            ownershipAssignments: input.ownershipAssignments ?? input.ownership_assignments,
+            expectedBenefit: input.expectedBenefit ?? (input.expected_benefit ? {
+              summary: input.expected_benefit.summary,
+              recurringWork: input.expected_benefit.recurring_work,
+              contextLocality: input.expected_benefit.context_locality,
+              coordinationCost: input.expected_benefit.coordination_cost,
+            } : undefined),
+          };
+          print(operation === 'propose-merge'
+            ? evolution.proposeMerge(request) : evolution.proposeSplit(request), { json });
         } else if (operation === 'approve') {
           if (!argv.includes('--yes')) {
             throw new TorchError('Owner approval of a Fleet change requires explicit --yes.', { code: 'APPROVAL_REQUIRED' });
           }
           print(evolution.approve({ changeId, approvedBy: optionValue(argv, '--by') }), { json });
+        } else if (operation === 'reject') {
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Owner rejection of a Fleet change requires explicit --yes.', { code: 'APPROVAL_REQUIRED' });
+          }
+          print(evolution.reject({
+            changeId, rejectedBy: optionValue(argv, '--by'), reason: optionValue(argv, '--reason'),
+          }), { json });
         } else if (operation === 'plan') print(evolution.planActivation(changeId), { json });
         else if (operation === 'activate') {
           if (!argv.includes('--yes')) {

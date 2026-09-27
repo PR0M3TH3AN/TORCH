@@ -57,6 +57,8 @@ export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   'torch_get_fleet_change',
   'torch_propose_domain',
   'torch_propose_domain_retirement',
+  'torch_propose_domain_merge',
+  'torch_propose_domain_split',
 ]);
 
 function claimedIdentity(controlPlane, actorId, claim, field) {
@@ -455,6 +457,49 @@ export function createTorchToolset(controlPlane, {
           contextLocality: benefit.context_locality, coordinationCost: benefit.coordination_cost,
         },
       }),
+    });
+    const boundaryProposalSchema = {
+      proposer: z.string().min(1).optional(),
+      source_domains: z.array(z.string().min(1)).min(1),
+      result_domains: z.array(z.object({
+        id: z.string().min(1), title: z.string().min(1), kind: z.string().min(1).optional(),
+        scope: z.array(z.string().min(1)).min(1), not_scope: z.array(z.string().min(1)).optional(),
+        owned_paths: z.array(z.string().min(1)).min(1), shared_paths: z.array(z.string().min(1)).optional(),
+        neighbours: z.array(z.string().min(1)).optional(), required_checks: z.array(z.string().min(1)).optional(),
+        resources: z.array(z.string().min(1)).optional(), runtime: z.string().min(1).optional(),
+        model: z.string().min(1).optional(), branch: z.string().min(1).optional(),
+        worktree_name: z.string().min(1).optional(),
+      })).min(1),
+      ownership_assignments: z.array(z.object({
+        source_domain_id: z.string().min(1), source_path: z.string().min(1), result_domain_id: z.string().min(1),
+      })).min(1),
+      rationale: z.string().min(1),
+      expected_benefit: z.object({
+        summary: z.string().min(1), recurring_work: z.string().min(1),
+        context_locality: z.string().min(1), coordination_cost: z.string().min(1),
+      }),
+      evidence: z.array(z.string().min(1)).min(1),
+    };
+    const invokeBoundaryProposal = (operation) => ({
+      proposer, source_domains: sourceDomains, result_domains: resultDomains,
+      ownership_assignments: ownershipAssignments, expected_benefit: benefit, ...input
+    }) => evolutionService[operation]({
+      ...input, sourceDomains, resultDomains, ownershipAssignments,
+      proposer: claimedIdentity(controlPlane, actorId, proposer, 'proposer'),
+      expectedBenefit: {
+        summary: benefit.summary, recurringWork: benefit.recurring_work,
+        contextLocality: benefit.context_locality, coordinationCost: benefit.coordination_cost,
+      },
+    });
+    tools.set('torch_propose_domain_merge', {
+      description: 'Propose an evidence-backed merge of persistent domains. Approval records intent but cannot automatically migrate ownership.',
+      schema: boundaryProposalSchema,
+      invoke: invokeBoundaryProposal('proposeMerge'),
+    });
+    tools.set('torch_propose_domain_split', {
+      description: 'Propose an evidence-backed split of a persistent domain. Approval records intent but cannot automatically migrate ownership.',
+      schema: boundaryProposalSchema,
+      invoke: invokeBoundaryProposal('proposeSplit'),
     });
   }
   return tools;

@@ -36,6 +36,7 @@ function releaseCandidate(root, version) {
     'SCN-ai-fleet-bootstrap',
     'SCN-ai-fleet-planning',
     'SCN-fleet-evolution', 'SCN-cli-fleet-evolution',
+    'SCN-fleet-boundary-evolution',
     'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
     'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
     'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',

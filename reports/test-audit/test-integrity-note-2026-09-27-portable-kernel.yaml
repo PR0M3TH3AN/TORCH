@@ -170,6 +170,10 @@ test_integrity_note:
       given: a persistent specialist whose recurring work no longer justifies its coordination cost
       when: the Session Manager proposes retirement and the owner approves it
       then: live, dirty, guarded, leased, uniquely committed, or actively assigned work blocks retirement; safe activation removes the worktree and identity while preserving its branch and durable decision
+    - id: SCN-fleet-boundary-evolution
+      given: recurring work suggests an existing pair of domains should merge or one domain should split
+      when: the Session Manager submits complete ownership assignments and the owner reviews the durable proposal
+      then: invalid or stale boundaries are refused and approval cannot silently mutate identities, ownership, prompts, branches, or worktrees
     - id: SCN-package-distribution
       given: a clean TORCH source checkout and an isolated package consumer
       when: npm builds and installs the published artifact without registry access

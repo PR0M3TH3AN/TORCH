@@ -66,7 +66,10 @@ and the first Claude reference-fleet path:
   persistent domain, while owner approval gates the configuration commit,
   identity, prompt, branch, and worktree activation; it can also propose safe
   retirement when coordination cost exceeds continuing value, preserving the
-  branch and refusing live, dirty, guarded, leased, or active work.
+  branch and refusing live, dirty, guarded, leased, or active work. Evidence-
+  backed merge and split proposals are durable and owner-gated, but approval
+  deliberately cannot rewrite ownership: TORCH reports the separate migration
+  proof still required for backlog, branches, prompts, worktrees, and neighbours.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
 cutover, installation of the implemented system-schedule launcher on this

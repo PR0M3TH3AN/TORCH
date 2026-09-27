@@ -13,6 +13,7 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'ai-fleet-bootstrap',
   'ai-fleet-planning',
   'fleet-evolution',
+  'fleet-boundary-evolution',
   'review-install-roster',
   'branches-worktrees',
   'runtime-identities',

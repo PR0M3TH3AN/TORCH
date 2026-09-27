@@ -17,7 +17,7 @@ import { observeProject } from '../../src/observability/snapshot.mjs';
 
 const CLI = new URL('../../bin/torch.mjs', import.meta.url).pathname;
 
-function fixture() {
+function fixture({ boundary = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-evolution-'));
   const worktreeParent = mkdtempSync(join(tmpdir(), 'torch-evolution-worktrees-'));
   const env = { ...process.env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-evolution-state-')) };
@@ -29,6 +29,19 @@ function fixture() {
   execFileSync('git', ['-C', root, 'commit', '-m', 'fixture']);
   let repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  if (boundary) {
+    const template = proposal.domains[0];
+    proposal.domains = [
+      {
+        ...template, id: 'alpha', title: 'Alpha', owned_paths: ['app.js', 'src/alpha/**'],
+        neighbours: ['beta'], evidence: ['app.js'],
+      },
+      {
+        ...template, id: 'beta', title: 'Beta', owned_paths: ['src/beta/**'],
+        neighbours: ['alpha'], evidence: ['app.js'],
+      },
+    ];
+  }
   proposal.paths = { worktree_parent: worktreeParent };
   proposal.review = {
     status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
@@ -39,6 +52,133 @@ function fixture() {
   repository = inspectRepository(root);
   return { root, env, repository, worktreeParent };
 }
+
+function boundaryBenefit() {
+  return {
+    summary: 'Align persistent sessions with the recurring implementation boundary.',
+    recurringWork: 'The same cross-domain changes recur across milestones.',
+    contextLocality: 'Keep only the context needed by each durable responsibility.',
+    coordinationCost: 'Reduce recurring handoffs without hiding the migration cost.',
+  };
+}
+
+test('SCN-fleet-boundary-evolution: merge and split proposals are durable, owner-gated, and non-mutating', () => {
+  const context = fixture({ boundary: true });
+  const configPath = join(context.root, '.torch', 'torch.yaml');
+  const rosterPath = join(context.root, '.torch', 'roster.yaml');
+  const before = { config: readFileSync(configPath, 'utf8'), roster: readFileSync(rosterPath, 'utf8') };
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  let sequence = 0;
+  const evolution = new FleetEvolutionService({
+    repositoryRoot: context.root, controlPlane: control,
+    clock: () => new Date('2026-09-27T14:00:00Z'), idFactory: () => `BOUNDARY-${++sequence}`,
+  });
+  const benefit = boundaryBenefit();
+  const mergeInput = {
+    sourceDomains: ['alpha', 'beta'],
+    resultDomains: [{
+      id: 'platform', title: 'Platform', kind: 'development',
+      scope: ['combined alpha and beta implementation'], not_scope: ['Session Manager work'],
+      owned_paths: ['app.js', 'src/alpha/**', 'src/beta/**'], shared_paths: [], neighbours: [],
+      required_checks: [], resources: [], runtime: 'claude',
+    }],
+    ownershipAssignments: [
+      { sourceDomainId: 'alpha', sourcePath: 'app.js', resultDomainId: 'platform' },
+      { sourceDomainId: 'alpha', sourcePath: 'src/alpha/**', resultDomainId: 'platform' },
+      { sourceDomainId: 'beta', sourcePath: 'src/beta/**', resultDomainId: 'platform' },
+    ],
+    rationale: 'Alpha and beta now change together and retain mostly identical context.',
+    expectedBenefit: benefit, evidence: ['TASK-31', 'TASK-38'],
+  };
+  assert.throws(
+    () => evolution.proposeMerge({ ...mergeInput, proposer: 'alpha' }),
+    (error) => error.code === 'FLEET_CHANGE_AUTHORITY_REQUIRED',
+  );
+  assert.throws(
+    () => evolution.proposeMerge({
+      ...mergeInput, proposer: 'session-manager', ownershipAssignments: mergeInput.ownershipAssignments.slice(1),
+    }),
+    (error) => error.code === 'FLEET_OWNERSHIP_ASSIGNMENT_INVALID',
+  );
+  const merged = callTorchTool(control, 'torch_propose_domain_merge', {
+    proposer: 'session-manager', source_domains: mergeInput.sourceDomains,
+    result_domains: mergeInput.resultDomains.map((domain) => ({
+      ...domain, scope: domain.scope, not_scope: domain.not_scope,
+      owned_paths: domain.owned_paths, shared_paths: domain.shared_paths,
+      required_checks: domain.required_checks,
+    })),
+    ownership_assignments: mergeInput.ownershipAssignments.map((assignment) => ({
+      source_domain_id: assignment.sourceDomainId, source_path: assignment.sourcePath,
+      result_domain_id: assignment.resultDomainId,
+    })),
+    rationale: mergeInput.rationale,
+    expected_benefit: {
+      summary: benefit.summary, recurring_work: benefit.recurringWork,
+      context_locality: benefit.contextLocality, coordination_cost: benefit.coordinationCost,
+    },
+    evidence: mergeInput.evidence,
+  }, { actorId: 'session-manager', evolutionService: evolution });
+  assert.equal(merged.type, 'merge-domains');
+  assert.equal(merged.proposal.schema, 'torch.dev/fleet-boundary-proposal/v1alpha1');
+  evolution.approve({ changeId: merged.id, approvedBy: 'fixture-owner' });
+  const plan = evolution.planActivation(merged.id);
+  assert.equal(plan.canProceed, false);
+  assert.equal(plan.blockers.some((blocker) => blocker.type === 'manual-boundary-redesign-required'), true);
+  writeFileSync(configPath, `${before.config.trimEnd()}  \n`);
+  assert.equal(evolution.planActivation(merged.id).blockers
+    .some((blocker) => blocker.type === 'configuration-changed'), true);
+  writeFileSync(configPath, before.config);
+  assert.throws(
+    () => evolution.activate({ changeId: merged.id, approvedBy: 'fixture-owner' }),
+    (error) => error.code === 'FLEET_BOUNDARY_MIGRATION_REQUIRED',
+  );
+  assert.equal(readFileSync(configPath, 'utf8'), before.config);
+  assert.equal(readFileSync(rosterPath, 'utf8'), before.roster);
+  assert.deepEqual(control.listAgents().map((agent) => agent.areaId).sort(), ['alpha', 'beta', 'session-manager']);
+  control.close();
+
+  const splitPath = join(context.root, 'split-proposal.json');
+  writeFileSync(splitPath, `${JSON.stringify({
+    sourceDomains: ['alpha'],
+    resultDomains: [
+      {
+        id: 'alpha-app', title: 'Alpha app', scope: ['application entrypoint'], not_scope: ['alpha internals'],
+        owned_paths: ['app.js'], shared_paths: [], neighbours: ['alpha-internals'], required_checks: [], resources: [], runtime: 'claude',
+      },
+      {
+        id: 'alpha-internals', title: 'Alpha internals', scope: ['alpha internals'], not_scope: ['application entrypoint'],
+        owned_paths: ['src/alpha/**'], shared_paths: [], neighbours: ['alpha-app'], required_checks: [], resources: [], runtime: 'claude',
+      },
+    ],
+    ownershipAssignments: [
+      { sourceDomainId: 'alpha', sourcePath: 'app.js', resultDomainId: 'alpha-app' },
+      { sourceDomainId: 'alpha', sourcePath: 'src/alpha/**', resultDomainId: 'alpha-internals' },
+    ],
+    rationale: 'Alpha now contains two recurring responsibilities with different context.',
+    expectedBenefit: benefit, evidence: ['TASK-44', 'ownership review'],
+  }, null, 2)}\n`);
+  const run = (args) => spawnSync(process.execPath, [CLI, ...args], {
+    cwd: context.root, env: context.env, encoding: 'utf8',
+  });
+  const proposed = run(['fleet', 'propose-split', '--from', 'session-manager', '--proposal', splitPath, '--json']);
+  assert.equal(proposed.status, 0, proposed.stderr || proposed.stdout);
+  const split = JSON.parse(proposed.stdout);
+  assert.equal(split.type, 'split-domain');
+  const refused = run(['fleet', 'reject', '--change', split.id, '--by', 'fixture-owner', '--reason', 'Wait for milestone.', '--json']);
+  assert.equal(refused.status, 2);
+  assert.equal(JSON.parse(refused.stdout).error, 'APPROVAL_REQUIRED');
+  const rejected = run(['fleet', 'reject', '--change', split.id, '--by', 'fixture-owner', '--reason', 'Wait for milestone.', '--yes', '--json']);
+  assert.equal(rejected.status, 0, rejected.stderr || rejected.stdout);
+  assert.equal(JSON.parse(rejected.stdout).state, 'rejected');
+  assert.equal(JSON.parse(rejected.stdout).rejectionReason, 'Wait for milestone.');
+  const reopened = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const persisted = new FleetEvolutionService({ repositoryRoot: context.root, controlPlane: reopened }).get(merged.id);
+  assert.equal(persisted.type, 'merge-domains');
+  assert.equal(persisted.proposal.resultDomains[0].id, 'platform');
+  assert.equal(new FleetEvolutionService({ repositoryRoot: context.root, controlPlane: reopened })
+    .get(split.id).rejectionReason, 'Wait for milestone.');
+  reopened.close();
+});
 
 test('SCN-fleet-evolution: the manager proposes and owner activates a newly justified persistent domain', () => {
   const context = fixture();

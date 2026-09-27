@@ -138,8 +138,9 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       FROM integration_requests ORDER BY updated_at DESC LIMIT 40
     `);
     result.fleetChanges = rows(database, 'fleet_changes', `
-      SELECT id, state, proposer, json_extract(domain_json, '$.id') AS domainId,
-        json_extract(domain_json, '$.title') AS title,
+      SELECT id, change_type AS changeType, state, proposer,
+        COALESCE(json_extract(domain_json, '$.id'), json_extract(proposal_json, '$.resultDomains[0].id')) AS domainId,
+        COALESCE(json_extract(domain_json, '$.title'), json_extract(proposal_json, '$.resultDomains[0].title')) AS title,
         json_extract(expected_benefit_json, '$.summary') AS expectedBenefit,
         approved_by AS approvedBy, updated_at AS updatedAt
       FROM fleet_changes ORDER BY updated_at DESC, id LIMIT 40

@@ -115,7 +115,10 @@ function rowToChange(row) {
     id: row.id, type: row.change_type ?? 'add-domain', state: row.state, proposer: row.proposer,
     createdAt: row.created_at, updatedAt: row.updated_at, baseCommit: row.base_commit,
     approvedBy: row.approved_by, approvedAt: row.approved_at,
+    rejectedBy: row.rejected_by ?? null, rejectedAt: row.rejected_at ?? null,
+    rejectionReason: row.rejection_reason ?? null,
     activationCommit: row.activation_commit, domain: JSON.parse(row.domain_json),
+    proposal: row.proposal_json ? JSON.parse(row.proposal_json) : null,
     rationale: row.rationale, expectedBenefit: JSON.parse(row.expected_benefit_json),
     evidence: JSON.parse(row.evidence_json),
   };
@@ -148,11 +151,15 @@ function initialize(database) {
       base_commit TEXT NOT NULL,
       approved_by TEXT,
       approved_at TEXT,
+      rejected_by TEXT,
+      rejected_at TEXT,
+      rejection_reason TEXT,
       activation_commit TEXT,
       domain_json TEXT NOT NULL,
       rationale TEXT NOT NULL,
       expected_benefit_json TEXT NOT NULL,
-      evidence_json TEXT NOT NULL
+      evidence_json TEXT NOT NULL,
+      proposal_json TEXT
     );
     CREATE INDEX IF NOT EXISTS fleet_changes_state_created
       ON fleet_changes(state, created_at, id);
@@ -161,6 +168,12 @@ function initialize(database) {
   if (!columns.has('change_type')) {
     database.exec("ALTER TABLE fleet_changes ADD COLUMN change_type TEXT NOT NULL DEFAULT 'add-domain'");
   }
+  if (!columns.has('proposal_json')) {
+    database.exec('ALTER TABLE fleet_changes ADD COLUMN proposal_json TEXT');
+  }
+  if (!columns.has('rejected_by')) database.exec('ALTER TABLE fleet_changes ADD COLUMN rejected_by TEXT');
+  if (!columns.has('rejected_at')) database.exec('ALTER TABLE fleet_changes ADD COLUMN rejected_at TEXT');
+  if (!columns.has('rejection_reason')) database.exec('ALTER TABLE fleet_changes ADD COLUMN rejection_reason TEXT');
 }
 
 function expectedBenefit(input) {
@@ -174,6 +187,22 @@ function expectedBenefit(input) {
 
 function hasTable(database, name) {
   return Boolean(database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(name));
+}
+
+function configDigest(repositoryRoot) {
+  return sha256(readFileSync(join(repositoryRoot, '.torch', 'torch.yaml')));
+}
+
+function normalizeAssignment(input) {
+  return {
+    sourceDomainId: requiredText(input?.sourceDomainId ?? input?.source_domain_id, 'ownershipAssignments.sourceDomainId'),
+    sourcePath: requiredText(input?.sourcePath ?? input?.source_path, 'ownershipAssignments.sourcePath'),
+    resultDomainId: requiredText(input?.resultDomainId ?? input?.result_domain_id, 'ownershipAssignments.resultDomainId'),
+  };
+}
+
+function stableDomain(domain) {
+  return JSON.stringify(domain);
 }
 
 export class FleetEvolutionService {
@@ -310,6 +339,164 @@ export class FleetEvolutionService {
     return record;
   }
 
+  proposeMerge(input = {}) {
+    return this.proposeBoundaryChange('merge-domains', input);
+  }
+
+  proposeSplit(input = {}) {
+    return this.proposeBoundaryChange('split-domain', input);
+  }
+
+  proposeBoundaryChange(changeType, {
+    proposer, sourceDomains: sourceInput, resultDomains: resultInput,
+    ownershipAssignments: assignmentInput, rationale, expectedBenefit: benefitInput, evidence,
+  } = {}) {
+    const actor = this.controlPlane.assertIdentity(proposer);
+    if (actor !== 'session-manager') {
+      throw new TorchError('Only the Session Manager may propose changing persistent Fleet boundaries', {
+        code: 'FLEET_CHANGE_AUTHORITY_REQUIRED', details: { actor },
+      });
+    }
+    if (!['merge-domains', 'split-domain'].includes(changeType)) {
+      throw new TorchError(`Unsupported Fleet boundary change: ${changeType}`, { code: 'FLEET_CHANGE_INVALID' });
+    }
+    const sourceIds = textList(sourceInput, 'sourceDomains', { required: true });
+    if ((changeType === 'merge-domains' && sourceIds.length < 2)
+      || (changeType === 'split-domain' && sourceIds.length !== 1)) {
+      throw new TorchError(`${changeType} has invalid source-domain cardinality`, {
+        code: 'FLEET_CHANGE_INVALID', details: { sourceDomains: sourceIds },
+      });
+    }
+    if (sourceIds.includes('session-manager')) {
+      throw new TorchError('The primary Session Manager is not a merge or split source', { code: 'FLEET_CHANGE_INVALID' });
+    }
+    const config = loadProjectConfig(this.repositoryRoot);
+    const configuredById = new Map(config.domains.map((domain) => [domain.id, domain]));
+    const unknownSources = sourceIds.filter((id) => !configuredById.has(id));
+    if (unknownSources.length) {
+      throw new TorchError('Fleet boundary proposal references unknown source domains', {
+        code: 'FLEET_CHANGE_INVALID', details: { sourceDomains: unknownSources },
+      });
+    }
+    if (!Array.isArray(resultInput)) {
+      throw new TorchError('resultDomains must be an array', {
+        code: 'INVALID_FLEET_CHANGE', details: { field: 'resultDomains' },
+      });
+    }
+    const resultDomains = resultInput.map(normalizeDomain);
+    if ((changeType === 'merge-domains' && resultDomains.length !== 1)
+      || (changeType === 'split-domain' && resultDomains.length < 2)) {
+      throw new TorchError(`${changeType} has invalid result-domain cardinality`, {
+        code: 'FLEET_CHANGE_INVALID', details: { resultDomains: resultDomains.map((domain) => domain.id) },
+      });
+    }
+    const resultIds = resultDomains.map((domain) => domain.id);
+    if (new Set(resultIds).size !== resultIds.length) {
+      throw new TorchError('Fleet boundary proposal has duplicate result-domain IDs', { code: 'FLEET_CHANGE_INVALID' });
+    }
+    const collisions = resultIds.filter((id) => configuredById.has(id) && !sourceIds.includes(id));
+    if (collisions.length) {
+      throw new TorchError('Result-domain IDs collide with unaffected Fleet identities', {
+        code: 'FLEET_IDENTITY_EXISTS', details: { domains: collisions },
+      });
+    }
+    const knownFutureIds = new Set([
+      'session-manager', ...config.domains.filter((domain) => !sourceIds.includes(domain.id)).map((domain) => domain.id),
+      ...resultIds,
+    ]);
+    const knownRuntimes = new Set(Object.keys(config.runtimes ?? {}));
+    const knownChecks = new Set((config.checks ?? []).map((check) => check.id));
+    const knownResources = new Set((config.resources ?? []).map((resource) => resource.id));
+    for (const domain of resultDomains) {
+      const invalid = {
+        neighbours: domain.neighbours.filter((id) => !knownFutureIds.has(id)),
+        checks: domain.required_checks.filter((id) => !knownChecks.has(id)),
+        resources: domain.resources.filter((id) => !knownResources.has(id)),
+      };
+      if (!knownRuntimes.has(domain.runtime) || Object.values(invalid).some((items) => items.length)) {
+        throw new TorchError('Result domain references Fleet configuration that will not exist', {
+          code: 'FLEET_CHANGE_INVALID', details: { domainId: domain.id, runtime: domain.runtime, ...invalid },
+        });
+      }
+    }
+    const assignments = Array.isArray(assignmentInput) ? assignmentInput.map(normalizeAssignment) : [];
+    const expectedOwnership = sourceIds.flatMap((id) => configuredById.get(id).owned_paths
+      .map((path) => `${id}\0${path}`));
+    const assignedOwnership = assignments.map((assignment) => `${assignment.sourceDomainId}\0${assignment.sourcePath}`);
+    if (assignments.some((assignment) => !sourceIds.includes(assignment.sourceDomainId)
+      || !resultIds.includes(assignment.resultDomainId))
+      || new Set(assignedOwnership).size !== assignedOwnership.length
+      || expectedOwnership.length !== assignedOwnership.length
+      || expectedOwnership.some((entry) => !assignedOwnership.includes(entry))) {
+      throw new TorchError('Every source ownership pattern must be assigned exactly once to a result domain', {
+        code: 'FLEET_OWNERSHIP_ASSIGNMENT_INVALID',
+        details: { expected: expectedOwnership, assigned: assignedOwnership },
+      });
+    }
+    const resultOwnership = resultDomains.flatMap((domain) => domain.owned_paths
+      .map((path) => ({ domainId: domain.id, path })));
+    const assignedResults = assignments.map((assignment) => `${assignment.resultDomainId}\0${assignment.sourcePath}`);
+    const declaredResults = resultOwnership.map((entry) => `${entry.domainId}\0${entry.path}`);
+    if (new Set(declaredResults).size !== declaredResults.length
+      || assignedResults.length !== declaredResults.length
+      || assignedResults.some((entry) => !declaredResults.includes(entry))) {
+      throw new TorchError('Result owned paths must exactly match the explicit ownership assignments', {
+        code: 'FLEET_OWNERSHIP_ASSIGNMENT_INVALID', details: { assigned: assignedResults, declared: declaredResults },
+      });
+    }
+    for (let left = 0; left < resultOwnership.length; left += 1) {
+      for (let right = left + 1; right < resultOwnership.length; right += 1) {
+        if (resultOwnership[left].domainId !== resultOwnership[right].domainId
+          && pathsOverlap(resultOwnership[left].path, resultOwnership[right].path)) {
+          throw new TorchError('Result domains have overlapping ownership', {
+            code: 'FLEET_OWNERSHIP_COLLISION', details: [resultOwnership[left], resultOwnership[right]],
+          });
+        }
+      }
+    }
+    const unaffected = config.domains.filter((domain) => !sourceIds.includes(domain.id));
+    const externalCollisions = resultOwnership.flatMap((result) => unaffected.flatMap((domain) =>
+      domain.owned_paths.filter((path) => pathsOverlap(result.path, path))
+        .map((path) => ({ resultDomainId: result.domainId, resultPath: result.path, areaId: domain.id, existingPath: path }))));
+    if (externalCollisions.length) {
+      throw new TorchError('Result ownership overlaps an unaffected Fleet domain', {
+        code: 'FLEET_OWNERSHIP_COLLISION', details: externalCollisions,
+      });
+    }
+    const now = this.clock().toISOString();
+    const proposal = {
+      schema: 'torch.dev/fleet-boundary-proposal/v1alpha1',
+      operation: changeType === 'merge-domains' ? 'merge' : 'split',
+      configDigest: configDigest(this.repositoryRoot),
+      sourceDomains: sourceIds.map((id) => configuredById.get(id)),
+      resultDomains, ownershipAssignments: assignments,
+    };
+    const record = {
+      id: this.idFactory(), type: changeType, state: 'proposed', proposer: actor,
+      createdAt: now, updatedAt: now, baseCommit: git(this.repositoryRoot, ['rev-parse', 'HEAD']),
+      approvedBy: null, approvedAt: null, activationCommit: null, domain: null, proposal,
+      rationale: requiredText(rationale, 'rationale'), expectedBenefit: expectedBenefit(benefitInput),
+      evidence: textList(evidence, 'evidence', { required: true }),
+    };
+    this.database.prepare(`
+      INSERT INTO fleet_changes (
+        id, change_type, state, proposer, created_at, updated_at, base_commit, approved_by,
+        approved_at, activation_commit, domain_json, rationale, expected_benefit_json, evidence_json,
+        proposal_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, 'null', ?, ?, ?, ?)
+    `).run(
+      record.id, record.type, record.state, record.proposer, record.createdAt, record.updatedAt,
+      record.baseCommit, record.rationale, JSON.stringify(record.expectedBenefit),
+      JSON.stringify(record.evidence), JSON.stringify(proposal),
+    );
+    this.controlPlane.audit({
+      actorId: actor, operation: `fleet-change.propose-${proposal.operation}`,
+      entityType: 'fleet-change', entityId: record.id,
+      details: { sourceDomains: sourceIds, resultDomains: resultIds, baseCommit: record.baseCommit },
+    });
+    return record;
+  }
+
   approve({ changeId, approvedBy } = {}) {
     const change = this.get(changeId);
     if (change.state !== 'proposed') {
@@ -328,9 +515,32 @@ export class FleetEvolutionService {
     return this.get(change.id);
   }
 
+  reject({ changeId, rejectedBy, reason } = {}) {
+    const change = this.get(changeId);
+    if (change.state !== 'proposed') {
+      throw new TorchError(`Fleet change ${change.id} is ${change.state}, not proposed`, { code: 'FLEET_CHANGE_STATE_CONFLICT' });
+    }
+    const owner = requiredText(rejectedBy, 'rejectedBy');
+    const explanation = requiredText(reason, 'reason');
+    const now = this.clock().toISOString();
+    this.database.prepare(`
+      UPDATE fleet_changes SET state = 'rejected', rejected_by = ?, rejected_at = ?,
+        rejection_reason = ?, updated_at = ?
+      WHERE id = ? AND state = 'proposed'
+    `).run(owner, now, explanation, now, change.id);
+    this.controlPlane.audit({
+      actorId: 'session-manager', operation: 'fleet-change.owner-rejected', entityType: 'fleet-change', entityId: change.id,
+      details: { rejectedBy: owner, reason: explanation },
+    });
+    return this.get(change.id);
+  }
+
   planActivation(changeId) {
     const change = this.get(changeId);
     if (change.type === 'retire-domain') return this.planRetirement(change);
+    if (change.type === 'merge-domains' || change.type === 'split-domain') {
+      return this.planBoundaryChange(change);
+    }
     const config = loadProjectConfig(this.repositoryRoot);
     const roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'ROSTER_INVALID');
     const currentHead = git(this.repositoryRoot, ['rev-parse', 'HEAD']);
@@ -375,6 +585,11 @@ export class FleetEvolutionService {
       });
     }
     if (change.type === 'retire-domain') return this.retire(change, approvedBy);
+    if (change.type === 'merge-domains' || change.type === 'split-domain') {
+      throw new TorchError('Merge and split approval does not authorize automatic ownership migration', {
+        code: 'FLEET_BOUNDARY_MIGRATION_REQUIRED', details: this.planBoundaryChange(change),
+      });
+    }
     const plan = this.planActivation(change.id);
     if (!plan.canProceed) {
       throw new TorchError('Fleet domain activation is blocked', {
@@ -408,6 +623,36 @@ export class FleetEvolutionService {
       identity: this.controlPlane.identity(change.domain.id),
       runtime: { state: 'offline', next: `Start ${change.domain.id} through the approved ${change.domain.runtime} adapter.` },
       mutationPerformed: true,
+    };
+  }
+
+  planBoundaryChange(changeOrId) {
+    const change = typeof changeOrId === 'string' ? this.get(changeOrId) : changeOrId;
+    const currentHead = git(this.repositoryRoot, ['rev-parse', 'HEAD']);
+    const config = loadProjectConfig(this.repositoryRoot);
+    const configuredById = new Map(config.domains.map((domain) => [domain.id, domain]));
+    const proposal = change.proposal;
+    const blockers = [];
+    if (change.state !== 'approved') blockers.push({ type: 'state', actual: change.state, required: 'approved' });
+    if (currentHead !== change.baseCommit) blockers.push({ type: 'stale-head', expected: change.baseCommit, actual: currentHead });
+    const currentDigest = configDigest(this.repositoryRoot);
+    if (currentDigest !== proposal.configDigest) {
+      blockers.push({ type: 'configuration-changed', expected: proposal.configDigest, actual: currentDigest });
+    }
+    for (const source of proposal.sourceDomains) {
+      const current = configuredById.get(source.id);
+      if (!current) blockers.push({ type: 'source-domain-missing', domainId: source.id });
+      else if (stableDomain(current) !== stableDomain(source)) blockers.push({ type: 'source-domain-changed', domainId: source.id });
+    }
+    blockers.push({
+      type: 'manual-boundary-redesign-required',
+      reason: 'A separate migration must prove backlog, branch, prompt, worktree, neighbour, and ownership transfer safety.',
+    });
+    return {
+      action: change.type, changeId: change.id, state: change.state,
+      sourceDomains: proposal.sourceDomains.map((domain) => domain.id),
+      resultDomains: proposal.resultDomains.map((domain) => domain.id),
+      currentHead, baseCommit: change.baseCommit, blockers, canProceed: false, mutationPerformed: false,
     };
   }
 
