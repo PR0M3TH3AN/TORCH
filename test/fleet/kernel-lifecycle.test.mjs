@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -109,6 +109,39 @@ test('SCN-existing-repository-preservation: install and purge preserve history, 
   assert.equal(readFileSync(join(root, 'owner-notes.txt'), 'utf8'), 'untracked owner data\n');
   assert.equal(execFileSync('git', ['-C', root, 'rev-list', '--all', '--format=%H'], { encoding: 'utf8' }), historyBefore);
   assert.equal(execFileSync('git', ['-C', root, 'for-each-ref', '--format=%(refname)', 'refs/heads'], { encoding: 'utf8' }), branchesBefore);
+});
+
+test('SCN-install-trackability: ignored tracked state is refused and pre-existing .torch content survives reversal', () => {
+  const ignored = fixture();
+  writeFileSync(join(ignored.root, '.gitignore'), '.torch/\n');
+  execFileSync('git', ['-C', ignored.root, 'add', '.gitignore']);
+  execFileSync('git', ['-C', ignored.root, 'commit', '-m', 'ignore torch']);
+  const ignoredRepository = inspectRepository(ignored.root);
+  const ignoredProposal = approvedProposal(ignoredRepository);
+  const ignoredPlan = planInstall({ repository: ignoredRepository, proposal: ignoredProposal, env: ignored.env });
+  assert.equal(ignoredPlan.canProceed, false);
+  assert.equal(ignoredPlan.blockers[0].code, 'TRACKED_STATE_IGNORED');
+  assert.throws(
+    () => installProject({ repository: ignoredRepository, proposal: ignoredProposal, env: ignored.env }),
+    (error) => error.code === 'TRACKED_STATE_IGNORED',
+  );
+  assert.equal(existsSync(join(ignored.root, '.torch')), false);
+
+  const overlay = fixture();
+  const history = join(overlay.root, '.torch', 'prompt-history');
+  mkdirSync(history, { recursive: true });
+  writeFileSync(join(history, 'owner-note.md'), 'preserve this history\n');
+  const overlayRepository = inspectRepository(overlay.root);
+  installProject({
+    repository: overlayRepository,
+    proposal: approvedProposal(overlayRepository),
+    env: overlay.env,
+    projectId: 'overlay-project',
+  });
+  assert.equal(existsSync(join(overlay.root, '.torch', 'torch.yaml')), true);
+  uninstallProject({ repository: inspectRepository(overlay.root), purge: true, env: overlay.env });
+  assert.equal(readFileSync(join(history, 'owner-note.md'), 'utf8'), 'preserve this history\n');
+  assert.equal(existsSync(join(overlay.root, '.torch', 'torch.yaml')), false);
 });
 
 test('SCN-purge-protects-user-change: uninstall refuses to delete modified managed files', () => {

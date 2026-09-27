@@ -14,6 +14,10 @@ test_integrity_note:
       given: an existing repository with history, a long-lived branch, owner configuration, and an untracked file
       when: TORCH is installed and safely purged
       then: every pre-existing commit, branch, configuration byte, and untracked owner byte remains unchanged
+    - id: SCN-install-trackability
+      given: one repository that ignores .torch and another with unrelated pre-existing .torch history
+      when: TORCH plans installation or performs install followed by purge
+      then: ignored tracked state is refused before mutation while an ownership-safe overlay reverses only TORCH-created paths and preserves the prior history byte-for-byte
     - id: SCN-purge-protects-user-change
       given: an installed TORCH project whose managed configuration was edited by its owner
       when: a purge is requested

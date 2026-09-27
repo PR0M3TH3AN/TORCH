@@ -280,6 +280,13 @@ The first implementation MAY require Node.js 22 or later. Packaging as a
 standalone executable is a later distribution goal and MUST NOT change project
 configuration semantics.
 
+The tracked `.torch/` namespace may already contain unrelated owner data from
+another tool or an earlier workflow. Installation may overlay only when every
+TORCH-owned target path is new and trackable by Git. It MUST refuse an ignored
+tracked configuration path, unsafe directory node, or existing ownership
+manifest. Reversal removes only manifest-owned files and directories created by
+that installation; pre-existing `.torch/` content survives byte-for-byte.
+
 ### 8.2 Tracked project state
 
 The project owns its durable organizational memory under `.torch/`:

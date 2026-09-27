@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
 import {
-  existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync,
+  existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmdirSync, rmSync, writeFileSync,
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { TorchError } from './errors.mjs';
@@ -192,10 +192,47 @@ function safeProjectPath(root, relativePath) {
   return target;
 }
 
+function trackedStateIgnored(root) {
+  try {
+    execFileSync('git', ['-C', root, 'check-ignore', '--no-index', '--quiet', `${TRACKED_DIR}/torch.yaml`], {
+      stdio: 'ignore',
+    });
+    return true;
+  } catch (error) {
+    if (error.status === 1) return false;
+    throw new TorchError('Cannot verify whether TORCH tracked state is ignored', {
+      code: 'TRACKED_STATE_IGNORE_CHECK_FAILED', details: error.message,
+    });
+  }
+}
+
+function directoryInventory(root, projectRoot) {
+  if (!existsSync(root)) return new Set();
+  const directories = new Set();
+  const visit = (directory) => {
+    directories.add(relative(projectRoot, directory));
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (entry.isDirectory()) visit(join(directory, entry.name));
+    }
+  };
+  visit(root);
+  return directories;
+}
+
+function removeOwnedDirectories(projectRoot, directories) {
+  for (const relativePath of [...(directories ?? [])]
+    .sort((left, right) => right.split(sep).length - left.split(sep).length)) {
+    const path = safeProjectPath(projectRoot, relativePath);
+    if (existsSync(path) && lstatSync(path).isDirectory() && readdirSync(path).length === 0) rmdirSync(path);
+  }
+}
+
 export function planInstall({ repository, proposal, env = process.env, runtimes: requestedRuntimes } = {}) {
   validateApprovedProposal({ proposal, repository });
   const runtimes = resolveInstallRuntimes(proposal, requestedRuntimes);
   const trackedRoot = join(repository.root, TRACKED_DIR);
+  const blockers = trackedStateIgnored(repository.root)
+    ? [{ code: 'TRACKED_STATE_IGNORED', path: `${TRACKED_DIR}/torch.yaml` }] : [];
   return {
     action: 'install',
     projectRoot: repository.root,
@@ -204,6 +241,8 @@ export function planInstall({ repository, proposal, env = process.env, runtimes:
     wouldCreateTrackedState: !existsSync(trackedRoot),
     approvedDomainCount: proposal.domains.length,
     runtimes,
+    blockers,
+    canProceed: blockers.length === 0,
     mutationPerformed: false,
   };
 }
@@ -219,11 +258,19 @@ export function installProject({
   validateApprovedProposal({ proposal, repository });
   const runtimes = resolveInstallRuntimes(proposal, requestedRuntimes);
   const trackedRoot = join(repository.root, TRACKED_DIR);
-  if (existsSync(trackedRoot)) {
-    throw new TorchError(`Refusing to replace existing ${trackedRoot}`, {
-      code: 'ALREADY_INSTALLED', details: { trackedRoot },
+  const trackedRootExisted = existsSync(trackedRoot);
+  if (trackedRootExisted
+    && (!lstatSync(trackedRoot).isDirectory() || realpathSync(trackedRoot) !== resolve(trackedRoot))) {
+    throw new TorchError(`TORCH tracked-state root is not a safe directory: ${trackedRoot}`, {
+      code: 'TRACKED_ROOT_UNSAFE', details: { trackedRoot },
     });
   }
+  if (existsSync(manifestPath(repository.root))) throw new TorchError(`TORCH is already installed at ${trackedRoot}`, {
+    code: 'ALREADY_INSTALLED', details: { trackedRoot },
+  });
+  if (trackedStateIgnored(repository.root)) throw new TorchError('TORCH tracked state is excluded by Git ignore policy', {
+    code: 'TRACKED_STATE_IGNORED', details: { path: `${TRACKED_DIR}/torch.yaml` },
+  });
 
   const createdAt = now().toISOString();
   const stateRoot = projectStatePath(projectId, env);
@@ -234,6 +281,8 @@ export function installProject({
   }
 
   const created = [];
+  const directoriesBefore = directoryInventory(trackedRoot, repository.root);
+  let manifestWritten = false;
   try {
     for (const [path, content] of initialFiles({ repository, projectId, createdAt, proposal, runtimes })) {
       const absolute = join(trackedRoot, path);
@@ -257,13 +306,24 @@ export function installProject({
       projectId,
       createdAt,
       created,
+      createdDirectories: [...directoryInventory(trackedRoot, repository.root)]
+        .filter((path) => !directoriesBefore.has(path)),
       patched: [],
       external: [{ type: 'local-state', path: stateRoot }],
     };
     writeNewFile(manifestPath(repository.root), jsonYaml(manifest));
+    manifestWritten = true;
     return { projectId, trackedRoot, stateRoot, manifest, mutationPerformed: true };
   } catch (error) {
-    if (existsSync(trackedRoot)) rmSync(trackedRoot, { recursive: true, force: true });
+    if (manifestWritten && existsSync(manifestPath(repository.root))) rmSync(manifestPath(repository.root));
+    for (const record of [...created].reverse()) {
+      const path = safeProjectPath(repository.root, record.path);
+      if (existsSync(path)) rmSync(path);
+    }
+    const createdDirectories = [...directoryInventory(trackedRoot, repository.root)]
+      .filter((path) => !directoriesBefore.has(path));
+    removeOwnedDirectories(repository.root, createdDirectories);
+    if (!trackedRootExisted && existsSync(trackedRoot) && readdirSync(trackedRoot).length === 0) rmdirSync(trackedRoot);
     if (existsSync(stateRoot)) rmSync(stateRoot, { recursive: true, force: true });
     throw error;
   }
@@ -451,7 +511,7 @@ export function uninstallProject({ repository, purge = false, dryRun = false, en
     rmSync(safeProjectPath(repository.root, record.path));
   }
   rmSync(manifestPath(repository.root));
-  rmSync(join(repository.root, TRACKED_DIR), { recursive: true });
+  removeOwnedDirectories(repository.root, plan.manifest.createdDirectories);
   for (const entry of plan.manifest.external ?? []) {
     if (entry.type === 'local-state' && existsSync(entry.path)) rmSync(entry.path, { recursive: true });
   }

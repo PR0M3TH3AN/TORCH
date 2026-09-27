@@ -24,6 +24,8 @@ and the first Claude reference-fleet path:
 - strict versioned project-configuration validation with explicit migration blockers;
 - explicit install approval;
 - tracked `.torch/` project configuration;
+- safe coexistence with pre-existing `.torch/` content, with Git-ignore
+  trackability checks and ownership-exact reversal;
 - XDG-local runtime state;
 - installation ownership manifest;
 - read-only health diagnostics covering installation integrity, runtime

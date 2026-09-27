@@ -1,7 +1,7 @@
 node_modules
 
 .scheduler-memory/
-.torch/
+.torch/prompt-history/
 
 # Logs
 *.log
