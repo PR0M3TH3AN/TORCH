@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
 import { BacklogService } from '../../src/backlog/service.mjs';
 import { createLocalCanonical, classifyRecoverability, planLocalCanonical } from '../../src/canonical/local.mjs';
 import { CheckService } from '../../src/checks/service.mjs';
+import { ConvergenceService } from '../../src/convergence/service.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
@@ -145,4 +146,59 @@ test('SCN-local-canonical: a no-forge project gains a bare canonical remote and 
   assert.equal(classifyRecoverability({ repositoryRoot: context.root }).level, 'ONE-DISK');
   execFileSync('git', ['-C', context.root, 'push', 'torch-canonical', 'main']);
   assert.equal(classifyRecoverability({ repositoryRoot: context.root }).level, 'LOCAL-REMOTE');
+});
+
+test('SCN-safe-convergence: only the owning clean and unguarded worktree merges canonical state', () => {
+  const context = integrationFixture();
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const convergence = new ConvergenceService({ repositoryRoot: context.root, controlPlane: control });
+  const checks = new CheckService({
+    repositoryRoot: context.root,
+    controlPlane: control,
+    executor: () => {
+      const duringCheck = convergence.plan({ areaId: context.worker });
+      assert.equal(duringCheck.blockers.some((blocker) => blocker.code === 'WORKTREE_CHECK_ACTIVE'), true);
+      return { status: 0, stdout: 'pass', stderr: '' };
+    },
+  });
+  checks.run({ checkId: 'verify-pass', areaId: context.worker });
+  assert.deepEqual(convergence.guards(context.worker), []);
+
+  writeFileSync(join(context.root, 'main-only.js'), 'export const canonical = true;\n');
+  execFileSync('git', ['-C', context.root, 'add', 'main-only.js']);
+  execFileSync('git', ['-C', context.root, 'commit', '-m', 'canonical advanced']);
+  assert.equal(convergence.plan({ areaId: context.worker }).behind, 1);
+
+  convergence.hold({ areaId: context.worker, type: 'measurement', reason: 'Stable benchmark inputs' });
+  const guarded = convergence.plan({ areaId: context.worker });
+  assert.equal(guarded.canProceed, false);
+  assert.equal(guarded.blockers.some((blocker) => blocker.code === 'WORKTREE_MEASUREMENT_ACTIVE'), true);
+  assert.throws(
+    () => convergence.converge({ areaId: context.worker }),
+    (error) => error.code === 'CONVERGENCE_BLOCKED',
+  );
+  convergence.release({ areaId: context.worker, type: 'measurement' });
+
+  convergence.hold({ areaId: context.worker, type: 'pin', reason: 'Owner-reviewed historical comparison' });
+  assert.equal(convergence.plan({ areaId: context.worker }).blockers
+    .some((blocker) => blocker.code === 'WORKTREE_PIN_ACTIVE'), true);
+  convergence.release({ areaId: context.worker, type: 'pin' });
+
+  writeFileSync(join(context.worktree.path, 'uncommitted.txt'), 'do not merge around this\n');
+  assert.equal(convergence.plan({ areaId: context.worker }).blockers
+    .some((blocker) => blocker.code === 'WORKTREE_DIRTY'), true);
+  unlinkSync(join(context.worktree.path, 'uncommitted.txt'));
+
+  const mergeHead = execFileSync('git', ['-C', context.worktree.path, 'rev-parse', '--git-path', 'MERGE_HEAD'], { encoding: 'utf8' }).trim();
+  writeFileSync(mergeHead, `${execFileSync('git', ['-C', context.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()}\n`);
+  assert.equal(convergence.plan({ areaId: context.worker }).blockers
+    .some((blocker) => blocker.code === 'GIT_OPERATION_ACTIVE'), true);
+  unlinkSync(mergeHead);
+
+  const result = convergence.converge({ areaId: context.worker });
+  assert.equal(result.changed, true);
+  assert.equal(result.mutationPerformed, true);
+  assert.equal(readFileSync(join(context.worktree.path, 'main-only.js'), 'utf8'), 'export const canonical = true;\n');
+  assert.equal(convergence.plan({ areaId: context.worker }).upToDate, true);
+  control.close();
 });

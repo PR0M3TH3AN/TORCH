@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
+import { beginWorktreeGuard, endWorktreeGuard } from '../convergence/service.mjs';
 
 function git(root, args) {
   const result = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
@@ -109,9 +110,20 @@ export class CheckService {
     }
     const receiptId = this.idFactory();
     const startedAt = this.clock().toISOString();
-    const result = this.executor(plan.definition.command, plan.definition.args ?? [], {
-      cwd: plan.worktree, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    beginWorktreeGuard(this.controlPlane, {
+      areaId: plan.areaId, type: 'check', reason: `Running ${checkId}`,
+      clock: this.clock, idFactory: this.idFactory,
     });
+    let result;
+    try {
+      result = this.executor(plan.definition.command, plan.definition.args ?? [], {
+        cwd: plan.worktree, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } finally {
+      endWorktreeGuard(this.controlPlane, {
+        areaId: plan.areaId, type: 'check', clock: this.clock, missingOk: true,
+      });
+    }
     const finishedAt = this.clock().toISOString();
     const afterCommit = git(plan.worktree, ['rev-parse', 'HEAD']);
     const afterDirty = git(plan.worktree, ['status', '--porcelain']).split('\n').filter(Boolean);

@@ -100,6 +100,13 @@ export function diagnoseProject({ repository, env = process.env }) {
           `).all();
           if (requests.length) findings.push({ severity: 'info', code: 'INTEGRATION_QUEUE', requests });
         }
+        if (hasTable('worktree_guards')) {
+          const guards = database.prepare(`
+            SELECT area_id AS areaId, guard_type AS type, reason, created_at AS createdAt
+            FROM worktree_guards WHERE released_at IS NULL ORDER BY created_at, id
+          `).all();
+          if (guards.length) findings.push({ severity: 'info', code: 'WORKTREE_GUARDS', guards });
+        }
         database.close();
       } catch (error) {
         findings.push({ severity: 'error', code: 'CONTROL_PLANE_INVALID', path: databasePath, message: error.message });

@@ -30,6 +30,7 @@ import {
   createArchitectRunPlan, loadArchitectArtifact, runSessionArchitect, validateArchitectProposal,
 } from './design/architect.mjs';
 import { FleetEvolutionService } from './evolution/service.mjs';
+import { ConvergenceService } from './convergence/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -73,6 +74,11 @@ Usage:
   torch resources acquire --id <resource> --area <id> [--json]
   torch resources release --id <resource> --area <id> [--json]
   torch resources cancel --id <resource> --area <id> [--json]
+  torch converge plan --area <id> [--json]
+  torch converge run --area <id> --yes [--json]
+  torch converge guards --area <id> [--json]
+  torch converge hold --area <id> --type <measurement|pin> --reason <text> [--json]
+  torch converge release --area <id> --type <measurement|pin> [--json]
   torch integrate list [--state <state>] [--json]
   torch integrate request --area <id> [--commit <sha>] [--json]
   torch integrate evaluate --request <id> [--json]
@@ -772,6 +778,43 @@ export async function runCli(argv = process.argv.slice(2), {
           }
           print(checks.run({ checkId: optionValue(argv, '--id'), areaId: optionValue(argv, '--area') }), { json });
         } else throw new TorchError(`Unknown checks operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'converge') {
+      const operation = argv[1] ?? 'plan';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const convergence = new ConvergenceService({ repositoryRoot: repository.root, controlPlane: control });
+        const areaId = optionValue(argv, '--area');
+        if (operation === 'plan') print(convergence.plan({ areaId }), { json });
+        else if (operation === 'guards') print({ guards: convergence.guards(areaId) }, { json });
+        else if (operation === 'hold') {
+          const type = optionValue(argv, '--type');
+          if (!['measurement', 'pin'].includes(type)) {
+            throw new TorchError('CLI guards may only hold measurement or pin; check guards are automatic.', {
+              code: 'WORKTREE_GUARD_INVALID', details: { type: type ?? null },
+            });
+          }
+          print(convergence.hold({ areaId, type, reason: optionValue(argv, '--reason') }), { json });
+        } else if (operation === 'release') {
+          const type = optionValue(argv, '--type');
+          if (!['measurement', 'pin'].includes(type)) {
+            throw new TorchError('CLI guards may only release measurement or pin; check guards are automatic.', {
+              code: 'WORKTREE_GUARD_INVALID', details: { type: type ?? null },
+            });
+          }
+          print(convergence.release({ areaId, type }), { json });
+        } else if (operation === 'run') {
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Convergence merges canonical state into a domain worktree. Review converge plan, then re-run with --yes.', {
+              code: 'APPROVAL_REQUIRED',
+            });
+          }
+          print(convergence.converge({ areaId }), { json });
+        } else throw new TorchError(`Unknown converge operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
         return 0;
       } finally {
         control.close();

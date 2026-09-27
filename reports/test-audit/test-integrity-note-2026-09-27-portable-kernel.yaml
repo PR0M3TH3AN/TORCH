@@ -126,6 +126,10 @@ test_integrity_note:
       given: a converged domain commit with every required exact-SHA receipt
       when: the domain requests integration and the Session Manager authorizes and lands it
       then: main fast-forwards only while source, target, receipts, cleanliness, and authority remain valid
+    - id: SCN-safe-convergence
+      given: a managed domain worktree behind canonical main
+      when: a check, measurement, pin, dirty state, or Git operation could make convergence unsafe
+      then: TORCH defers the merge, releases automatic check guards, and only the owning clean worktree may intentionally merge canonical state
     - id: SCN-local-canonical
       given: an installed project with no forge or remote
       when: the owner creates a local canonical Git store and later makes and pushes another commit

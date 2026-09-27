@@ -46,6 +46,7 @@ and the first Claude reference-fleet path:
 - shell-free configured checks with exact-commit receipts;
 - transactional FIFO resource queues and leases;
 - a native integration queue with durable authorization and fast-forward main protection;
+- domain-owned convergence plans that defer during checks, measurements, pins, dirty work, and Git operations;
 - a local bare canonical Git option with honest one-disk/local-remote grading;
 - mutation audit events tied to project and Fleet identity.
 - isolated candidate version stores with explicit compatibility declarations;
