@@ -4,6 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { fileHash } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
 import { inspectManagedWorktree } from './worktree-state.mjs';
+import { validateProjectConfig } from './config.mjs';
 
 function parseJsonYaml(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -24,8 +25,8 @@ export function diagnoseProject({ repository, env = process.env }) {
 
   let config;
   let manifest;
-  try { config = parseJsonYaml(configPath); } catch (error) {
-    findings.push({ severity: 'error', code: 'CONFIG_INVALID', message: error.message });
+  try { config = validateProjectConfig(parseJsonYaml(configPath)); } catch (error) {
+    findings.push({ severity: 'error', code: error.code ?? 'CONFIG_INVALID', message: error.message, details: error.details });
   }
   try { manifest = parseJsonYaml(manifestPath); } catch (error) {
     findings.push({ severity: 'error', code: 'MANIFEST_INVALID', message: error.message });

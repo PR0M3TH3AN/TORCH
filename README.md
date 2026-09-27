@@ -21,6 +21,7 @@ and the first Claude reference-fleet path:
 - spec-fingerprinted, evidence-linked fleet design with stale-spec refusal;
 - evidence-linked architecture graphs and domain-collision proposals;
 - owner-reviewed organizational proposals required before installation;
+- strict versioned project-configuration validation with explicit migration blockers;
 - explicit install approval;
 - tracked `.torch/` project configuration;
 - XDG-local runtime state;

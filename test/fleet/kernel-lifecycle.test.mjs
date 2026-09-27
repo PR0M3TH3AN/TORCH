@@ -7,6 +7,9 @@ import test from 'node:test';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { diagnoseProject } from '../../src/kernel/doctor.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
+import {
+  PROJECT_CONFIG_SCHEMA, planProjectConfigMigration, validateProjectConfig,
+} from '../../src/kernel/config.mjs';
 import { installProject, planInstall, uninstallProject } from '../../src/kernel/install.mjs';
 import { proposeDomains, validateApprovedProposal } from '../../src/kernel/domains.mjs';
 
@@ -104,4 +107,34 @@ test('SCN-domain-approval: installation rejects stale or unapproved organization
     (error) => error.details.includes('proposal is stale because HEAD changed'),
   );
   assert.equal(existsSync(join(root, '.torch')), false);
+});
+
+test('SCN-config-schema: installed configuration is strict, versioned, and migration-aware', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  installProject({ repository, proposal: approvedProposal(repository), env, projectId: 'schema-project' });
+  const config = JSON.parse(readFileSync(join(root, '.torch', 'torch.yaml'), 'utf8'));
+
+  assert.equal(validateProjectConfig(config), config);
+  assert.deepEqual(planProjectConfigMigration(config), {
+    from: PROJECT_CONFIG_SCHEMA, to: PROJECT_CONFIG_SCHEMA,
+    steps: [], canProceed: true, changed: false, mutationPerformed: false,
+  });
+
+  assert.throws(
+    () => validateProjectConfig({ ...config, schema: 'torch.dev/v2' }),
+    (error) => error.code === 'CONFIG_SCHEMA_UNSUPPORTED'
+      && error.details.supported.includes(PROJECT_CONFIG_SCHEMA),
+  );
+  assert.throws(
+    () => validateProjectConfig({ ...config, future_required_policy: true }),
+    (error) => error.code === 'CONFIG_SCHEMA_INVALID'
+      && error.details.some((issue) => issue.path === '<root>' && issue.code === 'unrecognized_keys'),
+  );
+  assert.throws(
+    () => validateProjectConfig({ ...config, git: { ...config.git, allow_rebase: true } }),
+    (error) => error.code === 'CONFIG_SCHEMA_INVALID'
+      && error.details.some((issue) => issue.path === 'git.allow_rebase'),
+  );
+  assert.equal(planProjectConfigMigration({ schema: 'torch.dev/v2' }).canProceed, false);
 });

@@ -4,6 +4,7 @@ import { dirname, join, resolve, sep } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { fileHash } from '../kernel/files.mjs';
 import { readInstallManifest, writeInstallManifest } from '../kernel/install.mjs';
+import { loadProjectConfig } from '../kernel/config.mjs';
 
 const REMOTE_NAME = 'torch-canonical';
 
@@ -33,7 +34,7 @@ function safeCanonicalPath(stateRoot) {
 
 function writeConfig(repositoryRoot, manifest, path) {
   const configPath = join(repositoryRoot, '.torch', 'torch.yaml');
-  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  const config = loadProjectConfig(repositoryRoot);
   config.repository = { canonical: { type: 'local', remote: REMOTE_NAME, path } };
   const temporary = `${configPath}.tmp-${process.pid}`;
   writeFileSync(temporary, `${JSON.stringify(config, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
@@ -56,7 +57,7 @@ export function planLocalCanonical({ repositoryRoot } = {}) {
   return {
     action: 'create-local-canonical', projectId: manifest.projectId, stateRoot, path,
     remote: REMOTE_NAME,
-    mainBranch: JSON.parse(readFileSync(join(repositoryRoot, '.torch', 'torch.yaml'), 'utf8')).project.main_branch,
+    mainBranch: loadProjectConfig(repositoryRoot).project.main_branch,
     blockers, canProceed: blockers.length === 0, mutationPerformed: false,
   };
 }

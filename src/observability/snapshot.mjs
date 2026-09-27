@@ -6,6 +6,7 @@ import { diagnoseProject } from '../kernel/doctor.mjs';
 import { inspectRepository } from '../kernel/git.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { projectStatePath } from '../kernel/paths.mjs';
+import { loadProjectConfig } from '../kernel/config.mjs';
 
 function json(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -55,7 +56,7 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     };
   }
 
-  const config = json(join(repository.root, '.torch', 'torch.yaml'));
+  const config = loadProjectConfig(repository.root);
   const roster = json(join(repository.root, '.torch', 'roster.yaml'));
   const manifest = readInstallManifest(repository.root);
   const stateRoot = projectStatePath(manifest.projectId, env);

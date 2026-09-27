@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { TorchError } from './errors.mjs';
+import { loadProjectConfig } from './config.mjs';
 import { readInstallManifest, writeInstallManifest } from './install.mjs';
 
 function git(root, args, { optional = false } = {}) {
@@ -25,7 +26,7 @@ function parseJson(path, code) {
 }
 
 export function loadFleetDefinition(root) {
-  const config = parseJson(join(root, '.torch', 'torch.yaml'), 'CONFIG_INVALID');
+  const config = loadProjectConfig(root);
   const roster = parseJson(join(root, '.torch', 'roster.yaml'), 'ROSTER_INVALID');
   return { config, roster };
 }

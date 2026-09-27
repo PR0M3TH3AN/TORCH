@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { projectStatePath } from '../kernel/paths.mjs';
+import { loadProjectConfig } from '../kernel/config.mjs';
 
 export const PRESENCE_STATES = Object.freeze([
   'starting', 'working', 'waiting', 'idle', 'stale', 'stopping', 'offline',
@@ -188,7 +189,7 @@ export class ControlPlane {
     this.clock = clock;
     this.idFactory = idFactory;
     this.manifest = readInstallManifest(this.repositoryRoot);
-    this.config = readJson(join(this.repositoryRoot, '.torch', 'torch.yaml'), 'INVALID_TORCH_CONFIG');
+    this.config = loadProjectConfig(this.repositoryRoot);
     this.roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'INVALID_TORCH_ROSTER');
     if (this.config.project?.id !== this.manifest.projectId) {
       throw new TorchError('Tracked configuration and installation manifest disagree on project identity', {

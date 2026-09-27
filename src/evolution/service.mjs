@@ -6,6 +6,7 @@ import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { ensureTaskIgnored, removeTaskIgnore } from '../kernel/worktrees.mjs';
+import { loadProjectConfig } from '../kernel/config.mjs';
 
 const CHANGE_STATES = Object.freeze(['proposed', 'approved', 'provisioning', 'active', 'rejected']);
 
@@ -212,7 +213,7 @@ export class FleetEvolutionService {
         code: 'FLEET_OWNERSHIP_COLLISION', details: collisions,
       });
     }
-    const config = readJson(join(this.repositoryRoot, '.torch', 'torch.yaml'), 'CONFIG_INVALID');
+    const config = loadProjectConfig(this.repositoryRoot);
     if (!config.runtimes?.[domain.runtime]) {
       throw new TorchError(`Runtime is not configured for the Fleet: ${domain.runtime}`, {
         code: 'FLEET_RUNTIME_NOT_CONFIGURED', details: { runtime: domain.runtime },
@@ -277,7 +278,7 @@ export class FleetEvolutionService {
 
   planActivation(changeId) {
     const change = this.get(changeId);
-    const config = readJson(join(this.repositoryRoot, '.torch', 'torch.yaml'), 'CONFIG_INVALID');
+    const config = loadProjectConfig(this.repositoryRoot);
     const roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'ROSTER_INVALID');
     const currentHead = git(this.repositoryRoot, ['rev-parse', 'HEAD']);
     const dirtyEntries = git(this.repositoryRoot, ['status', '--porcelain']).split('\n').filter(Boolean);
@@ -357,9 +358,8 @@ export class FleetEvolutionService {
   }
 
   commitConfiguration(change, plan, ignore) {
-    const configPath = join(this.repositoryRoot, '.torch', 'torch.yaml');
     const rosterPath = join(this.repositoryRoot, '.torch', 'roster.yaml');
-    const config = readJson(configPath, 'CONFIG_INVALID');
+    const config = loadProjectConfig(this.repositoryRoot);
     const roster = readJson(rosterPath, 'ROSTER_INVALID');
     const manifest = readInstallManifest(this.repositoryRoot);
     const domain = change.domain;

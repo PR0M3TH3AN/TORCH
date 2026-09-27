@@ -22,6 +22,10 @@ test_integrity_note:
       given: a generated organizational proposal that is pending or stale
       when: TORCH is asked to install it
       then: installation refuses before creating tracked or local state
+    - id: SCN-config-schema
+      given: an installed Fleet configuration and malformed or future configuration variants
+      when: TORCH validates or plans migration of the configuration
+      then: the current schema passes, safety invariants and unknown fields fail clearly, and unsupported versions receive an explicit migration blocker
     - id: SCN-cli-domain-review
       given: a Git repository analyzed through the public CLI
       when: the owner generates, reviews, approves, and installs its domain proposal

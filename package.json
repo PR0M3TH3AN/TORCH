@@ -17,6 +17,7 @@
     "./evolution": "./src/evolution/service.mjs",
     "./control-plane": "./src/control-plane/service.mjs",
     "./kernel/analyze": "./src/kernel/analyze.mjs",
+    "./kernel/config": "./src/kernel/config.mjs",
     "./kernel/git": "./src/kernel/git.mjs",
     "./kernel/install": "./src/kernel/install.mjs",
     "./kernel/specifications": "./src/kernel/specifications.mjs",
