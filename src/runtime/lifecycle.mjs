@@ -95,22 +95,71 @@ function projectMetadata(stateRoot) {
 
 function captureSnapshot({ plan, controlPlane, now = () => new Date() }) {
   const snapshotPath = join(plan.stateRoot, 'sessions', 'resume.json');
-  atomicJson(snapshotPath, {
+  const capturedAt = now().toISOString();
+  const database = controlPlane.database;
+  const hasTable = (name) => Boolean(database.prepare(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+  ).get(name));
+  const snapshot = {
     schema: 'torch.dev/runtime-snapshot/v1alpha1', projectId: plan.projectId,
-    capturedAt: now().toISOString(), agents: controlPlane.listAgents(),
+    capturedAt, agents: controlPlane.listAgents(),
     worktrees: plan.actions.map((action) => action.worktree).filter(Boolean),
-  });
-  return snapshotPath;
+    resourceLeases: hasTable('resource_leases') ? database.prepare(`
+      SELECT resource_id AS resourceId, area_id AS areaId, acquired_at AS acquiredAt,
+        expires_at AS expiresAt FROM resource_leases WHERE released_at IS NULL ORDER BY resource_id, acquired_at
+    `).all() : [],
+    worktreeGuards: hasTable('worktree_guards') ? database.prepare(`
+      SELECT area_id AS areaId, guard_type AS type, reason, created_at AS createdAt
+      FROM worktree_guards WHERE released_at IS NULL ORDER BY created_at, id
+    `).all() : [],
+    integration: hasTable('integration_requests') ? database.prepare(`
+      SELECT id, source_area AS sourceArea, source_commit AS sourceCommit, state, reason
+      FROM integration_requests WHERE state NOT IN ('landed', 'superseded') ORDER BY created_at, id
+    `).all() : [],
+  };
+  atomicJson(snapshotPath, snapshot);
+  return { snapshotPath, snapshot };
+}
+
+function writeResumeBrief(plan, snapshot) {
+  if (!plan.resumeBriefPath) return null;
+  const lines = [
+    '# TORCH resume brief', '',
+    `Captured: ${snapshot.capturedAt}`,
+    `Project: ${snapshot.projectId}`,
+    '', '## Fleet identities', '',
+    ...snapshot.agents.map((agent) =>
+      `- ${agent.areaId}: ${agent.state}; runtime=${agent.runtime ?? 'none'}; task=${agent.currentTask ?? agent.task ?? 'none'}; summary=${agent.summary ?? 'none'}`),
+    '', '## Worktrees', '',
+    ...(snapshot.worktrees.length ? snapshot.worktrees.map((worktree) =>
+      `- ${worktree.areaId}: branch=${worktree.branch}; commit=${worktree.commit}; dirty=${worktree.dirtyEntries.length ? worktree.dirtyEntries.join(', ') : 'no'}`) : ['- No managed worktrees recorded.']),
+    '', '## Open integration', '',
+    ...(snapshot.integration.length ? snapshot.integration.map((request) =>
+      `- ${request.id}: ${request.sourceArea} ${request.sourceCommit} is ${request.state}${request.reason ? ` (${request.reason})` : ''}`) : ['- None.']),
+    '', '## Guards and leases', '',
+    ...(snapshot.worktreeGuards.length ? snapshot.worktreeGuards.map((guard) =>
+      `- guard: ${guard.areaId} ${guard.type} — ${guard.reason}`) : ['- No active worktree guards.']),
+    ...(snapshot.resourceLeases.length ? snapshot.resourceLeases.map((lease) =>
+      `- lease: ${lease.areaId} holds ${lease.resourceId} until ${lease.expiresAt}`) : ['- No active resource leases.']),
+    '', 'Resume by checking live identity, inbox, backlog, worktree state, and exact check receipts before dispatch.', '',
+  ];
+  const temporary = `${plan.resumeBriefPath}.tmp-${process.pid}`;
+  writeFileSync(temporary, `${lines.join('\n')}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+  renameSync(temporary, plan.resumeBriefPath);
+  return plan.resumeBriefPath;
 }
 
 function inspectWorktree(worktree) {
   const git = (args) => execFileSync('git', ['-C', worktree.path, ...args], { encoding: 'utf8' }).trim();
+  const operations = ['MERGE_HEAD', 'REBASE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD']
+    .filter((name) => existsSync(git(['rev-parse', '--git-path', name])));
   return {
     areaId: worktree.area,
     path: worktree.path,
     branch: git(['branch', '--show-current']),
     commit: git(['rev-parse', 'HEAD']),
     dirtyEntries: git(['status', '--porcelain']).split('\n').filter(Boolean),
+    operations,
   };
 }
 
@@ -334,12 +383,16 @@ export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
   const worktrees = worktreesByArea(manifest);
   const runtimes = adapterMap({ adapters });
   const adapterRegistryProvided = adapters !== undefined;
+  const database = controlPlane.database;
+  const hasTable = (name) => Boolean(database.prepare(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+  ).get(name));
   const actions = orderedAreas(roster).map((area) => {
     const identity = controlPlane.identity(area.id);
     const worktree = worktrees.get(area.id);
     return {
       areaId: area.id, state: identity.state, runtime: identity.runtime,
-      runtimeSessionId: identity.runtimeSessionId,
+      runtimeSessionId: identity.runtimeSessionId, currentTask: identity.currentTask,
       requiresRuntimeStop: identity.runtimeSessionId
         ? runtimes.get(identity.runtime)?.capabilities.stopSession !== false
         : false,
@@ -355,15 +408,40 @@ export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
   blockers.push(...actions
     .filter((action) => action.runtimeAdapterMissing)
     .map((action) => ({ areaId: action.areaId, runtime: action.runtime, code: 'RUNTIME_ADAPTER_MISSING' })));
+  blockers.push(...actions
+    .filter((action) => action.worktree?.operations.length)
+    .map((action) => ({
+      areaId: action.areaId, code: 'GIT_OPERATION_ACTIVE', operations: action.worktree.operations,
+    })));
+  if (hasTable('resource_leases')) {
+    blockers.push(...database.prepare(`
+      SELECT resource_id AS resourceId, area_id AS areaId, expires_at AS expiresAt
+      FROM resource_leases WHERE released_at IS NULL ORDER BY resource_id, acquired_at
+    `).all().map((lease) => ({ ...lease, code: 'RESOURCE_LEASE_ACTIVE' })));
+  }
+  if (hasTable('worktree_guards')) {
+    blockers.push(...database.prepare(`
+      SELECT area_id AS areaId, guard_type AS type, reason
+      FROM worktree_guards WHERE released_at IS NULL AND guard_type IN ('check', 'measurement')
+      ORDER BY created_at, id
+    `).all().map((guard) => ({ ...guard, code: 'WORKTREE_GUARD_ACTIVE' })));
+  }
+  if (hasTable('integration_requests')) {
+    blockers.push(...database.prepare(`
+      SELECT id, source_area AS areaId FROM integration_requests WHERE state = 'landing' ORDER BY created_at, id
+    `).all().map((request) => ({ ...request, code: 'INTEGRATION_LANDING_ACTIVE' })));
+  }
+  const managerWorktree = worktrees.get('session-manager');
   return {
     action: 'fleet-down', projectId: manifest.projectId, stateRoot: localStateRoot(manifest),
+    resumeBriefPath: managerWorktree ? join(managerWorktree.path, '.torch', 'RESUME-BRIEF.md') : null,
     actions, blockers, canProceed: blockers.length === 0, mutationPerformed: false,
   };
 }
 
 export function stopFleet({ plan, controlPlane, stopRuntime, now = () => new Date() } = {}) {
   if (!plan?.canProceed) {
-    throw new TorchError('Fleet wind-down refused while sessions report active work', {
+    throw new TorchError('Fleet wind-down refused while safety conditions remain unresolved', {
       code: 'FLEET_NOT_READY_TO_STOP', details: plan?.blockers ?? [],
     });
   }
@@ -374,9 +452,21 @@ export function stopFleet({ plan, controlPlane, stopRuntime, now = () => new Dat
   }
   const stopped = [];
   for (const action of plan.actions) {
+    if (action.areaId !== 'session-manager' && action.state !== 'offline') {
+      controlPlane.sendMessage({
+        sender: action.areaId, recipient: 'session-manager',
+        body: `Final status: ${action.state}. ${action.worktree
+          ? `Branch ${action.worktree.branch} at ${action.worktree.commit}; ${action.worktree.dirtyEntries.length} dirty entries.`
+          : 'No managed worktree.'}`,
+        references: { commit: action.worktree?.commit },
+      });
+    }
     if (!action.runtimeSessionId || action.state === 'offline' || action.requiresRuntimeStop === false) {
       if (action.state !== 'offline') {
-        controlPlane.reportStatus({ areaId: action.areaId, state: 'offline', summary: 'No resident runtime process to stop.' });
+        controlPlane.reportStatus({
+          areaId: action.areaId, state: 'offline', summary: 'No resident runtime process to stop.',
+          task: action.currentTask,
+        });
       }
       stopped.push({
         areaId: action.areaId, runtimeSessionId: action.runtimeSessionId,
@@ -384,24 +474,34 @@ export function stopFleet({ plan, controlPlane, stopRuntime, now = () => new Dat
       });
       continue;
     }
-    controlPlane.reportStatus({ areaId: action.areaId, state: 'stopping', summary: 'TORCH wind-down requested.' });
+    controlPlane.reportStatus({
+      areaId: action.areaId, state: 'stopping', summary: 'TORCH wind-down requested.', task: action.currentTask,
+    });
     const result = stopRuntime(action);
     if (result?.stopped === false || (result?.status !== undefined && result.status !== 0)) {
-      controlPlane.reportStatus({ areaId: action.areaId, state: 'waiting', summary: 'Runtime stop failed.' });
+      controlPlane.reportStatus({
+        areaId: action.areaId, state: 'waiting', summary: 'Runtime stop failed.', task: action.currentTask,
+      });
       throw new TorchError(`Fleet wind-down failed for ${action.areaId}`, {
         code: 'FLEET_STOP_FAILED', details: { areaId: action.areaId, result },
       });
     }
-    controlPlane.reportStatus({ areaId: action.areaId, state: 'offline', summary: 'Runtime stopped cleanly.' });
+    controlPlane.reportStatus({
+      areaId: action.areaId, state: 'offline', summary: 'Runtime stopped cleanly.', task: action.currentTask,
+    });
     stopped.push({ areaId: action.areaId, runtimeSessionId: action.runtimeSessionId, alreadyOffline: false });
   }
-  const snapshotPath = captureSnapshot({ plan, controlPlane, now });
-  return { projectId: plan.projectId, stopped, snapshotPath, mutationPerformed: true };
+  const captured = captureSnapshot({ plan, controlPlane, now });
+  const resumeBriefPath = writeResumeBrief(plan, captured.snapshot);
+  return {
+    projectId: plan.projectId, stopped, snapshotPath: captured.snapshotPath,
+    resumeBriefPath, mutationPerformed: true,
+  };
 }
 
 export function captureFleet({ repositoryRoot, controlPlane, now = () => new Date() } = {}) {
   const plan = planFleetDown({ repositoryRoot, controlPlane });
-  const snapshotPath = captureSnapshot({ plan, controlPlane, now });
+  const { snapshotPath } = captureSnapshot({ plan, controlPlane, now });
   return {
     action: 'capture', projectId: plan.projectId, snapshotPath,
     agents: controlPlane.listAgents(), mutationPerformed: true,

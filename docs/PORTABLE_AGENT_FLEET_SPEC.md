@@ -893,6 +893,17 @@ Before shutdown, every domain MUST:
 The Session Manager writes or validates `RESUME-BRIEF.md`, captures session
 mapping, records fleet-wide risks, and stops last.
 
+Implementation checkpoint (2026-09-27): planned wind-down fails closed on
+working, starting, or stopping identities; active Git operations; unreleased
+resource leases; active check or measurement guards; and integration already
+landing. Every non-offline worker sends a durable final status to the Session
+Manager before runtime stop. TORCH preserves unfinished task identity, captures
+runtime mappings plus worktrees, integration, guards, and leases locally, and
+atomically writes `.torch/RESUME-BRIEF.md` in the Session Manager worktree
+before the manager is considered stopped. This is scenario-tested with
+virtualized runtime shutdown; live provider shutdown remains an operational
+qualification gate.
+
 ## 16. Git and worktree policy
 
 ### 16.1 Isolation

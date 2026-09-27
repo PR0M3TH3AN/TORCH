@@ -44,7 +44,9 @@ and the first Claude reference-fleet path:
   launch, without changing the user's global runtime configuration;
 - durable-first Codex steering with native `queue` notification when available;
 - worker-first/Session-Manager-last fresh start and resume planning;
-- safe wind-down with active-work refusal and local resume snapshots.
+- safe wind-down that refuses active work, Git operations, leases, check or
+  measurement guards, and in-flight landing, then records final worker status
+  plus local and tracked resume state.
 - shell-free configured checks with exact-commit receipts;
 - transactional FIFO resource queues and leases;
 - a native integration queue with durable authorization and fast-forward main protection;
@@ -210,10 +212,14 @@ node bin/torch.mjs detach --yes --json
 ```
 
 `capture` externalizes the current stable identities, runtime IDs, presence,
-and worktree commits without stopping sessions. `detach` first enforces normal
-wind-down safety, then marks runtime integration detached while preserving the
-tracked organization, local state, branches, and worktrees. A later explicit
-`up` reattaches the selected runtime sessions.
+worktree commits, open integration, guards, and leases without stopping
+sessions. `down` and `detach` refuse active work, Git operations, unreleased
+leases, active checks or measurements, and in-flight landing. Each worker sends
+the Session Manager a durable final status, and the manager stops last after
+writing both the local snapshot and tracked `.torch/RESUME-BRIEF.md`. `detach`
+then marks runtime integration detached while preserving the tracked
+organization, local state, branches, and worktrees. A later explicit `up`
+reattaches the selected runtime sessions.
 
 The Fleet can evolve when recurring work develops a coherent new boundary.
 The Session Manager may propose the domain through MCP or the CLI, but cannot

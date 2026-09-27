@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
@@ -12,6 +12,7 @@ import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
+import { ResourceService } from '../../src/resources/service.mjs';
 import {
   detachFleet, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
 } from '../../src/runtime/lifecycle.mjs';
@@ -27,6 +28,8 @@ function fleetFixture({ workerRuntime = 'claude' } = {}) {
   let repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
   proposal.domains[0].runtime = workerRuntime;
+  proposal.domains[0].resources = ['browser'];
+  proposal.resources = [{ id: 'browser', capacity: 1, queue: 'fifo', max_hold_seconds: 300 }];
   proposal.review = {
     status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
   };
@@ -63,7 +66,9 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   assert.equal(existsSync(fresh.actions[0].promptFile), true);
   assert.equal(readFileSync(fresh.actions[0].promptFile, 'utf8').includes('Common fleet rules'), true);
 
-  control.reportStatus({ areaId: fixture.worker, state: 'idle', summary: 'Checkpoint safe.' });
+  control.reportStatus({
+    areaId: fixture.worker, state: 'idle', summary: 'Checkpoint safe.', task: 'TASK-RESUME',
+  });
   control.reportStatus({ areaId: 'session-manager', state: 'idle', summary: 'Fleet safe.' });
   const stoppedIds = [];
   const down = stopFleet({
@@ -73,6 +78,12 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   assert.equal(down.stopped.at(-1).areaId, 'session-manager');
   assert.equal(stoppedIds.length, fresh.actions.length);
   assert.equal(existsSync(down.snapshotPath), true);
+  assert.equal(existsSync(down.resumeBriefPath), true);
+  assert.match(readFileSync(down.resumeBriefPath, 'utf8'), /TASK-RESUME/);
+  assert.match(readFileSync(down.resumeBriefPath, 'utf8'), new RegExp(fixture.worker));
+  assert.equal(control.identity(fixture.worker).currentTask, 'TASK-RESUME');
+  assert.equal(control.readMessages({ recipient: 'session-manager' })
+    .some((message) => message.body.startsWith('Final status:')), true);
 
   const detached = detachFleet({
     plan: planFleetDetach({ repositoryRoot: fixture.root, controlPlane: control }),
@@ -111,13 +122,24 @@ test('SCN-fleet-wind-down-safety: active work blocks runtime shutdown and failed
       && control.identity('session-manager').state === 'offline',
   );
   control.reportStatus({ areaId: fixture.worker, state: 'working', summary: 'Unfinished change.' });
+  const resources = new ResourceService({ repositoryRoot: fixture.root, controlPlane: control });
+  resources.acquire({ resourceId: 'browser', areaId: fixture.worker });
+  const workerPath = plan.actions.find((action) => action.areaId === fixture.worker).worktree;
+  const mergeHead = execFileSync('git', ['-C', workerPath, 'rev-parse', '--git-path', 'MERGE_HEAD'], {
+    encoding: 'utf8',
+  }).trim();
+  writeFileSync(mergeHead, `${execFileSync('git', ['-C', fixture.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()}\n`);
   const down = planFleetDown({ repositoryRoot: fixture.root, controlPlane: control });
   assert.equal(down.canProceed, false);
   assert.equal(down.blockers.some((blocker) => blocker.areaId === fixture.worker && blocker.state === 'working'), true);
+  assert.equal(down.blockers.some((blocker) => blocker.code === 'RESOURCE_LEASE_ACTIVE'), true);
+  assert.equal(down.blockers.some((blocker) => blocker.code === 'GIT_OPERATION_ACTIVE'), true);
   assert.throws(
     () => stopFleet({ plan: down, controlPlane: control, stopRuntime: () => ({ stopped: true }) }),
     (error) => error.code === 'FLEET_NOT_READY_TO_STOP',
   );
+  unlinkSync(mergeHead);
+  resources.release({ resourceId: 'browser', areaId: fixture.worker });
   control.close();
 });
 

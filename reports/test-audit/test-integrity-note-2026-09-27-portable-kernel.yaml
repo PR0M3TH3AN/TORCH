@@ -103,9 +103,9 @@ test_integrity_note:
       when: the fleet starts fresh, winds down safely, and plans its next start
       then: workers start before the manager, runtime IDs persist, the manager stops last, and the next start resumes
     - id: SCN-fleet-wind-down-safety
-      given: a launch failure or a domain reporting active work
+      given: a launch failure, a domain reporting active work, an active Git operation, or an unreleased scarce resource
       when: startup or wind-down is attempted
-      then: manager launch is prevented after worker failure and active work blocks shutdown
+      then: manager launch is prevented after worker failure and every unresolved safety condition blocks shutdown
     - id: SCN-mixed-runtime
       given: one approved Codex worker domain and one Claude Session Manager with stable Fleet identities
       when: the mixed fleet starts and winds down through virtualized runtime boundaries
@@ -254,7 +254,7 @@ test_integrity_note:
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
     - runtime command plans and execution order
-    - local resume snapshot and presence transitions
+    - local resume snapshot, tracked resume brief, final worker message, preserved task identity, and presence transitions
     - immutable check receipt commit and result
     - resource holder, FIFO position, expiry, and cancellation state
     - canonical main SHA before and after authorized landing
@@ -299,6 +299,7 @@ test_integrity_note:
       - runtime sessions launching without their identity-bound TORCH tool surface
       - lost Codex thread IDs or native steering that bypasses durable messaging
       - manager-first startup or manager-first shutdown
+      - shutdown that loses unfinished task identity, skips final worker status, or proceeds through active work, Git operations, leases, checks, measurements, or landing
       - passing receipts detached from the commit actually measured
       - unfair or automatically stolen resource leases
       - integration based on branch labels, stale checks, or stale main
