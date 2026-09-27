@@ -93,7 +93,7 @@ test_integrity_note:
     - id: SCN-claude-adapter
       given: a Claude runtime adapter with a virtualized command runner
       when: sessions are planned and runtime state is queried
-      then: command construction is deterministic, capabilities are explicit, and planning launches no process
+      then: command construction is deterministic, capabilities are explicit, planning launches no process, and stop requires matching live session and worktree ownership evidence
     - id: SCN-codex-adapter
       given: a Codex runtime adapter with a virtualized command runner and an identity-bound TORCH control plane
       when: create, resume, MCP configuration, runtime-ID capture, and steering are planned or attempted
@@ -257,6 +257,7 @@ test_integrity_note:
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
     - runtime command plans and execution order
+    - runtime stop session identity, reported working directory, and fail-closed ownership mismatch
     - local resume snapshot, tracked resume brief, final worker message, preserved task identity, and presence transitions
     - immutable check receipt commit and result
     - resource holder, FIFO position, expiry, and cancellation state
@@ -299,6 +300,7 @@ test_integrity_note:
       - repository content redirecting machine-local database writes
       - MCP and CLI drifting onto separate business logic
       - launch plans that execute provider commands during preview
+      - stopping a runtime by PID, parentage, or session label without matching managed-worktree evidence
       - a mixed-runtime claim implemented as renamed Claude-only commands
       - runtime sessions launching without their identity-bound TORCH tool surface
       - lost Codex thread IDs or native steering that bypasses durable messaging

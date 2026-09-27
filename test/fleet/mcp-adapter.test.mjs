@@ -100,6 +100,34 @@ test('SCN-claude-adapter: planning is deterministic, capabilities are honest, an
 
   const noRunner = createClaudeAdapter({ idFactory: () => 'never-run' });
   assert.throws(() => noRunner.listSessions(), (error) => error.code === 'RUNTIME_EXECUTION_NOT_AUTHORIZED');
+
+  const stoppedCalls = [];
+  const stoppable = createClaudeAdapter({
+    runner: (command, args) => {
+      stoppedCalls.push({ command, args });
+      if (args[0] === 'agents') {
+        return { status: 0, stdout: '[{"sessionId":"owned-session","status":"idle","cwd":"/tmp/owned-worktree"}]' };
+      }
+      return { status: 0, stdout: '' };
+    },
+  });
+  const stopped = stoppable.stopSession({
+    runtimeSessionId: 'owned-session', worktree: '/tmp/owned-worktree',
+  });
+  assert.equal(stopped.stopped, true);
+  assert.equal(stopped.verifiedWorktree, '/tmp/owned-worktree');
+  assert.deepEqual(stoppedCalls.map((call) => call.args[0]), ['agents', 'stop']);
+  assert.throws(
+    () => stoppable.stopSession({ runtimeSessionId: 'owned-session', worktree: '/tmp/not-owned' }),
+    (error) => error.code === 'RUNTIME_OWNERSHIP_MISMATCH',
+  );
+  const unverifiable = createClaudeAdapter({
+    runner: () => ({ status: 0, stdout: '[{"sessionId":"opaque-session","status":"idle"}]' }),
+  });
+  assert.throws(
+    () => unverifiable.stopSession({ runtimeSessionId: 'opaque-session', worktree: '/tmp/owned-worktree' }),
+    (error) => error.code === 'RUNTIME_OWNERSHIP_UNVERIFIED',
+  );
 });
 
 test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capability-honest', () => {

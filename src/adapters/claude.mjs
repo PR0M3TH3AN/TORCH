@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { accessSync, constants, existsSync } from 'node:fs';
-import { delimiter, join } from 'node:path';
+import { delimiter, join, resolve } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { unsupportedCapability, validateRuntimeAdapter } from './runtime.mjs';
 
@@ -161,10 +161,31 @@ export class ClaudeRuntimeAdapter {
     return session ?? { sessionId: id, status: 'offline' };
   }
 
-  stopSession({ runtimeSessionId } = {}) {
+  stopSession({ runtimeSessionId, worktree } = {}) {
     const id = text(runtimeSessionId, 'runtimeSessionId');
+    const expectedWorktree = resolve(text(worktree, 'worktree'));
+    const session = this.getStatus({ runtimeSessionId: id });
+    if (session.status === 'offline') {
+      return { runtimeSessionId: id, stopped: true, alreadyOffline: true };
+    }
+    const reportedWorktree = session.cwd ?? session.worktree
+      ?? session.workingDirectory ?? session.working_directory;
+    if (typeof reportedWorktree !== 'string' || !reportedWorktree.trim()) {
+      throw new TorchError('Claude session stop refused because its working directory is unavailable', {
+        code: 'RUNTIME_OWNERSHIP_UNVERIFIED', details: { runtimeSessionId: id, expectedWorktree },
+      });
+    }
+    if (resolve(reportedWorktree) !== expectedWorktree) {
+      throw new TorchError('Claude session stop refused because its working directory does not match the managed identity', {
+        code: 'RUNTIME_OWNERSHIP_MISMATCH',
+        details: { runtimeSessionId: id, expectedWorktree, reportedWorktree: resolve(reportedWorktree) },
+      });
+    }
     const result = this.run(['stop', id]);
-    return { runtimeSessionId: id, stopped: result.status === undefined || result.status === 0 };
+    return {
+      runtimeSessionId: id, stopped: result.status === undefined || result.status === 0,
+      verifiedWorktree: expectedWorktree, alreadyOffline: false,
+    };
   }
 
   captureRuntimeId({ areaId, runtimeSessionId } = {}) {

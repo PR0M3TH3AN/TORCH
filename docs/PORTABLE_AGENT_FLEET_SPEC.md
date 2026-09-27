@@ -933,6 +933,14 @@ domain implementation. A domain session works only in its assigned worktree.
 TORCH MUST inspect process ownership and working directory before stopping a
 process. Parentage alone does not establish ownership.
 
+Implementation checkpoint (2026-09-27): the Claude stop adapter resolves the
+durable runtime-session ID through the provider's live session inventory and
+requires its reported working directory to equal the managed identity's
+worktree before issuing a stop. Missing ownership evidence or a mismatched
+directory fails closed. A provider-reported offline session is treated as
+already stopped. Codex declares stop unsupported and is never silently killed
+through an operating-system process heuristic.
+
 ### 16.2 Safe convergence
 
 TORCH MUST distinguish scheduled observation from scheduled mutation:

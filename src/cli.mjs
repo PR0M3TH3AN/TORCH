@@ -221,7 +221,9 @@ function stopThrough(adapters, action) {
   if (!adapter) throw new TorchError(`No runtime stopper for ${action.runtime}`, {
     code: 'RUNTIME_ADAPTER_MISSING', details: { runtime: action.runtime },
   });
-  return adapter.stopSession({ runtimeSessionId: action.runtimeSessionId });
+  return adapter.stopSession({
+    runtimeSessionId: action.runtimeSessionId, worktree: action.worktree?.path,
+  });
 }
 
 function runCandidateAcceptance(candidateRoot, spawn) {
