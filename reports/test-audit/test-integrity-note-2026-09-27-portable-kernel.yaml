@@ -10,6 +10,10 @@ test_integrity_note:
       given: a reviewed fresh installation into a Git repository
       when: TORCH installs, diagnoses, and purges its unchanged state
       then: doctor reports healthy, all owned TORCH state is removed, and project source remains unchanged
+    - id: SCN-existing-repository-preservation
+      given: an existing repository with history, a long-lived branch, owner configuration, and an untracked file
+      when: TORCH is installed and safely purged
+      then: every pre-existing commit, branch, configuration byte, and untracked owner byte remains unchanged
     - id: SCN-purge-protects-user-change
       given: an installed TORCH project whose managed configuration was edited by its owner
       when: a purge is requested

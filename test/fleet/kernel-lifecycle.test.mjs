@@ -79,6 +79,28 @@ test('SCN-install-doctor-purge: a fresh install is healthy and exactly reversibl
   assert.equal(readFileSync(join(root, 'index.js'), 'utf8'), 'export const ready = true;\n');
 });
 
+test('SCN-existing-repository-preservation: install and purge preserve history, branches, config, and untracked files', () => {
+  const { root, env } = fixture();
+  const externalEnv = { ...env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-existing-repo-state-')) };
+  writeFileSync(join(root, '.projectrc'), 'owner-setting=true\n');
+  execFileSync('git', ['-C', root, 'add', '.projectrc']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'owner configuration']);
+  execFileSync('git', ['-C', root, 'branch', 'owner/long-lived']);
+  writeFileSync(join(root, 'owner-notes.txt'), 'untracked owner data\n');
+  const historyBefore = execFileSync('git', ['-C', root, 'rev-list', '--all', '--format=%H'], { encoding: 'utf8' });
+  const branchesBefore = execFileSync('git', ['-C', root, 'for-each-ref', '--format=%(refname)', 'refs/heads'], { encoding: 'utf8' });
+  const repository = inspectRepository(root);
+  installProject({
+    repository, proposal: approvedProposal(repository), env: externalEnv, projectId: 'existing-repository',
+  });
+  const purged = uninstallProject({ repository: inspectRepository(root), purge: true });
+  assert.equal(purged.mutationPerformed, true);
+  assert.equal(readFileSync(join(root, '.projectrc'), 'utf8'), 'owner-setting=true\n');
+  assert.equal(readFileSync(join(root, 'owner-notes.txt'), 'utf8'), 'untracked owner data\n');
+  assert.equal(execFileSync('git', ['-C', root, 'rev-list', '--all', '--format=%H'], { encoding: 'utf8' }), historyBefore);
+  assert.equal(execFileSync('git', ['-C', root, 'for-each-ref', '--format=%(refname)', 'refs/heads'], { encoding: 'utf8' }), branchesBefore);
+});
+
 test('SCN-purge-protects-user-change: uninstall refuses to delete modified managed files', () => {
   const { root, env } = fixture();
   const repository = inspectRepository(root);
