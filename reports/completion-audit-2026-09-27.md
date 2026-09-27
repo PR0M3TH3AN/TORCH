@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited commit: `3e988a2`
+Latest audited implementation commit: `5a06deb`
 
 ## Verdict
 
@@ -12,8 +12,9 @@ kernel, project-specific fleet design, persistent provider-independent control
 plane, Claude/Codex adapters, exact-commit verification, resources, native
 integration, safe convergence, schedules, context-locality telemetry,
 self-host candidate mechanics, COMBATRIG import, dynamic domain creation,
-retirement and boundary proposals, standalone package qualification, the
-public product surface, and the local Fleet Console.
+retirement and boundary proposals, optional forge migration, a separately
+authorized delivery lifecycle, standalone package qualification, the public
+product surface, and the local Fleet Console.
 
 It is not yet a qualified first usable release. The remaining release gates
 are now owner-authorized operational qualification:
@@ -30,7 +31,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **52/52 PASS** against the tree at `3e988a2`.
+- `npm test`: **59/59 PASS** against the tree committed as `5a06deb`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -48,7 +49,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
 | 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
 | 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
-| 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-bootstrap-acceptance` | Implemented locally | No local implementation gate remains; live runtime evidence belongs to Stages 3 and 5. |
+| 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, and delivery-state separation; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Candidate isolation, acceptance receipts, side-by-side versions, atomic activation/reconciliation/rollback; self-host scenarios | Mechanics implemented | Install a stable TORCH outside this checkout and use it to manage/test/promote a candidate of this checkout. Persistent installation approval required. |
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
@@ -113,6 +114,18 @@ due cron or interval schedules without duplicate minute runs, refuse tracked
 configuration drift, and remove only unchanged TORCH-owned units. The code is
 fixture-tested; it has not been installed or qualified persistently on this
 machine.
+
+### Release and deployment separation
+
+TORCH persists `implemented -> verified -> integrated -> release-ready ->
+released -> deployed -> live-verified` as distinct states. Exact-commit check
+receipts and landed integration records are enforced before release readiness.
+The Session Manager's integration authority does not grant release or deploy
+authority: those transitions default to `owner`, require explicit approval,
+and require a configured adapter whose declared capability returns a durable
+successful receipt. New installations use `none` for both provider slots. The
+complete lifecycle is fixture-tested through the public CLI/service boundary;
+no real artifact was published and nothing was deployed.
 
 ## Approval-bound qualification plan
 
