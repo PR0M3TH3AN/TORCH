@@ -5,6 +5,7 @@ import { fileHash } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
 import { inspectManagedWorktree } from './worktree-state.mjs';
 import { validateProjectConfig } from './config.mjs';
+import { forgeStatus } from '../forge/service.mjs';
 
 function parseJsonYaml(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -167,6 +168,21 @@ export function diagnoseProject({ repository, env = process.env }) {
   }
   if (repository.dirtyEntries.length) {
     findings.push({ severity: 'info', code: 'WORKTREE_DIRTY', count: repository.dirtyEntries.length });
+  }
+  if (config?.forge?.provider && config.forge.provider !== 'none') {
+    try {
+      const forge = forgeStatus({ repositoryRoot: repository.root });
+      if (!forge.available) findings.push({
+        severity: 'warning', code: 'FORGE_UNAVAILABLE', remote: forge.remote,
+        pendingSynchronization: true, localOperational: true, message: forge.error,
+      });
+      else if (!forge.synchronized) findings.push({
+        severity: 'info', code: 'FORGE_SYNCHRONIZATION_PENDING', remote: forge.remote,
+        localCommit: forge.localCommit, remoteCommit: forge.remoteCommit,
+      });
+    } catch (error) {
+      findings.push({ severity: 'error', code: 'FORGE_STATUS_INVALID', message: error.message });
+    }
   }
 
   return {

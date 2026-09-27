@@ -35,6 +35,9 @@ import {
 } from './design/architect.mjs';
 import { FleetEvolutionService } from './evolution/service.mjs';
 import { ConvergenceService } from './convergence/service.mjs';
+import {
+  attachForge, detachForge, forgeStatus, planForgeAttach, planForgeDetach,
+} from './forge/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -96,6 +99,10 @@ Usage:
   torch canonical plan [--json]
   torch canonical create --yes [--json]
   torch recoverability [--commit <sha>] [--json]
+  torch forge plan --remote <name> [--provider <name>] [--json]
+  torch forge attach --remote <name> [--provider <name>] --yes [--json]
+  torch forge status [--json]
+  torch forge detach [--dry-run] --yes [--json]
   torch candidate plan --source <path> [--version <version>] [--json]
   torch candidate build --source <path> [--version <version>] --yes [--json]
   torch candidate status [--json]
@@ -231,6 +238,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['fleet-evolution', ['SCN-fleet-evolution', 'SCN-cli-fleet-evolution']],
     ['fleet-boundary-evolution', ['SCN-fleet-boundary-evolution']],
     ['cli-lifecycle-surface', ['SCN-cli-lifecycle-surface']],
+    ['forge-migration', ['SCN-forge-migration']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -1026,6 +1034,49 @@ export async function runCli(argv = process.argv.slice(2), {
         repositoryRoot: repository.root, commit: optionValue(argv, '--commit') ?? 'HEAD',
       }), { json });
       return 0;
+    }
+    if (command === 'forge') {
+      const operation = argv[1] ?? 'status';
+      if (operation === 'status') {
+        const status = forgeStatus({ repositoryRoot: repository.root });
+        print(status, { json });
+        return status.available === false ? 1 : 0;
+      }
+      if (operation === 'plan') {
+        const plan = planForgeAttach({
+          repositoryRoot: repository.root, remote: optionValue(argv, '--remote'),
+          provider: optionValue(argv, '--provider') ?? 'generic-git',
+        });
+        print(plan, { json });
+        return plan.canProceed ? 0 : 1;
+      }
+      if (operation === 'attach') {
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Forge attach changes tracked canonical-repository policy. Review forge plan, then use --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(attachForge({
+          repositoryRoot: repository.root, remote: optionValue(argv, '--remote'),
+          provider: optionValue(argv, '--provider') ?? 'generic-git',
+        }), { json });
+        return 0;
+      }
+      if (operation === 'detach') {
+        if (argv.includes('--dry-run')) {
+          const plan = planForgeDetach({ repositoryRoot: repository.root });
+          print(plan, { json });
+          return plan.canProceed ? 0 : 1;
+        }
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Forge detach changes tracked canonical-repository policy. Review the current status, then use --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(detachForge({ repositoryRoot: repository.root }), { json });
+        return 0;
+      }
+      throw new TorchError(`Unknown forge operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
     }
     if (command === 'uninstall') {
       const result = uninstallProject({

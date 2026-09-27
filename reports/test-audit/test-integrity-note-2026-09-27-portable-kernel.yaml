@@ -142,6 +142,10 @@ test_integrity_note:
       given: an installed project with no forge or remote
       when: the owner creates a local canonical Git store and later makes and pushes another commit
       then: TORCH distinguishes one-disk from local-remote recoverability without claiming off-machine backup
+    - id: SCN-forge-migration
+      given: a healthy local-only Fleet and an equivalent optional Git remote
+      when: the owner attaches the forge, the remote becomes unavailable, and the owner detaches it
+      then: ref mismatch fails closed while identities, worktrees, backlog, messages, and local operation survive every mode
     - id: SCN-canonical-reversal
       given: a TORCH-owned local canonical remote and bare repository
       when: purge is planned before and after a remote-only commit becomes recoverable locally

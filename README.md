@@ -250,6 +250,24 @@ Local verification and convergence use `torch checks`, `torch resources`, and
 `torch integrate`. A project without a forge can preview and create its bare
 canonical store with `torch canonical plan` and `torch canonical create --yes`.
 
+An equivalent Git remote can later become the optional canonical forge without
+changing TORCH identity or coordination semantics:
+
+```bash
+torch forge plan --remote origin --json
+torch forge attach --remote origin --provider generic-git --yes --json
+torch forge status --json
+torch forge detach --dry-run --json
+torch forge detach --yes --json
+```
+
+Attach requires the selected remote's main ref to equal local canonical main
+exactly and never pushes or fetches implicitly. During a forge outage, status
+and doctor expose pending synchronization while local identities, messages,
+checks, backlog, worktrees, and policy remain operational. Detach works during
+that outage and restores the prior local canonical configuration; it does not
+delete a user-owned remote.
+
 TORCH source checkouts can stage a self-host candidate without changing the
 active version. Candidate build runs the complete local acceptance, lint, and
 syntax gates before writing its receipt:
