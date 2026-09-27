@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited commit: `c5cec6b`  
+Latest audited commit: `3e988a2`
 
 ## Verdict
 
@@ -11,11 +11,12 @@ TORCH has a coherent, scenario-tested local implementation of the portable
 kernel, project-specific fleet design, persistent provider-independent control
 plane, Claude/Codex adapters, exact-commit verification, resources, native
 integration, safe convergence, schedules, context-locality telemetry,
-self-host candidate mechanics, COMBATRIG import, dynamic domain creation and
-retirement, the public product surface, and the local Fleet Console.
+self-host candidate mechanics, COMBATRIG import, dynamic domain creation,
+retirement and boundary proposals, standalone package qualification, the
+public product surface, and the local Fleet Console.
 
 It is not yet a qualified first usable release. The remaining release gates
-require either a still-missing local subsystem or owner-authorized operation:
+are now owner-authorized operational qualification:
 
 1. owner-authorized installation and live qualification of the implemented
    persistent user-systemd schedule launcher;
@@ -23,13 +24,13 @@ require either a still-missing local subsystem or owner-authorized operation:
 3. an installed stable TORCH managing this source checkout;
 4. owner resolution of COMBATRIG's 56 blocking ownership/exclusion gaps,
    followed by an authorized cutover trial;
-5. standalone distribution qualification and, separately, public deployment.
+5. package publication and public website deployment.
 
 Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **50/50 PASS** at `c5cec6b`.
+- `npm test`: **52/52 PASS** against the tree at `3e988a2`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -51,7 +52,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Candidate isolation, acceptance receipts, side-by-side versions, atomic activation/reconciliation/rollback; self-host scenarios | Mechanics implemented | Install a stable TORCH outside this checkout and use it to manage/test/promote a candidate of this checkout. Persistent installation approval required. |
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
-| 8. Product surface | Redesigned site, dispatch-board story, local read-only Console and Fleet-change ledger; desktop/mobile local rendering | Local surface implemented | Standalone packaging and public deployment remain open. |
+| 8. Product surface | Redesigned site, dispatch-board story, local read-only Console and Fleet-change ledger; desktop/mobile local rendering; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented | Registry publication and public deployment remain open. |
 
 ## Cross-cutting requirements
 
@@ -82,8 +83,17 @@ Retirement is owner-gated and refuses a live session, dirty or uniquely ahead
 worktree, active Git guard, resource lease, integration request, active backlog
 assignment, stale main, or removal of the last development domain. Safe
 retirement removes the worktree and active identity while preserving the Git
-branch and a durable retirement record. Boundary merge/split proposals remain
-an extension point rather than an implemented mutation path.
+branch and a durable retirement record.
+
+The Session Manager can now propose domain merges and splits through CLI and
+identity-bound MCP surfaces. TORCH validates exact source ownership coverage,
+future runtimes/checks/resources/neighbours, unaffected-domain collisions,
+repository head, and tracked configuration digest. The owner can approve or
+reject the durable proposal, but approval cannot activate it: TORCH always
+returns a `manual-boundary-redesign-required` blocker until a separate workflow
+can prove backlog, branch, prompt, worktree, neighbour, and ownership migration
+safety. This makes organizational evolution reviewable without pretending a
+dangerous automatic rewrite is safe.
 
 ### Context locality
 
@@ -120,8 +130,9 @@ These actions are deliberately not performed by the local build:
 5. **Remote/public state:** push branches, publish a package, or deploy the site
    only under explicit release scope.
 
-## Next implementation order
+## Next qualification order
 
-1. merge/split proposal records without automatic ownership mutation;
-2. standalone package smoke test;
-3. owner-authorized live/provider/install/scheduler/COMBATRIG gates.
+1. owner-authorized bounded Session Architect and live mixed-provider run;
+2. owner-authorized stable self-host and system-scheduler qualification;
+3. owner review of COMBATRIG gaps and a separately authorized cutover trial;
+4. release-scoped package publication and public website deployment.
