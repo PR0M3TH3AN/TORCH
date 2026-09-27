@@ -41,7 +41,7 @@ test_integrity_note:
     - id: SCN-worktree-bootstrap
       given: an approved TORCH organization committed to a clean main branch
       when: the owner previews and creates its managed worktrees
-      then: every persistent identity receives the intended branch and external worktree, task markers are ignored, and repeated planning is idempotent
+      then: every persistent identity receives the intended branch and external worktree, task markers are ignored, repeated planning is idempotent, and doctor reports later drift age, Git operations, runtime availability, and recoverability without repair
     - id: SCN-bootstrap-acceptance
       given: one approved three-identity fixture with checks, a scarce resource, and neighboring domains
       when: TORCH installs worktrees, starts virtualized sessions, coordinates messages, runs backlog/check/resource lifecycles, diagnoses, captures, stops, reopens, resumes, and previews reversal
@@ -238,6 +238,7 @@ test_integrity_note:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
     - doctor health and finding codes
+    - worktree ahead and behind counts, oldest-missing-commit age, active Git operations, runtime detection, and recoverability grade
     - CLI exit status and structured error code
     - proposal review status, repository commit binding, and generated domain count
     - specification digest, evidence-linked responsibility, and stale-spec refusal
@@ -285,6 +286,7 @@ test_integrity_note:
       - init that silently writes files
       - installer that overwrites existing state
       - doctor that reports healthy without required state
+      - doctor hiding convergence age, an active Git operation, a missing runtime, or one-disk-only recovery
       - uninstall that deletes owner-modified configuration
       - CLI that mutates without explicit approval
       - in-memory-only messaging that disappears on restart

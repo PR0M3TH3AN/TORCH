@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
@@ -53,6 +53,28 @@ test('SCN-worktree-bootstrap: approved identities receive isolated branches and 
   assert.equal(repeated.actions.every((action) => action.action === 'keep'), true);
   assert.equal(repeated.canProceed, true);
   assert.equal(diagnoseProject({ repository: inspectRepository(fixture.root), env: fixture.env }).healthy, true);
+
+  writeFileSync(join(fixture.root, 'drift.txt'), 'new canonical state\n');
+  execFileSync('git', ['-C', fixture.root, 'add', 'drift.txt']);
+  execFileSync('git', ['-C', fixture.root, 'commit', '-m', 'advance canonical main']);
+  const core = created.created.find((entry) => entry.area === 'core');
+  const mergeHead = execFileSync('git', ['-C', core.path, 'rev-parse', '--git-path', 'MERGE_HEAD'], {
+    encoding: 'utf8',
+  }).trim();
+  writeFileSync(mergeHead, `${execFileSync('git', ['-C', fixture.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()}\n`);
+  const diagnosis = diagnoseProject({
+    repository: inspectRepository(fixture.root), env: fixture.env,
+    now: () => new Date('2026-09-28T00:00:00Z'),
+  });
+  const drift = diagnosis.findings.find((finding) => finding.code === 'WORKTREE_DRIFT' && finding.area === 'core');
+  assert.equal(drift.behind, 1);
+  assert.equal(Number.isInteger(drift.driftAgeSeconds), true);
+  assert.equal(diagnosis.findings.some((finding) =>
+    finding.code === 'GIT_OPERATION_ACTIVE' && finding.operations.includes('MERGE_HEAD')), true);
+  assert.equal(diagnosis.findings.some((finding) =>
+    finding.code === 'RECOVERABILITY' && finding.level === 'ONE-DISK'), true);
+  assert.equal(diagnosis.findings.some((finding) => finding.code.startsWith('RUNTIME_')), true);
+  unlinkSync(mergeHead);
   uninstallProject({ repository: inspectRepository(fixture.root), purge: true });
   assert.equal(created.created.some((action) => existsSync(action.path)), false);
   assert.equal(readFileSync(join(fixture.root, '.git', 'info', 'exclude'), 'utf8').includes('.task'), false);

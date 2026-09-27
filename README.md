@@ -26,7 +26,9 @@ and the first Claude reference-fleet path:
 - tracked `.torch/` project configuration;
 - XDG-local runtime state;
 - installation ownership manifest;
-- health diagnostics;
+- read-only health diagnostics covering installation integrity, runtime
+  availability, worktree drift count and age, Git operations, and honest
+  recoverability grade;
 - conservative, reversible purge;
 - reviewed worktree plans with branch/path collision protection;
 - isolated branches and worktrees with locally ignored task markers;

@@ -1126,6 +1126,13 @@ task/commit references, and verified item counts. Reports keep evidence classes
 separate, derive cache-read ratio and cost per verified item, and warn when
 usage has no verified outcome.
 
+`torch doctor` additionally reports managed-worktree branch/commit consistency,
+ahead and behind counts, the timestamp and age of the oldest missing canonical
+commit, in-progress Git operations, configured runtime executable availability,
+and the current commit's `ONE-DISK`, `LOCAL-REMOTE`, or `OFF-MACHINE`
+recoverability grade. Each finding separates observed evidence from a
+recommended action; doctor remains read-only.
+
 ## 22. Scheduling
 
 TORCH recognizes two schedule classes.

@@ -6,12 +6,15 @@ import { projectStatePath } from './paths.mjs';
 import { inspectManagedWorktree } from './worktree-state.mjs';
 import { validateProjectConfig } from './config.mjs';
 import { forgeStatus } from '../forge/service.mjs';
+import { classifyRecoverability } from '../canonical/local.mjs';
+import { createClaudeAdapter } from '../adapters/claude.mjs';
+import { createCodexAdapter } from '../adapters/codex.mjs';
 
 function parseJsonYaml(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function diagnoseProject({ repository, env = process.env }) {
+export function diagnoseProject({ repository, env = process.env, now = () => new Date() }) {
   const trackedRoot = join(repository.root, '.torch');
   const configPath = join(trackedRoot, 'torch.yaml');
   const manifestPath = join(trackedRoot, 'install-manifest.json');
@@ -129,10 +132,28 @@ export function diagnoseProject({ repository, env = process.env }) {
       const state = inspectManagedWorktree(repository.root, entry, config?.project?.main_branch ?? 'main');
       for (const problem of state.problems) {
         findings.push({
-          severity: problem === 'worktree-dirty' || problem.startsWith('unique-commits:') ? 'warning' : 'error',
+          severity: problem === 'worktree-dirty' || problem.startsWith('unique-commits:')
+            || problem.startsWith('git-operation:') ? 'warning' : 'error',
           code: 'WORKTREE_PROBLEM', area: entry.area, path: entry.path, problem,
         });
       }
+      if (state.ahead || state.behind) {
+        const missingAt = state.oldestMissingCommitAt ? Date.parse(state.oldestMissingCommitAt) : null;
+        findings.push({
+          severity: 'info', code: 'WORKTREE_DRIFT', area: entry.area, path: entry.path,
+          branch: state.branch, commit: state.commit, drift: state.drift,
+          ahead: state.ahead, behind: state.behind,
+          oldestMissingCommitAt: state.oldestMissingCommitAt,
+          driftAgeSeconds: Number.isFinite(missingAt)
+            ? Math.max(0, Math.floor((now().getTime() - missingAt) / 1000)) : null,
+          recommendation: 'Ask the owning domain to review an intentional convergence plan at a safe point.',
+        });
+      }
+      if (state.operations.length) findings.push({
+        severity: 'warning', code: 'GIT_OPERATION_ACTIVE', area: entry.area,
+        path: entry.path, operations: state.operations,
+        recommendation: 'The owning domain must complete or deliberately abort the Git operation.',
+      });
     }
     const managerWorktree = (manifest.external ?? []).find((entry) =>
       entry.type === 'worktree' && entry.area === 'session-manager');
@@ -168,6 +189,42 @@ export function diagnoseProject({ repository, env = process.env }) {
   }
   if (repository.dirtyEntries.length) {
     findings.push({ severity: 'info', code: 'WORKTREE_DIRTY', count: repository.dirtyEntries.length });
+  }
+  try {
+    const recoverability = classifyRecoverability({ repositoryRoot: repository.root, commit: repository.head });
+    findings.push({
+      severity: recoverability.offMachine ? 'info' : 'warning', code: 'RECOVERABILITY',
+      ...recoverability,
+      recommendation: recoverability.offMachine
+        ? 'No action required for this commit.'
+        : 'Configure and synchronize an off-machine canonical Git boundary before relying on this checkout for recovery.',
+    });
+  } catch (error) {
+    findings.push({ severity: 'error', code: 'RECOVERABILITY_INVALID', message: error.message });
+  }
+  if (config?.runtimes) {
+    const adapters = new Map([
+      ['claude', createClaudeAdapter({ env })],
+      ['codex', createCodexAdapter({ env })],
+    ]);
+    for (const runtime of Object.keys(config.runtimes).filter((name) => name !== 'default')) {
+      const adapter = adapters.get(runtime);
+      if (!adapter) {
+        findings.push({
+          severity: 'warning', code: 'RUNTIME_ADAPTER_UNKNOWN', runtime,
+          recommendation: 'Install or configure a TORCH runtime adapter before starting this identity.',
+        });
+        continue;
+      }
+      const detection = adapter.detect();
+      findings.push({
+        severity: detection.available ? 'info' : 'warning',
+        code: detection.available ? 'RUNTIME_AVAILABLE' : 'RUNTIME_UNAVAILABLE',
+        runtime, executable: detection.executable,
+        recommendation: detection.available ? 'No action required.'
+          : `Install ${runtime} or change the approved runtime assignment before startup.`,
+      });
+    }
   }
   if (config?.forge?.provider && config.forge.provider !== 'none') {
     try {
