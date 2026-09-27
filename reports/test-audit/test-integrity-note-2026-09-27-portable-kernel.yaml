@@ -38,6 +38,10 @@ test_integrity_note:
       given: an approved TORCH organization committed to a clean main branch
       when: the owner previews and creates its managed worktrees
       then: every persistent identity receives the intended branch and external worktree, task markers are ignored, and repeated planning is idempotent
+    - id: SCN-bootstrap-acceptance
+      given: one approved three-identity fixture with checks, a scarce resource, and neighboring domains
+      when: TORCH installs worktrees, starts virtualized sessions, coordinates messages, runs backlog/check/resource lifecycles, diagnoses, captures, stops, reopens, resumes, and previews reversal
+      then: the complete section 10.8 organization lifecycle is proven in one scenario and unsafe reversal state is reported rather than hidden
     - id: SCN-worktree-purge-safety
       given: a TORCH-managed domain worktree containing uncommitted or uniquely committed work
       when: project purge is requested
