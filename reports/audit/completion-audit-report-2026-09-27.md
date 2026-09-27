@@ -1,4 +1,4 @@
-# TORCH portable-agent-fleet completion audit
+# TORCH portable-agent-fleet completion audit report
 
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
