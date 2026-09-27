@@ -8,6 +8,7 @@ import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { diagnoseProject } from '../../src/kernel/doctor.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject, planInstall, uninstallProject } from '../../src/kernel/install.mjs';
+import { proposeDomains, validateApprovedProposal } from '../../src/kernel/domains.mjs';
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), 'torch-kernel-'));
@@ -24,12 +25,20 @@ function fixture() {
   return { root, env: { ...process.env, XDG_DATA_HOME: stateHome } };
 }
 
+function approvedProposal(repository) {
+  const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  proposal.review = {
+    status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
+  };
+  return proposal;
+}
+
 test('SCN-init-read-only: inspection and analysis do not mutate the project', () => {
   const { root, env } = fixture();
   const before = execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' });
   const repository = inspectRepository(root);
   const analysis = analyzeRepository(repository);
-  const plan = planInstall({ repository, env });
+  const plan = planInstall({ repository, proposal: approvedProposal(repository), env });
   const after = execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' });
 
   assert.equal(analysis.mutationPerformed, false);
@@ -43,8 +52,9 @@ test('SCN-init-read-only: inspection and analysis do not mutate the project', ()
 test('SCN-install-doctor-purge: a fresh install is healthy and exactly reversible', () => {
   const { root, env } = fixture();
   const repository = inspectRepository(root);
+  const proposal = approvedProposal(repository);
   const installed = installProject({
-    repository, env, projectId: 'fixture-project', now: () => new Date('2026-09-27T00:00:00Z'),
+    repository, proposal, env, projectId: 'fixture-project', now: () => new Date('2026-09-27T00:00:00Z'),
   });
 
   assert.equal(existsSync(join(root, '.torch', 'torch.yaml')), true);
@@ -66,7 +76,7 @@ test('SCN-install-doctor-purge: a fresh install is healthy and exactly reversibl
 test('SCN-purge-protects-user-change: uninstall refuses to delete modified managed files', () => {
   const { root, env } = fixture();
   const repository = inspectRepository(root);
-  installProject({ repository, env, projectId: 'modified-project' });
+  installProject({ repository, proposal: approvedProposal(repository), env, projectId: 'modified-project' });
   const configPath = join(root, '.torch', 'torch.yaml');
   writeFileSync(configPath, `${readFileSync(configPath, 'utf8')}\n# owner change\n`);
 
@@ -76,4 +86,22 @@ test('SCN-purge-protects-user-change: uninstall refuses to delete modified manag
       && error.details.some((problem) => problem.type === 'modified' && problem.path === '.torch/torch.yaml'),
   );
   assert.equal(existsSync(configPath), true);
+});
+
+test('SCN-domain-approval: installation rejects stale or unapproved organizational proposals', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const pending = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  assert.throws(
+    () => installProject({ repository, proposal: pending, env }),
+    (error) => error.code === 'PROPOSAL_NOT_APPROVED'
+      && error.details.includes('proposal review status is not approved'),
+  );
+  pending.review.status = 'approved';
+  pending.repository.head = '0000000000000000000000000000000000000000';
+  assert.throws(
+    () => validateApprovedProposal({ proposal: pending, repository }),
+    (error) => error.details.includes('proposal is stale because HEAD changed'),
+  );
+  assert.equal(existsSync(join(root, '.torch')), false);
 });

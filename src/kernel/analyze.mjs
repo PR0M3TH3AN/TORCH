@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { extname } from 'node:path';
 import { trackedFiles } from './git.mjs';
+import { buildArchitectureGraph } from './domains.mjs';
 
 const LANGUAGE_BY_EXTENSION = new Map([
   ['.js', 'JavaScript'], ['.mjs', 'JavaScript'], ['.cjs', 'JavaScript'],
@@ -61,7 +62,7 @@ export function analyzeRepository(repository) {
   if (/cuda|gpu|webgl|three\.js|threejs/.test(joined)) scarceResources.push('gpu');
   if (/postgres|mysql|sqlite|database/.test(joined)) scarceResources.push('database');
 
-  return {
+  const result = {
     generatedAt: new Date().toISOString(),
     repository: {
       root: repository.root,
@@ -84,4 +85,6 @@ export function analyzeRepository(repository) {
     },
     mutationPerformed: false,
   };
+  result.architecture = buildArchitectureGraph({ repository, files });
+  return result;
 }

@@ -16,6 +16,8 @@ Stage 1 currently provides the first portable kernel:
 
 - read-only Git repository inspection;
 - repository inventory and check discovery;
+- evidence-linked architecture graphs and domain-collision proposals;
+- owner-reviewed organizational proposals required before installation;
 - explicit install approval;
 - tracked `.torch/` project configuration;
 - XDG-local runtime state;
@@ -49,13 +51,15 @@ Inspect a repository without modifying it:
 ```bash
 node bin/torch.mjs init --json
 node bin/torch.mjs analyze --json
-node bin/torch.mjs install --dry-run --json
+node bin/torch.mjs domains --output fleet-proposal.json --json
 ```
 
-Install the current kernel only after reviewing the dry run:
+Review the evidence in `fleet-proposal.json`, edit its `review.status` to
+`approved`, and identify the reviewer. Then inspect and apply the installation:
 
 ```bash
-node bin/torch.mjs install --yes --json
+node bin/torch.mjs install --proposal fleet-proposal.json --dry-run --json
+node bin/torch.mjs install --proposal fleet-proposal.json --yes --json
 node bin/torch.mjs doctor --json
 ```
 

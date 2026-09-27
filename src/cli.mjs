@@ -3,13 +3,18 @@ import { diagnoseProject } from './kernel/doctor.mjs';
 import { asErrorRecord, TorchError } from './kernel/errors.mjs';
 import { inspectRepository } from './kernel/git.mjs';
 import { installProject, planInstall, uninstallProject } from './kernel/install.mjs';
+import { proposeDomains } from './kernel/domains.mjs';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { writeNewFile } from './kernel/files.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
 Usage:
   torch init [--json]
   torch analyze [--json]
-  torch install [--dry-run] [--yes] [--json]
+  torch domains [--output <path>] [--json]
+  torch install --proposal <path> [--dry-run] [--yes] [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -17,6 +22,26 @@ Usage:
 function print(value, { json = false } = {}) {
   if (json || typeof value !== 'string') process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
   else process.stdout.write(`${value}\n`);
+}
+
+function optionValue(argv, name) {
+  const direct = argv.find((arg) => arg.startsWith(`${name}=`));
+  if (direct) return direct.slice(name.length + 1);
+  const index = argv.indexOf(name);
+  return index >= 0 ? argv[index + 1] : undefined;
+}
+
+function loadProposal(cwd, proposalPath) {
+  if (!proposalPath) {
+    throw new TorchError('Installation requires an approved domain proposal from torch domains --output.', {
+      code: 'PROPOSAL_REQUIRED',
+    });
+  }
+  try { return JSON.parse(readFileSync(resolve(cwd, proposalPath), 'utf8')); } catch (error) {
+    throw new TorchError(`Cannot read domain proposal: ${proposalPath}`, {
+      code: 'PROPOSAL_INVALID', details: error.message,
+    });
+  }
 }
 
 export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd(), env = process.env } = {}) {
@@ -33,9 +58,24 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
       print({ command, repository, analysis, next: 'Review analysis, then run torch install --dry-run.' }, { json });
       return 0;
     }
+    if (command === 'domains') {
+      const analysis = analyzeRepository(repository);
+      const proposal = proposeDomains({ repository, analysis });
+      const output = optionValue(argv, '--output');
+      if (output) {
+        const path = resolve(cwd, output);
+        writeNewFile(path, `${JSON.stringify(proposal, null, 2)}\n`);
+        print({ proposal, output: path, mutationPerformed: true }, { json });
+      } else {
+        print({ proposal, mutationPerformed: false }, { json });
+      }
+      return 0;
+    }
     if (command === 'install') {
+      const proposalPath = optionValue(argv, '--proposal');
       if (argv.includes('--dry-run')) {
-        print(planInstall({ repository, env }), { json });
+        const proposal = loadProposal(cwd, proposalPath);
+        print({ ...planInstall({ repository, proposal, env }), proposal: resolve(cwd, proposalPath) }, { json });
         return 0;
       }
       if (!argv.includes('--yes')) {
@@ -43,7 +83,8 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
           code: 'APPROVAL_REQUIRED',
         });
       }
-      print(installProject({ repository, env }), { json });
+      const proposal = loadProposal(cwd, proposalPath);
+      print(installProject({ repository, proposal, env }), { json });
       return 0;
     }
     if (command === 'doctor') {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -42,4 +42,27 @@ test('SCN-cli-install-approval: install requires an explicit reviewed approval f
   assert.equal(result.status, 2);
   assert.equal(JSON.parse(result.stdout).error, 'APPROVAL_REQUIRED');
   assert.equal(existsSync(join(root, '.torch')), false);
+});
+
+test('SCN-cli-domain-review: a generated proposal must be approved before install', () => {
+  const root = repo();
+  const proposalPath = join(root, 'fleet-proposal.json');
+  const generated = run(root, ['domains', '--output', proposalPath, '--json']);
+  assert.equal(generated.status, 0, generated.stderr || generated.stdout);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  assert.equal(proposal.review.status, 'pending');
+  assert.equal(proposal.domains.length > 0, true);
+
+  const rejected = run(root, ['install', '--proposal', proposalPath, '--yes', '--json']);
+  assert.equal(rejected.status, 2);
+  assert.equal(JSON.parse(rejected.stdout).error, 'PROPOSAL_NOT_APPROVED');
+  assert.equal(existsSync(join(root, '.torch')), false);
+
+  proposal.review = {
+    status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
+  };
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  const installed = run(root, ['install', '--proposal', proposalPath, '--yes', '--json']);
+  assert.equal(installed.status, 0, installed.stderr || installed.stdout);
+  assert.equal(existsSync(join(root, '.torch', 'domain-proposal.approved.json')), true);
 });

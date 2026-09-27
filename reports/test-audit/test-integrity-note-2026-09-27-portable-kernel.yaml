@@ -18,11 +18,24 @@ test_integrity_note:
       given: a Git repository without TORCH
       when: install is invoked without a reviewed approval flag
       then: the command refuses and creates no TORCH state
+    - id: SCN-domain-approval
+      given: a generated organizational proposal that is pending or stale
+      when: TORCH is asked to install it
+      then: installation refuses before creating tracked or local state
+    - id: SCN-cli-domain-review
+      given: a Git repository analyzed through the public CLI
+      when: the owner generates, reviews, approves, and installs its domain proposal
+      then: pending proposals are rejected and the approved proposal becomes durable project state
+    - id: SCN-domain-collision
+      given: frontend and backend components that both consume a shared contract plus cross-cutting tests
+      when: TORCH builds the architecture graph and domain proposal
+      then: it proposes persistent component domains and QA, links import evidence, and records neighboring-domain collisions requiring an explicit resolution
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
     - doctor health and finding codes
     - CLI exit status and structured error code
+    - proposal review status, repository commit binding, and generated domain count
     - preservation of project source and modified owner configuration
   determinism_controls:
     - isolated temporary Git repositories

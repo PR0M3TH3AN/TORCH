@@ -6,6 +6,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { TorchError } from './errors.mjs';
 import { fileHash, writeNewFile } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
+import { validateApprovedProposal } from './domains.mjs';
 
 const TRACKED_DIR = '.torch';
 
@@ -13,7 +14,7 @@ function jsonYaml(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-function initialFiles({ repository, projectId, createdAt }) {
+function initialFiles({ repository, projectId, createdAt, proposal }) {
   const config = {
     schema: 'torch.dev/v1alpha1',
     project: {
@@ -32,7 +33,16 @@ function initialFiles({ repository, projectId, createdAt }) {
     },
     synchronization: { strategy: 'dispatcher-managed', auto_merge_worktrees: false },
     session_manager: { id: 'session-manager', start_last: true },
-    domains: [],
+    domains: proposal.domains.map((domain) => ({
+      id: domain.id,
+      title: domain.title,
+      scope: domain.scope,
+      not_scope: domain.not_scope,
+      owned_paths: domain.owned_paths,
+      shared_paths: domain.shared_paths ?? [],
+      neighbours: domain.neighbours ?? [],
+      required_checks: domain.required_checks ?? [],
+    })),
   };
   const roster = {
     schema: 'torch.dev/roster/v1alpha1',
@@ -41,10 +51,10 @@ function initialFiles({ repository, projectId, createdAt }) {
       scope: ['routing', 'priority', 'ownership rulings', 'fleet health'],
       not_scope: ['project feature implementation by default'],
       neighbours: ['all'],
-    }],
+    }, ...config.domains],
   };
 
-  return new Map([
+  const files = new Map([
     ['torch.yaml', jsonYaml(config)],
     ['roster.yaml', jsonYaml(roster)],
     ['decisions.md', '# TORCH decisions\n\nNo project decisions recorded yet.\n'],
@@ -54,6 +64,32 @@ function initialFiles({ repository, projectId, createdAt }) {
     ['backlog/.gitkeep', ''],
     ['INSTALLATION.md', `# TORCH installation\n\nInstalled ${createdAt}. Run \`torch doctor\` before starting the fleet.\n`],
   ]);
+  for (const domain of config.domains) {
+    files.set(`prompts/${domain.id}.md`, [
+      `# ${domain.title}`,
+      '',
+      `Area ID: ${domain.id}`,
+      '',
+      '## Owns',
+      '',
+      ...domain.scope.map((item) => `- ${item}`),
+      '',
+      '## Does not own',
+      '',
+      ...(domain.not_scope.length ? domain.not_scope : ['No exclusions recorded.']).map((item) => `- ${item}`),
+      '',
+      '## Neighbours',
+      '',
+      ...(domain.neighbours.length ? domain.neighbours : ['None identified.']).map((item) => `- ${item}`),
+      '',
+      '## First move',
+      '',
+      'Query live ownership, read the assigned backlog item, and report current repository evidence to the Session Manager.',
+      '',
+    ].join('\n'));
+  }
+  files.set('domain-proposal.approved.json', jsonYaml(proposal));
+  return files;
 }
 
 function manifestPath(root) {
@@ -85,7 +121,8 @@ function safeProjectPath(root, relativePath) {
   return target;
 }
 
-export function planInstall({ repository, env = process.env }) {
+export function planInstall({ repository, proposal, env = process.env }) {
+  validateApprovedProposal({ proposal, repository });
   const trackedRoot = join(repository.root, TRACKED_DIR);
   return {
     action: 'install',
@@ -93,16 +130,19 @@ export function planInstall({ repository, env = process.env }) {
     trackedRoot,
     stateParent: join(projectStatePath('<new-project-id>', env), '..'),
     wouldCreateTrackedState: !existsSync(trackedRoot),
+    approvedDomainCount: proposal.domains.length,
     mutationPerformed: false,
   };
 }
 
 export function installProject({
   repository,
+  proposal,
   env = process.env,
   projectId = randomUUID(),
   now = () => new Date(),
 } = {}) {
+  validateApprovedProposal({ proposal, repository });
   const trackedRoot = join(repository.root, TRACKED_DIR);
   if (existsSync(trackedRoot)) {
     throw new TorchError(`Refusing to replace existing ${trackedRoot}`, {
@@ -120,7 +160,7 @@ export function installProject({
 
   const created = [];
   try {
-    for (const [path, content] of initialFiles({ repository, projectId, createdAt })) {
+    for (const [path, content] of initialFiles({ repository, projectId, createdAt, proposal })) {
       const absolute = join(trackedRoot, path);
       const record = writeNewFile(absolute, content);
       created.push({ path: relative(repository.root, record.path), sha256: record.sha256 });
