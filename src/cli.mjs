@@ -3,6 +3,7 @@ import { BacklogService } from './backlog/service.mjs';
 import { createClaudeAdapter } from './adapters/claude.mjs';
 import { createCodexAdapter } from './adapters/codex.mjs';
 import { CheckService } from './checks/service.mjs';
+import { startConsole } from './console/server.mjs';
 import { classifyRecoverability, createLocalCanonical, planLocalCanonical } from './canonical/local.mjs';
 import { openControlPlane } from './control-plane/service.mjs';
 import { spawnSync } from 'node:child_process';
@@ -21,6 +22,7 @@ import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
 import { planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lifecycle.mjs';
 import { ResourceService } from './resources/service.mjs';
 import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
+import { observeProject } from './observability/snapshot.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -76,6 +78,8 @@ Usage:
   torch upgrade --version <version> [--dry-run] --yes [--json]
   torch rollback [--dry-run] --yes [--json]
   torch import combatrig --source <path> [--output <path>] [--json]
+  torch console snapshot [--repo <path>] [--json]
+  torch console serve [--repo <path>] [--host <address>] [--port <n>]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -164,6 +168,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['capture-stop-resume', ['SCN-fleet-fresh-resume']],
     ['detach-uninstall', ['SCN-install-doctor-purge']],
     ['combatrig-compatibility', ['SCN-combatrig-import', 'SCN-cli-combatrig-import']],
+    ['product-surface', ['SCN-product-site', 'SCN-console-readonly']],
   ]);
   const scenarios = CANDIDATE_ACCEPTANCE_SCENARIOS.filter((scenario) =>
     (evidenceByScenario.get(scenario) ?? []).every((marker) => testOutput.includes(marker)));
@@ -284,6 +289,24 @@ export async function runCli(argv = process.argv.slice(2), {
         print({ proposal, output: path, mutationPerformed: true }, { json });
       } else print({ proposal, mutationPerformed: false }, { json });
       return proposal.compatibility.readyForApproval ? 0 : 1;
+    }
+    if (command === 'console') {
+      const operation = argv[1] ?? 'serve';
+      const root = resolve(cwd, optionValue(argv, '--repo') ?? '.');
+      if (operation === 'snapshot') {
+        print(observeProject({ repositoryRoot: root, env }), { json });
+        return 0;
+      }
+      if (operation === 'serve') {
+        const host = optionValue(argv, '--host') ?? '127.0.0.1';
+        const port = Number(optionValue(argv, '--port') ?? 4317);
+        if (!Number.isInteger(port) || port < 0 || port > 65535) {
+          throw new TorchError('Console port must be an integer from 0 through 65535', { code: 'CONSOLE_PORT_INVALID' });
+        }
+        startConsole({ repositoryRoot: root, env, host, port });
+        return 0;
+      }
+      throw new TorchError(`Unknown console operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
     }
     const designCommand = ['init', 'analyze', 'domains', 'design'].includes(command);
     const repositoryRoot = designCommand ? resolve(cwd, optionValue(argv, '--repo') ?? '.') : cwd;

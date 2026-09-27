@@ -1054,6 +1054,13 @@ not treat a smaller prompt as success when verification quality declined.
 Doctor output MUST distinguish observation from recommended action. Repair
 commands require explicit invocation and normal authority checks.
 
+Implementation checkpoint (2026-09-27): a read-only observation service and
+`torch console snapshot` now expose project, health, identity, message,
+backlog, check, resource, integration, schedule, and audit state without
+initializing a missing database. Context-locality output explicitly reports
+`unavailable` until runtime usage samples exist, preventing estimates from
+masquerading as measurements.
+
 ## 22. Scheduling
 
 TORCH recognizes two schedule classes.
@@ -1449,6 +1456,15 @@ COMBATRIG is safely installed and operated through portable TORCH.
 
 Exit gate: the public surface accurately demonstrates behavior proven by the
 released product.
+
+Implementation checkpoint (2026-09-27): the Nostr-era landing page and
+dashboard were removed. A new responsive public surface explains the
+request-to-main flow through an interactive dispatch board, publishes the
+current qualification ledger, and presents repository/spec-aware startup. A
+separate loopback Fleet Console consumes the read-only observation service,
+uses a restrictive content-security policy, and labels context locality as
+unmeasured until evidence arrives. Local HTTP, desktop, and mobile rendering
+are verified; public deployment and standalone distribution remain open.
 
 ## 29. Required acceptance configurations
 

@@ -142,6 +142,14 @@ test_integrity_note:
       given: a caller outside a selected Git repository with an external specification
       when: torch design is invoked with explicit repo and spec paths
       then: a pending project-specific proposal is produced without creating TORCH state in the project
+    - id: SCN-product-site
+      given: the redesigned TORCH public surface
+      when: its product story and local-console boundary are inspected
+      then: it explains project-derived fleets, exact-commit routing, honest open gates, and measured context claims without obsolete product language
+    - id: SCN-console-readonly
+      given: an installed Fleet without an initialized control-plane database
+      when: the observation API and local HTTP console are requested
+      then: fixed assets and structured state are served with restrictive headers while Git and machine-local state remain unchanged
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
@@ -150,6 +158,8 @@ test_integrity_note:
     - proposal review status, repository commit binding, and generated domain count
     - specification digest, evidence-linked responsibility, and stale-spec refusal
     - compatibility report counts and unchanged COMBATRIG Git status
+    - HTTP status, content-security policy, fixed routes, and traversal refusal
+    - unchanged Git status and absent database before and after console observation
     - preservation of project source and modified owner configuration
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
@@ -176,6 +186,7 @@ test_integrity_note:
     - injected post-pointer interruption with deterministic recovery timestamps
     - external temporary Markdown specification with no provider or network calls
     - synthetic COMBATRIG layout in an isolated temporary Git repository
+    - loopback-only ephemeral HTTP server and fixed static route map
   anti_cheat_rationale:
     prevents:
       - init that silently writes files
@@ -205,6 +216,8 @@ test_integrity_note:
       - specifications being executed as instructions or changing after owner review
       - generic fleet templates replacing project-derived responsibilities
       - COMBATRIG compatibility inventing path ownership to force a green migration
+      - a disconnected dashboard inventing state or creating it during observation
+      - public copy claiming live qualification that only virtualized tests prove
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

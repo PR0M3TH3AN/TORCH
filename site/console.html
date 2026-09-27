@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>TORCH Fleet Console</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/console.js" defer></script>
+</head>
+<body class="console-body">
+  <a class="skip-link" href="#console-main">Skip to fleet status</a>
+  <header class="masthead console-nav">
+    <a class="wordmark" href="/"><span class="mark">T</span> TORCH</a>
+    <p>Local Fleet Console</p>
+    <button id="refresh-console" type="button">Refresh snapshot</button>
+  </header>
+  <main id="console-main" class="console-shell" aria-live="polite">
+    <section class="console-summary">
+      <div><p>Project</p><strong id="project-name">Loading…</strong></div>
+      <div><p>Commit</p><strong id="project-commit">—</strong></div>
+      <div><p>Fleet health</p><strong id="fleet-health">Observing</strong></div>
+      <div><p>Context locality</p><strong id="context-state">Unmeasured</strong></div>
+    </section>
+    <p class="console-error" id="console-error" hidden></p>
+    <section class="console-grid">
+      <article class="console-panel agents-panel"><div class="panel-heading"><h1>Fleet</h1><span id="agent-count">0 identities</span></div><div id="agent-list" class="agent-list"></div></article>
+      <article class="console-panel"><div class="panel-heading"><h2>Backlog</h2><span id="task-count">0 active</span></div><div id="task-list" class="console-list"></div></article>
+      <article class="console-panel"><div class="panel-heading"><h2>Integration</h2><span>Exact commits</span></div><div id="integration-list" class="console-list"></div></article>
+      <article class="console-panel"><div class="panel-heading"><h2>Resources</h2><span>FIFO leases</span></div><div id="resource-list" class="console-list"></div></article>
+      <article class="console-panel messages-panel"><div class="panel-heading"><h2>Messages</h2><span id="message-count">0 queued</span></div><div id="message-list" class="console-list"></div></article>
+      <article class="console-panel context-panel"><div class="panel-heading"><h2>Context locality</h2><span>Measured, never assumed</span></div><div id="context-detail" class="context-detail"></div></article>
+    </section>
+  </main>
+</body>
+</html>

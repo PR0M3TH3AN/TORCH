@@ -52,10 +52,12 @@ and the first Claude reference-fleet path:
 - a read-only COMBATRIG compatibility importer that preserves legacy prompts,
   branch/worktree mappings, checks, resources, schedules, release boundaries,
   and backlog inventory while refusing to invent missing ownership boundaries.
+- a redesigned public product site and read-only local Fleet Console backed by
+  the same repository and runtime state rather than a separate dashboard model.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
-cutover, scheduling, richer observability, and the Fleet Console remain staged
-work.
+cutover, scheduling, richer measured context telemetry, and public deployment
+remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -175,6 +177,19 @@ This is still an alpha. Runtime lifecycle is scenario-tested with virtualized
 Claude and Codex boundaries. The tests make no paid provider calls. A live
 mixed-provider, multi-domain acceptance run remains an explicit
 owner-authorized qualification gate.
+
+Run the redesigned public surface and local operational console on loopback:
+
+```bash
+npm run site:serve -- --repo /path/to/project --port 4317
+```
+
+The public explanation is at `/`; `/console` reads Fleet state without repair
+or mutation. Automation can obtain the same read-only view with:
+
+```bash
+node bin/torch.mjs console snapshot --repo /path/to/project --json
+```
 
 ## Product principles
 
