@@ -25,6 +25,7 @@ import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-hos
 import { observeProject } from './observability/snapshot.mjs';
 import { ContextTelemetryService } from './telemetry/context.mjs';
 import { ScheduleService } from './schedules/service.mjs';
+import { assertLauncherDigest, ScheduleLauncherService } from './schedules/launcher.mjs';
 import { createFleetDesignBrief } from './design/brief.mjs';
 import {
   createArchitectRunPlan, loadArchitectArtifact, runSessionArchitect, validateArchitectProposal,
@@ -103,6 +104,7 @@ Usage:
   torch schedules runs [--id <schedule>] [--json]
   torch schedules plan --id <schedule> --actor <id|owner> [--json]
   torch schedules run --id <schedule> --actor <id|owner> [--yes] [--json]
+  torch schedules launcher <plan|status|install|remove> [--yes] [--json]
   torch fleet changes [--state <state>] [--json]
   torch fleet get --change <id> [--json]
   torch fleet propose --from session-manager --proposal <path> [--json]
@@ -747,11 +749,44 @@ export async function runCli(argv = process.argv.slice(2), {
     }
     if (command === 'schedules') {
       const operation = argv[1] ?? 'list';
+      if (operation === 'launcher') {
+        const launcherOperation = argv[2] ?? 'status';
+        const launcher = new ScheduleLauncherService({
+          repositoryRoot: repository.root, env,
+          command: [process.execPath, new URL('../bin/torch.mjs', import.meta.url).pathname],
+        });
+        if (launcherOperation === 'plan') {
+          const plan = launcher.plan();
+          print(plan, { json });
+          return plan.canProceed ? 0 : 1;
+        }
+        if (launcherOperation === 'status') {
+          print(launcher.status(), { json });
+          return 0;
+        }
+        if (!['install', 'remove'].includes(launcherOperation)) {
+          throw new TorchError(`Unknown schedule launcher operation: ${launcherOperation}`, { code: 'UNKNOWN_COMMAND' });
+        }
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Persistent schedule launcher changes user systemd state. Review the plan, then re-run with --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(launcherOperation === 'install' ? launcher.install() : launcher.remove(), { json });
+        return 0;
+      }
       const control = openControlPlane({ repositoryRoot: repository.root, env });
       try {
         const schedules = new ScheduleService({ repositoryRoot: repository.root, controlPlane: control });
         const scheduleId = optionValue(argv, '--id');
         const actorId = optionValue(argv, '--actor') ?? 'owner';
+        if (operation === 'dispatch-system') {
+          if (!argv.includes('--yes')) throw new TorchError('System schedule dispatch requires installed-launcher approval.', { code: 'APPROVAL_REQUIRED' });
+          assertLauncherDigest(repository.root, optionValue(argv, '--launcher-digest'));
+          const dispatched = schedules.dispatchSystem({ actorId: 'owner', approved: true });
+          print(dispatched, { json });
+          return dispatched.runs.every((run) => run.result === 'succeeded') ? 0 : 1;
+        }
         if (operation === 'list') print({ schedules: schedules.list({ actorId }) }, { json });
         else if (operation === 'runs') print({ runs: schedules.runs({ scheduleId }) }, { json });
         else if (operation === 'plan') print(schedules.plan({ scheduleId, actorId }), { json });

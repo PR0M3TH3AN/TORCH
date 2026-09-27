@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -8,8 +8,9 @@ import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
-import { installProject } from '../../src/kernel/install.mjs';
+import { installProject, planUninstall } from '../../src/kernel/install.mjs';
 import { ScheduleService } from '../../src/schedules/service.mjs';
+import { assertLauncherDigest, ScheduleLauncherService } from '../../src/schedules/launcher.mjs';
 
 const CLI = new URL('../../bin/torch.mjs', import.meta.url).pathname;
 
@@ -50,7 +51,11 @@ function fixture() {
   proposal.review = {
     status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
   };
-  const env = { ...process.env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-schedules-state-')) };
+  const env = {
+    ...process.env,
+    XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-schedules-state-')),
+    XDG_CONFIG_HOME: mkdtempSync(join(tmpdir(), 'torch-schedules-config-')),
+  };
   installProject({ repository, proposal, env, projectId: 'schedule-fixture' });
   return { root, env, worker };
 }
@@ -102,4 +107,62 @@ test('SCN-cli-schedules: public commands list, plan, and run a read-only session
   const executed = run(['schedules', 'run', '--id', 'fleet-hygiene', '--actor', 'session-manager']);
   assert.equal(executed.status, 0, executed.stderr || executed.stdout);
   assert.equal(JSON.parse(executed.stdout).stdout, 'healthy');
+});
+
+test('SCN-system-schedule-launcher: exact-config user units install, dispatch, and reverse safely', () => {
+  const context = fixture();
+  const systemctl = [];
+  const launcher = new ScheduleLauncherService({
+    repositoryRoot: context.root, env: context.env,
+    command: ['/opt/torch/node', '/opt/torch/bin/torch.mjs'],
+    executor: (command, args, options) => {
+      systemctl.push({ command, args, options });
+      return { status: 0, stdout: '', stderr: '' };
+    },
+  });
+  const plan = launcher.plan();
+  assert.equal(plan.canProceed, true);
+  assert.deepEqual(plan.systemSchedules, ['release']);
+  assert.equal(plan.files.every((file) => !existsSync(file.path)), true);
+
+  const installed = launcher.install();
+  assert.equal(installed.mutationPerformed, true);
+  assert.equal(installed.files.every((file) => existsSync(file.path)), true);
+  assert.match(readFileSync(installed.files[0].path, 'utf8'), new RegExp(installed.digest));
+  assert.deepEqual(systemctl.slice(0, 2).map((call) => call.args.slice(0, 2)), [
+    ['--user', 'daemon-reload'], ['--user', 'enable'],
+  ]);
+  assert.equal(launcher.status().stale, false);
+  assert.equal(planUninstall({ repository: inspectRepository(context.root), purge: true }).problems
+    .some((problem) => problem.type === 'persistent-integration-installed'), true);
+
+  const originalConfig = readFileSync(join(context.root, '.torch', 'torch.yaml'), 'utf8');
+  writeFileSync(join(context.root, '.torch', 'torch.yaml'), `${originalConfig.trimEnd()} \n`);
+  assert.throws(
+    () => assertLauncherDigest(context.root, installed.digest),
+    (error) => error.code === 'SCHEDULE_LAUNCHER_STALE',
+  );
+  writeFileSync(join(context.root, '.torch', 'torch.yaml'), originalConfig);
+
+  const removed = launcher.remove();
+  assert.equal(removed.mutationPerformed, true);
+  assert.equal(installed.files.every((file) => !existsSync(file.path)), true);
+  assert.equal(launcher.status().installed, false);
+
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  let at = new Date(2026, 8, 27, 16, 0, 0);
+  const executed = [];
+  const schedules = new ScheduleService({
+    repositoryRoot: context.root, controlPlane: control, clock: () => at,
+    executor: (command, args) => {
+      executed.push({ command, args });
+      return { status: 0, stdout: 'released', stderr: '' };
+    },
+  });
+  const first = schedules.dispatchSystem({ actorId: 'owner', approved: true, at });
+  assert.deepEqual(first.due, ['release']);
+  assert.equal(executed.length, 1);
+  at = new Date(2026, 8, 27, 16, 0, 30);
+  assert.deepEqual(schedules.dispatchSystem({ actorId: 'owner', approved: true, at }).due, []);
+  control.close();
 });

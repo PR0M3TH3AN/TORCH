@@ -59,7 +59,9 @@ and the first Claude reference-fleet path:
 - identity-bound context-usage telemetry that separates measurements from
   estimates and relates cost/cache behavior to verified work;
 - validated system/session schedules with shell-free actions, authority,
-  retries, durable run evidence, and explicit approval for mutation.
+  retries, durable run evidence, and explicit approval for mutation;
+- an owner-approved user-systemd launcher for system schedules, bound to the
+  exact tracked configuration digest and recorded for exact reversal.
 - durable Fleet evolution: the Session Manager can propose a justified new
   persistent domain, while owner approval gates the configuration commit,
   identity, prompt, branch, and worktree activation; it can also propose safe
@@ -67,8 +69,8 @@ and the first Claude reference-fleet path:
   branch and refusing live, dirty, guarded, leased, or active work.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
-cutover, persistent system-schedule launcher integration, and public deployment
-remain staged work.
+cutover, installation of the implemented system-schedule launcher on this
+machine, and public deployment remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).

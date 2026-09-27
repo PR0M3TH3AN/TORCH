@@ -287,6 +287,9 @@ export function planUninstall({ repository, purge = false }) {
       const state = inspectManagedWorktree(repository.root, entry, mainBranch);
       if (!state.safeToRemove) problems.push({ type: 'unsafe-worktree', path: entry.path, area: entry.area, problems: state.problems });
     }
+    if (entry.type === 'systemd-user-unit') {
+      problems.push({ type: 'persistent-integration-installed', path: entry.path, name: entry.name });
+    }
   }
   return {
     action: purge ? 'purge' : 'detach', manifest, problems,

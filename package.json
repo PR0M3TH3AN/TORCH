@@ -29,6 +29,7 @@
     "./observability": "./src/observability/snapshot.mjs",
     "./resources": "./src/resources/service.mjs",
     "./schedules": "./src/schedules/service.mjs",
+    "./schedules/launcher": "./src/schedules/launcher.mjs",
     "./runtime/lifecycle": "./src/runtime/lifecycle.mjs",
     "./self-host": "./src/self-host/service.mjs",
     "./telemetry/context": "./src/telemetry/context.mjs"

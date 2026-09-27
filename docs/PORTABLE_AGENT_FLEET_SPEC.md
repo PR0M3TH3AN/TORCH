@@ -1133,8 +1133,13 @@ fields. The service plans without mutation, blocks session schedules while the
 Session Manager is offline, requires explicit approval for mutating actions,
 records durable run evidence, retries deterministically, and reports failures
 through durable blocker messages. CLI and MCP surfaces share the service.
-Cron definitions currently require an external launcher; persistent timer
-installation remains open and will use the normal ownership manifest.
+System schedules can now use an owner-approved user-systemd launcher. The
+launcher dispatches once per minute, evaluates the validated cron/interval
+definitions in TORCH, suppresses duplicate minute runs, and refuses to run
+after tracked configuration changes because its command is bound to the exact
+configuration digest. Unit files are recorded in the installation ownership
+manifest and removal refuses changed files. Installing that persistent
+launcher on a real machine remains an explicit owner action.
 
 ## 23. Repository and forge operating modes
 

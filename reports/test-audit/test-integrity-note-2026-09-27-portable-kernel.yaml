@@ -186,6 +186,10 @@ test_integrity_note:
       given: system and session schedules with different owners, behavior, retries, and authority
       when: schedules are planned and executed through a virtualized shell-free runner
       then: offline sessions and unauthorized actors are blocked, mutation needs approval, failures retry exactly and notify durably, and each run is recorded
+    - id: SCN-system-schedule-launcher
+      given: an installed Fleet with an owner-approved system schedule
+      when: TORCH plans, installs, dispatches, detects drift, and removes its user-systemd launcher in a temporary config home
+      then: units are bound to the exact tracked config digest, duplicate minute dispatch is suppressed, systemctl is virtualized, ownership is manifest-recorded, and reversal removes only unchanged TORCH units
     - id: SCN-cli-schedules
       given: an installed Fleet with an active Session Manager and a read-only session schedule
       when: public CLI commands list, plan, and run it

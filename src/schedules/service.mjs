@@ -3,6 +3,39 @@ import { spawnSync } from 'node:child_process';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
 import { TorchError } from '../kernel/errors.mjs';
 
+function cronPartMatches(part, value, { sunday = false } = {}) {
+  return part.split(',').some((segment) => {
+    const [rangeText, stepText] = segment.split('/');
+    const step = stepText === undefined ? 1 : Number(stepText);
+    if (!Number.isInteger(step) || step < 1) return false;
+    const normalize = (number) => (sunday && number === 7 ? 0 : number);
+    if (rangeText === '*') return value % step === 0;
+    const [startText, endText] = rangeText.split('-');
+    const start = normalize(Number(startText));
+    const end = endText === undefined ? start : normalize(Number(endText));
+    if (!Number.isInteger(start) || !Number.isInteger(end) || value < start || value > end) return false;
+    return (value - start) % step === 0;
+  });
+}
+
+export function cronMatches(expression, at) {
+  const parts = expression.trim().split(/\s+/);
+  if (parts.length !== 5) return false;
+  const [minute, hour, day, month, weekday] = parts;
+  if (!cronPartMatches(minute, at.getMinutes()) || !cronPartMatches(hour, at.getHours())
+    || !cronPartMatches(month, at.getMonth() + 1)) return false;
+  const dayMatches = cronPartMatches(day, at.getDate());
+  const weekdayMatches = cronPartMatches(weekday, at.getDay(), { sunday: true });
+  if (day === '*' && weekday === '*') return true;
+  if (day === '*') return weekdayMatches;
+  if (weekday === '*') return dayMatches;
+  return dayMatches || weekdayMatches;
+}
+
+function sameMinute(left, right) {
+  return left && right && left.slice(0, 16) === right.slice(0, 16);
+}
+
 function text(value, field) {
   if (typeof value !== 'string' || !value.trim()) {
     throw new TorchError(`Schedule ${field} is required`, { code: 'SCHEDULE_CONFIG_INVALID', details: { field } });
@@ -125,7 +158,10 @@ export class ScheduleService {
       nextAt = new Date(Date.parse(lastRun.startedAt) + definition.trigger.seconds * 1000).toISOString();
       due = at.getTime() >= Date.parse(nextAt);
     }
-    if (definition.trigger.type === 'cron') due = 'external-launcher';
+    if (definition.trigger.type === 'cron') {
+      due = cronMatches(definition.trigger.expression, at)
+        && !sameMinute(lastRun?.startedAt, at.toISOString());
+    }
     return {
       schedule: definition, actorId, due, nextAt, blockers,
       canRun: blockers.length === 0, mutationPerformed: false,
@@ -174,5 +210,18 @@ export class ScheduleService {
 
   list({ actorId } = {}) {
     return [...this.definitions.values()].map((definition) => this.plan({ scheduleId: definition.id, actorId }));
+  }
+
+  dispatchSystem({ actorId = 'owner', approved = false, at = this.clock() } = {}) {
+    const considered = [...this.definitions.values()].filter((definition) => definition.lifetime === 'system');
+    const due = considered.filter((definition) => {
+      if (definition.trigger.type === 'manual') return false;
+      return this.plan({ scheduleId: definition.id, actorId, at }).due === true;
+    });
+    const runs = due.map((definition) => this.run({ scheduleId: definition.id, actorId, approved }));
+    return {
+      at: at.toISOString(), considered: considered.map((definition) => definition.id),
+      due: due.map((definition) => definition.id), runs, mutationPerformed: runs.length > 0,
+    };
   }
 }
