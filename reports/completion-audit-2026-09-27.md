@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited implementation commit: `bcbe2fc`
+Latest audited implementation commit: `2615fb0`
 
 ## Verdict
 
@@ -31,7 +31,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **59/59 PASS** against the tree committed as `bcbe2fc`.
+- `npm test`: **59/59 PASS** against the tree committed as `2615fb0`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -48,7 +48,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 0. Preserve and specify | Legacy branches `legacy/nostr-torch` and `legacy/development-network-v2`; rewrite branch; canonical spec and scenario inventory | Implemented locally | Owner product-boundary approval is represented by continuing this rewrite; no remote push was performed. |
 | 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
 | 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
-| 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
+| 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, and delivery-state separation; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP on create/resume without global config mutation, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Candidate isolation, acceptance receipts, side-by-side versions, atomic activation/reconciliation/rollback; self-host scenarios | Mechanics implemented | Install a stable TORCH outside this checkout and use it to manage/test/promote a candidate of this checkout. Persistent installation approval required. |
@@ -71,12 +71,21 @@ This is the intended general mechanism: TORCH does not copy COMBATRIG's roster.
 
 ### Dynamic fleet evolution
 
-The Session Manager can propose an evidence-backed domain through
-`torch_propose_domain` or `torch fleet propose`. The proposal records recurring
-work, expected context-locality benefit, and coordination cost. Workers cannot
+The Session Manager is prompted at startup and after recurring boundary
+friction to call `torch_assess_fleet_evolution` (or `torch fleet assess`). This
+read-only, manager-only assessment collects active backlog, repeated unowned
+path handoffs, recurring multi-domain work, coordination requests, and pending
+Fleet changes. It can recommend considering a new domain, but it neither
+creates a proposal nor treats its threshold as an architectural decision.
+
+After inspecting repository evidence and coordination cost, the Session
+Manager can propose an evidence-backed domain through `torch_propose_domain`
+or `torch fleet propose`. The proposal records recurring work, expected
+context-locality benefit, and coordination cost. Workers cannot assess or
 propose; the owner separately approves; activation commits configuration,
 prompt, roster and manifest state, creates a branch/worktree, refreshes the
-existing control plane, and permits starting only the new identity.
+existing control plane, and permits starting only the new identity. Runtime
+start remains a separate explicit provider-quota action.
 
 The Session Manager can also propose retirement through
 `torch_propose_domain_retirement` or `torch fleet propose-retirement`.
