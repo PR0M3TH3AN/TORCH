@@ -32,8 +32,19 @@ routeButton?.addEventListener('click', () => {
 });
 
 const commands = {
-  both: `node bin/torch.mjs design \\\n+  --repo /path/to/project \\\n+  --spec /path/to/product-spec.md \\\n+  --output fleet-proposal.json \\\n+  --json`,
-  repo: `node bin/torch.mjs design \\\n+  --repo /path/to/project \\\n+  --output fleet-proposal.json \\\n+  --json`,
+  both: [
+    'node bin/torch.mjs bootstrap \\',
+    '  --repo /path/to/project \\',
+    '  --spec /path/to/product-spec.md \\',
+    '  --output fleet-design-brief.json \\',
+    '  --json',
+  ].join('\n'),
+  repo: [
+    'node bin/torch.mjs bootstrap \\',
+    '  --repo /path/to/project \\',
+    '  --output fleet-design-brief.json \\',
+    '  --json',
+  ].join('\n'),
 };
 const command = document.querySelector('#start-command');
 document.querySelectorAll('[data-command]').forEach((button) => button.addEventListener('click', () => {

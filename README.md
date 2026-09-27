@@ -98,6 +98,12 @@ node bin/torch.mjs analyze \
   --spec /path/to/product-spec.md \
   --json
 
+node bin/torch.mjs bootstrap \
+  --repo /path/to/project \
+  --spec /path/to/product-spec.md \
+  --output fleet-design-brief.json \
+  --json
+
 node bin/torch.mjs design \
   --repo /path/to/project \
   --spec /path/to/product-spec.md \
@@ -111,6 +117,14 @@ contents, and records their SHA-256 digests. A prose-only project can receive a
 responsibility-oriented fleet proposal before source exists, but unresolved
 path ownership remains visibly blocked for owner review. Installation refuses
 a proposal if a selected specification has changed since design.
+
+`torch bootstrap` is the provider-independent AI entrypoint. It produces a
+bounded Session Architect brief containing reconnaissance, specification
+evidence, the deterministic baseline, unassigned components, unresolved
+ownership, collision questions, and the required pending-proposal contract. A
+Codex, Claude, or other planning session can reason over that artifact without
+TORCH choosing a provider or incurring an implicit model call. `torch design`
+remains the deterministic baseline and fallback.
 
 Import an existing COMBATRIG fleet into the same pending-review proposal
 format without changing the source repository:

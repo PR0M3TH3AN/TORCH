@@ -475,6 +475,13 @@ Cross-cutting roles such as QA, performance, security, release, architecture,
 documentation, design direction, migration, or operations are created only
 when repository evidence and project goals justify them.
 
+`torch bootstrap` MUST expose reconnaissance to an AI Session Architect
+without binding TORCH to one model vendor. The brief MUST include the
+deterministic baseline, unassigned components, specification signals,
+unresolved ownership, collision questions, a trust boundary, and the required
+pending-proposal contract. Producing the brief MUST NOT itself call a paid
+provider, execute project content, or approve the resulting organization.
+
 ### 10.4 Collision analysis
 
 For every proposed pair of domains, TORCH MUST identify likely collisions:
@@ -1384,6 +1391,11 @@ fixture demonstrates project-specific responsibilities with intentionally
 unresolved path ownership; a separate repository fixture continues to prove
 code-derived architecture and collision boundaries. Both paths remain
 read-only until an approved install.
+
+`torch bootstrap` now emits the provider-independent Session Architect brief.
+Its scenario proves that a mixed code/spec project exposes omitted components
+and unmatched goals for AI reasoning, forbids copying COMBATRIG or a generic
+catalog, and preserves owner-only approval without mutating the project.
 
 ### Stage 3: Claude reference fleet
 

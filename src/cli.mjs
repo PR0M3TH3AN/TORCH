@@ -25,6 +25,7 @@ import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-hos
 import { observeProject } from './observability/snapshot.mjs';
 import { ContextTelemetryService } from './telemetry/context.mjs';
 import { ScheduleService } from './schedules/service.mjs';
+import { createFleetDesignBrief } from './design/brief.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -32,6 +33,7 @@ Usage:
   torch init [--repo <path>] [--spec <path>] [--json]
   torch analyze [--repo <path>] [--spec <path>] [--json]
   torch design [--repo <path>] [--spec <path>] [--output <path>] [--json]
+  torch bootstrap [--repo <path>] [--spec <path>] [--output <path>] [--json]
   torch domains [--repo <path>] [--spec <path>] [--output <path>] [--json]
   torch install --proposal <path> [--dry-run] [--yes] [--json]
   torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
@@ -165,6 +167,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
   const evidenceByScenario = new Map([
     ['init-analyze', ['SCN-init-read-only']],
     ['spec-aware-design', ['SCN-spec-fleet-design', 'SCN-cli-spec-design']],
+    ['ai-fleet-bootstrap', ['SCN-ai-fleet-bootstrap']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -317,7 +320,7 @@ export async function runCli(argv = process.argv.slice(2), {
       }
       throw new TorchError(`Unknown console operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
     }
-    const designCommand = ['init', 'analyze', 'domains', 'design'].includes(command);
+    const designCommand = ['init', 'analyze', 'domains', 'design', 'bootstrap'].includes(command);
     const repositoryRoot = designCommand ? resolve(cwd, optionValue(argv, '--repo') ?? '.') : cwd;
     const repository = inspectRepository(repositoryRoot);
     if (command === 'init' || command === 'analyze') {
@@ -327,23 +330,26 @@ export async function runCli(argv = process.argv.slice(2), {
       const analysis = analyzeRepository(repository, { specifications });
       print({
         command, repository, analysis,
-        next: 'Run torch design with the same repository/specification inputs, review its proposal, then install.',
+        next: 'Run torch bootstrap with the same inputs for an AI Session Architect brief, or torch design for the deterministic baseline. Review the resulting proposal before install.',
       }, { json });
       return 0;
     }
-    if (command === 'domains' || command === 'design') {
+    if (command === 'domains' || command === 'design' || command === 'bootstrap') {
       const specifications = inspectSpecifications(optionValues(argv, '--spec'), {
         cwd, repositoryRoot: repository.root,
       });
       const analysis = analyzeRepository(repository, { specifications });
       const proposal = proposeDomains({ repository, analysis });
+      const artifact = command === 'bootstrap'
+        ? createFleetDesignBrief({ repository, analysis, baseline: proposal })
+        : proposal;
       const output = optionValue(argv, '--output');
       if (output) {
         const path = resolve(cwd, output);
-        writeNewFile(path, `${JSON.stringify(proposal, null, 2)}\n`);
-        print({ proposal, output: path, mutationPerformed: true }, { json });
+        writeNewFile(path, `${JSON.stringify(artifact, null, 2)}\n`);
+        print({ [command === 'bootstrap' ? 'brief' : 'proposal']: artifact, output: path, mutationPerformed: true }, { json });
       } else {
-        print({ proposal, mutationPerformed: false }, { json });
+        print({ [command === 'bootstrap' ? 'brief' : 'proposal']: artifact, mutationPerformed: false }, { json });
       }
       return 0;
     }

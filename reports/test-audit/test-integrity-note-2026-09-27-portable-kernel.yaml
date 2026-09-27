@@ -142,6 +142,10 @@ test_integrity_note:
       given: a caller outside a selected Git repository with an external specification
       when: torch design is invoked with explicit repo and spec paths
       then: a pending project-specific proposal is produced without creating TORCH state in the project
+    - id: SCN-ai-fleet-bootstrap
+      given: a mixed repository and an external prose specification
+      when: torch bootstrap prepares the provider-independent Session Architect input
+      then: repository evidence, omitted components, unmatched specification signals, trust boundaries, and the pending output contract remain explicit without mutating the project
     - id: SCN-product-site
       given: the redesigned TORCH public surface
       when: its product story and local-console boundary are inspected
@@ -169,6 +173,7 @@ test_integrity_note:
     - CLI exit status and structured error code
     - proposal review status, repository commit binding, and generated domain count
     - specification digest, evidence-linked responsibility, and stale-spec refusal
+    - bootstrap trust boundary, unassigned components, unmatched specification signals, and pending output contract
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
     - unchanged Git status and absent database before and after console observation
@@ -230,6 +235,8 @@ test_integrity_note:
       - interrupted pointer swaps leaving version metadata ambiguous
       - specifications being executed as instructions or changing after owner review
       - generic fleet templates replacing project-derived responsibilities
+      - a code-layout heuristic being presented as AI architectural judgment
+      - bootstrap silently calling a paid model or copying COMBATRIG domains
       - COMBATRIG compatibility inventing path ownership to force a green migration
       - a disconnected dashboard inventing state or creating it during observation
       - public copy claiming live qualification that only virtualized tests prove

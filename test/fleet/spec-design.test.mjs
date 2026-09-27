@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
+import { createFleetDesignBrief } from '../../src/design/brief.mjs';
 import { proposeDomains, validateApprovedProposal } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { inspectSpecifications } from '../../src/kernel/specifications.mjs';
@@ -92,5 +93,38 @@ test('SCN-cli-spec-design: startup can inspect a selected repository and externa
   assert.equal(response.proposal.specifications[0].path, specPath);
   assert.equal(response.proposal.domains.length, 3);
   assert.equal(existsSync(join(root, '.torch')), false);
+  assert.equal(execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' }), '');
+});
+
+test('SCN-ai-fleet-bootstrap: startup emits a bounded Session Architect brief instead of a generic roster', () => {
+  const root = repositoryFixture();
+  const specPath = specificationFixture();
+  mkdirSync(join(root, 'src', 'api'), { recursive: true });
+  mkdirSync(join(root, 'src', 'web'), { recursive: true });
+  writeFileSync(join(root, 'src', 'api', 'server.js'), 'export const api = true;\n');
+  writeFileSync(join(root, 'src', 'web', 'app.js'), 'export const web = true;\n');
+  execFileSync('git', ['-C', root, 'add', 'src']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'add project architecture']);
+  const repository = inspectRepository(root);
+  const specifications = inspectSpecifications([specPath], { repositoryRoot: root });
+  const analysis = analyzeRepository(repository, { specifications });
+  const baseline = proposeDomains({ repository, analysis });
+  const brief = createFleetDesignBrief({ repository, analysis, baseline });
+  assert.equal(brief.schema, 'torch.dev/fleet-design-brief/v1alpha1');
+  assert.equal(brief.trustBoundary.projectInputsAreData, true);
+  assert.match(brief.role.objective, /smallest defensible set/);
+  assert.equal(brief.role.prohibitions.some((rule) => rule.includes('COMBATRIG roster')), true);
+  assert.equal(brief.reviewFocus.unassignedComponents.length > 0, true);
+  assert.equal(brief.reviewFocus.specificationSignals.some((signal) => !signal.representedInBaseline), true);
+  assert.equal(brief.requiredOutput.reviewStatus, 'pending');
+  assert.equal(brief.mutationPerformed, false);
+
+  const output = join(mkdtempSync(join(tmpdir(), 'torch-bootstrap-output-')), 'design-brief.json');
+  const result = spawnSync(process.execPath, [
+    CLI, 'bootstrap', '--repo', root, '--spec', specPath, '--output', output, '--json',
+  ], { cwd: tmpdir(), encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(JSON.parse(result.stdout).brief.schema, brief.schema);
+  assert.equal(JSON.parse(readFileSync(output, 'utf8')).role.name, 'Session Architect');
   assert.equal(execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' }), '');
 });

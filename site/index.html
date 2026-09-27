@@ -108,17 +108,17 @@
     <section class="start-section" id="start">
       <div>
         <h2>Start with the work you actually have.</h2>
-        <p>Point TORCH at a Git repository, a product specification, or both. Design is read-only; installation waits for your reviewed proposal.</p>
+        <p>Point TORCH at a Git repository, a product specification, or both. Bootstrap gives your Session Architect AI a bounded evidence brief; installation waits for your reviewed proposal.</p>
       </div>
       <div class="command-panel">
         <div class="command-tabs" role="tablist" aria-label="Startup input">
           <button role="tab" aria-selected="true" data-command="both">Repository + spec</button>
           <button role="tab" aria-selected="false" data-command="repo">Repository only</button>
         </div>
-        <pre><code id="start-command">node bin/torch.mjs design \
+        <pre><code id="start-command">node bin/torch.mjs bootstrap \
   --repo /path/to/project \
   --spec /path/to/product-spec.md \
-  --output fleet-proposal.json \
+  --output fleet-design-brief.json \
   --json</code></pre>
         <button class="copy-button" id="copy-command" type="button">Copy command</button>
       </div>

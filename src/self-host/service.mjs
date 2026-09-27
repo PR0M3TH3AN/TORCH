@@ -10,6 +10,7 @@ import { torchDataHome } from '../kernel/paths.mjs';
 export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'init-analyze',
   'spec-aware-design',
+  'ai-fleet-bootstrap',
   'review-install-roster',
   'branches-worktrees',
   'runtime-identities',
