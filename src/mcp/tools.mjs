@@ -47,6 +47,12 @@ export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   'torch_authorize_integration',
   'torch_plan_integration_landing',
   'torch_land_integration',
+  'torch_record_context_usage',
+  'torch_context_report',
+  'torch_list_schedules',
+  'torch_schedule_runs',
+  'torch_plan_schedule',
+  'torch_run_schedule',
 ]);
 
 function claimedIdentity(controlPlane, actorId, claim, field) {
@@ -65,7 +71,7 @@ function claimedIdentity(controlPlane, actorId, claim, field) {
 }
 
 export function createTorchToolset(controlPlane, {
-  actorId, backlogService, checkService, resourceService, integrationService,
+  actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
 } = {}) {
   const tools = new Map([
     ['torch_identity', {
@@ -330,6 +336,61 @@ export function createTorchToolset(controlPlane, {
       }),
     });
   }
+  if (contextTelemetryService) {
+    tools.set('torch_record_context_usage', {
+      description: 'Record measured or explicitly estimated context usage for the bound Fleet identity and its verified outcomes.',
+      schema: {
+        area_id: z.string().min(1).optional(), source: z.string().min(1), measurement: z.enum(['measured', 'estimated']),
+        runtime: z.string().min(1).optional(), runtime_session_id: z.string().min(1).optional(),
+        task: z.string().min(1).optional(), commit: z.string().min(1).optional(),
+        cached_input: z.number().int().nonnegative().optional(), uncached_input: z.number().int().nonnegative().optional(),
+        cache_creation: z.number().int().nonnegative().optional(), cache_read: z.number().int().nonnegative().optional(),
+        compactions: z.number().int().nonnegative().optional(), resumed_prompt_bytes: z.number().int().nonnegative().optional(),
+        cost_microusd: z.number().int().nonnegative().optional(), verified_items: z.number().int().nonnegative().optional(),
+      },
+      invoke: ({
+        area_id: areaId, runtime_session_id: runtimeSessionId, cached_input: cachedInput,
+        uncached_input: uncachedInput, cache_creation: cacheCreation, cache_read: cacheRead,
+        resumed_prompt_bytes: resumedPromptBytes, cost_microusd: costMicrousd,
+        verified_items: verifiedItems, ...input
+      }) => contextTelemetryService.record({
+        ...input, runtimeSessionId, cachedInput, uncachedInput, cacheCreation, cacheRead,
+        resumedPromptBytes, costMicrousd, verifiedItems,
+        areaId: claimedIdentity(controlPlane, actorId, areaId, 'area_id'),
+      }),
+    });
+    tools.set('torch_context_report', {
+      description: 'Aggregate context locality by Fleet identity while keeping measured and estimated evidence separate.',
+      schema: {
+        area_id: z.string().min(1).optional(), task: z.string().min(1).optional(),
+        commit: z.string().min(1).optional(), measurement: z.enum(['measured', 'estimated']).optional(),
+      },
+      invoke: ({ area_id: areaId, ...input }) => contextTelemetryService.report({
+        ...input, areaId: areaId ? claimedIdentity(controlPlane, actorId, areaId, 'area_id') : actorId,
+      }),
+    });
+  }
+  if (scheduleService) {
+    tools.set('torch_list_schedules', {
+      description: 'List validated schedules and their current authority, lifetime, and due status.',
+      schema: {}, invoke: () => ({ schedules: scheduleService.list({ actorId }) }),
+    });
+    tools.set('torch_schedule_runs', {
+      description: 'List durable run evidence for configured schedules.',
+      schema: { schedule_id: z.string().min(1).optional(), limit: z.number().int().min(1).max(1000).optional() },
+      invoke: ({ schedule_id: scheduleId, limit }) => ({ runs: scheduleService.runs({ scheduleId, limit }) }),
+    });
+    tools.set('torch_plan_schedule', {
+      description: 'Preview a configured schedule and its blockers without executing it.',
+      schema: { schedule_id: z.string().min(1) },
+      invoke: ({ schedule_id: scheduleId }) => scheduleService.plan({ scheduleId, actorId }),
+    });
+    tools.set('torch_run_schedule', {
+      description: 'Run a read-only configured schedule as the bound Fleet identity. Mutating schedules require owner CLI approval.',
+      schema: { schedule_id: z.string().min(1) },
+      invoke: ({ schedule_id: scheduleId }) => scheduleService.run({ scheduleId, actorId, approved: false }),
+    });
+  }
   return tools;
 }
 
@@ -341,7 +402,7 @@ export function callTorchTool(controlPlane, name, input = {}, options = {}) {
 }
 
 export function createTorchMcpServer(controlPlane, {
-  actorId, backlogService, checkService, resourceService, integrationService,
+  actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
 } = {}) {
   controlPlane.assertIdentity(actorId);
   const server = new McpServer(
@@ -351,7 +412,7 @@ export function createTorchMcpServer(controlPlane, {
     },
   );
   for (const [name, tool] of createTorchToolset(controlPlane, {
-    actorId, backlogService, checkService, resourceService, integrationService,
+    actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
   })) {
     server.registerTool(name, { description: tool.description, inputSchema: tool.schema }, async (input) => {
       try {

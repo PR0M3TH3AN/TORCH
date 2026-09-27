@@ -23,6 +23,8 @@ import { planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lif
 import { ResourceService } from './resources/service.mjs';
 import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
 import { observeProject } from './observability/snapshot.mjs';
+import { ContextTelemetryService } from './telemetry/context.mjs';
+import { ScheduleService } from './schedules/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -80,6 +82,12 @@ Usage:
   torch import combatrig --source <path> [--output <path>] [--json]
   torch console snapshot [--repo <path>] [--json]
   torch console serve [--repo <path>] [--host <address>] [--port <n>]
+  torch context report [--area <id>] [--task <id>] [--commit <sha>] [--measurement <class>] [--json]
+  torch context record --area <id> --source <text> --measurement <measured|estimated> [usage fields] [--json]
+  torch schedules list [--actor <id|owner>] [--json]
+  torch schedules runs [--id <schedule>] [--json]
+  torch schedules plan --id <schedule> --actor <id|owner> [--json]
+  torch schedules run --id <schedule> --actor <id|owner> [--yes] [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -169,6 +177,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['detach-uninstall', ['SCN-install-doctor-purge']],
     ['combatrig-compatibility', ['SCN-combatrig-import', 'SCN-cli-combatrig-import']],
     ['product-surface', ['SCN-product-site', 'SCN-console-readonly']],
+    ['operations-observability', ['SCN-context-locality', 'SCN-schedule-boundaries', 'SCN-cli-schedules']],
   ]);
   const scenarios = CANDIDATE_ACCEPTANCE_SCENARIOS.filter((scenario) =>
     (evidenceByScenario.get(scenario) ?? []).every((marker) => testOutput.includes(marker)));
@@ -553,6 +562,51 @@ export async function runCli(argv = process.argv.slice(2), {
           blockedReason: optionValue(argv, '--reason'), note: optionValue(argv, '--note'),
         }), { json });
         else throw new TorchError(`Unknown backlog operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'context') {
+      const operation = argv[1] ?? 'report';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const telemetry = new ContextTelemetryService({ controlPlane: control });
+        if (operation === 'report') print(telemetry.report({
+          areaId: optionValue(argv, '--area'), task: optionValue(argv, '--task'),
+          commit: optionValue(argv, '--commit'), measurement: optionValue(argv, '--measurement'),
+        }), { json });
+        else if (operation === 'record') print(telemetry.record({
+          areaId: optionValue(argv, '--area'), source: optionValue(argv, '--source'),
+          measurement: optionValue(argv, '--measurement'), runtime: optionValue(argv, '--runtime'),
+          runtimeSessionId: optionValue(argv, '--session'), task: optionValue(argv, '--task'),
+          commit: optionValue(argv, '--commit'), cachedInput: optionValue(argv, '--cached-input'),
+          uncachedInput: optionValue(argv, '--uncached-input'), cacheCreation: optionValue(argv, '--cache-creation'),
+          cacheRead: optionValue(argv, '--cache-read'), compactions: optionValue(argv, '--compactions'),
+          resumedPromptBytes: optionValue(argv, '--resumed-prompt-bytes'), costMicrousd: optionValue(argv, '--cost-microusd'),
+          verifiedItems: optionValue(argv, '--verified-items'),
+        }), { json });
+        else throw new TorchError(`Unknown context operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'schedules') {
+      const operation = argv[1] ?? 'list';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const schedules = new ScheduleService({ repositoryRoot: repository.root, controlPlane: control });
+        const scheduleId = optionValue(argv, '--id');
+        const actorId = optionValue(argv, '--actor') ?? 'owner';
+        if (operation === 'list') print({ schedules: schedules.list({ actorId }) }, { json });
+        else if (operation === 'runs') print({ runs: schedules.runs({ scheduleId }) }, { json });
+        else if (operation === 'plan') print(schedules.plan({ scheduleId, actorId }), { json });
+        else if (operation === 'run') {
+          const result = schedules.run({ scheduleId, actorId, approved: argv.includes('--yes') });
+          print(result, { json });
+          return result.result === 'succeeded' ? 0 : 1;
+        } else throw new TorchError(`Unknown schedules operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
         return 0;
       } finally {
         control.close();

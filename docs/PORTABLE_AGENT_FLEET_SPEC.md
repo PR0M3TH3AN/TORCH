@@ -1061,6 +1061,13 @@ initializing a missing database. Context-locality output explicitly reports
 `unavailable` until runtime usage samples exist, preventing estimates from
 masquerading as measurements.
 
+Identity-bound context telemetry now accepts provider measurements or explicit
+estimates, never an unlabeled mixture. It records cached and uncached input,
+cache creation and reads, compactions, resumed prompt size, micro-USD cost,
+task/commit references, and verified item counts. Reports keep evidence classes
+separate, derive cache-read ratio and cost per verified item, and warn when
+usage has no verified outcome.
+
 ## 22. Scheduling
 
 TORCH recognizes two schedule classes.
@@ -1085,6 +1092,16 @@ Every schedule MUST declare:
 
 Schedules MUST be generated or validated from machine-readable configuration
 so launcher code and prose cannot silently disagree.
+
+Implementation checkpoint (2026-09-27): installed configuration carries
+validated system and session schedules with owner, trigger, behavior,
+shell-free action, authority, retry, failure recipient, and source-of-truth
+fields. The service plans without mutation, blocks session schedules while the
+Session Manager is offline, requires explicit approval for mutating actions,
+records durable run evidence, retries deterministically, and reports failures
+through durable blocker messages. CLI and MCP surfaces share the service.
+Cron definitions currently require an external launcher; persistent timer
+installation remains open and will use the normal ownership manifest.
 
 ## 23. Repository and forge operating modes
 

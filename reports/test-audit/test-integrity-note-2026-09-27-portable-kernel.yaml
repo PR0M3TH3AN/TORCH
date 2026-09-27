@@ -150,6 +150,18 @@ test_integrity_note:
       given: an installed Fleet without an initialized control-plane database
       when: the observation API and local HTTP console are requested
       then: fixed assets and structured state are served with restrictive headers while Git and machine-local state remain unchanged
+    - id: SCN-context-locality
+      given: measured provider usage and a separate heuristic estimate for one persistent Fleet identity
+      when: CLI and identity-bound MCP record and aggregate the samples
+      then: evidence classes stay separate, forged identities fail, and cache ratio plus cost per verified item are derived without calling zero-output usage efficient
+    - id: SCN-schedule-boundaries
+      given: system and session schedules with different owners, behavior, retries, and authority
+      when: schedules are planned and executed through a virtualized shell-free runner
+      then: offline sessions and unauthorized actors are blocked, mutation needs approval, failures retry exactly and notify durably, and each run is recorded
+    - id: SCN-cli-schedules
+      given: an installed Fleet with an active Session Manager and a read-only session schedule
+      when: public CLI commands list, plan, and run it
+      then: the same validated definition executes without shell interpretation and emits durable run evidence
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
@@ -160,6 +172,8 @@ test_integrity_note:
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
     - unchanged Git status and absent database before and after console observation
+    - measured and estimated context groups, cache-read ratio, and cost per verified item
+    - schedule plan blockers, subprocess shell flag, retry count, and durable failure message
     - preservation of project source and modified owner configuration
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
@@ -187,6 +201,7 @@ test_integrity_note:
     - external temporary Markdown specification with no provider or network calls
     - synthetic COMBATRIG layout in an isolated temporary Git repository
     - loopback-only ephemeral HTTP server and fixed static route map
+    - injected schedule executor, fixed clock, bounded retries, and no sleeps
   anti_cheat_rationale:
     prevents:
       - init that silently writes files
@@ -218,6 +233,9 @@ test_integrity_note:
       - COMBATRIG compatibility inventing path ownership to force a green migration
       - a disconnected dashboard inventing state or creating it during observation
       - public copy claiming live qualification that only virtualized tests prove
+      - estimated token counts being presented as provider measurements
+      - low token use being called efficient without a verified outcome
+      - schedule prose diverging from executable definitions or mutating without approval
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

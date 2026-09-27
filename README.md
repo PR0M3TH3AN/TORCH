@@ -54,9 +54,13 @@ and the first Claude reference-fleet path:
   and backlog inventory while refusing to invent missing ownership boundaries.
 - a redesigned public product site and read-only local Fleet Console backed by
   the same repository and runtime state rather than a separate dashboard model.
+- identity-bound context-usage telemetry that separates measurements from
+  estimates and relates cost/cache behavior to verified work;
+- validated system/session schedules with shell-free actions, authority,
+  retries, durable run evidence, and explicit approval for mutation.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
-cutover, scheduling, richer measured context telemetry, and public deployment
+cutover, persistent system-schedule launcher integration, and public deployment
 remain staged work.
 
 The canonical architecture and delivery plan is
@@ -190,6 +194,28 @@ or mutation. Automation can obtain the same read-only view with:
 ```bash
 node bin/torch.mjs console snapshot --repo /path/to/project --json
 ```
+
+Runtime adapters and agents can report cache locality without conflating
+provider measurements and estimates:
+
+```bash
+torch context record --area backend --source provider-response \
+  --measurement measured --cache-read 24000 --uncached-input 6000 \
+  --cost-microusd 420000 --verified-items 1 --json
+torch context report --area backend --json
+```
+
+Configured schedules remain machine-readable and authority-gated:
+
+```bash
+torch schedules list --actor session-manager --json
+torch schedules plan --id fleet-hygiene --actor session-manager --json
+torch schedules run --id fleet-hygiene --actor session-manager --json
+```
+
+Mutating schedules additionally require `--yes`. Cron definitions are exposed
+for an external system launcher; TORCH does not silently install persistent
+timers.
 
 ## Product principles
 

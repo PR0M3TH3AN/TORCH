@@ -47,6 +47,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
     },
     checks: proposal.checks ?? [],
     resources: proposal.resources ?? [],
+    schedules: proposal.schedules ?? [],
     integration: {
       provider: 'torch', target: repository.branch || 'main', require_current_main: true,
       required_checks: (proposal.checks ?? []).map((check) => check.id),

@@ -38,6 +38,7 @@ function releaseCandidate(root, version) {
     'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',
     'SCN-combatrig-import', 'SCN-cli-combatrig-import',
     'SCN-product-site', 'SCN-console-readonly',
+    'SCN-context-locality', 'SCN-schedule-boundaries', 'SCN-cli-schedules',
   ].join('\n'))});\n`);
   writeFileSync(join(candidateRoot, 'package.json'), `${JSON.stringify({
     name: 'torch-agent-fleet', version, bin: { torch: 'bin/torch.mjs' },

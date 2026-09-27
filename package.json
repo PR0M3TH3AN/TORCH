@@ -23,8 +23,10 @@
     "./mcp": "./src/mcp/tools.mjs",
     "./observability": "./src/observability/snapshot.mjs",
     "./resources": "./src/resources/service.mjs",
+    "./schedules": "./src/schedules/service.mjs",
     "./runtime/lifecycle": "./src/runtime/lifecycle.mjs",
-    "./self-host": "./src/self-host/service.mjs"
+    "./self-host": "./src/self-host/service.mjs",
+    "./telemetry/context": "./src/telemetry/context.mjs"
   },
   "bin": {
     "torch": "./bin/torch.mjs",
@@ -62,7 +64,9 @@
     "src/observability/",
     "src/resources/",
     "src/runtime/",
+    "src/schedules/",
     "src/self-host/",
+    "src/telemetry/",
     "docs/PORTABLE_AGENT_FLEET_SPEC.md",
     "README.md",
     "LICENSE",
@@ -74,8 +78,8 @@
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs && node --check src/console/server.mjs && node --check site/app.js && node --check site/console.js",
     "site:serve": "node bin/torch.mjs console serve",
-    "format": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs site/*.js test/fleet --fix",
-    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs site/*.js test/fleet"
+    "format": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet --fix",
+    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",

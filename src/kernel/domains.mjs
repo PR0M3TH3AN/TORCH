@@ -314,6 +314,7 @@ export function proposeDomains({ repository, analysis }) {
     resources: analysis.inventory.scarceResources.map((id) => ({
       id, capacity: 1, queue: 'fifo', max_hold_seconds: 3600,
     })),
+    schedules: [],
     architecture: graph,
   };
 }
@@ -359,6 +360,14 @@ export function validateApprovedProposal({ proposal, repository }) {
   }
   for (const collision of proposal?.collisions ?? []) {
     if (!collision.resolution?.strategy) problems.push(`collision ${collision.domains?.join('/')} has no resolution`);
+  }
+  for (const schedule of proposal?.schedules ?? []) {
+    if (!schedule.id || !['system', 'session'].includes(schedule.lifetime)
+      || !['read-only', 'mutating'].includes(schedule.behavior)
+      || !schedule.owner || !schedule.trigger || !schedule.action
+      || !schedule.required_authority?.length || !schedule.source_of_truth) {
+      problems.push(`schedule ${schedule.id ?? '<missing>'} is incomplete`);
+    }
   }
   if (proposal?.session_manager?.worktree_name !== undefined
     && proposal.session_manager.worktree_name !== null

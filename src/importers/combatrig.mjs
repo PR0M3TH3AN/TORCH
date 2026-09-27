@@ -139,6 +139,22 @@ export function analyzeCombatrigFleet({ repository } = {}) {
   const checks = packageChecks(root);
   const operationsPath = join(root, 'docs', 'agents', 'OPERATIONS.md');
   const operations = existsSync(operationsPath) ? readFileSync(operationsPath, 'utf8') : '';
+  const schedules = [
+    {
+      id: 'release', title: 'Owner-approved release', owner: 'owner', lifetime: 'system',
+      trigger: { type: 'cron', expression: '0 8,16 * * *' }, behavior: 'mutating',
+      action: { type: 'command', command: './tools/dev/release.sh', args: [] },
+      required_authority: ['owner'], retry: { max_attempts: 1 }, failure_recipient: 'session-manager',
+      source_of_truth: 'docs/agents/OPERATIONS.md', detected: operations.includes('0 8,16 * * *'),
+    },
+    {
+      id: 'dispatcher-hygiene', title: 'Session fleet hygiene', owner: 'session-manager', lifetime: 'session',
+      trigger: { type: 'interval', seconds: 900 }, behavior: 'read-only',
+      action: { type: 'command', command: 'torch', args: ['doctor', '--json'] },
+      required_authority: ['session-manager'], retry: { max_attempts: 1 }, failure_recipient: 'session-manager',
+      source_of_truth: 'docs/agents/OPERATIONS.md', detected: operations.includes('Session-local schedules'),
+    },
+  ];
   return {
     schema: 'torch.dev/domain-proposal/v1alpha1',
     generatedAt: new Date().toISOString(),
@@ -162,16 +178,14 @@ export function analyzeCombatrigFleet({ repository } = {}) {
       id: 'browser-renderer', capacity: gateCapacity(root), queue: 'fifo', max_hold_seconds: 10800,
       evidence: 'tools/test/serve.mjs',
     }],
+    schedules,
     architecture: { components: [], dependencies: [], sharedSurfaces: [], verificationSurfaces: [], operationalSurfaces: [] },
     compatibility: {
       source: 'combatrig-portable-fleet', sourceRoster: 'docs/agents/roster.json',
       areas: { total: converted.length, domains: domains.length, managerLegacyId: manager?.legacy_id ?? null },
       backlog: backlogInventory(root),
       checkCatalog: checks.catalog,
-      schedules: [
-        { id: 'release', lifetime: 'system', authority: 'owner', expression: '0 8,16 * * *', command: 'tools/dev/release.sh', detected: operations.includes('0 8,16 * * *') },
-        { id: 'dispatcher-hygiene', lifetime: 'session', authority: 'session-manager', detected: operations.includes('Session-local schedules') },
-      ],
+      schedules,
       release: { provider: 'custom-command', authority: 'owner', command: 'tools/dev/release.sh' },
       worktrees: converted.map((area) => ({ areaId: area.id, ...area.worktree_status })),
       migrationGaps: gaps,

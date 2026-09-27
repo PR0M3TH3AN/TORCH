@@ -141,13 +141,18 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     `);
     if (hasTable(database, 'context_usage')) {
       const samples = database.prepare(`
-        SELECT area_id AS areaId, SUM(cached_input) AS cachedInput, SUM(uncached_input) AS uncachedInput,
+        SELECT area_id AS areaId, measurement, SUM(cached_input) AS cachedInput, SUM(uncached_input) AS uncachedInput,
           SUM(cache_creation) AS cacheCreation, SUM(cache_read) AS cacheRead,
           SUM(compactions) AS compactions, SUM(resumed_prompt_bytes) AS resumedPromptBytes,
           SUM(cost_microusd) AS costMicrousd, SUM(verified_items) AS verifiedItems
-        FROM context_usage GROUP BY area_id ORDER BY area_id
+        FROM context_usage GROUP BY area_id, measurement ORDER BY area_id, measurement
       `).all();
-      result.contextLocality = { measured: true, status: 'measured', samples };
+      const measured = samples.some((sample) => sample.measurement === 'measured');
+      result.contextLocality = {
+        measured, status: measured ? 'measured' : 'estimated-only', samples,
+        warning: samples.some((sample) => sample.verifiedItems === 0)
+          ? 'Usage without verified outcomes cannot establish efficiency.' : null,
+      };
     }
   } finally {
     database.close();

@@ -7,6 +7,8 @@ import { IntegrationService } from '../integration/service.mjs';
 import { openControlPlane } from '../control-plane/service.mjs';
 import { ResourceService } from '../resources/service.mjs';
 import { createTorchMcpServer } from './tools.mjs';
+import { ContextTelemetryService } from '../telemetry/context.mjs';
+import { ScheduleService } from '../schedules/service.mjs';
 
 function optionValue(argv, name) {
   const direct = argv.find((argument) => argument.startsWith(`${name}=`));
@@ -25,8 +27,10 @@ const integrationService = new IntegrationService({ repositoryRoot, controlPlane
 const backlogService = new BacklogService({
   repositoryRoot, controlPlane, integrationLookup: (requestId) => integrationService.get(requestId),
 });
+const contextTelemetryService = new ContextTelemetryService({ controlPlane });
+const scheduleService = new ScheduleService({ repositoryRoot, controlPlane });
 const handle = serveStdio(() => createTorchMcpServer(controlPlane, {
-  actorId, backlogService, checkService, resourceService, integrationService,
+  actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
 }), {
   onerror: (error) => console.error(`TORCH MCP: ${error.message}`),
 });
