@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import {
-  existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync,
+  existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync,
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { TorchError } from './errors.mjs';
 import { fileHash, writeNewFile } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
 import { validateApprovedProposal } from './domains.mjs';
+import { inspectManagedWorktree } from './worktree-state.mjs';
 
 const TRACKED_DIR = '.torch';
 
@@ -92,11 +94,11 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
   return files;
 }
 
-function manifestPath(root) {
+export function manifestPath(root) {
   return join(root, TRACKED_DIR, 'install-manifest.json');
 }
 
-function readManifest(root) {
+export function readInstallManifest(root) {
   const path = manifestPath(root);
   if (!existsSync(path)) {
     throw new TorchError(`No TORCH ownership manifest at ${path}`, { code: 'NOT_INSTALLED' });
@@ -108,6 +110,13 @@ function readManifest(root) {
       code: 'INVALID_INSTALL_MANIFEST', details: error.message,
     });
   }
+}
+
+export function writeInstallManifest(root, manifest) {
+  const path = manifestPath(root);
+  const temporary = `${path}.tmp-${process.pid}`;
+  writeFileSync(temporary, jsonYaml(manifest), { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+  renameSync(temporary, path);
 }
 
 function safeProjectPath(root, relativePath) {
@@ -202,8 +211,24 @@ function nonEmptyEntries(path) {
 }
 
 export function planUninstall({ repository, purge = false }) {
-  const manifest = readManifest(repository.root);
+  const manifest = readInstallManifest(repository.root);
   const problems = [];
+  let mainBranch = repository.branch || 'main';
+  try {
+    const config = JSON.parse(readFileSync(join(repository.root, TRACKED_DIR, 'torch.yaml'), 'utf8'));
+    mainBranch = config.project?.main_branch ?? mainBranch;
+  } catch { /* created-file validation below reports the invalid config */ }
+  const localState = (manifest.external ?? []).find((entry) => entry.type === 'local-state');
+  if (localState && existsSync(join(localState.path, 'project.json'))) {
+    try {
+      const metadata = JSON.parse(readFileSync(join(localState.path, 'project.json'), 'utf8'));
+      if (resolve(metadata.root) !== resolve(repository.root)) {
+        problems.push({ type: 'not-installation-root', expected: metadata.root, actual: repository.root });
+      }
+    } catch {
+      problems.push({ type: 'local-state-metadata-invalid', path: localState.path });
+    }
+  }
   for (const record of manifest.created) {
     const path = safeProjectPath(repository.root, record.path);
     if (!existsSync(path)) problems.push({ type: 'missing', path: record.path });
@@ -213,6 +238,10 @@ export function planUninstall({ repository, purge = false }) {
     if (entry.type === 'local-state') {
       const extras = nonEmptyEntries(entry.path);
       if (extras.length) problems.push({ type: 'local-state-not-empty', path: entry.path, entries: extras });
+    }
+    if (entry.type === 'worktree') {
+      const state = inspectManagedWorktree(repository.root, entry, mainBranch);
+      if (!state.safeToRemove) problems.push({ type: 'unsafe-worktree', path: entry.path, area: entry.area, problems: state.problems });
     }
   }
   return {
@@ -229,6 +258,17 @@ export function uninstallProject({ repository, purge = false, dryRun = false }) 
     throw new TorchError('TORCH purge stopped because managed state changed', {
       code: 'UNSAFE_TO_PURGE', details: plan.problems,
     });
+  }
+
+  for (const entry of (plan.manifest.external ?? []).filter((item) => item.type === 'worktree').reverse()) {
+    execFileSync('git', ['-C', repository.root, 'worktree', 'remove', entry.path], { stdio: 'ignore' });
+    execFileSync('git', ['-C', repository.root, 'branch', '-d', entry.branch], { stdio: 'ignore' });
+  }
+  for (const patch of plan.manifest.patched ?? []) {
+    if (patch.type !== 'git-info-exclude-line' || !existsSync(patch.path)) continue;
+    const marker = `# TORCH ${patch.installationId}\n${patch.line}\n`;
+    const content = readFileSync(patch.path, 'utf8');
+    if (content.includes(marker)) writeFileSync(patch.path, content.replace(marker, ''), 'utf8');
   }
 
   for (const record of [...plan.manifest.created].reverse()) {

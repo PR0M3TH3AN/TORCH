@@ -8,7 +8,8 @@
     ".": "./src/cli.mjs",
     "./kernel/analyze": "./src/kernel/analyze.mjs",
     "./kernel/git": "./src/kernel/git.mjs",
-    "./kernel/install": "./src/kernel/install.mjs"
+    "./kernel/install": "./src/kernel/install.mjs",
+    "./kernel/worktrees": "./src/kernel/worktrees.mjs"
   },
   "bin": {
     "torch": "./bin/torch.mjs"

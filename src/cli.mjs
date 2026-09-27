@@ -7,6 +7,7 @@ import { proposeDomains } from './kernel/domains.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { writeNewFile } from './kernel/files.mjs';
+import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -15,6 +16,7 @@ Usage:
   torch analyze [--json]
   torch domains [--output <path>] [--json]
   torch install --proposal <path> [--dry-run] [--yes] [--json]
+  torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -91,6 +93,21 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
       const diagnosis = diagnoseProject({ repository, env });
       print(diagnosis, { json });
       return diagnosis.healthy ? 0 : 1;
+    }
+    if (command === 'worktrees') {
+      const parentOverride = optionValue(argv, '--parent');
+      if (argv.includes('--dry-run')) {
+        const plan = planWorktrees({ repository, parentOverride });
+        print(plan, { json });
+        return plan.canProceed ? 0 : 1;
+      }
+      if (!argv.includes('--yes')) {
+        throw new TorchError('Worktree creation requires a reviewed dry run. Re-run with --dry-run, then --yes.', {
+          code: 'APPROVAL_REQUIRED',
+        });
+      }
+      print(createWorktrees({ repository, parentOverride }), { json });
+      return 0;
     }
     if (command === 'uninstall') {
       const result = uninstallProject({

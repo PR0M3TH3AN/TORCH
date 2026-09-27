@@ -30,6 +30,18 @@ test_integrity_note:
       given: frontend and backend components that both consume a shared contract plus cross-cutting tests
       when: TORCH builds the architecture graph and domain proposal
       then: it proposes persistent component domains and QA, links import evidence, and records neighboring-domain collisions requiring an explicit resolution
+    - id: SCN-worktree-bootstrap
+      given: an approved TORCH organization committed to a clean main branch
+      when: the owner previews and creates its managed worktrees
+      then: every persistent identity receives the intended branch and external worktree, task markers are ignored, and repeated planning is idempotent
+    - id: SCN-worktree-purge-safety
+      given: a TORCH-managed domain worktree containing uncommitted or uniquely committed work
+      when: project purge is requested
+      then: TORCH identifies the exact unsafe worktree, refuses removal, and preserves the work
+    - id: SCN-worktree-collision
+      given: a configured fleet branch already exists outside the approved worktree mapping
+      when: worktree creation is previewed or requested
+      then: TORCH reports the exact branch collision and creates no partial fleet
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state

@@ -12,7 +12,8 @@ architecture.
 ## Current status
 
 The rewrite is under active development on `rewrite/portable-agent-fleet`.
-Stage 1 currently provides the first portable kernel:
+The current implementation provides the portable kernel and the first fleet
+bootstrap path:
 
 - read-only Git repository inspection;
 - repository inventory and check discovery;
@@ -23,10 +24,13 @@ Stage 1 currently provides the first portable kernel:
 - XDG-local runtime state;
 - installation ownership manifest;
 - health diagnostics;
-- conservative, reversible purge.
+- conservative, reversible purge;
+- reviewed worktree plans with branch/path collision protection;
+- isolated branches and worktrees with locally ignored task markers;
+- purge protection for dirty and uniquely committed domain work.
 
-Session orchestration, worktree generation, messaging, checks, integration,
-runtime adapters, self-hosting, and the Fleet Console remain staged work.
+Session orchestration, messaging, checks, integration, runtime adapters,
+self-hosting, and the Fleet Console remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -61,6 +65,8 @@ Review the evidence in `fleet-proposal.json`, edit its `review.status` to
 node bin/torch.mjs install --proposal fleet-proposal.json --dry-run --json
 node bin/torch.mjs install --proposal fleet-proposal.json --yes --json
 node bin/torch.mjs doctor --json
+node bin/torch.mjs worktrees --dry-run --json
+node bin/torch.mjs worktrees --yes --json
 ```
 
 The alpha kernel is not yet a working multi-agent fleet. Its install format may

@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileHash } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
+import { inspectManagedWorktree } from './worktree-state.mjs';
 
 function parseJsonYaml(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -37,6 +38,15 @@ export function diagnoseProject({ repository, env = process.env }) {
     }
     const stateRoot = projectStatePath(manifest.projectId, env);
     if (!existsSync(stateRoot)) findings.push({ severity: 'error', code: 'LOCAL_STATE_MISSING', path: stateRoot });
+    for (const entry of (manifest.external ?? []).filter((item) => item.type === 'worktree')) {
+      const state = inspectManagedWorktree(repository.root, entry, config?.project?.main_branch ?? 'main');
+      for (const problem of state.problems) {
+        findings.push({
+          severity: problem === 'worktree-dirty' || problem.startsWith('unique-commits:') ? 'warning' : 'error',
+          code: 'WORKTREE_PROBLEM', area: entry.area, path: entry.path, problem,
+        });
+      }
+    }
   }
 
   if (config?.project?.id && manifest?.projectId && config.project.id !== manifest.projectId) {
