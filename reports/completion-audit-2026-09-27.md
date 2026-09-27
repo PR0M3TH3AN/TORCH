@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited implementation commit: `f892ab2`
+Latest audited implementation commit: `325ed61`
 
 ## Verdict
 
@@ -31,7 +31,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **59/59 PASS** against the tree committed as `f892ab2`.
+- `npm test`: **59/59 PASS** against the tree committed as `325ed61`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -47,8 +47,8 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | --- | --- | --- | --- |
 | 0. Preserve and specify | Legacy branches `legacy/nostr-torch` and `legacy/development-network-v2`; rewrite branch; canonical spec and scenario inventory | Implemented locally | Owner product-boundary approval is represented by continuing this rewrite; no remote push was performed. |
 | 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
-| 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
-| 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
+| 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; one shared renderer gives initial and later-added domains the complete approved ownership, checks, authority, invariants, backlog, and first-move contract; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
+| 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; provider session plus managed-worktree ownership verification before stop; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, delivery-state separation, and read-only doctor evidence for drift count/age, Git operations, runtime availability, and recoverability; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance`, `SCN-worktree-bootstrap` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP on create/resume without global config mutation, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Candidate isolation, acceptance receipts, side-by-side versions, atomic activation/reconciliation/rollback; self-host scenarios | Mechanics implemented | Install a stable TORCH outside this checkout and use it to manage/test/promote a candidate of this checkout. Persistent installation approval required. |
