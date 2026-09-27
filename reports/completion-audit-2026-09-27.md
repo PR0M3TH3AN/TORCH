@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited implementation commit: `2efccb9`
+Latest audited implementation commit: `bcbe2fc`
 
 ## Verdict
 
@@ -31,7 +31,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **59/59 PASS** against the tree committed as `2efccb9`.
+- `npm test`: **59/59 PASS** against the tree committed as `bcbe2fc`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -50,7 +50,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
 | 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, and delivery-state separation; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
-| 5. Runtime portability | Claude and Codex capability adapters, mixed plans, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
+| 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP on create/resume without global config mutation, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Candidate isolation, acceptance receipts, side-by-side versions, atomic activation/reconciliation/rollback; self-host scenarios | Mechanics implemented | Install a stable TORCH outside this checkout and use it to manage/test/promote a candidate of this checkout. Persistent installation approval required. |
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
 | 8. Product surface | Redesigned site and dispatch-board story; local read-only Console covering ownership graph, worktree drift, recoverability, acknowledgements, checks, integration, delivery, resources, schedules, decisions, provider health, and context evidence; desktop/mobile local rendering; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented | Registry publication and public deployment remain open. |
