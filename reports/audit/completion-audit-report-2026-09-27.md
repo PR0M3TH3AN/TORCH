@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited implementation commit: `6740f33`
+Latest audited implementation commit: `fe79986`
 
 ## Verdict
 
@@ -31,7 +31,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **60/60 PASS** against the tree committed as `6740f33`.
+- `npm test`: **61/61 PASS** against the tree committed as `fe79986`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -50,7 +50,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | Stage | Current evidence | Status | Exit-gate work |
 | --- | --- | --- | --- |
 | 0. Preserve and specify | Legacy branches `legacy/nostr-torch` and `legacy/development-network-v2`; rewrite branch; canonical spec and scenario inventory | Implemented locally | Owner product-boundary approval is represented by continuing this rewrite; no remote push was performed. |
-| 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios; ordinary uninstall safely winds down sessions and removes only unchanged manifest-owned launchers while preserving organization/history; confirmed purge validates local identity and refuses active or unowned state | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
+| 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios; ignored tracked state is refused before mutation; ownership-safe overlays preserve unrelated pre-existing `.torch` history; ordinary uninstall safely winds down sessions and removes only unchanged manifest-owned launchers while preserving organization/history; confirmed purge validates local identity and refuses active or unowned state | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
 | 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; one shared renderer gives initial and later-added domains the complete approved ownership, checks, authority, invariants, backlog, and first-move contract; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
 | 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; provider session plus managed-worktree ownership verification before stop; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, delivery-state separation, and read-only doctor evidence for drift count/age, Git operations, runtime availability, and recoverability; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance`, `SCN-worktree-bootstrap` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
