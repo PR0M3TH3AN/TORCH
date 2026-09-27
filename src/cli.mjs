@@ -17,6 +17,7 @@ import { writeNewFile } from './kernel/files.mjs';
 import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
 import { planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lifecycle.mjs';
 import { ResourceService } from './resources/service.mjs';
+import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -60,6 +61,12 @@ Usage:
   torch canonical plan [--json]
   torch canonical create --yes [--json]
   torch recoverability [--commit <sha>] [--json]
+  torch candidate plan --source <path> [--version <version>] [--json]
+  torch candidate build --source <path> [--version <version>] --yes [--json]
+  torch candidate status [--json]
+  torch candidate test --version <version> [--json]
+  torch upgrade --version <version> [--dry-run] --yes [--json]
+  torch rollback [--dry-run] --yes [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -105,12 +112,134 @@ function runtimeAdapters() {
   ]);
 }
 
-export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd(), env = process.env } = {}) {
+function runCandidateAcceptance(candidateRoot, spawn) {
+  const checks = [
+    { id: 'test', args: ['test'] },
+    { id: 'lint', args: ['run', 'lint'] },
+    { id: 'syntax', args: ['run', 'check'] },
+  ].map((check) => {
+    const result = spawn('npm', check.args, {
+      cwd: candidateRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 300_000,
+    });
+    return {
+      id: check.id, status: result.status ?? (result.error ? 1 : 0),
+      signal: result.signal ?? null, error: result.error?.message ?? null,
+      stdout: result.stdout ?? '',
+    };
+  });
+  const testOutput = checks.find((check) => check.id === 'test')?.stdout ?? '';
+  const evidenceByScenario = new Map([
+    ['init-analyze', ['SCN-init-read-only']],
+    ['review-install-roster', ['SCN-cli-domain-review']],
+    ['branches-worktrees', ['SCN-worktree-bootstrap']],
+    ['runtime-identities', ['SCN-mixed-runtime']],
+    ['durable-messaging', ['SCN-durable-message']],
+    ['ownership-query', ['SCN-ownership-handoff']],
+    ['unsafe-worktree-detection', ['SCN-worktree-purge-safety']],
+    ['backlog-integration', ['SCN-backlog-lifecycle', 'SCN-native-integration']],
+    ['resource-lifecycle', ['SCN-resource-fifo']],
+    ['capture-stop-resume', ['SCN-fleet-fresh-resume']],
+    ['detach-uninstall', ['SCN-install-doctor-purge']],
+  ]);
+  const scenarios = CANDIDATE_ACCEPTANCE_SCENARIOS.filter((scenario) =>
+    (evidenceByScenario.get(scenario) ?? []).every((marker) => testOutput.includes(marker)));
+  const passed = checks.every((check) => check.status === 0 && !check.signal && !check.error)
+    && scenarios.length === CANDIDATE_ACCEPTANCE_SCENARIOS.length;
+  return {
+    passed,
+    scenarios,
+    evidence: checks.map(({ stdout, ...check }) => ({
+      ...check, outputBytes: Buffer.byteLength(stdout),
+    })),
+  };
+}
+
+export async function runCli(argv = process.argv.slice(2), {
+  cwd = process.cwd(), env = process.env, spawn = spawnSync,
+} = {}) {
   const command = argv.find((arg) => !arg.startsWith('-')) ?? 'help';
   const json = argv.includes('--json');
   try {
     if (command === 'help' || argv.includes('--help') || argv.includes('-h')) {
       process.stdout.write(HELP);
+      return 0;
+    }
+    if (command === 'candidate') {
+      const operation = argv[1] ?? 'status';
+      const versions = createVersionService({ env });
+      if (operation === 'status') {
+        print(versions.status(), { json });
+        return 0;
+      }
+      if (operation === 'test') {
+        const version = optionValue(argv, '--version');
+        const status = versions.status();
+        const validationPath = resolve(status.root, 'versions', version ?? '', '.torch-validation.json');
+        if (!version || !status.installed.includes(version)) {
+          throw new TorchError('Candidate test receipt requires an installed version', {
+            code: 'VERSION_NOT_INSTALLED', details: { version: version ?? null },
+          });
+        }
+        print(JSON.parse(readFileSync(validationPath, 'utf8')), { json });
+        return 0;
+      }
+      const source = optionValue(argv, '--source');
+      const version = optionValue(argv, '--version');
+      if (operation === 'plan') {
+        print(versions.planCandidate({ source: resolve(cwd, source ?? ''), version }), { json });
+        return 0;
+      }
+      if (operation === 'build') {
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Candidate build copies code and runs its acceptance suite. Review candidate plan, then re-run with --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(versions.installCandidate({
+          source: resolve(cwd, source ?? ''), version,
+          validate: ({ candidateRoot }) => runCandidateAcceptance(candidateRoot, spawn),
+        }), { json });
+        return 0;
+      }
+      throw new TorchError(`Unknown candidate operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+    }
+    if (command === 'upgrade') {
+      const versions = createVersionService({ env });
+      const version = optionValue(argv, '--version');
+      const status = versions.status();
+      const plan = {
+        action: 'upgrade', from: status.activeVersion, to: version ?? null,
+        canProceed: Boolean(version && status.installed.includes(version)), mutationPerformed: false,
+      };
+      if (argv.includes('--dry-run')) {
+        print(plan, { json });
+        return plan.canProceed ? 0 : 1;
+      }
+      if (!argv.includes('--yes')) {
+        throw new TorchError('Upgrade atomically changes the active TORCH version. Review --dry-run, then re-run with --yes.', {
+          code: 'APPROVAL_REQUIRED',
+        });
+      }
+      print(versions.activate(version), { json });
+      return 0;
+    }
+    if (command === 'rollback') {
+      const versions = createVersionService({ env });
+      const status = versions.status();
+      const plan = {
+        action: 'rollback', from: status.activeVersion, to: status.previousVersion,
+        canProceed: Boolean(status.previousVersion), mutationPerformed: false,
+      };
+      if (argv.includes('--dry-run')) {
+        print(plan, { json });
+        return plan.canProceed ? 0 : 1;
+      }
+      if (!argv.includes('--yes')) {
+        throw new TorchError('Rollback atomically restores the previous TORCH version. Review --dry-run, then re-run with --yes.', {
+          code: 'APPROVAL_REQUIRED',
+        });
+      }
+      print(versions.rollback(), { json });
       return 0;
     }
     const repository = inspectRepository(cwd);
@@ -186,7 +315,7 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
         }
         print(startFleet({
           plan, controlPlane: control, adapters,
-          executor: (launch) => spawnSync(launch.command, launch.args, {
+          executor: (launch) => spawn(launch.command, launch.args, {
             cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
           }),
         }), { json });
@@ -211,7 +340,7 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
         }
         const runtimeStoppers = new Map([
           ['claude', createClaudeAdapter({
-          runner: (executable, args) => spawnSync(executable, args, {
+          runner: (executable, args) => spawn(executable, args, {
             encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
           }),
           })],

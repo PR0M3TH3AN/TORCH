@@ -18,7 +18,8 @@
     "./integration": "./src/integration/service.mjs",
     "./mcp": "./src/mcp/tools.mjs",
     "./resources": "./src/resources/service.mjs",
-    "./runtime/lifecycle": "./src/runtime/lifecycle.mjs"
+    "./runtime/lifecycle": "./src/runtime/lifecycle.mjs",
+    "./self-host": "./src/self-host/service.mjs"
   },
   "bin": {
     "torch": "./bin/torch.mjs",
@@ -52,16 +53,18 @@
     "src/mcp/",
     "src/resources/",
     "src/runtime/",
+    "src/self-host/",
     "docs/PORTABLE_AGENT_FLEET_SPEC.md",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "torch-release.json"
   ],
   "scripts": {
     "test": "node --test --test-timeout=30000 test/fleet/*.test.mjs",
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs",
-    "format": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/cli.mjs bin/torch.mjs test/fleet --fix",
-    "lint": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/cli.mjs bin/torch.mjs test/fleet"
+    "format": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet --fix",
+    "lint": "eslint src/adapters src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",

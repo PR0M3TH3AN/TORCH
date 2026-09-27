@@ -1373,6 +1373,15 @@ the automated suite intentionally incurs no provider usage.
 Exit gate: stable TORCH manages development, testing, and promotion of its
 successor in local-only mode.
 
+Implementation checkpoint (2026-09-27): isolated version installation,
+reserved validation receipts, declared state compatibility, an atomic active
+symlink, activation journaling, interruption reconciliation, exact rollback,
+and approval-gated CLI operations are implemented and scenario-tested. The
+candidate CLI requires named acceptance evidence and currently fails closed on
+the not-yet-implemented durable backlog lifecycle. The exit gate remains open
+until that lifecycle exists and an installed stable TORCH manages this source
+repository; candidate code does not receive a hidden self-hosting exception.
+
 ### Stage 7: COMBATRIG re-import
 
 - express COMBATRIG domains, prompts, resources, checks, schedules, and release

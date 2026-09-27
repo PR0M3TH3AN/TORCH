@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -24,6 +24,31 @@ function run(root, args) {
     env: { ...process.env, XDG_DATA_HOME: join(root, '.data') },
     encoding: 'utf8',
   });
+}
+
+function releaseCandidate(root, version) {
+  const candidateRoot = join(root, `release-${version}`);
+  mkdirSync(join(candidateRoot, 'bin'), { recursive: true });
+  writeFileSync(join(candidateRoot, 'bin', 'torch.mjs'), '#!/usr/bin/env node\n');
+  writeFileSync(join(candidateRoot, 'acceptance.mjs'), `console.log(${JSON.stringify([
+    'SCN-init-read-only', 'SCN-cli-domain-review', 'SCN-worktree-bootstrap', 'SCN-mixed-runtime',
+    'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
+    'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
+    'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',
+  ].join('\n'))});\n`);
+  writeFileSync(join(candidateRoot, 'package.json'), `${JSON.stringify({
+    name: 'torch-agent-fleet', version, bin: { torch: 'bin/torch.mjs' },
+    scripts: {
+      test: 'node acceptance.mjs',
+      lint: 'node -e "process.exit(0)"',
+      check: 'node -e "process.exit(0)"',
+    },
+  }, null, 2)}\n`);
+  writeFileSync(join(candidateRoot, 'torch-release.json'), `${JSON.stringify({
+    schema: 'torch.dev/release/v1alpha1', version,
+    state: { reads: ['torch.dev/state/v1alpha1'], writes: 'torch.dev/state/v1alpha1', rollback_safe: true },
+  }, null, 2)}\n`);
+  return candidateRoot;
 }
 
 test('SCN-cli-init: init reports analysis without creating project state', () => {
@@ -98,4 +123,36 @@ test('SCN-cli-control-plane: CLI messages, acknowledgements, ownership, and stat
   assert.equal(status.runtimeSessionId, 'runtime-cli');
   const ownership = JSON.parse(run(root, ['who-owns', '--path', 'README.md', '--json']).stdout);
   assert.equal(ownership.owners.length > 0, true);
+});
+
+test('SCN-cli-self-host: candidate acceptance, atomic upgrade, and rollback require explicit approval', () => {
+  const root = repo();
+  const v1 = releaseCandidate(root, '1.0.0');
+  const v2 = releaseCandidate(root, '1.1.0');
+  const plan = run(root, ['candidate', 'plan', '--source', v1, '--json']);
+  assert.equal(plan.status, 0, plan.stderr || plan.stdout);
+  assert.equal(JSON.parse(plan.stdout).version, '1.0.0');
+  const refused = run(root, ['candidate', 'build', '--source', v1, '--json']);
+  assert.equal(JSON.parse(refused.stdout).error, 'APPROVAL_REQUIRED');
+
+  for (const source of [v1, v2]) {
+    const built = run(root, ['candidate', 'build', '--source', source, '--yes', '--json']);
+    assert.equal(built.status, 0, built.stderr || built.stdout);
+    assert.equal(JSON.parse(built.stdout).mutationPerformed, true);
+  }
+  const before = JSON.parse(run(root, ['candidate', 'status', '--json']).stdout);
+  assert.equal(before.activeVersion, null);
+  assert.deepEqual(before.installed, ['1.0.0', '1.1.0']);
+
+  assert.equal(run(root, ['upgrade', '--version', '1.0.0', '--dry-run', '--json']).status, 0);
+  assert.equal(JSON.parse(run(root, ['upgrade', '--version', '1.0.0', '--json']).stdout).error, 'APPROVAL_REQUIRED');
+  assert.equal(run(root, ['upgrade', '--version', '1.0.0', '--yes', '--json']).status, 0);
+  assert.equal(run(root, ['upgrade', '--version', '1.1.0', '--yes', '--json']).status, 0);
+
+  const rollbackPlan = JSON.parse(run(root, ['rollback', '--dry-run', '--json']).stdout);
+  assert.deepEqual({ from: rollbackPlan.from, to: rollbackPlan.to }, { from: '1.1.0', to: '1.0.0' });
+  assert.equal(JSON.parse(run(root, ['rollback', '--json']).stdout).error, 'APPROVAL_REQUIRED');
+  const rolledBack = run(root, ['rollback', '--yes', '--json']);
+  assert.equal(rolledBack.status, 0, rolledBack.stderr || rolledBack.stdout);
+  assert.equal(JSON.parse(rolledBack.stdout).activeVersion, '1.0.0');
 });

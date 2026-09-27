@@ -44,9 +44,12 @@ and the first Claude reference-fleet path:
 - a native integration queue with durable authorization and fast-forward main protection;
 - a local bare canonical Git option with honest one-disk/local-remote grading;
 - mutation audit events tied to project and Fleet identity.
+- isolated candidate version stores with explicit compatibility declarations;
+- acceptance-gated atomic activation, crash reconciliation, and exact rollback.
 
-Live mixed-provider qualification, self-hosting, COMBATRIG re-import,
-scheduling, richer observability, and the Fleet Console remain staged work.
+Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
+re-import, scheduling, richer observability, and the Fleet Console remain
+staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -104,12 +107,29 @@ Local verification and convergence use `torch checks`, `torch resources`, and
 `torch integrate`. A project without a forge can preview and create its bare
 canonical store with `torch canonical plan` and `torch canonical create --yes`.
 
+TORCH source checkouts can stage a self-host candidate without changing the
+active version. Candidate build runs the complete local acceptance, lint, and
+syntax gates before writing its receipt:
+
+```bash
+node bin/torch.mjs candidate plan --source . --json
+node bin/torch.mjs candidate build --source . --yes --json
+node bin/torch.mjs upgrade --version 0.1.0-alpha.0 --dry-run --json
+node bin/torch.mjs upgrade --version 0.1.0-alpha.0 --yes --json
+node bin/torch.mjs rollback --dry-run --json
+```
+
+The current source cannot yet satisfy its own complete candidate gate because
+the durable backlog lifecycle is still staged work. This is an intentional
+fail-closed dependency, not a waived acceptance check. Bootstrapping an
+installed stable TORCH to manage this repository also remains open.
+
 Persistent domain sessions also create a context-locality opportunity: each
 specialist can keep its relevant working set hot instead of one general session
 reloading unrelated project areas. TORCH treats cache/token savings as a
 measurement hypothesis until provider usage and verified task outcomes prove it.
 
-This is still an alpha. The lifecycle is scenario-tested with virtualized
+This is still an alpha. Runtime lifecycle is scenario-tested with virtualized
 Claude and Codex boundaries. The tests make no paid provider calls. A live
 mixed-provider, multi-domain acceptance run remains an explicit
 owner-authorized qualification gate.

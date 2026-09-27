@@ -1,0 +1,9 @@
+{
+  "schema": "torch.dev/release/v1alpha1",
+  "version": "0.1.0-alpha.0",
+  "state": {
+    "reads": ["torch.dev/state/v1alpha1"],
+    "writes": "torch.dev/state/v1alpha1",
+    "rollback_safe": true
+  }
+}

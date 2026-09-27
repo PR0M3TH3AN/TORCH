@@ -62,6 +62,10 @@ test_integrity_note:
       given: an installed project using no MCP-capable runtime
       when: an agent sends, reads, acknowledges, reports status, and queries ownership through CLI
       then: each operation observes the same durable control-plane state
+    - id: SCN-cli-self-host
+      given: two isolated candidate artifacts with complete named acceptance evidence
+      when: an owner plans, builds, activates, upgrades, and rolls back through the CLI
+      then: build and pointer changes require approval, staging does not activate code, and rollback restores the exact prior version
     - id: SCN-mcp-parity
       given: the provider-independent control-plane service
       when: all specified MCP tools invoke it
@@ -90,6 +94,14 @@ test_integrity_note:
       given: one approved Codex worker domain and one Claude Session Manager with stable Fleet identities
       when: the mixed fleet starts and winds down through virtualized runtime boundaries
       then: provider-specific commands and runtime IDs remain separate, the manager starts last, Codex completes idle, and only resident processes are stopped
+    - id: SCN-candidate-isolation
+      given: an inactive candidate in a namespace separate from project and stable runtime state
+      when: acceptance is incomplete, complete, or the accepted files are later modified
+      then: incomplete staging is removed, successful staging stays inactive, read-only status writes nothing, and stale validation blocks activation
+    - id: SCN-atomic-upgrade-rollback
+      given: accepted forward-and-rollback-compatible versions installed side by side
+      when: activation is interrupted after the atomic pointer swap and the service restarts
+      then: the journal reconciles to the exact active version and rollback restores the previous pointer without rewriting project state
     - id: SCN-exact-sha-checks
       given: approved shell-free checks and a clean managed worktree
       when: passing, failing, and dirty-input checks are requested
@@ -133,6 +145,8 @@ test_integrity_note:
     - shell-free fixture checks with controlled exit codes
     - injected resource clock and identifiers
     - local-only bare Git remote with no network dependency
+    - isolated XDG version roots, synthetic artifacts, and injected acceptance results
+    - injected post-pointer interruption with deterministic recovery timestamps
   anti_cheat_rationale:
     prevents:
       - init that silently writes files
@@ -153,6 +167,9 @@ test_integrity_note:
       - unfair or automatically stolen resource leases
       - integration based on branch labels, stale checks, or stale main
       - a same-disk bare repository mislabeled as off-machine recovery
+      - a merely passing command being mislabeled as complete candidate acceptance
+      - candidate staging silently replacing stable or accepted code changing before activation
+      - interrupted pointer swaps leaving version metadata ambiguous
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
