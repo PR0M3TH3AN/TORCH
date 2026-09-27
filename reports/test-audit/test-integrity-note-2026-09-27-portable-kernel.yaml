@@ -170,6 +170,10 @@ test_integrity_note:
       given: a persistent specialist whose recurring work no longer justifies its coordination cost
       when: the Session Manager proposes retirement and the owner approves it
       then: live, dirty, guarded, leased, uniquely committed, or actively assigned work blocks retirement; safe activation removes the worktree and identity while preserving its branch and durable decision
+    - id: SCN-package-distribution
+      given: a clean TORCH source checkout and an isolated package consumer
+      when: npm builds and installs the published artifact without registry access
+      then: the packaged CLI runs outside the source checkout and performs read-only repository discovery
     - id: SCN-cli-fleet-evolution
       given: an installed Fleet and a file-backed proposed domain
       when: the manager proposes it and the owner separately approves, plans, and activates it through the public CLI
