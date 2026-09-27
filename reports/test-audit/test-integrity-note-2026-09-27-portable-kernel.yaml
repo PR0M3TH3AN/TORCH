@@ -138,6 +138,10 @@ test_integrity_note:
       given: an installed project with no forge or remote
       when: the owner creates a local canonical Git store and later makes and pushes another commit
       then: TORCH distinguishes one-disk from local-remote recoverability without claiming off-machine backup
+    - id: SCN-canonical-reversal
+      given: a TORCH-owned local canonical remote and bare repository
+      when: purge is planned before and after a remote-only commit becomes recoverable locally
+      then: unique history blocks deletion and safe purge removes the exact owned remote and local path
     - id: SCN-combatrig-import
       given: a legacy COMBATRIG fleet with prompts, worktree mappings, backlog, checks, and schedules
       when: TORCH analyzes it through the compatibility service
@@ -194,6 +198,10 @@ test_integrity_note:
       given: the redesigned TORCH public surface
       when: its product story and local-console boundary are inspected
       then: it explains project-derived fleets, exact-commit routing, honest open gates, and measured context claims without obsolete product language
+    - id: SCN-architecture-decisions
+      given: the ten implementation decisions required by the portable Fleet specification
+      when: the repository architecture ledger is inspected
+      then: implemented choices are accepted explicitly and unavailable security or distribution boundaries remain fail-closed gates
     - id: SCN-console-readonly
       given: an installed Fleet without an initialized control-plane database
       when: the observation API and local HTTP console are requested

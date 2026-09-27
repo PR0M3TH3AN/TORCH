@@ -41,6 +41,9 @@ function writeConfig(repositoryRoot, manifest, path) {
   renameSync(temporary, configPath);
   const record = manifest.created.find((entry) => entry.path === '.torch/torch.yaml');
   if (record) record.sha256 = fileHash(configPath);
+  manifest.external.push({
+    type: 'canonical-remote', remote: REMOTE_NAME, path, createdByInstallation: true,
+  });
   writeInstallManifest(repositoryRoot, manifest);
 }
 

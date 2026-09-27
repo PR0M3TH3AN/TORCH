@@ -37,6 +37,17 @@ test('SCN-product-site: public surface explains the portable fleet and separates
   assert.match(consoleHtml, /noindex,nofollow/);
 });
 
+test('SCN-architecture-decisions: every specification decision has an explicit accepted or gated boundary', () => {
+  const decisions = readFileSync(new URL('../../docs/ARCHITECTURE_DECISIONS.md', import.meta.url), 'utf8');
+  for (let number = 1; number <= 10; number += 1) {
+    assert.match(decisions, new RegExp(`ADR-${String(number).padStart(3, '0')}:`));
+  }
+  assert.match(decisions, /Multi-machine security[\s\S]*\*\*Status:\*\* gated/);
+  assert.match(decisions, /Distribution and update signing[\s\S]*\*\*Status:\*\* gated/);
+  assert.match(decisions, /MCP over\s+stdio/);
+  assert.match(decisions, /exact Git commit and the exact hash/);
+});
+
 test('SCN-console-readonly: HTTP console serves fixed assets and observes an installed fleet without mutation', async (context) => {
   const root = fixture();
   const env = { ...process.env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-console-state-')) };

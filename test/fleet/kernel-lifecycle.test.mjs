@@ -10,8 +10,11 @@ import { inspectRepository } from '../../src/kernel/git.mjs';
 import {
   PROJECT_CONFIG_SCHEMA, planProjectConfigMigration, validateProjectConfig,
 } from '../../src/kernel/config.mjs';
-import { installProject, planInstall, uninstallProject } from '../../src/kernel/install.mjs';
+import {
+  installProject, planInstall, planUninstall, uninstallProject,
+} from '../../src/kernel/install.mjs';
 import { proposeDomains, validateApprovedProposal } from '../../src/kernel/domains.mjs';
+import { createLocalCanonical } from '../../src/canonical/local.mjs';
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), 'torch-kernel-'));
@@ -129,6 +132,44 @@ test('SCN-install-runtime-selection: approved runtime choices are explicit and c
   assert.equal(installed.mutationPerformed, true);
   const config = JSON.parse(readFileSync(join(root, '.torch', 'torch.yaml'), 'utf8'));
   assert.deepEqual(Object.keys(config.runtimes).sort(), ['claude', 'codex', 'default']);
+});
+
+test('SCN-canonical-reversal: owned local canonical state reverses only after unique commits are safe', () => {
+  const { root, env } = fixture();
+  const externalEnv = { ...env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-canonical-reversal-state-')) };
+  let repository = inspectRepository(root);
+  const installed = installProject({
+    repository, proposal: approvedProposal(repository), env: externalEnv, projectId: 'canonical-reversal',
+  });
+  execFileSync('git', ['-C', root, 'add', '.torch']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'install torch']);
+  const canonical = createLocalCanonical({ repositoryRoot: root });
+  const manifest = JSON.parse(readFileSync(join(root, '.torch', 'install-manifest.json'), 'utf8'));
+  assert.equal(manifest.external.some((entry) =>
+    entry.type === 'canonical-remote' && entry.remote === 'torch-canonical' && entry.path === canonical.path), true);
+
+  const tree = execFileSync('git', ['--git-dir', canonical.path, 'mktree'], {
+    input: '', encoding: 'utf8',
+  }).trim();
+  const uniqueCommit = execFileSync('git', [
+    '--git-dir', canonical.path,
+    '-c', 'user.name=TORCH Test', '-c', 'user.email=torch@example.invalid',
+    'commit-tree', tree, '-m', 'remote-only',
+  ], { encoding: 'utf8' }).trim();
+  execFileSync('git', ['--git-dir', canonical.path, 'update-ref', 'refs/heads/remote-only', uniqueCommit]);
+  repository = inspectRepository(root);
+  assert.equal(planUninstall({ repository, purge: true }).problems.some((problem) =>
+    problem.type === 'canonical-unique-commit' && problem.commit === uniqueCommit), true);
+  assert.throws(
+    () => uninstallProject({ repository, purge: true }),
+    (error) => error.code === 'UNSAFE_TO_PURGE',
+  );
+
+  execFileSync('git', ['--git-dir', canonical.path, 'update-ref', '-d', 'refs/heads/remote-only']);
+  const purged = uninstallProject({ repository: inspectRepository(root), purge: true });
+  assert.equal(purged.mutationPerformed, true);
+  assert.equal(existsSync(installed.stateRoot), false);
+  assert.equal(execFileSync('git', ['-C', root, 'remote'], { encoding: 'utf8' }).includes('torch-canonical'), false);
 });
 
 test('SCN-config-schema: installed configuration is strict, versioned, and migration-aware', () => {

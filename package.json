@@ -76,7 +76,7 @@
     "src/schedules/",
     "src/self-host/",
     "src/telemetry/",
-    "docs/PORTABLE_AGENT_FLEET_SPEC.md",
+    "docs/",
     "README.md",
     "LICENSE",
     "torch-release.json",

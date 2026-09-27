@@ -22,6 +22,7 @@ test('SCN-package-distribution: the npm artifact installs offline and runs outsi
     assert.equal(packagedPaths.includes('bin/torch.mjs'), true);
     assert.equal(packagedPaths.includes('src/cli.mjs'), true);
     assert.equal(packagedPaths.includes('docs/PORTABLE_AGENT_FLEET_SPEC.md'), true);
+    assert.equal(packagedPaths.includes('docs/ARCHITECTURE_DECISIONS.md'), true);
     assert.equal(packagedPaths.some((path) => path.startsWith('test/')), false);
     assert.equal(packagedPaths.some((path) => path.startsWith('reports/')), false);
 

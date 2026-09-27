@@ -77,6 +77,8 @@ machine, and public deployment remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
+Resolved implementation choices and deliberately gated boundaries are recorded
+in [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md).
 
 ## Development
 

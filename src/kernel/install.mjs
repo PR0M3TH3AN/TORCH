@@ -277,11 +277,46 @@ export function installProject({
   }
 }
 
-function nonEmptyEntries(path) {
+function nonEmptyEntries(path, ignoredRoots = []) {
   if (!existsSync(path)) return [];
   return readdirSync(path, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name !== 'project.json')
-    .map((entry) => entry.name);
+    .filter((entry) => entry.isFile())
+    .map((entry) => resolve(entry.parentPath, entry.name))
+    .filter((entry) => entry !== join(resolve(path), 'project.json'))
+    .filter((entry) => !ignoredRoots.some((root) =>
+      entry === resolve(root) || entry.startsWith(`${resolve(root)}${sep}`)))
+    .map((entry) => relative(path, entry));
+}
+
+function gitOptional(root, args) {
+  try {
+    return execFileSync('git', ['-C', root, ...args], {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch { return null; }
+}
+
+function inspectCanonicalRemoval(repositoryRoot, entry, localStatePath) {
+  const problems = [];
+  const expectedRoot = `${resolve(localStatePath)}${sep}`;
+  if (!resolve(entry.path).startsWith(expectedRoot)) {
+    return [{ type: 'unsafe-canonical-path', path: entry.path, stateRoot: localStatePath }];
+  }
+  const remoteUrl = gitOptional(repositoryRoot, ['remote', 'get-url', entry.remote]);
+  if (remoteUrl === null) problems.push({ type: 'canonical-remote-missing', remote: entry.remote });
+  else if (resolve(repositoryRoot, remoteUrl) !== resolve(entry.path)) {
+    problems.push({ type: 'canonical-remote-changed', remote: entry.remote, expected: entry.path, actual: remoteUrl });
+  }
+  if (!existsSync(entry.path)) problems.push({ type: 'canonical-path-missing', path: entry.path });
+  else {
+    const heads = gitOptional(entry.path, ['for-each-ref', '--format=%(objectname)', 'refs/heads']);
+    for (const commit of (heads ?? '').split('\n').filter(Boolean)) {
+      if (!gitOptional(repositoryRoot, ['for-each-ref', '--format=%(refname)', '--contains', commit])) {
+        problems.push({ type: 'canonical-unique-commit', path: entry.path, commit });
+      }
+    }
+  }
+  return problems;
 }
 
 export function planUninstall({ repository, purge = false }) {
@@ -310,8 +345,15 @@ export function planUninstall({ repository, purge = false }) {
   }
   for (const entry of manifest.external ?? []) {
     if (entry.type === 'local-state') {
-      const extras = nonEmptyEntries(entry.path);
+      const canonicalRoots = (manifest.external ?? [])
+        .filter((candidate) => candidate.type === 'canonical-remote')
+        .map((candidate) => candidate.path);
+      const extras = nonEmptyEntries(entry.path, canonicalRoots);
       if (extras.length) problems.push({ type: 'local-state-not-empty', path: entry.path, entries: extras });
+    }
+    if (entry.type === 'canonical-remote') {
+      if (!localState?.path) problems.push({ type: 'local-state-missing-for-canonical', path: entry.path });
+      else problems.push(...inspectCanonicalRemoval(repository.root, entry, localState.path));
     }
     if (entry.type === 'worktree') {
       const state = inspectManagedWorktree(repository.root, entry, mainBranch);
@@ -346,6 +388,9 @@ export function uninstallProject({ repository, purge = false, dryRun = false }) 
     const marker = `# TORCH ${patch.installationId}\n${patch.line}\n`;
     const content = readFileSync(patch.path, 'utf8');
     if (content.includes(marker)) writeFileSync(patch.path, content.replace(marker, ''), 'utf8');
+  }
+  for (const entry of (plan.manifest.external ?? []).filter((item) => item.type === 'canonical-remote')) {
+    execFileSync('git', ['-C', repository.root, 'remote', 'remove', entry.remote], { stdio: 'ignore' });
   }
 
   for (const record of [...plan.manifest.created].reverse()) {
