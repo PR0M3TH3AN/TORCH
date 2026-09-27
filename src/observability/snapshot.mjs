@@ -79,6 +79,7 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     checks: { definitions: config.checks ?? [], receipts: [] },
     resources: { definitions: config.resources ?? [], holders: [], waiters: [] },
     integration: [],
+    deliveries: [],
     fleetChanges: [],
     schedules: config.schedules ?? [],
     audit: [],
@@ -122,7 +123,7 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       }
     }
     result.checks.receipts = rows(database, 'check_receipts', `
-      SELECT id, check_id AS checkId, area_id AS areaId, commit_sha AS commit, result, finished_at AS finishedAt
+      SELECT id, check_id AS checkId, area_id AS areaId, commit_sha AS "commit", result, finished_at AS finishedAt
       FROM check_receipts ORDER BY finished_at DESC LIMIT 40
     `);
     result.resources.holders = rows(database, 'resource_leases', `
@@ -136,6 +137,10 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     result.integration = rows(database, 'integration_requests', `
       SELECT id, source_area AS sourceArea, source_commit AS sourceCommit, target_branch AS targetBranch, state, reason, updated_at AS updatedAt
       FROM integration_requests ORDER BY updated_at DESC LIMIT 40
+    `);
+    result.deliveries = rows(database, 'deliveries', `
+      SELECT id, label, source_area AS sourceArea, commit_sha AS "commit", state, updated_at AS updatedAt
+      FROM deliveries ORDER BY updated_at DESC, id LIMIT 40
     `);
     result.fleetChanges = rows(database, 'fleet_changes', `
       SELECT id, change_type AS changeType, state, proposer,

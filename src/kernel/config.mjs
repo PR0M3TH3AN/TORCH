@@ -98,6 +98,21 @@ export const projectConfigSchema = z.object({
     required_checks: textList,
     landing_authority: textList.min(1),
   }).strict(),
+  delivery: z.object({
+    authority: z.object({
+      implemented: textList.min(1),
+      verified: textList.min(1),
+      integrated: textList.min(1),
+      release_ready: textList.min(1),
+      released: textList.min(1),
+      deployed: textList.min(1),
+      live_verified: textList.min(1),
+    }).strict(),
+    adapters: z.object({
+      release: z.object({ provider: text }).passthrough(),
+      deployment: z.object({ provider: text }).passthrough(),
+    }).strict(),
+  }).strict(),
   session_manager: z.object({
     id: z.literal('session-manager'),
     runtime: text,

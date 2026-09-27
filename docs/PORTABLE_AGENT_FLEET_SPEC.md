@@ -1217,6 +1217,18 @@ configuration MUST state who may perform each transition. Secrets are resolved
 at execution time from approved external stores and never copied into tracked
 Fleet state.
 
+Implementation checkpoint (2026-09-27): TORCH now persists this complete state
+machine in the local control plane. Creation requires a clean, exact source
+worktree tip and evidence; verification requires the configured exact-commit
+check receipts; integration requires a landed request for that commit; and
+release, deployment, and live verification require separately configured
+provider capabilities, state-specific authority, evidence, successful adapter
+receipts, and explicit owner approval. Fresh installations configure both
+provider slots as `none`, so no external release or deployment can occur by
+default. The CLI and read-only Fleet observation surface are implemented and
+scenario-tested with a virtual adapter; no live release or deployment was
+performed.
+
 ## 25. Security and trust boundaries
 
 TORCH MUST:

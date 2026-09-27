@@ -79,6 +79,21 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
       required_checks: (proposal.checks ?? []).map((check) => check.id),
       landing_authority: ['session-manager'],
     },
+    delivery: {
+      authority: {
+        implemented: ['$source'],
+        verified: ['$source', 'session-manager'],
+        integrated: ['session-manager'],
+        release_ready: ['session-manager'],
+        released: ['owner'],
+        deployed: ['owner'],
+        live_verified: ['owner'],
+      },
+      adapters: {
+        release: { provider: 'none' },
+        deployment: { provider: 'none' },
+      },
+    },
     session_manager: {
       id: 'session-manager', runtime: proposal.session_manager?.runtime ?? 'claude', start_last: true,
       branch: proposal.session_manager?.branch ?? null,

@@ -134,6 +134,10 @@ test_integrity_note:
       given: a converged domain commit with every required exact-SHA receipt
       when: the domain requests integration and the Session Manager authorizes and lands it
       then: main fast-forwards only while source, target, receipts, cleanliness, and authority remain valid
+    - id: SCN-delivery-lifecycle
+      given: a clean implemented domain commit, exact check receipt, landed integration, and a virtual provider adapter
+      when: TORCH advances it through verified, integrated, release-ready, released, deployed, and live-verified
+      then: states cannot be skipped, authority remains separate, high-impact transitions need explicit approval, adapters declare capabilities, receipts persist, and CLI plus observation expose the same state
     - id: SCN-safe-convergence
       given: a managed domain worktree behind canonical main
       when: a check, measurement, pin, dirty state, or Git operation could make convergence unsafe
@@ -253,6 +257,7 @@ test_integrity_note:
     - immutable check receipt commit and result
     - resource holder, FIFO position, expiry, and cancellation state
     - canonical main SHA before and after authorized landing
+    - durable delivery state, authority blockers, adapter invocation order, and provider receipts
     - Git remote configuration and recoverability grade
   determinism_controls:
     - isolated temporary Git repositories
@@ -295,6 +300,8 @@ test_integrity_note:
       - passing receipts detached from the commit actually measured
       - unfair or automatically stolen resource leases
       - integration based on branch labels, stale checks, or stale main
+      - integration authority being treated as release or deployment authority
+      - release, deployment, or live claims without explicit adapter receipts
       - a same-disk bare repository mislabeled as off-machine recovery
       - a merely passing command being mislabeled as complete candidate acceptance
       - candidate staging silently replacing stable or accepted code changing before activation

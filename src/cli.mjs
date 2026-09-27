@@ -38,6 +38,9 @@ import { ConvergenceService } from './convergence/service.mjs';
 import {
   attachForge, detachForge, forgeStatus, planForgeAttach, planForgeDetach,
 } from './forge/service.mjs';
+import {
+  configureDelivery, DeliveryService, planDeliveryConfiguration,
+} from './delivery/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -103,6 +106,12 @@ Usage:
   torch forge attach --remote <name> [--provider <name>] --yes [--json]
   torch forge status [--json]
   torch forge detach [--dry-run] --yes [--json]
+  torch delivery list [--state <state>] [--json]
+  torch delivery get --delivery <id> [--json]
+  torch delivery create --area <id> [--commit <sha>] --label <text> --evidence <text,...> [--json]
+  torch delivery plan --delivery <id> --to <state> --by <id|owner> [--json]
+  torch delivery transition --delivery <id> --to <state> --by <id|owner> --evidence <text,...> [--yes] [--json]
+  torch delivery configure [--release-provider <name>] [--deployment-provider <name>] [--dry-run] --yes [--json]
   torch candidate plan --source <path> [--version <version>] [--json]
   torch candidate build --source <path> [--version <version>] --yes [--json]
   torch candidate status [--json]
@@ -239,6 +248,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['fleet-boundary-evolution', ['SCN-fleet-boundary-evolution']],
     ['cli-lifecycle-surface', ['SCN-cli-lifecycle-surface']],
     ['forge-migration', ['SCN-forge-migration']],
+    ['delivery-lifecycle', ['SCN-delivery-lifecycle']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -1077,6 +1087,60 @@ export async function runCli(argv = process.argv.slice(2), {
         return 0;
       }
       throw new TorchError(`Unknown forge operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+    }
+    if (command === 'delivery') {
+      const operation = argv[1] ?? 'list';
+      if (operation === 'configure') {
+        const input = {
+          repositoryRoot: repository.root,
+          releaseProvider: optionValue(argv, '--release-provider') ?? 'none',
+          deploymentProvider: optionValue(argv, '--deployment-provider') ?? 'none',
+        };
+        if (argv.includes('--dry-run')) {
+          const plan = planDeliveryConfiguration(input);
+          print(plan, { json });
+          return plan.canProceed ? 0 : 1;
+        }
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Delivery adapter configuration changes tracked project policy. Review --dry-run, then use --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(configureDelivery(input), { json });
+        return 0;
+      }
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const resources = new ResourceService({ repositoryRoot: repository.root, controlPlane: control });
+        const checks = new CheckService({
+          repositoryRoot: repository.root, controlPlane: control, resourceService: resources,
+        });
+        const delivery = new DeliveryService({
+          repositoryRoot: repository.root, controlPlane: control, checkService: checks,
+        });
+        const deliveryId = optionValue(argv, '--delivery');
+        if (operation === 'list') print({ deliveries: delivery.list({ state: optionValue(argv, '--state') }) }, { json });
+        else if (operation === 'get') print(delivery.get(deliveryId), { json });
+        else if (operation === 'create') print(delivery.create({
+          sourceArea: optionValue(argv, '--area'), commit: optionValue(argv, '--commit') ?? 'HEAD',
+          label: optionValue(argv, '--label'), evidence: commaList(optionValue(argv, '--evidence')),
+        }), { json });
+        else if (operation === 'plan') {
+          const plan = delivery.planTransition({
+            deliveryId, targetState: optionValue(argv, '--to'), actor: optionValue(argv, '--by'),
+          });
+          print(plan, { json });
+          return plan.canProceed ? 0 : 1;
+        } else if (operation === 'transition') {
+          print(delivery.transition({
+            deliveryId, targetState: optionValue(argv, '--to'), actor: optionValue(argv, '--by'),
+            evidence: commaList(optionValue(argv, '--evidence')), approved: argv.includes('--yes'),
+          }), { json });
+        } else throw new TorchError(`Unknown delivery operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
     }
     if (command === 'uninstall') {
       const result = uninstallProject({

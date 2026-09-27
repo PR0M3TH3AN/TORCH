@@ -48,6 +48,9 @@ and the first Claude reference-fleet path:
 - a native integration queue with durable authorization and fast-forward main protection;
 - domain-owned convergence plans that defer during checks, measurements, pins, dirty work, and Git operations;
 - a local bare canonical Git option with honest one-disk/local-remote grading;
+- a durable delivery state machine that keeps implemented, verified,
+  integrated, release-ready, released, deployed, and live-verified distinct,
+  with per-state authority and provider-capability gates;
 - mutation audit events tied to project and Fleet identity.
 - isolated candidate version stores with explicit compatibility declarations;
 - acceptance-gated atomic activation, crash reconciliation, and exact rollback.
@@ -267,6 +270,31 @@ and doctor expose pending synchronization while local identities, messages,
 checks, backlog, worktrees, and policy remain operational. Detach works during
 that outage and restores the prior local canonical configuration; it does not
 delete a user-owned remote.
+
+Delivery is separate from integration. A clean domain tip starts as
+implemented; exact-commit checks gate verification, and a landed integration
+record gates integration. Release, deployment, and live verification require
+owner authority, explicit approval, and successful adapter receipts. Fresh
+installs configure no delivery providers, so TORCH cannot publish or deploy by
+accident:
+
+```bash
+torch delivery create --area backend --label "API change" \
+  --evidence "task:TASK-42" --json
+torch delivery plan --delivery <id> --to verified --by backend --json
+torch delivery transition --delivery <id> --to verified --by backend \
+  --evidence "check:<receipt-id>" --json
+torch delivery configure --release-provider <adapter> \
+  --deployment-provider <adapter> --dry-run --json
+torch delivery configure --release-provider <adapter> \
+  --deployment-provider <adapter> --yes --json
+torch delivery transition --delivery <id> --to released --by owner \
+  --evidence "artifact:<reference>" --yes --json
+```
+
+Adapter names configure policy; a trusted installed adapter must also declare
+and implement the requested capability. The stock CLI ships with no release or
+deployment provider, so configuration alone cannot trigger an external action.
 
 TORCH source checkouts can stage a self-host candidate without changing the
 active version. Candidate build runs the complete local acceptance, lint, and

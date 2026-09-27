@@ -16,6 +16,7 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'fleet-boundary-evolution',
   'cli-lifecycle-surface',
   'forge-migration',
+  'delivery-lifecycle',
   'review-install-roster',
   'branches-worktrees',
   'runtime-identities',

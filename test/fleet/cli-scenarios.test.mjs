@@ -39,6 +39,7 @@ function releaseCandidate(root, version) {
     'SCN-fleet-boundary-evolution',
     'SCN-cli-lifecycle-surface',
     'SCN-forge-migration',
+    'SCN-delivery-lifecycle',
     'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
     'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
     'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',
