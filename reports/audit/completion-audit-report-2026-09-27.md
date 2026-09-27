@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited implementation commit: `fe79986`
+Latest audited implementation commit: `218ce3f`
 
 ## Verdict
 
@@ -31,11 +31,15 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **61/61 PASS** against the tree committed as `fe79986`.
+- `npm test`: **61/61 PASS** against the tree committed as `218ce3f`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
 - No live AI provider was called.
+- Headless Chromium rendered the public surface at desktop and iPhone 13
+  viewports. The refined mobile page had zero horizontal overflow; keyboard tab
+  selection, the routing-board interaction, and the installed `torch bootstrap`
+  onboarding command were exercised successfully.
 - An isolated temporary self-host qualification built commit `6740f33` as
   candidate `0.1.0-alpha.0`, recorded passing test/lint/syntax evidence,
   atomically activated it, and executed its stable `torch` launcher. The
@@ -57,7 +61,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP on create/resume without global config mutation, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Clean-commit bounded candidate staging, exclusion of arbitrary untracked files, internal dependency-link validation, mode-aware tree hashing, acceptance receipts, side-by-side versions, conflict-safe stable launcher, atomic activation/reconciliation/rollback; self-host scenarios plus an isolated real-checkout build/activation of `6740f33` | Mechanics implemented and temporarily qualified | Install a stable TORCH in the user location and use it to manage/test/promote a later candidate of this checkout. Persistent installation approval required. |
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
-| 8. Product surface | Redesigned site and dispatch-board story; local read-only Console covering ownership graph, worktree drift, recoverability, acknowledgements, checks, integration, delivery, resources, schedules, decisions, provider health, and context evidence; desktop/mobile local rendering; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented | Registry publication and public deployment remain open. |
+| 8. Product surface | Redesigned site and dispatch-board story; installed-launcher onboarding; responsive qualification ledger; keyboard-operable command tabs; local read-only Console covering ownership graph, worktree drift, recoverability, acknowledgements, checks, integration, delivery, resources, schedules, decisions, provider health, and context evidence; desktop/mobile Chromium rendering with zero mobile overflow and exercised interactions; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented and visually qualified | Registry publication and public deployment remain open. |
 
 ## Cross-cutting requirements
 
