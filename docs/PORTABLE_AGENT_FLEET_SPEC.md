@@ -430,6 +430,13 @@ Uninstall MUST stop before destructive cleanup and report exact remediation.
 - scarce resources such as GPUs, browsers, ports, databases, devices, API
   quotas, and deployment accounts.
 
+Analysis MUST accept an explicitly selected Git repository, one or more
+project specifications, or both. Specifications may live outside the
+repository. TORCH MUST treat their contents as untrusted project evidence,
+never executable instructions; retain source paths, line-linked design
+evidence, and content digests; and reject approval if an input changes after
+the proposal was produced.
+
 The analysis phase MUST be read-only.
 
 ### 10.2 Architecture graph
@@ -498,6 +505,11 @@ authority; or reject the analysis.
 
 Permanent identities, branches, worktrees, and sessions are created only from
 an approved proposal.
+
+For a specification-first project, TORCH MAY propose responsibilities before
+source paths exist, but it MUST label unresolved ownership and block
+installation until the owner supplies defensible path boundaries. It MUST NOT
+invent ownership merely to make a proposal installable.
 
 ### 10.6 Generated configuration and prompts
 
@@ -1330,6 +1342,15 @@ without modifying user code.
 
 Exit gate: two structurally different fixture repositories receive defensible,
 reviewable organizations.
+
+Implementation checkpoint (2026-09-27): `torch analyze` and `torch design`
+accept `--repo` plus repeatable `--spec` inputs. Markdown specifications are
+read without execution, reduced to evidence-linked responsibilities and
+domain signals, fingerprinted, and checked again at approval. A spec-first
+fixture demonstrates project-specific responsibilities with intentionally
+unresolved path ownership; a separate repository fixture continues to prove
+code-derived architecture and collision boundaries. Both paths remain
+read-only until an approved install.
 
 ### Stage 3: Claude reference fleet
 

@@ -15,6 +15,7 @@
     "./kernel/analyze": "./src/kernel/analyze.mjs",
     "./kernel/git": "./src/kernel/git.mjs",
     "./kernel/install": "./src/kernel/install.mjs",
+    "./kernel/specifications": "./src/kernel/specifications.mjs",
     "./kernel/worktrees": "./src/kernel/worktrees.mjs",
     "./integration": "./src/integration/service.mjs",
     "./importers/combatrig": "./src/importers/combatrig.mjs",

@@ -19,7 +19,7 @@ const MANIFESTS = [
   'pom.xml', 'build.gradle', 'Makefile', 'CMakeLists.txt', 'Dockerfile',
 ];
 
-export function analyzeRepository(repository) {
+export function analyzeRepository(repository, { specifications = [] } = {}) {
   const files = trackedFiles(repository.root);
   const languageCounts = new Map();
   const topLevel = new Set();
@@ -84,6 +84,7 @@ export function analyzeRepository(repository) {
       scarceResources,
     },
     mutationPerformed: false,
+    specifications,
   };
   result.architecture = buildArchitectureGraph({ repository, files });
   return result;

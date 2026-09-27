@@ -32,6 +32,7 @@ function releaseCandidate(root, version) {
   writeFileSync(join(candidateRoot, 'bin', 'torch.mjs'), '#!/usr/bin/env node\n');
   writeFileSync(join(candidateRoot, 'acceptance.mjs'), `console.log(${JSON.stringify([
     'SCN-init-read-only', 'SCN-cli-domain-review', 'SCN-worktree-bootstrap', 'SCN-mixed-runtime',
+    'SCN-spec-fleet-design', 'SCN-cli-spec-design',
     'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
     'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
     'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',

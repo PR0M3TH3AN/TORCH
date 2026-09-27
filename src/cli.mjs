@@ -9,6 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { diagnoseProject } from './kernel/doctor.mjs';
 import { asErrorRecord, TorchError } from './kernel/errors.mjs';
 import { inspectRepository } from './kernel/git.mjs';
+import { inspectSpecifications } from './kernel/specifications.mjs';
 import { installProject, planInstall, uninstallProject } from './kernel/install.mjs';
 import { IntegrationService } from './integration/service.mjs';
 import { analyzeCombatrigFleet } from './importers/combatrig.mjs';
@@ -24,9 +25,10 @@ import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-hos
 const HELP = `TORCH — portable agent fleet
 
 Usage:
-  torch init [--json]
-  torch analyze [--json]
-  torch domains [--output <path>] [--json]
+  torch init [--repo <path>] [--spec <path>] [--json]
+  torch analyze [--repo <path>] [--spec <path>] [--json]
+  torch design [--repo <path>] [--spec <path>] [--output <path>] [--json]
+  torch domains [--repo <path>] [--spec <path>] [--output <path>] [--json]
   torch install --proposal <path> [--dry-run] [--yes] [--json]
   torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
   torch up [--fresh] [--dry-run] [--yes] [--json]
@@ -90,6 +92,15 @@ function optionValue(argv, name) {
   return index >= 0 ? argv[index + 1] : undefined;
 }
 
+function optionValues(argv, name) {
+  const values = [];
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index].startsWith(`${name}=`)) values.push(argv[index].slice(name.length + 1));
+    else if (argv[index] === name && argv[index + 1] !== undefined) values.push(argv[index + 1]);
+  }
+  return values;
+}
+
 function commaList(value) {
   return (value ?? '').split(',').map((item) => item.trim()).filter(Boolean);
 }
@@ -141,6 +152,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
   const testOutput = checks.find((check) => check.id === 'test')?.stdout ?? '';
   const evidenceByScenario = new Map([
     ['init-analyze', ['SCN-init-read-only']],
+    ['spec-aware-design', ['SCN-spec-fleet-design', 'SCN-cli-spec-design']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -273,14 +285,25 @@ export async function runCli(argv = process.argv.slice(2), {
       } else print({ proposal, mutationPerformed: false }, { json });
       return proposal.compatibility.readyForApproval ? 0 : 1;
     }
-    const repository = inspectRepository(cwd);
+    const designCommand = ['init', 'analyze', 'domains', 'design'].includes(command);
+    const repositoryRoot = designCommand ? resolve(cwd, optionValue(argv, '--repo') ?? '.') : cwd;
+    const repository = inspectRepository(repositoryRoot);
     if (command === 'init' || command === 'analyze') {
-      const analysis = analyzeRepository(repository);
-      print({ command, repository, analysis, next: 'Review analysis, then run torch install --dry-run.' }, { json });
+      const specifications = inspectSpecifications(optionValues(argv, '--spec'), {
+        cwd, repositoryRoot: repository.root,
+      });
+      const analysis = analyzeRepository(repository, { specifications });
+      print({
+        command, repository, analysis,
+        next: 'Run torch design with the same repository/specification inputs, review its proposal, then install.',
+      }, { json });
       return 0;
     }
-    if (command === 'domains') {
-      const analysis = analyzeRepository(repository);
+    if (command === 'domains' || command === 'design') {
+      const specifications = inspectSpecifications(optionValues(argv, '--spec'), {
+        cwd, repositoryRoot: repository.root,
+      });
+      const analysis = analyzeRepository(repository, { specifications });
       const proposal = proposeDomains({ repository, analysis });
       const output = optionValue(argv, '--output');
       if (output) {

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 import { TorchError } from './errors.mjs';
+import { validateSpecificationEvidence } from './specifications.mjs';
 
 const SOURCE_ROOTS = new Set(['src', 'app', 'apps', 'server', 'client', 'lib', 'packages', 'services']);
 const IGNORED_ROOTS = new Set(['node_modules', 'dist', 'build', 'coverage', 'vendor', 'artifacts', 'reports']);
@@ -141,12 +142,59 @@ function domainFromComponent(component) {
   };
 }
 
+function words(value) {
+  return new Set(value.toLowerCase().match(/[a-z0-9]{3,}/g) ?? []);
+}
+
+function overlap(left, right) {
+  const a = words(left);
+  const b = words(right);
+  return [...a].filter((word) => b.has(word)).length;
+}
+
+function specDomain(signal, specification) {
+  return {
+    id: signal.id,
+    title: signal.title,
+    kind: 'planning',
+    scope: signal.responsibilities.length
+      ? signal.responsibilities
+      : [`responsibilities described by ${specification.path}:${signal.line}`],
+    not_scope: [],
+    owned_paths: signal.pathReferences,
+    shared_paths: [], neighbours: [], required_checks: [], runtime: 'claude',
+    evidence: [`${specification.path}:${signal.line}`],
+    design_status: signal.pathReferences.length ? 'evidence-backed' : 'needs-owner-path-review',
+  };
+}
+
 export function proposeDomains({ repository, analysis }) {
   const graph = analysis.architecture;
   const sourceComponents = graph.components.filter((component) => !SHARED_PATTERN.test(component.key));
+  const specFirst = sourceComponents.length === 0;
   const selected = sourceComponents.filter((component) => component.fileCount >= 2);
   const basis = selected.length ? selected : sourceComponents.slice(0, 1);
   const domains = basis.map(domainFromComponent);
+  const specifications = analysis.specifications ?? [];
+  const signals = specifications.flatMap((specification) =>
+    specification.domainSignals.map((signal) => ({ signal, specification })));
+
+  for (const { signal, specification } of signals) {
+    const candidate = domains
+      .map((domain) => ({ domain, score: overlap(`${domain.id} ${domain.title} ${domain.owned_paths.join(' ')}`, `${signal.title} ${signal.pathReferences.join(' ')}`) }))
+      .sort((a, b) => b.score - a.score)[0];
+    if (candidate?.score > 0) {
+      for (const responsibility of signal.responsibilities) {
+        if (!candidate.domain.scope.includes(responsibility)) candidate.domain.scope.push(responsibility);
+      }
+      candidate.domain.evidence.push(`${specification.path}:${signal.line}`);
+      continue;
+    }
+    if (signal.level <= 3 && (signal.pathReferences.length || specFirst)) {
+      const proposed = specDomain(signal, specification);
+      if (!domains.some((domain) => domain.id === proposed.id)) domains.push(proposed);
+    }
+  }
   if (!domains.length) {
     domains.push({
       id: 'core', title: 'Core project', kind: 'development',
@@ -251,6 +299,12 @@ export function proposeDomains({ repository, analysis }) {
     generatedAt: new Date().toISOString(),
     repository: { root: repository.root, initialCommit: repository.initialCommit, head: repository.head },
     review: { status: 'pending', reviewedAt: null, reviewedBy: null, notes: [] },
+    specifications: specifications.map((specification) => ({
+      path: specification.path,
+      sha256: specification.sha256,
+      bytes: specification.bytes,
+      title: specification.title,
+    })),
     domains,
     collisions: collisions.sort((a, b) => b.score - a.score || a.domains.join(':').localeCompare(b.domains.join(':'))),
     checks: analysis.inventory.checks.map((check) => ({
@@ -271,6 +325,7 @@ export function validateApprovedProposal({ proposal, repository }) {
   if (proposal?.repository?.initialCommit !== repository.initialCommit) problems.push('proposal belongs to a different Git history');
   if (proposal?.repository?.head !== repository.head) problems.push('proposal is stale because HEAD changed');
   if (!Array.isArray(proposal?.domains) || proposal.domains.length === 0) problems.push('proposal has no domains');
+  problems.push(...validateSpecificationEvidence(proposal?.specifications ?? [], repository.root));
   const ids = new Set();
   for (const domain of proposal?.domains ?? []) {
     if (!domain.id || ids.has(domain.id)) problems.push(`invalid or duplicate domain id: ${domain.id ?? '<missing>'}`);

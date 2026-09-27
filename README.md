@@ -17,6 +17,8 @@ and the first Claude reference-fleet path:
 
 - read-only Git repository inspection;
 - repository inventory and check discovery;
+- first-class repository and external-specification startup inputs;
+- spec-fingerprinted, evidence-linked fleet design with stale-spec refusal;
 - evidence-linked architecture graphs and domain-collision proposals;
 - owner-reviewed organizational proposals required before installation;
 - explicit install approval;
@@ -80,6 +82,29 @@ node bin/torch.mjs init --json
 node bin/torch.mjs analyze --json
 node bin/torch.mjs domains --output fleet-proposal.json --json
 ```
+
+Design a fleet for any selected Git project from its code, one or more project
+specifications, or both:
+
+```bash
+node bin/torch.mjs analyze \
+  --repo /path/to/project \
+  --spec /path/to/product-spec.md \
+  --json
+
+node bin/torch.mjs design \
+  --repo /path/to/project \
+  --spec /path/to/product-spec.md \
+  --output fleet-proposal.json \
+  --json
+```
+
+`--spec` is repeatable. TORCH reads specifications as untrusted project data,
+extracts responsibilities and evidence references without executing their
+contents, and records their SHA-256 digests. A prose-only project can receive a
+responsibility-oriented fleet proposal before source exists, but unresolved
+path ownership remains visibly blocked for owner review. Installation refuses
+a proposal if a selected specification has changed since design.
 
 Import an existing COMBATRIG fleet into the same pending-review proposal
 format without changing the source repository:
