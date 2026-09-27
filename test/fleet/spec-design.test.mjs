@@ -6,6 +6,9 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { createFleetDesignBrief } from '../../src/design/brief.mjs';
+import {
+  createArchitectRunPlan, runSessionArchitect, validateArchitectProposal,
+} from '../../src/design/architect.mjs';
 import { proposeDomains, validateApprovedProposal } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { inspectSpecifications } from '../../src/kernel/specifications.mjs';
@@ -126,5 +129,79 @@ test('SCN-ai-fleet-bootstrap: startup emits a bounded Session Architect brief in
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.equal(JSON.parse(result.stdout).brief.schema, brief.schema);
   assert.equal(JSON.parse(readFileSync(output, 'utf8')).role.name, 'Session Architect');
+  assert.equal(execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' }), '');
+});
+
+test('SCN-ai-fleet-planning: an explicit provider returns a semantically bounded pending proposal', async () => {
+  const root = repositoryFixture();
+  const specPath = specificationFixture();
+  mkdirSync(join(root, 'src', 'api'), { recursive: true });
+  writeFileSync(join(root, 'src', 'api', 'server.js'), 'export const api = true;\n');
+  writeFileSync(join(root, 'src', 'api', 'routes.js'), 'export const routes = true;\n');
+  execFileSync('git', ['-C', root, 'add', 'src']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'add API architecture']);
+  const repository = inspectRepository(root);
+  const specifications = inspectSpecifications([specPath], { repositoryRoot: root });
+  const analysis = analyzeRepository(repository, { specifications });
+  const proposal = proposeDomains({ repository, analysis });
+  const brief = createFleetDesignBrief({ repository, analysis, baseline: proposal });
+  const codexPlan = createArchitectRunPlan({ brief, provider: 'codex', model: 'gpt-test' });
+  assert.equal(codexPlan.args.includes('read-only'), true);
+  assert.equal(codexPlan.args.includes('--ignore-rules'), true);
+  assert.equal(codexPlan.providerCallPerformed, false);
+  const claudePlan = createArchitectRunPlan({ brief, provider: 'claude', maxBudgetUsd: 1 });
+  assert.equal(claudePlan.args.includes('plan'), true);
+  assert.equal(claudePlan.args.includes('--no-session-persistence'), true);
+  assert.equal(claudePlan.args.includes('--safe-mode'), true);
+  assert.equal(claudePlan.args.includes('--restricted'), true);
+  await assert.rejects(
+    () => runSessionArchitect({ brief, provider: 'codex', executor: async () => ({ proposal }) }),
+    (error) => error.code === 'ARCHITECT_EXECUTION_NOT_AUTHORIZED',
+  );
+  const result = await runSessionArchitect({
+    brief, provider: 'codex', model: 'gpt-test', authorized: true,
+    executor: async () => ({
+      status: 0,
+      stdout: `${JSON.stringify({
+        type: 'item.completed', item: { type: 'agent_message', text: JSON.stringify(proposal) },
+      })}\n`,
+      usage: { measurement: 'measured', inputTokens: 100, outputTokens: 50 },
+    }),
+  });
+  assert.equal(result.validation.valid, true, JSON.stringify(result.validation.problems));
+  assert.equal(result.proposal.review.status, 'pending');
+  assert.equal(result.providerCallPerformed, true);
+  assert.equal(result.usage.measurement, 'measured');
+
+  const invented = structuredClone(proposal);
+  invented.domains[0].owned_paths = ['invented/**'];
+  invented.review = { status: 'approved', reviewedAt: 'now', reviewedBy: 'model', notes: [] };
+  const rejected = validateArchitectProposal({ brief, proposal: invented });
+  assert.equal(rejected.valid, false);
+  assert.equal(rejected.problems.some((problem) => problem.includes('unapproved')), true);
+  assert.equal(rejected.problems.some((problem) => problem.includes('invented owned path')), true);
+
+  const launchDirectory = mkdtempSync(join(tmpdir(), 'torch-architect-cli-'));
+  const briefPath = join(launchDirectory, 'brief.json');
+  const proposalPath = join(launchDirectory, 'proposal.json');
+  writeFileSync(briefPath, `${JSON.stringify(brief, null, 2)}\n`);
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  const planned = spawnSync(process.execPath, [
+    CLI, 'architect', 'plan', '--brief', briefPath, '--provider', 'codex', '--json',
+  ], { cwd: launchDirectory, encoding: 'utf8' });
+  assert.equal(planned.status, 0, planned.stderr || planned.stdout);
+  assert.equal(JSON.parse(planned.stdout).providerCallPerformed, false);
+  const unauthorizedRun = spawnSync(process.execPath, [
+    CLI, 'architect', 'run', '--brief', briefPath, '--provider', 'codex',
+    '--output', join(launchDirectory, 'should-not-exist.json'), '--json',
+  ], { cwd: launchDirectory, encoding: 'utf8' });
+  assert.equal(unauthorizedRun.status, 2);
+  assert.equal(JSON.parse(unauthorizedRun.stdout).error, 'APPROVAL_REQUIRED');
+  assert.equal(existsSync(join(launchDirectory, 'should-not-exist.json')), false);
+  const validated = spawnSync(process.execPath, [
+    CLI, 'architect', 'validate', '--brief', briefPath, '--response', proposalPath, '--json',
+  ], { cwd: launchDirectory, encoding: 'utf8' });
+  assert.equal(validated.status, 0, validated.stderr || validated.stdout);
+  assert.equal(JSON.parse(validated.stdout).validation.ownerReviewRequired, true);
   assert.equal(execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' }), '');
 });

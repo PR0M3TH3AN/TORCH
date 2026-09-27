@@ -26,6 +26,9 @@ import { observeProject } from './observability/snapshot.mjs';
 import { ContextTelemetryService } from './telemetry/context.mjs';
 import { ScheduleService } from './schedules/service.mjs';
 import { createFleetDesignBrief } from './design/brief.mjs';
+import {
+  createArchitectRunPlan, loadArchitectArtifact, runSessionArchitect, validateArchitectProposal,
+} from './design/architect.mjs';
 import { FleetEvolutionService } from './evolution/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
@@ -35,6 +38,9 @@ Usage:
   torch analyze [--repo <path>] [--spec <path>] [--json]
   torch design [--repo <path>] [--spec <path>] [--output <path>] [--json]
   torch bootstrap [--repo <path>] [--spec <path>] [--output <path>] [--json]
+  torch architect plan --brief <path> --provider <claude|codex> [--model <model>] [--max-budget-usd <amount>] [--json]
+  torch architect validate --brief <path> --response <path> [--json]
+  torch architect run --brief <path> --provider <claude|codex> --output <path> [--model <model>] [--max-budget-usd <amount>] --yes [--json]
   torch domains [--repo <path>] [--spec <path>] [--output <path>] [--json]
   torch install --proposal <path> [--dry-run] [--yes] [--json]
   torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
@@ -183,6 +189,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['init-analyze', ['SCN-init-read-only']],
     ['spec-aware-design', ['SCN-spec-fleet-design', 'SCN-cli-spec-design']],
     ['ai-fleet-bootstrap', ['SCN-ai-fleet-bootstrap']],
+    ['ai-fleet-planning', ['SCN-ai-fleet-planning']],
     ['fleet-evolution', ['SCN-fleet-evolution', 'SCN-cli-fleet-evolution']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
@@ -335,6 +342,54 @@ export async function runCli(argv = process.argv.slice(2), {
         return 0;
       }
       throw new TorchError(`Unknown console operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+    }
+    if (command === 'architect') {
+      const operation = argv[1] ?? 'plan';
+      const briefPath = resolve(cwd, optionValue(argv, '--brief') ?? '');
+      const brief = loadArchitectArtifact(briefPath, 'Fleet design brief');
+      if (operation === 'validate') {
+        const responsePath = resolve(cwd, optionValue(argv, '--response') ?? '');
+        const proposal = loadArchitectArtifact(responsePath, 'Session Architect proposal');
+        const validation = validateArchitectProposal({ brief, proposal });
+        print({ proposal, validation, mutationPerformed: false }, { json });
+        return validation.valid ? 0 : 1;
+      }
+      const provider = optionValue(argv, '--provider');
+      const model = optionValue(argv, '--model');
+      const budgetValue = optionValue(argv, '--max-budget-usd');
+      const maxBudgetUsd = budgetValue === undefined ? undefined : Number(budgetValue);
+      if (budgetValue !== undefined && (!Number.isFinite(maxBudgetUsd) || maxBudgetUsd <= 0)) {
+        throw new TorchError('--max-budget-usd must be a positive number', { code: 'ARCHITECT_BUDGET_INVALID' });
+      }
+      if (operation === 'plan') {
+        print(createArchitectRunPlan({ brief, provider, model, maxBudgetUsd }), { json });
+        return 0;
+      }
+      if (operation === 'run') {
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Session Architect execution consumes provider quota. Review architect plan, then use --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        if (provider === 'claude' && maxBudgetUsd === undefined) {
+          throw new TorchError('Claude architect execution requires an explicit --max-budget-usd limit.', {
+            code: 'ARCHITECT_BUDGET_REQUIRED',
+          });
+        }
+        const output = optionValue(argv, '--output');
+        if (!output) throw new TorchError('Architect run requires --output for the validated pending proposal.', { code: 'OUTPUT_REQUIRED' });
+        const result = await runSessionArchitect({
+          brief, provider, model, maxBudgetUsd, authorized: true,
+          executor: (plan) => spawn(plan.command, plan.args, {
+            cwd: plan.cwd, input: plan.input, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 300_000,
+          }),
+        });
+        const path = resolve(cwd, output);
+        writeNewFile(path, `${JSON.stringify(result.proposal, null, 2)}\n`);
+        print({ ...result, output: path, mutationPerformed: true }, { json });
+        return 0;
+      }
+      throw new TorchError(`Unknown architect operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
     }
     const designCommand = ['init', 'analyze', 'domains', 'design', 'bootstrap'].includes(command);
     const repositoryRoot = designCommand ? resolve(cwd, optionValue(argv, '--repo') ?? '.') : cwd;

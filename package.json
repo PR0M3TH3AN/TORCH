@@ -13,6 +13,7 @@
     "./checks": "./src/checks/service.mjs",
     "./console": "./src/console/server.mjs",
     "./design/brief": "./src/design/brief.mjs",
+    "./design/architect": "./src/design/architect.mjs",
     "./evolution": "./src/evolution/service.mjs",
     "./control-plane": "./src/control-plane/service.mjs",
     "./kernel/analyze": "./src/kernel/analyze.mjs",
@@ -75,7 +76,8 @@
     "README.md",
     "LICENSE",
     "torch-release.json",
-    "site/"
+    "site/",
+    "schemas/"
   ],
   "scripts": {
     "test": "node --test --test-timeout=30000 test/fleet/*.test.mjs",

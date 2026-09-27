@@ -129,6 +129,27 @@ Codex, Claude, or other planning session can reason over that artifact without
 TORCH choosing a provider or incurring an implicit model call. `torch design`
 remains the deterministic baseline and fallback.
 
+Preview an isolated Claude or Codex architecture call, validate an externally
+produced proposal, or explicitly execute the call:
+
+```bash
+torch architect plan --brief fleet-design-brief.json --provider codex --json
+torch architect validate --brief fleet-design-brief.json --response fleet-proposal.json --json
+torch architect run --brief fleet-design-brief.json --provider codex \
+  --output fleet-proposal.json --yes --json
+
+torch architect run --brief fleet-design-brief.json --provider claude \
+  --max-budget-usd 1 --output fleet-proposal.json --yes --json
+```
+
+Planning never invokes a provider. Running requires `--yes`; Claude also
+requires an explicit dollar ceiling. The planner is read-only and isolated
+from project agent rules, hooks, tools, and MCP configuration. TORCH rejects a
+response that changes provenance, invents ownership or evidence, references
+unknown checks/resources, chooses an unsupported runtime, adds schedules, or
+claims its own approval. A valid result still requires owner review before
+installation.
+
 Import an existing COMBATRIG fleet into the same pending-review proposal
 format without changing the source repository:
 

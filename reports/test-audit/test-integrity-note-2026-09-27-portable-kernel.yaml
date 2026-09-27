@@ -146,6 +146,10 @@ test_integrity_note:
       given: a mixed repository and an external prose specification
       when: torch bootstrap prepares the provider-independent Session Architect input
       then: repository evidence, omitted components, unmatched specification signals, trust boundaries, and the pending output contract remain explicit without mutating the project
+    - id: SCN-ai-fleet-planning
+      given: a bounded design brief and an explicitly selected planning provider
+      when: TORCH previews, executes through a virtualized provider, parses, and validates the returned proposal
+      then: planning remains read-only, execution requires authorization, provenance and evidence remain fixed, invented ownership and self-approval are rejected, and owner review remains required
     - id: SCN-fleet-evolution
       given: an installed Fleet whose Session Manager identifies recurring work without a coherent owner
       when: it proposes a durable domain and the owner explicitly approves activation
@@ -182,6 +186,7 @@ test_integrity_note:
     - proposal review status, repository commit binding, and generated domain count
     - specification digest, evidence-linked responsibility, and stale-spec refusal
     - bootstrap trust boundary, unassigned components, unmatched specification signals, and pending output contract
+    - provider plan isolation, explicit execution authority, parsed proposal, semantic findings, and retained pending review state
     - durable Fleet-change state, owner approval, configuration commit, clean worktree, prompt, live identity discovery, and isolated runtime start plan
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
@@ -246,6 +251,7 @@ test_integrity_note:
       - generic fleet templates replacing project-derived responsibilities
       - a code-layout heuristic being presented as AI architectural judgment
       - bootstrap silently calling a paid model or copying COMBATRIG domains
+      - an architect provider inheriting project instructions, mutating the repository, inventing evidence, or approving its own organization
       - a worker expanding the roster or the Session Manager activating a domain without owner approval
       - transient one-off work causing silent unbounded Fleet growth
       - COMBATRIG compatibility inventing path ownership to force a green migration

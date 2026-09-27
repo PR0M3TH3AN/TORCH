@@ -482,6 +482,16 @@ unresolved ownership, collision questions, a trust boundary, and the required
 pending-proposal contract. Producing the brief MUST NOT itself call a paid
 provider, execute project content, or approve the resulting organization.
 
+`torch architect plan` MUST show the selected provider, model, isolation,
+structured-output schema, prompt size, and budget boundary without invoking a
+model. `torch architect run` MUST require explicit quota authorization, isolate
+the planning session from project rules and write tools, and retain the
+proposal as pending. Before presenting the result for owner review, TORCH MUST
+reject changed repository/specification bindings, invented path ownership,
+unknown evidence, checks, resources, runtimes, or schedules, and any attempt
+by the model to approve its own proposal. Claude and Codex are reference
+planning adapters; the validation contract remains provider-independent.
+
 ### 10.4 Collision analysis
 
 For every proposed pair of domains, TORCH MUST identify likely collisions:
@@ -1412,6 +1422,11 @@ read-only until an approved install.
 Its scenario proves that a mixed code/spec project exposes omitted components
 and unmatched goals for AI reasoning, forbids copying COMBATRIG or a generic
 catalog, and preserves owner-only approval without mutating the project.
+
+`torch architect plan`, `validate`, and explicitly authorized `run` now carry
+that brief through isolated Claude or Codex planning and semantic validation.
+Automated coverage uses virtualized provider output; no live model usage is
+implied by the passing scenario.
 
 ### Stage 3: Claude reference fleet
 
