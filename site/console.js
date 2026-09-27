@@ -30,6 +30,13 @@ function render(snapshot) {
     <div class="list-row"><div><strong>${safe(task.title ?? task.id)}</strong><small>${safe(task.owner ?? 'unassigned')}</small></div><span>${safe(task.state)}</span></div>
   `).join('') : empty('No active tracked work.');
 
+  const changes = snapshot.fleetChanges ?? [];
+  const pendingChanges = changes.filter((change) => !['active', 'rejected'].includes(change.state));
+  $('#change-count').textContent = `${pendingChanges.length} pending`;
+  $('#change-list').innerHTML = changes.length ? changes.map((change) => `
+    <div class="list-row"><div><strong>${safe(change.title ?? change.domainId)}</strong><small>${safe(change.expectedBenefit ?? 'No expected benefit recorded')}</small></div><span>${safe(change.state)}</span></div>
+  `).join('') : empty('No Fleet changes proposed. The current roster remains in force.');
+
   const integrations = snapshot.integration ?? [];
   $('#integration-list').innerHTML = integrations.length ? integrations.map((item) => `
     <div class="list-row"><div><strong>${safe(item.sourceArea)}</strong><small>${safe(item.sourceCommit?.slice(0, 9))}</small></div><span>${safe(item.state)}</span></div>

@@ -34,6 +34,7 @@ function releaseCandidate(root, version) {
     'SCN-init-read-only', 'SCN-cli-domain-review', 'SCN-worktree-bootstrap', 'SCN-mixed-runtime',
     'SCN-spec-fleet-design', 'SCN-cli-spec-design',
     'SCN-ai-fleet-bootstrap',
+    'SCN-fleet-evolution', 'SCN-cli-fleet-evolution',
     'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
     'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
     'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',

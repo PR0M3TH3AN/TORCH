@@ -78,7 +78,9 @@ function rowToAgent(row, rosterAgent) {
     sharedPaths: rosterAgent.shared_paths ?? [],
     neighbours: rosterAgent.neighbours ?? [],
     requiredChecks: rosterAgent.required_checks ?? [],
+    resources: rosterAgent.resources ?? [],
     runtime: row?.runtime ?? null,
+    model: rosterAgent.model ?? null,
     runtimeSessionId: row?.runtime_session_id ?? null,
     state: row?.state ?? 'offline',
     summary: row?.summary ?? null,
@@ -224,11 +226,27 @@ export class ControlPlane {
     for (const areaId of this.agents.keys()) insert.run(areaId, 'offline');
   }
 
+  refreshRoster() {
+    const roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'INVALID_TORCH_ROSTER');
+    const agents = new Map((roster.areas ?? []).map((area) => [area.id, area]));
+    if (!agents.has('session-manager')) {
+      throw new TorchError('Roster does not contain the required session-manager identity', {
+        code: 'INVALID_TORCH_ROSTER',
+      });
+    }
+    const insert = this.database.prepare('INSERT OR IGNORE INTO identities (area_id, state) VALUES (?, ?)');
+    for (const areaId of agents.keys()) insert.run(areaId, 'offline');
+    this.roster = roster;
+    this.agents = agents;
+    return { schema: roster.schema, areaIds: [...agents.keys()] };
+  }
+
   close() {
     this.database.close();
   }
 
   assertIdentity(areaId) {
+    this.refreshRoster();
     const normalized = requiredText(areaId, 'areaId');
     if (!this.agents.has(normalized)) {
       throw new TorchError(`Unknown Fleet identity: ${normalized}`, {

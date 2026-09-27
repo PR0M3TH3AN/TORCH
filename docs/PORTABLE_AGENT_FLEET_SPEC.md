@@ -695,6 +695,22 @@ The Session Manager normally does not implement product features. It:
 9. manages convergence and landing according to policy;
 10. reports decisions, risks, blockers, milestones, and review-ready outcomes
     to the owner.
+11. detects recurring or unowned work that may justify a new persistent domain;
+12. proposes evidence-backed domain additions, merges, splits, or retirements,
+    including expected context-locality benefit and coordination cost.
+
+The Session Manager MUST NOT grow the Fleet merely because a new task appears.
+A persistent domain change requires evidence of recurring work, a coherent
+ownership boundary, or a material verification or context-locality benefit.
+The owner MUST approve the change before TORCH changes the roster. An approved
+addition is wired into the same provider-independent control plane with its
+identity, prompt, ownership, neighbours, branch, worktree, checks, resources,
+and runtime policy. Runtime launch remains a separate explicit action because
+it may consume provider quota; TORCH MUST be able to plan and launch only the
+newly activated identity rather than restarting the Fleet. Existing
+control-plane processes MUST discover the new identity without discarding
+durable state. Fleet evolution MUST also support future merge and retirement
+proposals so session count cannot grow without review.
 
 The owner SHOULD not need to operate many independent agent inboxes. Routine
 peer coordination stays inside the Fleet.

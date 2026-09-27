@@ -134,6 +134,63 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
   };
 }
 
+export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adapters, fresh = false } = {}) {
+  const { config, roster } = loadFleetDefinition(repositoryRoot);
+  const manifest = readInstallManifest(repositoryRoot);
+  const worktree = worktreesByArea(manifest).get(areaId);
+  const area = roster.areas.find((candidate) => candidate.id === areaId);
+  const blockers = [];
+  if (!area) blockers.push({ areaId, code: 'FLEET_IDENTITY_MISSING' });
+  if (!worktree) blockers.push({ areaId, code: 'WORKTREE_MISSING' });
+  if (blockers.length) {
+    return {
+      action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+      actions: [], blockers, canProceed: false, mutationPerformed: false,
+    };
+  }
+  const runtimes = adapterMap({ adapter, adapters });
+  const runtime = configuredRuntime(area, config);
+  const runtimeAdapter = runtimes.get(runtime);
+  if (!runtimeAdapter) blockers.push({ areaId, code: 'RUNTIME_ADAPTER_MISSING', runtime });
+  else if (runtimeAdapter.name !== runtime) {
+    blockers.push({ areaId, code: 'RUNTIME_ADAPTER_MISMATCH', runtime, adapter: runtimeAdapter.name });
+  }
+  if (blockers.length) {
+    return {
+      action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+      actions: [], blockers, canProceed: false, mutationPerformed: false,
+    };
+  }
+  validateRuntimeAdapter(runtimeAdapter);
+  const identity = controlPlane.identity(area.id);
+  const prompts = promptPaths(localStateRoot(manifest), worktree, area.id);
+  const runtimeConfig = config.runtimes?.[runtime] ?? {};
+  const model = area.model ?? runtimeConfig.model;
+  const background = runtimeConfig.background ?? true;
+  const shouldResume = !fresh && identity.runtime === runtime && Boolean(identity.runtimeSessionId);
+  const runtimePlan = shouldResume
+    ? runtimeAdapter.resumeSession({
+      areaId: area.id, runtimeSessionId: identity.runtimeSessionId, worktree: worktree.path,
+      model, background, message: startupMessage(area.id, false),
+    })
+    : runtimeAdapter.createSession({
+      areaId: area.id, title: area.title, worktree: worktree.path, promptFile: prompts.combined,
+      firstMessage: startupMessage(area.id, true), model, background,
+    });
+  const action = {
+    areaId: area.id, title: area.title, mode: shouldResume ? 'resume' : 'create',
+    runtime: runtimeAdapter.name, runtimeSessionId: runtimePlan.runtimeSessionId,
+    requiresRuntimeIdCapture: runtimePlan.requiresRuntimeIdCapture ?? false,
+    completionState: runtimePlan.completionState ?? 'starting',
+    worktree: worktree.path, branch: worktree.branch, promptFile: prompts.combined,
+    promptSources: [prompts.common, prompts.area], launch: runtimePlan.launch,
+  };
+  return {
+    action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+    actions: [action], blockers, canProceed: true, mutationPerformed: false,
+  };
+}
+
 function writeCombinedPrompt(action) {
   const content = action.promptSources.map((path) => readFileSync(path, 'utf8').trimEnd()).join('\n\n');
   mkdirSync(dirname(action.promptFile), { recursive: true });

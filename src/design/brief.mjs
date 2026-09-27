@@ -77,6 +77,7 @@ export function createFleetDesignBrief({ repository, analysis, baseline } = {}) 
       domainFields: [
         'id', 'title', 'kind', 'scope', 'not_scope', 'owned_paths', 'shared_paths',
         'neighbours', 'required_checks', 'runtime', 'evidence',
+        'resources',
       ],
       topLevelFields: [
         'schema', 'generatedAt', 'repository', 'review', 'specifications', 'domains',

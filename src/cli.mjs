@@ -19,13 +19,14 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { writeNewFile } from './kernel/files.mjs';
 import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
-import { planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lifecycle.mjs';
+import { planAreaUp, planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lifecycle.mjs';
 import { ResourceService } from './resources/service.mjs';
 import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
 import { observeProject } from './observability/snapshot.mjs';
 import { ContextTelemetryService } from './telemetry/context.mjs';
 import { ScheduleService } from './schedules/service.mjs';
 import { createFleetDesignBrief } from './design/brief.mjs';
+import { FleetEvolutionService } from './evolution/service.mjs';
 
 const HELP = `TORCH — portable agent fleet
 
@@ -90,6 +91,13 @@ Usage:
   torch schedules runs [--id <schedule>] [--json]
   torch schedules plan --id <schedule> --actor <id|owner> [--json]
   torch schedules run --id <schedule> --actor <id|owner> [--yes] [--json]
+  torch fleet changes [--state <state>] [--json]
+  torch fleet get --change <id> [--json]
+  torch fleet propose --from session-manager --proposal <path> [--json]
+  torch fleet approve --change <id> --by <owner> --yes [--json]
+  torch fleet plan --change <id> [--json]
+  torch fleet activate --change <id> --by <owner> --yes [--json]
+  torch fleet start --change <id> [--fresh] [--dry-run] --yes [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -132,6 +140,13 @@ function loadProposal(cwd, proposalPath) {
   }
 }
 
+function loadJsonFile(cwd, inputPath, { label = 'JSON input', code = 'INPUT_INVALID' } = {}) {
+  if (!inputPath) throw new TorchError(`${label} path is required`, { code });
+  try { return JSON.parse(readFileSync(resolve(cwd, inputPath), 'utf8')); } catch (error) {
+    throw new TorchError(`Cannot read ${label}: ${inputPath}`, { code, details: error.message });
+  }
+}
+
 function withControlPlane(repository, env, callback) {
   const controlPlane = openControlPlane({ repositoryRoot: repository.root, env });
   try {
@@ -168,6 +183,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['init-analyze', ['SCN-init-read-only']],
     ['spec-aware-design', ['SCN-spec-fleet-design', 'SCN-cli-spec-design']],
     ['ai-fleet-bootstrap', ['SCN-ai-fleet-bootstrap']],
+    ['fleet-evolution', ['SCN-fleet-evolution', 'SCN-cli-fleet-evolution']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -533,6 +549,67 @@ export async function runCli(argv = process.argv.slice(2), {
         path: optionValue(argv, '--path'), task: optionValue(argv, '--task'), reason: optionValue(argv, '--reason'),
       })), { json });
       return 0;
+    }
+    if (command === 'fleet') {
+      const operation = argv[1] ?? 'changes';
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const evolution = new FleetEvolutionService({ repositoryRoot: repository.root, controlPlane: control });
+        const changeId = optionValue(argv, '--change');
+        if (operation === 'changes') print({ changes: evolution.list({ state: optionValue(argv, '--state') }) }, { json });
+        else if (operation === 'get') print(evolution.get(changeId), { json });
+        else if (operation === 'propose') {
+          const input = loadJsonFile(cwd, optionValue(argv, '--proposal'), {
+            label: 'Fleet domain proposal', code: 'FLEET_PROPOSAL_INVALID',
+          });
+          print(evolution.proposeDomain({
+            ...input, proposer: optionValue(argv, '--from') ?? input.proposer,
+          }), { json });
+        } else if (operation === 'approve') {
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Owner approval of a Fleet change requires explicit --yes.', { code: 'APPROVAL_REQUIRED' });
+          }
+          print(evolution.approve({ changeId, approvedBy: optionValue(argv, '--by') }), { json });
+        } else if (operation === 'plan') print(evolution.planActivation(changeId), { json });
+        else if (operation === 'activate') {
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Fleet activation commits configuration and creates a worktree. Review fleet plan, then use --yes.', {
+              code: 'APPROVAL_REQUIRED',
+            });
+          }
+          print(evolution.activate({ changeId, approvedBy: optionValue(argv, '--by') }), { json });
+        } else if (operation === 'start') {
+          const change = evolution.get(changeId);
+          if (change.state !== 'active') {
+            throw new TorchError('Only an active Fleet domain can start a runtime session', {
+              code: 'FLEET_CHANGE_STATE_CONFLICT', details: { state: change.state },
+            });
+          }
+          const adapters = runtimeAdapters();
+          const plan = planAreaUp({
+            repositoryRoot: repository.root, controlPlane: control, areaId: change.domain.id,
+            adapters, fresh: argv.includes('--fresh'),
+          });
+          if (argv.includes('--dry-run')) {
+            print(plan, { json });
+            return plan.canProceed ? 0 : 1;
+          }
+          if (!argv.includes('--yes')) {
+            throw new TorchError('Starting the new domain invokes its configured AI runtime. Review --dry-run, then use --yes.', {
+              code: 'APPROVAL_REQUIRED',
+            });
+          }
+          print(startFleet({
+            plan, controlPlane: control, adapters,
+            executor: (launch) => spawn(launch.command, launch.args, {
+              cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+            }),
+          }), { json });
+        } else throw new TorchError(`Unknown fleet operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+        return 0;
+      } finally {
+        control.close();
+      }
     }
     if (command === 'backlog') {
       const operation = argv[1] ?? 'list';

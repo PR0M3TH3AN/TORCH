@@ -146,6 +146,14 @@ test_integrity_note:
       given: a mixed repository and an external prose specification
       when: torch bootstrap prepares the provider-independent Session Architect input
       then: repository evidence, omitted components, unmatched specification signals, trust boundaries, and the pending output contract remain explicit without mutating the project
+    - id: SCN-fleet-evolution
+      given: an installed Fleet whose Session Manager identifies recurring work without a coherent owner
+      when: it proposes a durable domain and the owner explicitly approves activation
+      then: TORCH commits the roster change, provisions its branch and clean worktree, exposes the identity to existing and restarted control-plane clients, and can start only that identity through a virtualized adapter
+    - id: SCN-cli-fleet-evolution
+      given: an installed Fleet and a file-backed proposed domain
+      when: the manager proposes it and the owner separately approves, plans, and activates it through the public CLI
+      then: missing approval is refused and the activated identity is queryable through the ordinary Fleet CLI
     - id: SCN-product-site
       given: the redesigned TORCH public surface
       when: its product story and local-console boundary are inspected
@@ -174,6 +182,7 @@ test_integrity_note:
     - proposal review status, repository commit binding, and generated domain count
     - specification digest, evidence-linked responsibility, and stale-spec refusal
     - bootstrap trust boundary, unassigned components, unmatched specification signals, and pending output contract
+    - durable Fleet-change state, owner approval, configuration commit, clean worktree, prompt, live identity discovery, and isolated runtime start plan
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
     - unchanged Git status and absent database before and after console observation
@@ -237,6 +246,8 @@ test_integrity_note:
       - generic fleet templates replacing project-derived responsibilities
       - a code-layout heuristic being presented as AI architectural judgment
       - bootstrap silently calling a paid model or copying COMBATRIG domains
+      - a worker expanding the roster or the Session Manager activating a domain without owner approval
+      - transient one-off work causing silent unbounded Fleet growth
       - COMBATRIG compatibility inventing path ownership to force a green migration
       - a disconnected dashboard inventing state or creating it during observation
       - public copy claiming live qualification that only virtualized tests prove

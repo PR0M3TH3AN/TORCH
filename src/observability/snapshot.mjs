@@ -78,6 +78,7 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     checks: { definitions: config.checks ?? [], receipts: [] },
     resources: { definitions: config.resources ?? [], holders: [], waiters: [] },
     integration: [],
+    fleetChanges: [],
     schedules: config.schedules ?? [],
     audit: [],
     contextLocality: {
@@ -134,6 +135,13 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     result.integration = rows(database, 'integration_requests', `
       SELECT id, source_area AS sourceArea, source_commit AS sourceCommit, target_branch AS targetBranch, state, reason, updated_at AS updatedAt
       FROM integration_requests ORDER BY updated_at DESC LIMIT 40
+    `);
+    result.fleetChanges = rows(database, 'fleet_changes', `
+      SELECT id, state, proposer, json_extract(domain_json, '$.id') AS domainId,
+        json_extract(domain_json, '$.title') AS title,
+        json_extract(expected_benefit_json, '$.summary') AS expectedBenefit,
+        approved_by AS approvedBy, updated_at AS updatedAt
+      FROM fleet_changes ORDER BY updated_at DESC, id LIMIT 40
     `);
     result.audit = rows(database, 'audit_events', `
       SELECT id, actor_id AS actorId, operation, entity_type AS entityType, entity_id AS entityId, created_at AS createdAt

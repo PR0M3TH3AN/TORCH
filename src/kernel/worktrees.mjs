@@ -116,7 +116,7 @@ export function planWorktrees({ repository, parentOverride } = {}) {
   };
 }
 
-function ensureTaskIgnored(root, installationId) {
+export function ensureTaskIgnored(root, installationId) {
   const common = git(root, ['rev-parse', '--git-common-dir']);
   const commonPath = isAbsolute(common) ? common : resolve(root, common);
   const excludePath = join(commonPath, 'info', 'exclude');
@@ -127,7 +127,7 @@ function ensureTaskIgnored(root, installationId) {
   return { path: excludePath, added: true };
 }
 
-function removeTaskIgnore(record, installationId) {
+export function removeTaskIgnore(record, installationId) {
   if (!record.added || !existsSync(record.path)) return;
   const marker = `# TORCH ${installationId}\n.task\n`;
   const content = readFileSync(record.path, 'utf8');

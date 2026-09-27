@@ -53,6 +53,9 @@ export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   'torch_schedule_runs',
   'torch_plan_schedule',
   'torch_run_schedule',
+  'torch_list_fleet_changes',
+  'torch_get_fleet_change',
+  'torch_propose_domain',
 ]);
 
 function claimedIdentity(controlPlane, actorId, claim, field) {
@@ -72,6 +75,7 @@ function claimedIdentity(controlPlane, actorId, claim, field) {
 
 export function createTorchToolset(controlPlane, {
   actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
+  evolutionService,
 } = {}) {
   const tools = new Map([
     ['torch_identity', {
@@ -391,6 +395,48 @@ export function createTorchToolset(controlPlane, {
       invoke: ({ schedule_id: scheduleId }) => scheduleService.run({ scheduleId, actorId, approved: false }),
     });
   }
+  if (evolutionService) {
+    tools.set('torch_list_fleet_changes', {
+      description: 'List durable proposed, approved, provisioning, or active Fleet organization changes.',
+      schema: { state: z.enum(['proposed', 'approved', 'provisioning', 'active', 'rejected']).optional() },
+      invoke: ({ state }) => ({ changes: evolutionService.list({ state }) }),
+    });
+    tools.set('torch_get_fleet_change', {
+      description: 'Read one durable Fleet organization change and its owner-approval state.',
+      schema: { change_id: z.string().min(1) },
+      invoke: ({ change_id: changeId }) => evolutionService.get(changeId),
+    });
+    tools.set('torch_propose_domain', {
+      description: 'Propose an evidence-backed persistent domain as the bound Session Manager. This never approves or activates it.',
+      schema: {
+        proposer: z.string().min(1).optional(),
+        domain: z.object({
+          id: z.string().min(1), title: z.string().min(1), kind: z.string().min(1).optional(),
+          scope: z.array(z.string().min(1)).min(1), not_scope: z.array(z.string().min(1)).optional(),
+          owned_paths: z.array(z.string().min(1)).min(1), shared_paths: z.array(z.string().min(1)).optional(),
+          neighbours: z.array(z.string().min(1)).optional(), required_checks: z.array(z.string().min(1)).optional(),
+          resources: z.array(z.string().min(1)).optional(),
+          runtime: z.string().min(1).optional(), branch: z.string().min(1).optional(),
+          model: z.string().min(1).optional(),
+          worktree_name: z.string().min(1).optional(),
+        }),
+        rationale: z.string().min(1),
+        expected_benefit: z.object({
+          summary: z.string().min(1), recurring_work: z.string().min(1),
+          context_locality: z.string().min(1), coordination_cost: z.string().min(1),
+        }),
+        evidence: z.array(z.string().min(1)).min(1),
+      },
+      invoke: ({ proposer, expected_benefit: benefit, ...input }) => evolutionService.proposeDomain({
+        ...input,
+        proposer: claimedIdentity(controlPlane, actorId, proposer, 'proposer'),
+        expectedBenefit: {
+          summary: benefit.summary, recurringWork: benefit.recurring_work,
+          contextLocality: benefit.context_locality, coordinationCost: benefit.coordination_cost,
+        },
+      }),
+    });
+  }
   return tools;
 }
 
@@ -403,6 +449,7 @@ export function callTorchTool(controlPlane, name, input = {}, options = {}) {
 
 export function createTorchMcpServer(controlPlane, {
   actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
+  evolutionService,
 } = {}) {
   controlPlane.assertIdentity(actorId);
   const server = new McpServer(
@@ -413,6 +460,7 @@ export function createTorchMcpServer(controlPlane, {
   );
   for (const [name, tool] of createTorchToolset(controlPlane, {
     actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
+    evolutionService,
   })) {
     server.registerTool(name, { description: tool.description, inputSchema: tool.schema }, async (input) => {
       try {

@@ -31,6 +31,7 @@ test('SCN-product-site: public surface explains the portable fleet and separates
   assert.match(html, /Live gate open/);
   assert.match(html, /Context savings are a measured hypothesis/);
   assert.match(html, /torch\.mjs bootstrap/);
+  assert.match(html, /manager can propose another specialist[\s\S]*owner approval/i);
   assert.doesNotMatch(html, /nostr|relay coordination|task lock/i);
   assert.match(consoleHtml, /Local Fleet Console/);
   assert.match(consoleHtml, /noindex,nofollow/);
@@ -53,6 +54,7 @@ test('SCN-console-readonly: HTTP console serves fixed assets and observes an ins
   assert.equal(observed.mutationPerformed, false);
   assert.equal(observed.agents.length, proposal.domains.length + 1);
   assert.equal(observed.contextLocality.measured, false);
+  assert.deepEqual(observed.fleetChanges, []);
   assert.equal(existsSync(databasePath), false);
   assert.equal(execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' }), before);
 

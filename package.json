@@ -13,6 +13,7 @@
     "./checks": "./src/checks/service.mjs",
     "./console": "./src/console/server.mjs",
     "./design/brief": "./src/design/brief.mjs",
+    "./evolution": "./src/evolution/service.mjs",
     "./control-plane": "./src/control-plane/service.mjs",
     "./kernel/analyze": "./src/kernel/analyze.mjs",
     "./kernel/git": "./src/kernel/git.mjs",
@@ -59,6 +60,7 @@
     "src/console/",
     "src/control-plane/",
     "src/design/",
+    "src/evolution/",
     "src/kernel/",
     "src/integration/",
     "src/importers/",
@@ -80,8 +82,8 @@
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs && node --check src/console/server.mjs && node --check site/app.js && node --check site/console.js",
     "site:serve": "node bin/torch.mjs console serve",
-    "format": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/design src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet --fix",
-    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/design src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet"
+    "format": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/design src/evolution src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet --fix",
+    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/console src/control-plane src/design src/evolution src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",

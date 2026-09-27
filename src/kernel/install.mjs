@@ -67,7 +67,9 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       shared_paths: domain.shared_paths ?? [],
       neighbours: domain.neighbours ?? [],
       required_checks: domain.required_checks ?? [],
+      resources: domain.resources ?? [],
       runtime: domain.runtime ?? 'claude',
+      model: domain.model ?? null,
       branch: domain.branch ?? null,
       worktree_name: domain.worktree_name ?? null,
     })),
@@ -85,6 +87,10 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
     }, ...config.domains],
   };
 
+  const managerPrompt = `${promptContent(
+    proposal.session_manager?.prompt_source,
+    '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n',
+  ).trimEnd()}\n\n## Fleet evolution\n\nWhen recurring work has no coherent owner, or a durable specialist would materially improve context locality, ownership clarity, or verification, use \`torch_propose_domain\` to submit an evidence-backed Fleet change. Use \`torch_list_fleet_changes\` to follow its state. Never create, approve, or activate a persistent identity yourself; owner approval and CLI activation are separate. Also recommend merge or retirement when coordination cost exceeds the value of a persistent session.\n`;
   const files = new Map([
     ['torch.yaml', jsonYaml(config)],
     ['roster.yaml', jsonYaml(roster)],
@@ -94,10 +100,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       proposal.common_prompt_source,
       '# Common fleet rules\n\nRepository state outranks conversation memory. Query ownership before crossing a domain boundary.\n',
     )],
-    ['prompts/session-manager.md', promptContent(
-      proposal.session_manager?.prompt_source,
-      '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n',
-    )],
+    ['prompts/session-manager.md', managerPrompt],
     ['backlog/.gitkeep', ''],
     ['INSTALLATION.md', `# TORCH installation\n\nInstalled ${createdAt}. Run \`torch doctor\` before starting the fleet.\n`],
   ]);
@@ -118,6 +121,10 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       '## Neighbours',
       '',
       ...(domain.neighbours.length ? domain.neighbours : ['None identified.']).map((item) => `- ${item}`),
+      '',
+      '## Resources',
+      '',
+      ...(domain.resources.length ? domain.resources : ['No scarce resources declared.']).map((item) => `- ${item}`),
       '',
       '## First move',
       '',

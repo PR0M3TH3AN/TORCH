@@ -58,6 +58,9 @@ and the first Claude reference-fleet path:
   estimates and relates cost/cache behavior to verified work;
 - validated system/session schedules with shell-free actions, authority,
   retries, durable run evidence, and explicit approval for mutation.
+- durable Fleet evolution: the Session Manager can propose a justified new
+  persistent domain, while owner approval gates the configuration commit,
+  identity, prompt, branch, and worktree activation.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
 cutover, persistent system-schedule launcher integration, and public deployment
@@ -160,6 +163,26 @@ node bin/torch.mjs down --dry-run --json
 node bin/torch.mjs down --yes --json
 ```
 
+The Fleet can evolve when recurring work develops a coherent new boundary.
+The Session Manager may propose the domain through MCP or the CLI, but cannot
+approve or activate it. Owner approval and activation are deliberately
+separate, and runtime startup remains another explicit step:
+
+```bash
+torch fleet propose --from session-manager --proposal new-domain.json --json
+torch fleet approve --change <change-id> --by <owner> --yes --json
+torch fleet plan --change <change-id> --json
+torch fleet activate --change <change-id> --by <owner> --yes --json
+torch fleet start --change <change-id> --fresh --dry-run --json
+torch fleet start --change <change-id> --fresh --yes --json
+```
+
+The proposal records recurring-work evidence, anticipated context-locality
+benefit, coordination cost, ownership, neighbours, checks, and runtime. TORCH
+rejects silent ownership overlap, unknown checks/runtimes, worker-created
+roster changes, stale activation commits, and activation without matching
+owner approval.
+
 The CLI fallback exposes `agents`, `who-owns`, `message`, `inbox`, `ack`,
 `status`, `complete`, `blocked`, `coordinate`, `handoff`, and the tracked
 `backlog` lifecycle. MCP hosts launch
@@ -239,6 +262,8 @@ timers.
 - Every domain has explicit scope and explicit exclusions.
 - Peers coordinate directly; the Session Manager controls priority and
   ownership.
+- The Session Manager may propose Fleet growth; only the owner can approve and
+  activate persistent roster changes.
 - Monitoring may be automatic; active worktrees are changed intentionally.
 - Verification belongs to an exact commit.
 - The TORCH engine runs outside the repository it manages.

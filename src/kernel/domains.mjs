@@ -137,6 +137,7 @@ function domainFromComponent(component) {
     shared_paths: [],
     neighbours: [],
     required_checks: [],
+    resources: [],
     runtime: 'claude',
     evidence: component.evidence,
   };
@@ -162,7 +163,7 @@ function specDomain(signal, specification) {
       : [`responsibilities described by ${specification.path}:${signal.line}`],
     not_scope: [],
     owned_paths: signal.pathReferences,
-    shared_paths: [], neighbours: [], required_checks: [], runtime: 'claude',
+    shared_paths: [], neighbours: [], required_checks: [], resources: [], runtime: 'claude',
     evidence: [`${specification.path}:${signal.line}`],
     design_status: signal.pathReferences.length ? 'evidence-backed' : 'needs-owner-path-review',
   };
@@ -200,6 +201,7 @@ export function proposeDomains({ repository, analysis }) {
       id: 'core', title: 'Core project', kind: 'development',
       scope: ['initial project implementation and architecture'],
       not_scope: [], owned_paths: ['**'], shared_paths: [], neighbours: [], required_checks: [],
+      resources: [],
       runtime: 'claude',
       evidence: analysis.inventory.manifests,
     });
@@ -212,6 +214,7 @@ export function proposeDomains({ repository, analysis }) {
       not_scope: ['implementing domain features solely to make checks pass'],
       owned_paths: ['test/**', 'tests/**', 'e2e/**'], shared_paths: [], neighbours: [],
       required_checks: [], evidence: graph.verificationSurfaces.slice(0, 12),
+      resources: [],
       runtime: 'claude',
     });
   }
@@ -222,6 +225,7 @@ export function proposeDomains({ repository, analysis }) {
       not_scope: ['feature implementation', 'deployment without configured authority'],
       owned_paths: graph.operationalSurfaces.filter((path) => /deploy|release|workflow/i.test(path)).slice(0, 20),
       shared_paths: [], neighbours: [], required_checks: [],
+      resources: [],
       runtime: 'claude',
       evidence: graph.operationalSurfaces.slice(0, 12),
     });
@@ -333,6 +337,7 @@ export function validateApprovedProposal({ proposal, repository }) {
     ids.add(domain.id);
     if (!domain.scope?.length) problems.push(`domain ${domain.id} has no scope`);
     if (!Array.isArray(domain.not_scope)) problems.push(`domain ${domain.id} has no not_scope list`);
+    if (domain.resources !== undefined && !Array.isArray(domain.resources)) problems.push(`domain ${domain.id} has an invalid resources list`);
     if (!domain.owned_paths?.length) problems.push(`domain ${domain.id} has no owned paths`);
     if (domain.runtime !== undefined && (typeof domain.runtime !== 'string' || !domain.runtime.trim())) {
       problems.push(`domain ${domain.id} has an invalid runtime`);
