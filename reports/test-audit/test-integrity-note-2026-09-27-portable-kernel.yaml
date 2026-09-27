@@ -1,6 +1,7 @@
 test_integrity_note:
   change_type:
     - new_tests
+    - spec_correction
   scenarios:
     - id: SCN-init-read-only
       given: a normal Git repository with committed project files
@@ -217,7 +218,7 @@ test_integrity_note:
     - id: SCN-product-site
       given: the redesigned TORCH public surface
       when: its product story and local-console boundary are inspected
-      then: it explains project-derived fleets, exact-commit routing, honest open gates, and measured context claims without obsolete product language
+      then: it explains project-derived fleets, exact-commit routing, honest open gates, and measured context claims without obsolete product language, and onboarding uses the installed public launcher rather than source-checkout internals
     - id: SCN-architecture-decisions
       given: the ten implementation decisions required by the portable Fleet specification
       when: the repository architecture ledger is inspected

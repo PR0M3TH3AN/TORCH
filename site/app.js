@@ -33,26 +33,46 @@ routeButton?.addEventListener('click', () => {
 
 const commands = {
   both: [
-    'node bin/torch.mjs bootstrap \\',
+    'torch bootstrap \\',
     '  --repo /path/to/project \\',
     '  --spec /path/to/product-spec.md \\',
     '  --output fleet-design-brief.json \\',
     '  --json',
   ].join('\n'),
   repo: [
-    'node bin/torch.mjs bootstrap \\',
+    'torch bootstrap \\',
     '  --repo /path/to/project \\',
     '  --output fleet-design-brief.json \\',
     '  --json',
   ].join('\n'),
 };
 const command = document.querySelector('#start-command');
-document.querySelectorAll('[data-command]').forEach((button) => button.addEventListener('click', () => {
-  document.querySelectorAll('[data-command]').forEach((tab) => tab.setAttribute('aria-selected', String(tab === button)));
+const commandTabs = [...document.querySelectorAll('[data-command]')];
+function selectCommand(button) {
+  commandTabs.forEach((tab) => {
+    tab.setAttribute('aria-selected', String(tab === button));
+    tab.tabIndex = tab === button ? 0 : -1;
+  });
   command.textContent = commands[button.dataset.command];
-}));
+  command.setAttribute('aria-labelledby', button.id);
+}
+commandTabs.forEach((button, buttonIndex) => {
+  button.addEventListener('click', () => selectCommand(button));
+  button.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+    event.preventDefault();
+    const offset = event.key === 'ArrowRight' ? 1 : -1;
+    const target = commandTabs[(buttonIndex + offset + commandTabs.length) % commandTabs.length];
+    selectCommand(target);
+    target.focus();
+  });
+});
 document.querySelector('#copy-command')?.addEventListener('click', async (event) => {
-  await navigator.clipboard.writeText(command.textContent);
-  event.currentTarget.textContent = 'Copied';
+  try {
+    await navigator.clipboard.writeText(command.textContent);
+    event.currentTarget.textContent = 'Copied';
+  } catch {
+    event.currentTarget.textContent = 'Copy unavailable';
+  }
   setTimeout(() => { event.currentTarget.textContent = 'Copy command'; }, 1500);
 });

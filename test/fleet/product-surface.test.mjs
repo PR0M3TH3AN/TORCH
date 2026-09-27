@@ -31,7 +31,10 @@ test('SCN-product-site: public surface explains the portable fleet and separates
   assert.match(html, /Exact-commit checks/);
   assert.match(html, /Live gate open/);
   assert.match(html, /Context savings are a measured hypothesis/);
-  assert.match(html, /torch\.mjs bootstrap/);
+  assert.match(html, /torch bootstrap/);
+  assert.doesNotMatch(html, /node bin\/torch\.mjs/);
+  assert.match(html, /Isolated build \+ activation/);
+  assert.match(html, /data-label="Evidence"/);
   assert.match(html, /manager can propose another specialist[\s\S]*owner approval/i);
   assert.doesNotMatch(html, /nostr|relay coordination|task lock/i);
   assert.match(consoleHtml, /Local Fleet Console/);

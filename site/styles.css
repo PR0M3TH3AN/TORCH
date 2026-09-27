@@ -154,14 +154,16 @@ footer div { display: flex; gap: 1.5rem; }
 
 @media (max-width: 600px) {
   body { font-size: 16px; }
-  .masthead { padding-block: 1rem; align-items: flex-start; }
-  nav { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem 1rem; }
+  .masthead { padding-block: 1rem; align-items: stretch; flex-direction: column; gap: 1rem; }
+  nav { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem 1.5rem; font-size: .95rem; }
   .hero { padding-top: 4rem; }
   h1 { font-size: clamp(3rem, 13vw, 5.2rem); }
   .hero-actions, footer { align-items: flex-start; flex-direction: column; }
   .peer { display: none; }
   .ledger-row { grid-template-columns: 1fr; gap: .25rem; }
   .ledger-head { display: none; }
+  .ledger-row > [data-label]::before { content: attr(data-label) ": "; color: var(--muted); font-weight: 500; }
+  .ledger-row > [data-label="Capability"]::before { content: ""; }
   .context-diagram { grid-template-columns: 1fr; }
   .versus { writing-mode: initial; text-align: center; }
   .console-summary, .console-grid, .agent-list { grid-template-columns: 1fr; }

@@ -34,7 +34,7 @@
 
       <div class="dispatch" aria-label="Interactive TORCH routing board">
         <div class="dispatch-head">
-          <p>Request CR-184</p>
+          <p>Example fleet · Request CR-184</p>
           <button id="route-toggle" type="button" aria-pressed="false">Run the route</button>
         </div>
         <ol class="route" id="route">
@@ -96,12 +96,12 @@
       </div>
       <div class="ledger" role="table" aria-label="Current TORCH qualification ledger">
         <div class="ledger-row ledger-head" role="row"><span role="columnheader">Capability</span><span role="columnheader">Current evidence</span><span role="columnheader">State</span></div>
-        <div class="ledger-row" role="row"><span>Portable kernel and reversal</span><span>Scenario tested</span><strong class="proven">Proven locally</strong></div>
-        <div class="ledger-row" role="row"><span>Durable control plane and backlog</span><span>SQLite + tracked tasks</span><strong class="proven">Proven locally</strong></div>
-        <div class="ledger-row" role="row"><span>Checks, resources, integration</span><span>Exact-SHA lifecycle</span><strong class="proven">Proven locally</strong></div>
-        <div class="ledger-row" role="row"><span>Claude and Codex coordination</span><span>Virtualized adapters</span><strong class="pending">Live gate open</strong></div>
-        <div class="ledger-row" role="row"><span>Self-managed successor</span><span>Atomic candidate mechanics</span><strong class="pending">Stable boot open</strong></div>
-        <div class="ledger-row" role="row"><span>COMBATRIG migration</span><span>33 areas, 570 tasks inventoried</span><strong class="pending">Boundaries open</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Portable kernel and reversal</span><span data-label="Evidence">Scenario tested</span><strong class="proven" data-label="State">Proven locally</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Durable control plane and backlog</span><span data-label="Evidence">SQLite + tracked tasks</span><strong class="proven" data-label="State">Proven locally</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Checks, resources, integration</span><span data-label="Evidence">Exact-SHA lifecycle</span><strong class="proven" data-label="State">Proven locally</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Claude and Codex coordination</span><span data-label="Evidence">Virtualized adapters</span><strong class="pending" data-label="State">Live gate open</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Self-managed successor</span><span data-label="Evidence">Isolated build + activation</span><strong class="pending" data-label="State">Stable boot open</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">COMBATRIG migration</span><span data-label="Evidence">33 areas, 570 tasks inventoried</span><strong class="pending" data-label="State">Boundaries open</strong></div>
       </div>
     </section>
 
@@ -112,10 +112,10 @@
       </div>
       <div class="command-panel">
         <div class="command-tabs" role="tablist" aria-label="Startup input">
-          <button role="tab" aria-selected="true" data-command="both">Repository + spec</button>
-          <button role="tab" aria-selected="false" data-command="repo">Repository only</button>
+          <button id="tab-both" role="tab" aria-selected="true" aria-controls="start-command" tabindex="0" data-command="both">Repository + spec</button>
+          <button id="tab-repo" role="tab" aria-selected="false" aria-controls="start-command" tabindex="-1" data-command="repo">Repository only</button>
         </div>
-        <pre><code id="start-command">node bin/torch.mjs bootstrap \
+        <pre><code id="start-command" role="tabpanel" aria-labelledby="tab-both">torch bootstrap \
   --repo /path/to/project \
   --spec /path/to/product-spec.md \
   --output fleet-design-brief.json \
