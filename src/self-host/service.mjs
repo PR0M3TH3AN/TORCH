@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import {
   cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync,
   renameSync, rmSync, symlinkSync, writeFileSync,
 } from 'node:fs';
-import { basename, dirname, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { torchDataHome } from '../kernel/paths.mjs';
 
@@ -55,22 +56,33 @@ function inside(parent, child) {
   return resolve(child).startsWith(root);
 }
 
-function inventory(root, { excludeValidation = false } = {}) {
+function artifactPath(root, path) {
+  return relative(root, path).split(sep).join('/');
+}
+
+function inventory(root, { excludeValidation = false, include = () => true } = {}) {
   const records = [];
   const visit = (directory) => {
     for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
       if (entry.name === '.git') continue;
       const path = join(directory, entry.name);
-      const name = relative(root, path);
+      const name = artifactPath(root, path);
       if (excludeValidation && name === '.torch-validation.json') continue;
+      if (!include(name, entry)) continue;
       const stat = lstatSync(path);
       if (stat.isSymbolicLink()) {
-        throw new TorchError(`Candidate artifacts may not contain symbolic links: ${name}`, {
-          code: 'CANDIDATE_SYMLINK_REFUSED', details: { path: name },
-        });
+        const link = readlinkSync(path);
+        const target = resolve(dirname(path), link);
+        if (isAbsolute(link) || !inside(root, target) || !existsSync(target)) {
+          throw new TorchError(`Candidate symbolic link must resolve inside the artifact: ${name}`, {
+            code: 'CANDIDATE_SYMLINK_REFUSED', details: { path: name, target: link },
+          });
+        }
+        records.push({ path: name, bytes: Buffer.byteLength(link), type: 'symlink', link });
       }
       if (stat.isDirectory()) visit(path);
-      else if (stat.isFile()) records.push({ path: name, bytes: stat.size });
+      else if (stat.isFile()) records.push({ path: name, bytes: stat.size, type: 'file' });
+      else if (stat.isSymbolicLink()) { /* recorded above */ }
       else throw new TorchError(`Unsupported candidate artifact entry: ${name}`, {
         code: 'CANDIDATE_ENTRY_REFUSED', details: { path: name },
       });
@@ -83,9 +95,41 @@ function inventory(root, { excludeValidation = false } = {}) {
 function treeHash(root, records) {
   const digest = createHash('sha256');
   for (const record of records) {
-    digest.update(record.path).update('\0').update(readFileSync(join(root, record.path))).update('\0');
+    digest.update(record.path).update('\0').update(record.type).update('\0');
+    digest.update(record.type === 'symlink' ? record.link : readFileSync(join(root, record.path))).update('\0');
   }
   return digest.digest('hex');
+}
+
+function gitSourceDescriptor(root) {
+  let topLevel;
+  try {
+    topLevel = execFileSync('git', ['-C', root, 'rev-parse', '--show-toplevel'], {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch { return null; }
+  if (resolve(topLevel) !== resolve(root)) return null;
+  const dirty = execFileSync('git', ['-C', root, 'status', '--porcelain=v1', '--untracked-files=no'], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+  if (dirty) throw new TorchError('Candidate source has modified tracked files', {
+    code: 'CANDIDATE_SOURCE_DIRTY', details: dirty.split('\n'),
+  });
+  const commit = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+  const tracked = new Set(execFileSync('git', ['-C', root, 'ls-files', '-z'], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  }).split('\0').filter(Boolean));
+  const include = (name, entry) => name === 'node_modules'
+    || name.startsWith('node_modules/')
+    || tracked.has(name)
+    || (entry.isDirectory() && [...tracked].some((path) => path.startsWith(`${name}/`)));
+  return { mode: 'git-commit', commit, include };
+}
+
+function sourceDescriptor(root) {
+  return gitSourceDescriptor(root) ?? { mode: 'artifact', commit: null, include: () => true };
 }
 
 function validateReleaseMetadata(root, requestedVersion) {
@@ -152,7 +196,8 @@ export class VersionService {
       });
     }
     const metadata = validateReleaseMetadata(sourceRoot, version);
-    const records = inventory(sourceRoot);
+    const descriptor = sourceDescriptor(sourceRoot);
+    const records = inventory(sourceRoot, { include: descriptor.include });
     if (records.some((record) => record.path === '.torch-validation.json')) {
       throw new TorchError('Candidate source contains TORCH-owned validation state', {
         code: 'CANDIDATE_RESERVED_FILE', details: { path: '.torch-validation.json' },
@@ -163,6 +208,7 @@ export class VersionService {
       action: 'candidate-install', source: sourceRoot, destination, version: metadata.version,
       digest: treeHash(sourceRoot, records), files: records.length,
       bytes: records.reduce((total, record) => total + record.bytes, 0),
+      sourceMode: descriptor.mode, sourceCommit: descriptor.commit,
       compatibility: metadata.release.state,
       conflicts: existsSync(destination) ? [{ code: 'VERSION_ALREADY_INSTALLED', version: metadata.version }] : [],
       mutationPerformed: false,
@@ -184,9 +230,23 @@ export class VersionService {
     mkdirSync(this.versionsRoot, { recursive: true });
     const staging = join(this.versionsRoot, `.candidate-${plan.version}-${randomUUID()}`);
     try {
+      const descriptor = sourceDescriptor(plan.source);
+      if (descriptor.mode !== plan.sourceMode || descriptor.commit !== plan.sourceCommit) {
+        throw new TorchError('Candidate source identity changed after planning', {
+          code: 'CANDIDATE_SOURCE_CHANGED',
+          details: {
+            planned: { mode: plan.sourceMode, commit: plan.sourceCommit },
+            actual: { mode: descriptor.mode, commit: descriptor.commit },
+          },
+        });
+      }
       cpSync(plan.source, staging, {
-        recursive: true, errorOnExist: true, force: false,
-        filter: (path) => basename(path) !== '.git',
+        recursive: true, errorOnExist: true, force: false, verbatimSymlinks: true,
+        filter: (path) => {
+          if (resolve(path) === resolve(plan.source)) return true;
+          const name = artifactPath(plan.source, path);
+          return basename(path) !== '.git' && descriptor.include(name, lstatSync(path));
+        },
       });
       validateReleaseMetadata(staging, plan.version);
       const copiedRecords = inventory(staging);
@@ -206,6 +266,7 @@ export class VersionService {
       atomicJson(join(staging, '.torch-validation.json'), {
         schema: 'torch.dev/candidate-validation/v1alpha1', version: plan.version,
         digest: plan.digest, validatedAt: this.now().toISOString(),
+        source: { mode: plan.sourceMode, commit: plan.sourceCommit },
         scenarios: CANDIDATE_ACCEPTANCE_SCENARIOS, evidence: acceptance.evidence ?? [], passed: true,
       });
       renameSync(staging, plan.destination);

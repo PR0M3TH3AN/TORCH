@@ -322,7 +322,9 @@ deployment provider, so configuration alone cannot trigger an external action.
 
 TORCH source checkouts can stage a self-host candidate without changing the
 active version. Candidate build runs the complete local acceptance, lint, and
-syntax gates before writing its receipt:
+syntax gates before writing its receipt. Git checkout staging is bound to a
+clean exact commit, copies tracked source plus its local dependency tree,
+excludes unrelated untracked files, and refuses escaping symbolic links:
 
 ```bash
 node bin/torch.mjs candidate plan --source . --json

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+  existsSync, mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -59,6 +62,35 @@ test('SCN-candidate-isolation: staging requires complete acceptance and never ch
   assert.throws(
     () => service.activate('1.0.0'),
     (error) => error.code === 'CANDIDATE_VALIDATION_STALE',
+  );
+
+  const checkout = candidate(root, '1.1.0', 'bounded');
+  mkdirSync(join(checkout, 'node_modules', 'fixture-dependency'), { recursive: true });
+  mkdirSync(join(checkout, 'node_modules', '.bin'), { recursive: true });
+  writeFileSync(join(checkout, 'node_modules', 'fixture-dependency', 'index.js'), 'export const dependency = true;\n');
+  symlinkSync('../fixture-dependency/index.js', join(checkout, 'node_modules', '.bin', 'fixture-dependency'));
+  writeFileSync(join(checkout, '.gitignore'), 'node_modules/\nlocal-secret.env\n');
+  execFileSync('git', ['init', '-b', 'main', checkout]);
+  execFileSync('git', ['-C', checkout, 'config', 'user.email', 'torch-test@example.invalid']);
+  execFileSync('git', ['-C', checkout, 'config', 'user.name', 'TORCH Test']);
+  execFileSync('git', ['-C', checkout, 'add', '.']);
+  execFileSync('git', ['-C', checkout, 'commit', '-m', 'candidate source']);
+  writeFileSync(join(checkout, 'local-secret.env'), 'DO_NOT_COPY=true\n');
+
+  const boundedPlan = service.planCandidate({ source: checkout });
+  assert.equal(boundedPlan.sourceMode, 'git-commit');
+  assert.match(boundedPlan.sourceCommit, /^[0-9a-f]{40}$/);
+  const bounded = service.installCandidate({ source: checkout, validate: accepted });
+  assert.equal(existsSync(join(bounded.destination, 'local-secret.env')), false);
+  assert.equal(existsSync(join(bounded.destination, 'node_modules', '.bin', 'fixture-dependency')), true);
+  assert.deepEqual(JSON.parse(readFileSync(bounded.validation, 'utf8')).source, {
+    mode: 'git-commit', commit: boundedPlan.sourceCommit,
+  });
+
+  writeFileSync(join(checkout, 'bin', 'torch.mjs'), 'export const marker = "dirty";\n');
+  assert.throws(
+    () => service.planCandidate({ source: checkout }),
+    (error) => error.code === 'CANDIDATE_SOURCE_DIRTY',
   );
 });
 

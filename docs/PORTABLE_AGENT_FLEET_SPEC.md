@@ -1336,6 +1336,13 @@ Candidate releases MUST run side by side with stable using separate state,
 socket, lock, port, and fixture namespaces. Candidate tests MUST not control
 the live development fleet.
 
+For a Git source checkout, candidate staging MUST bind the artifact to the
+exact clean tracked commit. It may include the installed dependency tree needed
+to execute acceptance, but MUST exclude arbitrary untracked files and reject
+modified tracked input. Artifact-local relative dependency links are permitted;
+links that escape the candidate root are refused. Non-Git inputs are treated as
+already-prepared release artifacts and every contained entry is inventoried.
+
 Candidate acceptance includes:
 
 - initialize and analyze a fixture repository;
