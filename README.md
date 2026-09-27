@@ -325,6 +325,8 @@ active version. Candidate build runs the complete local acceptance, lint, and
 syntax gates before writing its receipt. Git checkout staging is bound to a
 clean exact commit, copies tracked source plus its local dependency tree,
 excludes unrelated untracked files, and refuses escaping symbolic links:
+Activation maintains an installation-owned stable `torch` launcher pointing
+through the atomic active-version link; it refuses an unrelated existing path.
 
 ```bash
 node bin/torch.mjs candidate plan --source . --json

@@ -4,6 +4,7 @@ import {
   cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync,
   renameSync, rmSync, symlinkSync, writeFileSync,
 } from 'node:fs';
+import { homedir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { torchDataHome } from '../kernel/paths.mjs';
@@ -36,6 +37,13 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
 function json(path) {
   try { return JSON.parse(readFileSync(path, 'utf8')); } catch (error) {
     throw new TorchError(`Cannot read ${path}`, { code: 'SELF_HOST_METADATA_INVALID', details: error.message });
+  }
+}
+
+function nodeExists(path) {
+  try { lstatSync(path); return true; } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
   }
 }
 
@@ -78,10 +86,12 @@ function inventory(root, { excludeValidation = false, include = () => true } = {
             code: 'CANDIDATE_SYMLINK_REFUSED', details: { path: name, target: link },
           });
         }
-        records.push({ path: name, bytes: Buffer.byteLength(link), type: 'symlink', link });
+        records.push({ path: name, bytes: Buffer.byteLength(link), type: 'symlink', link, mode: stat.mode & 0o777 });
       }
       if (stat.isDirectory()) visit(path);
-      else if (stat.isFile()) records.push({ path: name, bytes: stat.size, type: 'file' });
+      else if (stat.isFile()) records.push({
+        path: name, bytes: stat.size, type: 'file', mode: stat.mode & 0o777,
+      });
       else if (stat.isSymbolicLink()) { /* recorded above */ }
       else throw new TorchError(`Unsupported candidate artifact entry: ${name}`, {
         code: 'CANDIDATE_ENTRY_REFUSED', details: { path: name },
@@ -95,7 +105,7 @@ function inventory(root, { excludeValidation = false, include = () => true } = {
 function treeHash(root, records) {
   const digest = createHash('sha256');
   for (const record of records) {
-    digest.update(record.path).update('\0').update(record.type).update('\0');
+    digest.update(record.path).update('\0').update(record.type).update('\0').update(String(record.mode)).update('\0');
     digest.update(record.type === 'symlink' ? record.link : readFileSync(join(root, record.path))).update('\0');
   }
   return digest.digest('hex');
@@ -163,6 +173,11 @@ function validateReleaseMetadata(root, requestedVersion) {
       code: 'CANDIDATE_BINARY_MISSING', details: { bin: bin ?? null },
     });
   }
+  if ((lstatSync(join(root, bin)).mode & 0o111) === 0) {
+    throw new TorchError('Candidate TORCH binary is not executable', {
+      code: 'CANDIDATE_BINARY_NOT_EXECUTABLE', details: { bin },
+    });
+  }
   return { version, packageMetadata, release, bin };
 }
 
@@ -179,6 +194,8 @@ export class VersionService {
     this.activePath = join(this.root, 'active');
     this.registryPath = join(this.root, 'registry.json');
     this.journalPath = join(this.root, 'activation-journal.json');
+    this.binRoot = env.TORCH_BIN_HOME || join(env.HOME || homedir(), '.local', 'bin');
+    this.launcherPath = join(this.binRoot, 'torch');
     this.now = now;
     this.afterPointerSwap = afterPointerSwap;
   }
@@ -295,6 +312,7 @@ export class VersionService {
     const activeVersion = this.#activeVersion();
     const registry = this.#registry();
     if (activeVersion === journal.to) {
+      this.#ensureLauncher();
       atomicJson(this.registryPath, {
         ...registry, activeVersion: journal.to, previousVersion: journal.from,
         generation: registry.generation + 1, updatedAt: this.now().toISOString(),
@@ -305,6 +323,31 @@ export class VersionService {
       });
     }
     rmSync(this.journalPath, { force: true });
+  }
+
+  #launcherTarget() {
+    return relative(this.binRoot, join(this.activePath, 'bin', 'torch.mjs'));
+  }
+
+  #assertLauncherAvailable() {
+    const target = this.#launcherTarget();
+    if (nodeExists(this.launcherPath)) {
+      let actual = null;
+      try { actual = readlinkSync(this.launcherPath); } catch { /* conflict reported below */ }
+      if (actual !== target) throw new TorchError('TORCH launcher path is not owned by this installation', {
+        code: 'LAUNCHER_PATH_CONFLICT', details: { path: this.launcherPath, expected: target, actual },
+      });
+    }
+    return target;
+  }
+
+  #ensureLauncher() {
+    const target = this.#assertLauncherAvailable();
+    if (nodeExists(this.launcherPath)) return;
+    mkdirSync(this.binRoot, { recursive: true });
+    const temporary = `${this.launcherPath}.tmp-${process.pid}-${randomUUID()}`;
+    symlinkSync(target, temporary, 'file');
+    renameSync(temporary, this.launcherPath);
   }
 
   status() {
@@ -320,6 +363,11 @@ export class VersionService {
       root: this.root, activeVersion, previousVersion: registry.previousVersion,
       generation: registry.generation, installed,
       consistent: activeVersion === registry.activeVersion,
+      launcher: {
+        path: this.launcherPath,
+        installed: nodeExists(this.launcherPath),
+        expectedTarget: this.#launcherTarget(),
+      },
     };
   }
 
@@ -355,6 +403,7 @@ export class VersionService {
         });
       }
     }
+    this.#assertLauncherAvailable();
     atomicJson(this.journalPath, {
       schema: 'torch.dev/activation-journal/v1alpha1', from, to: version, startedAt: this.now().toISOString(),
     });

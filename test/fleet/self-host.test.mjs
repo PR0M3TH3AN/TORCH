@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import {
-  existsSync, mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync,
+  chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -20,7 +20,8 @@ function candidate(parent, version, marker) {
     schema: 'torch.dev/release/v1alpha1', version,
     state: { reads: ['torch.dev/state/v1alpha1'], writes: 'torch.dev/state/v1alpha1', rollback_safe: true },
   }, null, 2)}\n`);
-  writeFileSync(join(root, 'bin', 'torch.mjs'), `export const marker = ${JSON.stringify(marker)};\n`);
+  writeFileSync(join(root, 'bin', 'torch.mjs'), `#!/usr/bin/env node\nexport const marker = ${JSON.stringify(marker)};\nconsole.log(marker);\n`);
+  chmodSync(join(root, 'bin', 'torch.mjs'), 0o755);
   return root;
 }
 
@@ -34,7 +35,7 @@ function accepted(candidateRoot) {
 
 test('SCN-candidate-isolation: staging requires complete acceptance and never changes the active version', () => {
   const root = mkdtempSync(join(tmpdir(), 'torch-self-host-'));
-  const env = { ...process.env, XDG_DATA_HOME: join(root, 'xdg') };
+  const env = { ...process.env, XDG_DATA_HOME: join(root, 'xdg'), TORCH_BIN_HOME: join(root, 'bin-home') };
   const service = createVersionService({ env, now: () => new Date('2026-09-27T00:00:00Z') });
   const source = candidate(root, '1.0.0', 'stable');
   const plan = service.planCandidate({ source });
@@ -86,17 +87,37 @@ test('SCN-candidate-isolation: staging requires complete acceptance and never ch
   assert.deepEqual(JSON.parse(readFileSync(bounded.validation, 'utf8')).source, {
     mode: 'git-commit', commit: boundedPlan.sourceCommit,
   });
+  const activated = service.activate('1.1.0');
+  assert.equal(activated.launcher.installed, true);
+  assert.equal(execFileSync(activated.launcher.path, [], { encoding: 'utf8' }).trim(), 'bounded');
 
   writeFileSync(join(checkout, 'bin', 'torch.mjs'), 'export const marker = "dirty";\n');
   assert.throws(
     () => service.planCandidate({ source: checkout }),
     (error) => error.code === 'CANDIDATE_SOURCE_DIRTY',
   );
+
+  const conflictRoot = mkdtempSync(join(tmpdir(), 'torch-self-host-conflict-'));
+  const conflictEnv = {
+    ...process.env,
+    XDG_DATA_HOME: join(conflictRoot, 'xdg'),
+    TORCH_BIN_HOME: join(conflictRoot, 'bin-home'),
+  };
+  const conflictService = createVersionService({ env: conflictEnv });
+  const conflictCandidate = candidate(conflictRoot, '2.0.0', 'conflict');
+  conflictService.installCandidate({ source: conflictCandidate, validate: accepted });
+  mkdirSync(conflictEnv.TORCH_BIN_HOME, { recursive: true });
+  writeFileSync(join(conflictEnv.TORCH_BIN_HOME, 'torch'), 'owner executable\n');
+  assert.throws(
+    () => conflictService.activate('2.0.0'),
+    (error) => error.code === 'LAUNCHER_PATH_CONFLICT',
+  );
+  assert.equal(conflictService.status().activeVersion, null);
 });
 
 test('SCN-atomic-upgrade-rollback: a crash after pointer swap reconciles and rollback restores the exact prior version', () => {
   const root = mkdtempSync(join(tmpdir(), 'torch-self-host-'));
-  const env = { ...process.env, XDG_DATA_HOME: join(root, 'xdg') };
+  const env = { ...process.env, XDG_DATA_HOME: join(root, 'xdg'), TORCH_BIN_HOME: join(root, 'bin-home') };
   const v1 = candidate(root, '1.0.0', 'stable');
   const v2 = candidate(root, '1.1.0', 'candidate');
   const service = createVersionService({ env, now: () => new Date('2026-09-27T01:00:00Z') });
@@ -117,6 +138,8 @@ test('SCN-atomic-upgrade-rollback: a crash after pointer swap reconciles and rol
   assert.equal(status.activeVersion, '1.1.0');
   assert.equal(status.previousVersion, '1.0.0');
   assert.equal(existsSync(join(status.root, 'activation-journal.json')), false);
+  assert.equal(status.launcher.installed, true);
+  assert.equal(execFileSync(status.launcher.path, [], { encoding: 'utf8' }).trim(), 'candidate');
 
   const rolledBack = recovered.rollback();
   assert.equal(rolledBack.activeVersion, '1.0.0');

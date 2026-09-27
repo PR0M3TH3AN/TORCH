@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
@@ -21,7 +21,11 @@ function repo() {
 function run(root, args) {
   return spawnSync(process.execPath, [CLI, ...args], {
     cwd: root,
-    env: { ...process.env, XDG_DATA_HOME: join(tmpdir(), `${basename(root)}-data`) },
+    env: {
+      ...process.env,
+      XDG_DATA_HOME: join(tmpdir(), `${basename(root)}-data`),
+      TORCH_BIN_HOME: join(tmpdir(), `${basename(root)}-bin`),
+    },
     encoding: 'utf8',
   });
 }
@@ -30,6 +34,7 @@ function releaseCandidate(root, version) {
   const candidateRoot = join(root, `release-${version}`);
   mkdirSync(join(candidateRoot, 'bin'), { recursive: true });
   writeFileSync(join(candidateRoot, 'bin', 'torch.mjs'), '#!/usr/bin/env node\n');
+  chmodSync(join(candidateRoot, 'bin', 'torch.mjs'), 0o755);
   writeFileSync(join(candidateRoot, 'acceptance.mjs'), `console.log(${JSON.stringify([
     'SCN-init-read-only', 'SCN-cli-domain-review', 'SCN-worktree-bootstrap', 'SCN-mixed-runtime',
     'SCN-spec-fleet-design', 'SCN-cli-spec-design',

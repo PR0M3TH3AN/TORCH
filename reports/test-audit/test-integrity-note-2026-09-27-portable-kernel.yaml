@@ -121,7 +121,7 @@ test_integrity_note:
     - id: SCN-candidate-isolation
       given: an inactive candidate in a namespace separate from project and stable runtime state
       when: acceptance is incomplete, complete, or the accepted files are later modified
-      then: incomplete staging is removed, successful staging stays inactive, read-only status writes nothing, stale validation blocks activation, Git staging binds to a clean exact commit, local dependencies remain runnable, and unrelated untracked files never enter the artifact
+      then: incomplete staging is removed, successful staging stays inactive, read-only status writes nothing, stale validation blocks activation, Git staging binds to a clean exact commit, local dependencies remain runnable, unrelated untracked files never enter the artifact, activation exposes a runnable stable launcher, and an owner path conflict blocks before pointer mutation
     - id: SCN-atomic-upgrade-rollback
       given: accepted forward-and-rollback-compatible versions installed side by side
       when: activation is interrupted after the atomic pointer swap and the service restarts

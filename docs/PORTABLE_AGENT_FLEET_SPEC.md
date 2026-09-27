@@ -1371,6 +1371,12 @@ active pointer. Running processes may finish on the old version. Rollback
 restores the previous pointer without rewriting project state. State migrations
 MUST declare forward and rollback compatibility.
 
+Activation also maintains a stable executable launcher at
+`~/.local/bin/torch` (or an explicitly configured installation bin directory)
+that resolves through the atomic active-version pointer. Candidate validation
+hashes executable modes as well as bytes, rejects a non-executable TORCH binary,
+and refuses to replace a launcher path not owned by that installation.
+
 ## 27. User interfaces
 
 ### 27.1 CLI
