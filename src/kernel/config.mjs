@@ -106,6 +106,13 @@ export const projectConfigSchema = z.object({
     worktree_name: text.regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).nullable().optional(),
   }).strict(),
   domains: z.array(domain).min(1),
+  retired_domains: z.array(z.object({
+    id,
+    title: text,
+    branch: text,
+    change_id: text,
+    retired_at: text,
+  }).strict()).optional(),
 }).strict().superRefine((config, context) => {
   const runtimeNames = new Set(Object.keys(config.runtimes).filter((name) => name !== 'default'));
   if (!runtimeNames.has(config.runtimes.default)) {

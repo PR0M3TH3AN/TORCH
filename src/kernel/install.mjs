@@ -90,7 +90,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
   const managerPrompt = `${promptContent(
     proposal.session_manager?.prompt_source,
     '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n',
-  ).trimEnd()}\n\n## Fleet evolution\n\nWhen recurring work has no coherent owner, or a durable specialist would materially improve context locality, ownership clarity, or verification, use \`torch_propose_domain\` to submit an evidence-backed Fleet change. Use \`torch_list_fleet_changes\` to follow its state. Never create, approve, or activate a persistent identity yourself; owner approval and CLI activation are separate. Also recommend merge or retirement when coordination cost exceeds the value of a persistent session.\n`;
+  ).trimEnd()}\n\n## Fleet evolution\n\nWhen recurring work has no coherent owner, or a durable specialist would materially improve context locality, ownership clarity, or verification, use \`torch_propose_domain\` to submit an evidence-backed Fleet change. When a specialist no longer earns its coordination cost, use \`torch_propose_domain_retirement\`; retirement preserves its branch and refuses active or unrecoverable work. Use \`torch_list_fleet_changes\` to follow change state. Never create, retire, approve, or activate a persistent identity yourself; owner approval and CLI activation are separate. Recommend a merge or split for owner review when boundaries should change but do not silently rewrite ownership.\n`;
   const files = new Map([
     ['torch.yaml', jsonYaml(config)],
     ['roster.yaml', jsonYaml(roster)],

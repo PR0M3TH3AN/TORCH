@@ -106,6 +106,7 @@ Usage:
   torch fleet changes [--state <state>] [--json]
   torch fleet get --change <id> [--json]
   torch fleet propose --from session-manager --proposal <path> [--json]
+  torch fleet propose-retirement --from session-manager --proposal <path> [--json]
   torch fleet approve --change <id> --by <owner> --yes [--json]
   torch fleet plan --change <id> [--json]
   torch fleet activate --change <id> --by <owner> --yes [--json]
@@ -626,6 +627,14 @@ export async function runCli(argv = process.argv.slice(2), {
           print(evolution.proposeDomain({
             ...input, proposer: optionValue(argv, '--from') ?? input.proposer,
           }), { json });
+        } else if (operation === 'propose-retirement') {
+          const input = loadJsonFile(cwd, optionValue(argv, '--proposal'), {
+            label: 'Fleet domain retirement proposal', code: 'FLEET_PROPOSAL_INVALID',
+          });
+          print(evolution.proposeRetirement({
+            ...input, areaId: input.area_id ?? input.areaId,
+            proposer: optionValue(argv, '--from') ?? input.proposer,
+          }), { json });
         } else if (operation === 'approve') {
           if (!argv.includes('--yes')) {
             throw new TorchError('Owner approval of a Fleet change requires explicit --yes.', { code: 'APPROVAL_REQUIRED' });
@@ -634,14 +643,14 @@ export async function runCli(argv = process.argv.slice(2), {
         } else if (operation === 'plan') print(evolution.planActivation(changeId), { json });
         else if (operation === 'activate') {
           if (!argv.includes('--yes')) {
-            throw new TorchError('Fleet activation commits configuration and creates a worktree. Review fleet plan, then use --yes.', {
+            throw new TorchError('Fleet activation changes tracked organization state and may create or remove a worktree. Review fleet plan, then use --yes.', {
               code: 'APPROVAL_REQUIRED',
             });
           }
           print(evolution.activate({ changeId, approvedBy: optionValue(argv, '--by') }), { json });
         } else if (operation === 'start') {
           const change = evolution.get(changeId);
-          if (change.state !== 'active') {
+          if (change.type !== 'add-domain' || change.state !== 'active') {
             throw new TorchError('Only an active Fleet domain can start a runtime session', {
               code: 'FLEET_CHANGE_STATE_CONFLICT', details: { state: change.state },
             });

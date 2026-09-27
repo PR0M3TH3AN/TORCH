@@ -174,3 +174,65 @@ test('SCN-cli-fleet-evolution: public CLI separates manager proposal, owner appr
   assert.deepEqual(JSON.parse(startPlan.stdout).actions.map((action) => action.areaId), ['security']);
   assert.equal(run(['agent', '--area', 'security', '--json']).status, 0);
 });
+
+test('SCN-fleet-retirement: owner-approved retirement shrinks the roster without deleting branch history', () => {
+  const context = fixture();
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  let sequence = 0;
+  const evolution = new FleetEvolutionService({
+    repositoryRoot: context.root, controlPlane: control, idFactory: () => `CHANGE-${++sequence}`,
+  });
+  const existing = control.listAgents().find((agent) => agent.areaId !== 'session-manager').areaId;
+  const addition = evolution.proposeDomain({
+    proposer: 'session-manager',
+    domain: {
+      id: 'review', title: 'Review', scope: ['cross-boundary review'], not_scope: ['feature implementation'],
+      owned_paths: ['review/**'], shared_paths: [], neighbours: [existing], required_checks: [], resources: [], runtime: 'claude',
+    },
+    rationale: 'Milestone reviews recur without a coherent owner.',
+    expectedBenefit: {
+      summary: 'Keep a recurring review boundary focused.', recurringWork: 'Review work recurs each milestone.',
+      contextLocality: 'Retain the review assumptions in one session.', coordinationCost: 'One explicit handoff.',
+    },
+    evidence: ['TASK-9'],
+  });
+  evolution.approve({ changeId: addition.id, approvedBy: 'fixture-owner' });
+  const activated = evolution.activate({ changeId: addition.id, approvedBy: 'fixture-owner' });
+  assert.equal(existsSync(activated.worktree), true);
+
+  const retirement = callTorchTool(control, 'torch_propose_domain_retirement', {
+    area_id: 'review',
+    rationale: 'The review stream ended and a permanent session now costs more coordination than it saves.',
+    expected_benefit: {
+      summary: 'Shrink routine coordination while preserving review history.',
+      recurring_work: 'No recurring review work remains after the milestone.',
+      context_locality: 'Future isolated reviews can use bounded temporary help.',
+      coordination_cost: 'Removes an idle persistent handoff boundary.',
+    },
+    evidence: ['TASK-9 completed', 'decision: review milestone closed'],
+  }, { actorId: 'session-manager', evolutionService: evolution });
+  assert.equal(retirement.type, 'retire-domain');
+  evolution.approve({ changeId: retirement.id, approvedBy: 'fixture-owner' });
+
+  control.reportStatus({ areaId: 'review', state: 'idle', summary: 'Awaiting retirement.' });
+  assert.equal(evolution.planActivation(retirement.id).blockers
+    .some((blocker) => blocker.type === 'runtime-not-offline'), true);
+  control.reportStatus({ areaId: 'review', state: 'offline', summary: 'Stopped.' });
+  writeFileSync(join(activated.worktree, 'dirty.txt'), 'preserve me\n');
+  assert.equal(evolution.planActivation(retirement.id).blockers
+    .some((blocker) => blocker.type === 'worktree-unsafe' && blocker.problem === 'worktree-dirty'), true);
+  execFileSync('git', ['-C', activated.worktree, 'clean', '-f', '--', 'dirty.txt']);
+
+  const plan = evolution.planActivation(retirement.id);
+  assert.equal(plan.canProceed, true, JSON.stringify(plan.blockers));
+  const retired = evolution.activate({ changeId: retirement.id, approvedBy: 'fixture-owner' });
+  assert.equal(retired.state, 'retired');
+  assert.equal(existsSync(activated.worktree), false);
+  assert.notEqual(execFileSync('git', ['-C', context.root, 'branch', '--list', activated.branch], { encoding: 'utf8' }).trim(), '');
+  assert.equal(control.listAgents().some((agent) => agent.areaId === 'review'), false);
+  const config = JSON.parse(readFileSync(join(context.root, '.torch', 'torch.yaml'), 'utf8'));
+  assert.equal(config.domains.some((domain) => domain.id === 'review'), false);
+  assert.equal(config.retired_domains.some((domain) => domain.id === 'review' && domain.branch === activated.branch), true);
+  assert.match(execFileSync('git', ['-C', context.root, 'log', '-1', '--pretty=%s'], { encoding: 'utf8' }), /retire review domain/);
+  control.close();
+});

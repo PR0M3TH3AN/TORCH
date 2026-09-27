@@ -56,6 +56,7 @@ export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   'torch_list_fleet_changes',
   'torch_get_fleet_change',
   'torch_propose_domain',
+  'torch_propose_domain_retirement',
 ]);
 
 function claimedIdentity(controlPlane, actorId, claim, field) {
@@ -398,7 +399,7 @@ export function createTorchToolset(controlPlane, {
   if (evolutionService) {
     tools.set('torch_list_fleet_changes', {
       description: 'List durable proposed, approved, provisioning, or active Fleet organization changes.',
-      schema: { state: z.enum(['proposed', 'approved', 'provisioning', 'active', 'rejected']).optional() },
+      schema: { state: z.enum(['proposed', 'approved', 'provisioning', 'active', 'retired', 'rejected']).optional() },
       invoke: ({ state }) => ({ changes: evolutionService.list({ state }) }),
     });
     tools.set('torch_get_fleet_change', {
@@ -429,6 +430,25 @@ export function createTorchToolset(controlPlane, {
       },
       invoke: ({ proposer, expected_benefit: benefit, ...input }) => evolutionService.proposeDomain({
         ...input,
+        proposer: claimedIdentity(controlPlane, actorId, proposer, 'proposer'),
+        expectedBenefit: {
+          summary: benefit.summary, recurringWork: benefit.recurring_work,
+          contextLocality: benefit.context_locality, coordinationCost: benefit.coordination_cost,
+        },
+      }),
+    });
+    tools.set('torch_propose_domain_retirement', {
+      description: 'Propose retiring a persistent domain when its coordination cost exceeds its continuing benefit. This never approves or activates retirement.',
+      schema: {
+        proposer: z.string().min(1).optional(), area_id: z.string().min(1), rationale: z.string().min(1),
+        expected_benefit: z.object({
+          summary: z.string().min(1), recurring_work: z.string().min(1),
+          context_locality: z.string().min(1), coordination_cost: z.string().min(1),
+        }),
+        evidence: z.array(z.string().min(1)).min(1),
+      },
+      invoke: ({ proposer, area_id: areaId, expected_benefit: benefit, ...input }) => evolutionService.proposeRetirement({
+        ...input, areaId,
         proposer: claimedIdentity(controlPlane, actorId, proposer, 'proposer'),
         expectedBenefit: {
           summary: benefit.summary, recurringWork: benefit.recurring_work,

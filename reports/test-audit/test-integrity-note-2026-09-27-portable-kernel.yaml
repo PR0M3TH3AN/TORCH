@@ -162,6 +162,10 @@ test_integrity_note:
       given: an installed Fleet whose Session Manager identifies recurring work without a coherent owner
       when: it proposes a durable domain and the owner explicitly approves activation
       then: TORCH commits the roster change, provisions its branch and clean worktree, exposes the identity to existing and restarted control-plane clients, and can start only that identity through a virtualized adapter
+    - id: SCN-fleet-retirement
+      given: a persistent specialist whose recurring work no longer justifies its coordination cost
+      when: the Session Manager proposes retirement and the owner approves it
+      then: live, dirty, guarded, leased, uniquely committed, or actively assigned work blocks retirement; safe activation removes the worktree and identity while preserving its branch and durable decision
     - id: SCN-cli-fleet-evolution
       given: an installed Fleet and a file-backed proposed domain
       when: the manager proposes it and the owner separately approves, plans, and activates it through the public CLI

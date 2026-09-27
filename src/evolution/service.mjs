@@ -1,14 +1,15 @@
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { ensureTaskIgnored, removeTaskIgnore } from '../kernel/worktrees.mjs';
 import { loadProjectConfig } from '../kernel/config.mjs';
+import { inspectManagedWorktree } from '../kernel/worktree-state.mjs';
 
-const CHANGE_STATES = Object.freeze(['proposed', 'approved', 'provisioning', 'active', 'rejected']);
+const CHANGE_STATES = Object.freeze(['proposed', 'approved', 'provisioning', 'active', 'retired', 'rejected']);
 
 function requiredText(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -111,7 +112,7 @@ function normalizeDomain(input) {
 function rowToChange(row) {
   if (!row) return null;
   return {
-    id: row.id, state: row.state, proposer: row.proposer,
+    id: row.id, type: row.change_type ?? 'add-domain', state: row.state, proposer: row.proposer,
     createdAt: row.created_at, updatedAt: row.updated_at, baseCommit: row.base_commit,
     approvedBy: row.approved_by, approvedAt: row.approved_at,
     activationCommit: row.activation_commit, domain: JSON.parse(row.domain_json),
@@ -139,6 +140,7 @@ function initialize(database) {
   database.exec(`
     CREATE TABLE IF NOT EXISTS fleet_changes (
       id TEXT PRIMARY KEY,
+      change_type TEXT NOT NULL DEFAULT 'add-domain',
       state TEXT NOT NULL,
       proposer TEXT NOT NULL,
       created_at TEXT NOT NULL,
@@ -155,6 +157,23 @@ function initialize(database) {
     CREATE INDEX IF NOT EXISTS fleet_changes_state_created
       ON fleet_changes(state, created_at, id);
   `);
+  const columns = new Set(database.prepare('PRAGMA table_info(fleet_changes)').all().map((column) => column.name));
+  if (!columns.has('change_type')) {
+    database.exec("ALTER TABLE fleet_changes ADD COLUMN change_type TEXT NOT NULL DEFAULT 'add-domain'");
+  }
+}
+
+function expectedBenefit(input) {
+  return {
+    summary: requiredText(input?.summary, 'expectedBenefit.summary'),
+    recurringWork: requiredText(input?.recurringWork, 'expectedBenefit.recurringWork'),
+    contextLocality: requiredText(input?.contextLocality, 'expectedBenefit.contextLocality'),
+    coordinationCost: requiredText(input?.coordinationCost, 'expectedBenefit.coordinationCost'),
+  };
+}
+
+function hasTable(database, name) {
+  return Boolean(database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(name));
 }
 
 export class FleetEvolutionService {
@@ -185,7 +204,7 @@ export class FleetEvolutionService {
     return rows.map(rowToChange);
   }
 
-  proposeDomain({ proposer, domain: input, rationale, expectedBenefit, evidence } = {}) {
+  proposeDomain({ proposer, domain: input, rationale, expectedBenefit: benefitInput, evidence } = {}) {
     const actor = this.controlPlane.assertIdentity(proposer);
     if (actor !== 'session-manager') {
       throw new TorchError('Only the Session Manager may propose a persistent Fleet domain', {
@@ -198,12 +217,7 @@ export class FleetEvolutionService {
       throw new TorchError(`Fleet identity already exists: ${domain.id}`, { code: 'FLEET_IDENTITY_EXISTS' });
     }
     for (const neighbour of domain.neighbours) this.controlPlane.assertIdentity(neighbour);
-    const benefit = {
-      summary: requiredText(expectedBenefit?.summary, 'expectedBenefit.summary'),
-      recurringWork: requiredText(expectedBenefit?.recurringWork, 'expectedBenefit.recurringWork'),
-      contextLocality: requiredText(expectedBenefit?.contextLocality, 'expectedBenefit.contextLocality'),
-      coordinationCost: requiredText(expectedBenefit?.coordinationCost, 'expectedBenefit.coordinationCost'),
-    };
+    const benefit = expectedBenefit(benefitInput);
     const evidenceList = textList(evidence, 'evidence', { required: true });
     const collisions = agents.flatMap((agent) => domain.owned_paths.flatMap((proposedPath) =>
       agent.ownedPaths.filter((existingPath) => pathsOverlap(proposedPath, existingPath))
@@ -242,10 +256,10 @@ export class FleetEvolutionService {
     };
     this.database.prepare(`
       INSERT INTO fleet_changes (
-        id, state, proposer, created_at, updated_at, base_commit, approved_by,
+        id, change_type, state, proposer, created_at, updated_at, base_commit, approved_by,
         approved_at, activation_commit, domain_json, rationale,
         expected_benefit_json, evidence_json
-      ) VALUES (?, ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?, ?)
+      ) VALUES (?, 'add-domain', ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?, ?)
     `).run(
       record.id, record.state, record.proposer, record.createdAt, record.updatedAt,
       record.baseCommit, JSON.stringify(record.domain), record.rationale,
@@ -253,6 +267,44 @@ export class FleetEvolutionService {
     );
     this.controlPlane.audit({
       actorId: actor, operation: 'fleet-change.propose-domain', entityType: 'fleet-change', entityId: record.id,
+      details: { domainId: domain.id, baseCommit: record.baseCommit },
+    });
+    return record;
+  }
+
+  proposeRetirement({ proposer, areaId, rationale, expectedBenefit: benefitInput, evidence } = {}) {
+    const actor = this.controlPlane.assertIdentity(proposer);
+    if (actor !== 'session-manager') {
+      throw new TorchError('Only the Session Manager may propose retiring a persistent Fleet domain', {
+        code: 'FLEET_CHANGE_AUTHORITY_REQUIRED', details: { actor },
+      });
+    }
+    const target = this.controlPlane.identity(areaId);
+    if (target.areaId === 'session-manager') {
+      throw new TorchError('The primary Session Manager cannot be retired as a domain', { code: 'FLEET_CHANGE_INVALID' });
+    }
+    const domain = loadProjectConfig(this.repositoryRoot).domains.find((entry) => entry.id === target.areaId);
+    if (!domain) throw new TorchError(`Configured domain not found: ${target.areaId}`, { code: 'FLEET_CHANGE_INVALID' });
+    const now = this.clock().toISOString();
+    const record = {
+      id: this.idFactory(), type: 'retire-domain', state: 'proposed', proposer: actor,
+      createdAt: now, updatedAt: now, baseCommit: git(this.repositoryRoot, ['rev-parse', 'HEAD']),
+      approvedBy: null, approvedAt: null, activationCommit: null, domain,
+      rationale: requiredText(rationale, 'rationale'), expectedBenefit: expectedBenefit(benefitInput),
+      evidence: textList(evidence, 'evidence', { required: true }),
+    };
+    this.database.prepare(`
+      INSERT INTO fleet_changes (
+        id, change_type, state, proposer, created_at, updated_at, base_commit, approved_by,
+        approved_at, activation_commit, domain_json, rationale, expected_benefit_json, evidence_json
+      ) VALUES (?, 'retire-domain', ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?, ?)
+    `).run(
+      record.id, record.state, record.proposer, record.createdAt, record.updatedAt,
+      record.baseCommit, JSON.stringify(record.domain), record.rationale,
+      JSON.stringify(record.expectedBenefit), JSON.stringify(record.evidence),
+    );
+    this.controlPlane.audit({
+      actorId: actor, operation: 'fleet-change.propose-retirement', entityType: 'fleet-change', entityId: record.id,
       details: { domainId: domain.id, baseCommit: record.baseCommit },
     });
     return record;
@@ -278,6 +330,7 @@ export class FleetEvolutionService {
 
   planActivation(changeId) {
     const change = this.get(changeId);
+    if (change.type === 'retire-domain') return this.planRetirement(change);
     const config = loadProjectConfig(this.repositoryRoot);
     const roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'ROSTER_INVALID');
     const currentHead = git(this.repositoryRoot, ['rev-parse', 'HEAD']);
@@ -321,6 +374,7 @@ export class FleetEvolutionService {
         code: 'FLEET_CHANGE_AUTHORITY_REQUIRED', details: { approvedBy: change.approvedBy },
       });
     }
+    if (change.type === 'retire-domain') return this.retire(change, approvedBy);
     const plan = this.planActivation(change.id);
     if (!plan.canProceed) {
       throw new TorchError('Fleet domain activation is blocked', {
@@ -355,6 +409,128 @@ export class FleetEvolutionService {
       runtime: { state: 'offline', next: `Start ${change.domain.id} through the approved ${change.domain.runtime} adapter.` },
       mutationPerformed: true,
     };
+  }
+
+  planRetirement(changeOrId) {
+    const change = typeof changeOrId === 'string' ? this.get(changeOrId) : changeOrId;
+    const config = loadProjectConfig(this.repositoryRoot);
+    const roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'ROSTER_INVALID');
+    const manifest = readInstallManifest(this.repositoryRoot);
+    const currentHead = git(this.repositoryRoot, ['rev-parse', 'HEAD']);
+    const dirtyEntries = git(this.repositoryRoot, ['status', '--porcelain']).split('\n').filter(Boolean);
+    const worktree = (manifest.external ?? []).find((entry) => entry.type === 'worktree' && entry.area === change.domain.id);
+    const blockers = [];
+    if (change.state !== 'approved' && change.state !== 'provisioning') blockers.push({ type: 'state', actual: change.state });
+    if (change.state === 'approved' && currentHead !== change.baseCommit) blockers.push({ type: 'stale-head', expected: change.baseCommit, actual: currentHead });
+    if (change.state === 'approved' && dirtyEntries.length) blockers.push({ type: 'dirty-main', entries: dirtyEntries });
+    if (!config.domains.some((entry) => entry.id === change.domain.id)) blockers.push({ type: 'domain-not-configured', domainId: change.domain.id });
+    if (config.domains.length <= 1) blockers.push({ type: 'last-development-domain' });
+    if (!roster.areas.some((entry) => entry.id === change.domain.id)) blockers.push({ type: 'identity-not-rostered', domainId: change.domain.id });
+    if (!worktree) blockers.push({ type: 'worktree-not-managed', domainId: change.domain.id });
+    if (worktree) {
+      const state = inspectManagedWorktree(this.repositoryRoot, worktree, config.project.main_branch);
+      for (const problem of state.problems) blockers.push({ type: 'worktree-unsafe', problem, path: worktree.path });
+    }
+    const identity = this.controlPlane.identity(change.domain.id);
+    if (identity.state !== 'offline') blockers.push({ type: 'runtime-not-offline', state: identity.state });
+    if (hasTable(this.database, 'worktree_guards')) {
+      const guards = this.database.prepare(`SELECT guard_type AS type, reason FROM worktree_guards
+        WHERE area_id = ? AND released_at IS NULL`).all(change.domain.id);
+      if (guards.length) blockers.push({ type: 'worktree-guards-active', guards });
+    }
+    if (hasTable(this.database, 'resource_leases')) {
+      const leases = this.database.prepare(`SELECT resource_id AS resourceId FROM resource_leases
+        WHERE area_id = ? AND released_at IS NULL`).all(change.domain.id);
+      if (leases.length) blockers.push({ type: 'resource-leases-active', leases });
+    }
+    if (hasTable(this.database, 'integration_requests')) {
+      const requests = this.database.prepare(`SELECT id, state FROM integration_requests
+        WHERE source_area = ? AND state NOT IN ('landed', 'superseded')`).all(change.domain.id);
+      if (requests.length) blockers.push({ type: 'integration-active', requests });
+    }
+    const manager = (manifest.external ?? []).find((entry) => entry.type === 'worktree' && entry.area === 'session-manager');
+    const backlogRoot = join(manager?.path && existsSync(manager.path) ? manager.path : this.repositoryRoot, '.torch', 'backlog');
+    if (existsSync(backlogRoot)) {
+      const tasks = readdirSync(backlogRoot).filter((name) => name.endsWith('.json')).flatMap((name) => {
+        try {
+          const task = readJson(join(backlogRoot, name), 'BACKLOG_INVALID');
+          const active = !['completed', 'cancelled'].includes(task.state)
+            && (task.owner === change.domain.id || task.affectedDomains?.includes(change.domain.id));
+          return active ? [{ id: task.id, state: task.state }] : [];
+        } catch { return [{ id: name, state: 'invalid' }]; }
+      });
+      if (tasks.length) blockers.push({ type: 'backlog-active', tasks });
+    }
+    return {
+      action: 'retire-domain', changeId: change.id, domainId: change.domain.id,
+      state: change.state, branch: worktree?.branch ?? change.domain.branch,
+      worktree: worktree?.path ?? null, currentHead, baseCommit: change.baseCommit,
+      blockers, canProceed: blockers.length === 0, mutationPerformed: false,
+    };
+  }
+
+  retire(change, approvedBy) {
+    const plan = this.planRetirement(change);
+    if (!plan.canProceed) throw new TorchError('Fleet domain retirement is blocked', { code: 'FLEET_CHANGE_BLOCKED', details: plan.blockers });
+    const owner = requiredText(approvedBy, 'approvedBy');
+    git(this.repositoryRoot, ['worktree', 'remove', plan.worktree]);
+    try {
+      this.commitRetirement(change, plan, owner);
+    } catch (error) {
+      git(this.repositoryRoot, ['worktree', 'add', plan.worktree, plan.branch], { optional: true });
+      throw error;
+    }
+    this.controlPlane.refreshRoster();
+    this.controlPlane.audit({
+      actorId: 'session-manager', operation: 'fleet-change.retire-domain', entityType: 'fleet-change', entityId: change.id,
+      details: { domainId: change.domain.id, branch: plan.branch },
+    });
+    return { ...this.get(change.id), branch: plan.branch, worktree: plan.worktree, mutationPerformed: true };
+  }
+
+  commitRetirement(change, plan, approvedBy) {
+    const config = loadProjectConfig(this.repositoryRoot);
+    const rosterPath = join(this.repositoryRoot, '.torch', 'roster.yaml');
+    const roster = readJson(rosterPath, 'ROSTER_INVALID');
+    const manifest = readInstallManifest(this.repositoryRoot);
+    config.domains = config.domains.filter((entry) => entry.id !== change.domain.id);
+    config.retired_domains ??= [];
+    config.retired_domains.push({
+      id: change.domain.id, title: change.domain.title, branch: plan.branch,
+      change_id: change.id, retired_at: this.clock().toISOString(),
+    });
+    roster.areas = roster.areas.filter((entry) => entry.id !== change.domain.id)
+      .map((entry) => ({ ...entry, neighbours: (entry.neighbours ?? []).filter((id) => id !== change.domain.id) }));
+    manifest.external = (manifest.external ?? []).filter((entry) => !(entry.type === 'worktree' && entry.area === change.domain.id));
+    const changeRelative = `.torch/fleet-changes/${change.id}.retired.json`;
+    const record = {
+      schema: 'torch.dev/fleet-change/v1alpha1', ...change, state: 'retired', approvedBy,
+      retirement: { branch: plan.branch, worktreeRemoved: plan.worktree, branchPreserved: true },
+    };
+    const serialized = new Map([
+      ['.torch/torch.yaml', `${JSON.stringify(config, null, 2)}\n`],
+      ['.torch/roster.yaml', `${JSON.stringify(roster, null, 2)}\n`],
+      [changeRelative, `${JSON.stringify(record, null, 2)}\n`],
+    ]);
+    for (const [relativePath, content] of serialized) {
+      const existing = manifest.created.find((entry) => entry.path === relativePath);
+      if (existing) existing.sha256 = sha256(content);
+      else manifest.created.push({ path: relativePath, sha256: sha256(content) });
+    }
+    serialized.set('.torch/install-manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);
+    for (const [relativePath, content] of serialized) {
+      const path = join(this.repositoryRoot, relativePath);
+      mkdirSync(dirname(path), { recursive: true });
+      const temporary = `${path}.tmp-${process.pid}-${randomUUID()}`;
+      writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+      renameSync(temporary, path);
+    }
+    git(this.repositoryRoot, ['add', ...serialized.keys()]);
+    git(this.repositoryRoot, ['commit', '-m', `chore(torch): retire ${change.domain.id} domain`]);
+    const activationCommit = git(this.repositoryRoot, ['rev-parse', 'HEAD']);
+    const now = this.clock().toISOString();
+    this.database.prepare(`UPDATE fleet_changes SET state = 'retired', activation_commit = ?, updated_at = ? WHERE id = ?`)
+      .run(activationCommit, now, change.id);
   }
 
   commitConfiguration(change, plan, ignore) {

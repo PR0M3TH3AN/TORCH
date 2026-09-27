@@ -62,7 +62,9 @@ and the first Claude reference-fleet path:
   retries, durable run evidence, and explicit approval for mutation.
 - durable Fleet evolution: the Session Manager can propose a justified new
   persistent domain, while owner approval gates the configuration commit,
-  identity, prompt, branch, and worktree activation.
+  identity, prompt, branch, and worktree activation; it can also propose safe
+  retirement when coordination cost exceeds continuing value, preserving the
+  branch and refusing live, dirty, guarded, leased, or active work.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
 cutover, persistent system-schedule launcher integration, and public deployment
