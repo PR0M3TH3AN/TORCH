@@ -1,0 +1,41 @@
+test_integrity_note:
+  change_type:
+    - new_tests
+  scenarios:
+    - id: SCN-init-read-only
+      given: a normal Git repository with committed project files
+      when: TORCH inspects and analyzes it or produces an installation plan
+      then: no project or machine-local TORCH state is created and Git status is unchanged
+    - id: SCN-install-doctor-purge
+      given: a reviewed fresh installation into a Git repository
+      when: TORCH installs, diagnoses, and purges its unchanged state
+      then: doctor reports healthy, all owned TORCH state is removed, and project source remains unchanged
+    - id: SCN-purge-protects-user-change
+      given: an installed TORCH project whose managed configuration was edited by its owner
+      when: a purge is requested
+      then: TORCH refuses destructive cleanup and preserves the modified file
+    - id: SCN-cli-install-approval
+      given: a Git repository without TORCH
+      when: install is invoked without a reviewed approval flag
+      then: the command refuses and creates no TORCH state
+  observable_outcomes:
+    - Git status before and after read-only analysis
+    - presence or absence of .torch and XDG-local project state
+    - doctor health and finding codes
+    - CLI exit status and structured error code
+    - preservation of project source and modified owner configuration
+  determinism_controls:
+    - isolated temporary Git repositories
+    - fixed test Git identity
+    - fixed installation timestamp where content is asserted
+    - per-fixture XDG_DATA_HOME
+  anti_cheat_rationale:
+    prevents:
+      - init that silently writes files
+      - installer that overwrites existing state
+      - doctor that reports healthy without required state
+      - uninstall that deletes owner-modified configuration
+      - CLI that mutates without explicit approval
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
