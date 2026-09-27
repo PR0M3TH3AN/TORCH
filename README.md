@@ -47,10 +47,13 @@ and the first Claude reference-fleet path:
 - mutation audit events tied to project and Fleet identity.
 - isolated candidate version stores with explicit compatibility declarations;
 - acceptance-gated atomic activation, crash reconciliation, and exact rollback.
+- a read-only COMBATRIG compatibility importer that preserves legacy prompts,
+  branch/worktree mappings, checks, resources, schedules, release boundaries,
+  and backlog inventory while refusing to invent missing ownership boundaries.
 
 Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
-re-import, scheduling, richer observability, and the Fleet Console remain
-staged work.
+cutover, scheduling, richer observability, and the Fleet Console remain staged
+work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -77,6 +80,19 @@ node bin/torch.mjs init --json
 node bin/torch.mjs analyze --json
 node bin/torch.mjs domains --output fleet-proposal.json --json
 ```
+
+Import an existing COMBATRIG fleet into the same pending-review proposal
+format without changing the source repository:
+
+```bash
+node bin/torch.mjs import combatrig \
+  --source /path/to/COMBATRIG \
+  --output combatrig-proposal.json \
+  --json
+```
+
+The command exits with status `1` while blocking migration gaps remain. That
+is a review result, not permission for TORCH to infer missing path ownership.
 
 Review the evidence in `fleet-proposal.json`, edit its `review.status` to
 `approved`, and identify the reviewer. Then inspect and apply the installation:
@@ -121,9 +137,9 @@ node bin/torch.mjs upgrade --version 0.1.0-alpha.0 --yes --json
 node bin/torch.mjs rollback --dry-run --json
 ```
 
-The candidate gate requires named evidence for backlog-through-integration,
-not merely a green process exit. Bootstrapping an installed stable TORCH to
-manage this repository remains open.
+The candidate gate requires named evidence for backlog-through-integration and
+COMBATRIG compatibility, not merely a green process exit. Bootstrapping an
+installed stable TORCH to manage this repository remains open.
 
 Persistent domain sessions also create a context-locality opportunity: each
 specialist can keep its relevant working set hot instead of one general session

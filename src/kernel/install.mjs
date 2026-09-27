@@ -17,6 +17,9 @@ function jsonYaml(value) {
 }
 
 function initialFiles({ repository, projectId, createdAt, proposal }) {
+  const promptContent = (source, fallback) => source
+    ? readFileSync(safeProjectPath(repository.root, source), 'utf8')
+    : fallback;
   const config = {
     schema: 'torch.dev/v1alpha1',
     project: {
@@ -24,7 +27,10 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       name: repository.name,
       main_branch: repository.branch || 'main',
     },
-    paths: { tracked_state: TRACKED_DIR, worktree_parent: '~/TORCHWorktrees' },
+    paths: {
+      tracked_state: TRACKED_DIR,
+      worktree_parent: proposal.paths?.worktree_parent ?? '~/TORCHWorktrees',
+    },
     repository: repository.canonicalRemote
       ? { canonical: { type: 'remote', remote: repository.canonicalRemote.name } }
       : { canonical: { type: 'unconfigured' } },
@@ -46,7 +52,11 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       required_checks: (proposal.checks ?? []).map((check) => check.id),
       landing_authority: ['session-manager'],
     },
-    session_manager: { id: 'session-manager', runtime: 'claude', start_last: true },
+    session_manager: {
+      id: 'session-manager', runtime: proposal.session_manager?.runtime ?? 'claude', start_last: true,
+      branch: proposal.session_manager?.branch ?? null,
+      worktree_name: proposal.session_manager?.worktree_name ?? null,
+    },
     domains: proposal.domains.map((domain) => ({
       id: domain.id,
       title: domain.title,
@@ -57,6 +67,8 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       neighbours: domain.neighbours ?? [],
       required_checks: domain.required_checks ?? [],
       runtime: domain.runtime ?? 'claude',
+      branch: domain.branch ?? null,
+      worktree_name: domain.worktree_name ?? null,
     })),
   };
   const roster = {
@@ -67,6 +79,8 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       not_scope: ['project feature implementation by default'],
       neighbours: ['all'],
       runtime: config.session_manager.runtime,
+      branch: config.session_manager.branch,
+      worktree_name: config.session_manager.worktree_name,
     }, ...config.domains],
   };
 
@@ -75,13 +89,19 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
     ['roster.yaml', jsonYaml(roster)],
     ['decisions.md', '# TORCH decisions\n\nNo project decisions recorded yet.\n'],
     ['RESUME-BRIEF.md', '# TORCH resume brief\n\nFleet not started yet.\n'],
-    ['prompts/COMMON.md', '# Common fleet rules\n\nRepository state outranks conversation memory. Query ownership before crossing a domain boundary.\n'],
-    ['prompts/session-manager.md', '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n'],
+    ['prompts/COMMON.md', promptContent(
+      proposal.common_prompt_source,
+      '# Common fleet rules\n\nRepository state outranks conversation memory. Query ownership before crossing a domain boundary.\n',
+    )],
+    ['prompts/session-manager.md', promptContent(
+      proposal.session_manager?.prompt_source,
+      '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n',
+    )],
     ['backlog/.gitkeep', ''],
     ['INSTALLATION.md', `# TORCH installation\n\nInstalled ${createdAt}. Run \`torch doctor\` before starting the fleet.\n`],
   ]);
   for (const domain of config.domains) {
-    files.set(`prompts/${domain.id}.md`, [
+    const generatedPrompt = [
       `# ${domain.title}`,
       '',
       `Area ID: ${domain.id}`,
@@ -102,7 +122,9 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       '',
       'Query live ownership, read the assigned backlog item, and report current repository evidence to the Session Manager.',
       '',
-    ].join('\n'));
+    ].join('\n');
+    const proposalDomain = proposal.domains.find((candidate) => candidate.id === domain.id);
+    files.set(`prompts/${domain.id}.md`, promptContent(proposalDomain?.prompt_source, generatedPrompt));
   }
   files.set('domain-proposal.approved.json', jsonYaml(proposal));
   return files;

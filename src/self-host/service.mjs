@@ -19,6 +19,7 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'resource-lifecycle',
   'capture-stop-resume',
   'detach-uninstall',
+  'combatrig-compatibility',
 ]);
 
 function json(path) {

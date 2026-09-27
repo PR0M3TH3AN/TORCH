@@ -281,9 +281,40 @@ export function validateApprovedProposal({ proposal, repository }) {
     if (domain.runtime !== undefined && (typeof domain.runtime !== 'string' || !domain.runtime.trim())) {
       problems.push(`domain ${domain.id} has an invalid runtime`);
     }
+    if (domain.worktree_name !== undefined && domain.worktree_name !== null
+      && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(domain.worktree_name)) {
+      problems.push(`domain ${domain.id} has an invalid worktree_name`);
+    }
+    if (domain.branch !== undefined && domain.branch !== null
+      && (typeof domain.branch !== 'string' || !domain.branch.trim())) {
+      problems.push(`domain ${domain.id} has an invalid branch`);
+    }
+    if (domain.prompt_source) {
+      const source = posix.normalize(domain.prompt_source.replaceAll('\\', '/'));
+      if (source.startsWith('../') || source.startsWith('/') || !existsSync(`${repository.root}/${source}`)) {
+        problems.push(`domain ${domain.id} prompt_source is missing or escapes the repository`);
+      }
+    }
+  }
+  if (proposal.common_prompt_source) {
+    const source = posix.normalize(proposal.common_prompt_source.replaceAll('\\', '/'));
+    if (source.startsWith('../') || source.startsWith('/') || !existsSync(`${repository.root}/${source}`)) {
+      problems.push('common_prompt_source is missing or escapes the repository');
+    }
   }
   for (const collision of proposal?.collisions ?? []) {
     if (!collision.resolution?.strategy) problems.push(`collision ${collision.domains?.join('/')} has no resolution`);
+  }
+  if (proposal?.session_manager?.worktree_name !== undefined
+    && proposal.session_manager.worktree_name !== null
+    && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(proposal.session_manager.worktree_name)) {
+    problems.push('session_manager has an invalid worktree_name');
+  }
+  if (proposal?.session_manager?.prompt_source) {
+    const source = posix.normalize(proposal.session_manager.prompt_source.replaceAll('\\', '/'));
+    if (source.startsWith('../') || source.startsWith('/') || !existsSync(`${repository.root}/${source}`)) {
+      problems.push('session_manager prompt_source is missing or escapes the repository');
+    }
   }
   if (problems.length) {
     throw new TorchError('Domain proposal is not approved for installation', {

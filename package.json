@@ -17,6 +17,7 @@
     "./kernel/install": "./src/kernel/install.mjs",
     "./kernel/worktrees": "./src/kernel/worktrees.mjs",
     "./integration": "./src/integration/service.mjs",
+    "./importers/combatrig": "./src/importers/combatrig.mjs",
     "./mcp": "./src/mcp/tools.mjs",
     "./resources": "./src/resources/service.mjs",
     "./runtime/lifecycle": "./src/runtime/lifecycle.mjs",
@@ -52,6 +53,7 @@
     "src/control-plane/",
     "src/kernel/",
     "src/integration/",
+    "src/importers/",
     "src/mcp/",
     "src/resources/",
     "src/runtime/",
@@ -65,8 +67,8 @@
     "test": "node --test --test-timeout=30000 test/fleet/*.test.mjs",
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs",
-    "format": "eslint src/adapters src/backlog src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet --fix",
-    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/control-plane src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet"
+    "format": "eslint src/adapters src/backlog src/canonical src/checks src/control-plane src/importers src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet --fix",
+    "lint": "eslint src/adapters src/backlog src/canonical src/checks src/control-plane src/importers src/integration src/kernel src/mcp src/resources src/runtime src/self-host src/cli.mjs bin/torch.mjs test/fleet"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",

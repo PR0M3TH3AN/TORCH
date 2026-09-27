@@ -61,6 +61,12 @@ function validateAreaId(id) {
   }
 }
 
+function validateWorktreeName(name, areaId) {
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
+    throw new TorchError(`Unsafe worktree name for ${areaId}: ${name}`, { code: 'INVALID_WORKTREE_NAME' });
+  }
+}
+
 export function planWorktrees({ repository, parentOverride } = {}) {
   const { config, roster } = loadFleetDefinition(repository.root);
   const manifest = readInstallManifest(repository.root);
@@ -73,8 +79,14 @@ export function planWorktrees({ repository, parentOverride } = {}) {
 
   for (const area of roster.areas) {
     validateAreaId(area.id);
-    const path = join(fleetRoot, area.id);
-    const branch = `${prefix}${area.id}`;
+    const worktreeName = area.worktree_name ?? area.id;
+    validateWorktreeName(worktreeName, area.id);
+    const path = area.worktree_name ? join(parent, worktreeName) : join(fleetRoot, worktreeName);
+    const branch = area.branch ?? `${prefix}${area.id}`;
+    if (!git(repository.root, ['check-ref-format', '--branch', branch], { optional: true })) {
+      conflicts.push({ area: area.id, type: 'invalid-branch', path, branch });
+      continue;
+    }
     const byPath = worktrees.find((entry) => resolve(entry.path) === resolve(path));
     const byBranch = worktrees.find((entry) => entry.branch === branch);
     if (byPath && byPath.branch === branch) {

@@ -1,0 +1,5148 @@
+{
+  "schema": "torch.dev/domain-proposal/v1alpha1",
+  "generatedAt": "2026-09-27T20:51:32.420Z",
+  "repository": {
+    "root": "/home/user/Documents/GitHub/COMBATRIG",
+    "initialCommit": "b00963c20ce062e3d8c3873c7055c80d8c54928b",
+    "head": "7a543fe2a658a474f7598efec7a516172895f5fd"
+  },
+  "review": {
+    "status": "pending",
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "notes": [
+      "Imported from COMBATRIG portable fleet. Resolve every blocking migration gap before approval."
+    ]
+  },
+  "paths": {
+    "worktree_parent": ".."
+  },
+  "common_prompt_source": "docs/agents/prompts/COMMON.md",
+  "common_prompt_sha256": "d5b7e6f5cf034dd478bb2abbfed1cd895f098c10a0ee1902cfa023ca1598862c",
+  "session_manager": {
+    "legacy_id": "ai-sessions",
+    "runtime": "claude",
+    "branch": "feat/ai-session-management",
+    "worktree_name": "COMBATRIG-ai-sessions",
+    "prompt_source": "docs/agents/prompts/ai-sessions.md",
+    "prompt_sha256": "5cdca083863247cca71ae0210862eaa67644f96136b9afc84294e40edaefa0af"
+  },
+  "domains": [
+    {
+      "legacy_id": "ai-combat",
+      "id": "ai-combat",
+      "title": "Enemy & friendly AI systems",
+      "kind": "development",
+      "scope": [
+        "combat behaviour, squads, target selection, alert propagation"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "ai-qa",
+        "rigs-vehicles",
+        "gameplay"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/ai-combat",
+      "worktree_name": "COMBATRIG-ai-combat",
+      "prompt_source": "docs/agents/prompts/ai-combat.md",
+      "prompt_sha256": "4ed040105c24f02146adff7fd485f53736c5fdf565f7c28ce3b95287a7737890",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/ai-combat.md"
+      ],
+      "legacy_notes": "Keep new AI timers on dt and simRandom, never wall-clock setTimeout/Math.random — the QA replay diverges otherwise (ai-qa moved the garrison group alert onto EnemyController.alertIn for this reason).",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-combat",
+        "branch": "feat/ai-combat"
+      }
+    },
+    {
+      "legacy_id": "ai-qa",
+      "id": "ai-qa",
+      "title": "AI QA playtester",
+      "kind": "development",
+      "scope": [
+        "the harness that plays the game: policies, sweeps, baselines, run bundles"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "ai-combat",
+        "rigs-vehicles",
+        "mission-depth"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "docs/ai-qa-playtester-plan",
+      "worktree_name": "COMBATRIG-ai-qa",
+      "prompt_source": "docs/agents/prompts/ai-qa.md",
+      "prompt_sha256": "f17c712e6fb1b059c2ca3283d18199c83c595db45d54a4d6b891c9ac6e666163",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/ai-qa.md"
+      ],
+      "legacy_notes": "COMBATRIG-ai-qa-base is its scratch checkout, detached on purpose. Runbook .agents/skills/ai-qa/SKILL.md. STANDING DUTY (owner, 2026-09-08): run continuously against what lands on main — play the affected contracts after a batch of landings, compare to the last sweep baseline, report regressions to the session that caused them and to the dispatcher. Its own backlog items are what it does between landings, not instead of them.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-qa",
+        "branch": "docs/ai-qa-playtester-plan"
+      }
+    },
+    {
+      "legacy_id": "ai-writers-voice",
+      "id": "ai-writers-voice",
+      "title": "AI writer & voice",
+      "kind": "development",
+      "scope": [
+        "lore retrieval, writer prompt, voice register, Piper reader"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "lore",
+        "mission-depth"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/ai-writers-voice",
+      "worktree_name": "COMBATRIG-ai-writers-voice",
+      "prompt_source": "docs/agents/prompts/ai-writers-voice.md",
+      "prompt_sha256": "56bf7194ae3f8be34821b41358a649b0d8d4b37ddfcad76a886c4492df6eac83",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/ai-writers-voice.md"
+      ],
+      "legacy_notes": "Consumes what the lore session writes; agree file layout with them before pinning chunk counts.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-writers-voice",
+        "branch": "feat/ai-writers-voice"
+      }
+    },
+    {
+      "legacy_id": "animation",
+      "id": "animation",
+      "title": "Animation & armature",
+      "kind": "development",
+      "scope": [
+        "rig armatures and skinning, walk/run cycles, footfall, landing and recoil, torso/arm actuator motion, the recovery drone grapple and lift poses, the FSG unfold sequence, vehicle suspension — src/rigs/skeleton.ts and the gait/IK solver in rig.ts; ledger docs/ANIMATION-LEDGER.md"
+      ],
+      "not_scope": [
+        "chassis mechanics and specs (rigs-vehicles); mesh topology and hip assembly geometry (meshcraft/textures); camera framing and shake (camera-hud); footstep audio and the sound bank (audio/music); footDust emitters (particles)"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "rigs-vehicles",
+        "camera-hud",
+        "audio",
+        "particles",
+        "ai-qa",
+        "assets",
+        "asset-producer",
+        "music"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/animation",
+      "worktree_name": "COMBATRIG-animation",
+      "prompt_source": "docs/agents/prompts/animation.md",
+      "prompt_sha256": "8ed257989eeb100a64e3d984e3dbb9cb70efcf05bc9f0f127d0fb690b7b90bfa",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/animation.md"
+      ],
+      "legacy_notes": "Opened 2026-09-14 against the owner TODO line 'Next Rig presentation work: knee/ankle mechanics, footfall, landing and recoil feedback, following the mechanical leg standards already established for hips' (docs/TODO.md) and section 15 'footfall / machine-weight presentation'. Read docs/design/mechanical-hips.md before touching a joint: pivots are a CONTRACT the IK hardcodes (thigh (0,-0.2,0), knee (0,-2.0,bend*0.12), ankle (0,-1.42,bend*-0.07)) and a visual-only revision must not move them. rigs-14 closed the mass-carrying step NUMBERS (test:footfall); rigs-16 is the unproven LOOK and is still rigs-vehicles' ticket.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-animation",
+        "branch": "feat/animation"
+      }
+    },
+    {
+      "legacy_id": "assets",
+      "id": "assets",
+      "title": "Meshcraft mission assets",
+      "kind": "development",
+      "scope": [
+        "the asset foundry, new meshcraft props for missions"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "mission-depth",
+        "vegetation",
+        "textures"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/mission-assets",
+      "worktree_name": "COMBATRIG-assets",
+      "prompt_source": "docs/agents/prompts/assets.md",
+      "prompt_sha256": "d673bf7277e232fb6bbbb3eee4622461992fb98e6fbc8498d1f62899faef8268",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/assets.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-assets",
+        "branch": "feat/mission-assets"
+      }
+    },
+    {
+      "legacy_id": "audio",
+      "id": "audio",
+      "title": "Music & sound effects",
+      "kind": "development",
+      "scope": [
+        "music director, sfx events, mix, data/sfx/*.json"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "weapons",
+        "particles",
+        "camera-hud"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/audio-music-sfx",
+      "worktree_name": "COMBATRIG-audio",
+      "prompt_source": "docs/agents/prompts/audio.md",
+      "prompt_sha256": "c1cf065a831638369a21ac4d1b151b30eff8af3b8293c80d02d1bf22575e7574",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/audio.md"
+      ],
+      "legacy_notes": "Owns the event ids other sessions fire (rig_destroyed vs explosion_large). npm run test:sfx checks every clip an event names exists.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-audio",
+        "branch": "feat/audio-music-sfx"
+      }
+    },
+    {
+      "legacy_id": "browser-issues",
+      "id": "browser-issues",
+      "title": "Browser issues",
+      "kind": "development",
+      "scope": [
+        "load hangs, tab lifecycle, anything that breaks in a real browser"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "perf",
+        "terrain",
+        "web-ui"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "fix/browser-issues",
+      "worktree_name": "COMBATRIG-browser-issues",
+      "prompt_source": "docs/agents/prompts/browser-issues.md",
+      "prompt_sha256": "5873aa94f21a36a3dfd48dc0f7c1115a89fe6701d282cccb6290c03363bde7c2",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/browser-issues.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-browser-issues",
+        "branch": "fix/browser-issues"
+      }
+    },
+    {
+      "legacy_id": "camera-hud",
+      "id": "camera-hud",
+      "title": "Camera, player view & HUD",
+      "kind": "development",
+      "scope": [
+        "chase camera, lens and framing, HUD"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "controller-input",
+        "gameplay"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/camera-hud",
+      "worktree_name": "COMBATRIG-camera-hud",
+      "prompt_source": "docs/agents/prompts/camera-hud.md",
+      "prompt_sha256": "15f294d602c7bba50d0f45cc3367452b992fb2f7b09f274752b8f9f3cff95189",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/camera-hud.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-camera-hud",
+        "branch": "feat/camera-hud"
+      }
+    },
+    {
+      "legacy_id": "concept-art",
+      "id": "concept-art",
+      "title": "Concept art — world plates and asset sheets",
+      "kind": "development",
+      "scope": [
+        "docs/design/world-concepts/ (plates beside their prompts), per-asset concept plates and orthographic model sheets in docs/assets/<id>/, the prompt library and the rule that every image is answerable to a written intent; docs/CONCEPT-LEDGER.md"
+      ],
+      "not_scope": [
+        "geometry, textures, generation — a plate is an intent for someone else to build against, never a texture source"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "asset-producer",
+        "assets",
+        "terrain",
+        "lore",
+        "textures",
+        "skybox-weather"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/concept-art",
+      "worktree_name": "COMBATRIG-concept-art",
+      "prompt_source": "docs/agents/prompts/concept-art.md",
+      "prompt_sha256": "e36c74aa424ba95801019880bda92f3a08be06d91e47e44660446c54a9de6d47",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/concept-art.md"
+      ],
+      "legacy_notes": "Created 2026-09-15. The fourteen world plates (asse-19) are the template. Concept-art-before-erosion (terr-15) is the owner's rule: this area is what satisfies it per world. First job: the deployed-bay plate for the Field Support Group and the Greenwell plates (the one world with none). Generation runs through tools/asset/genimage.mjs on the OpenRouter key in ~/.config/combatrig/secrets.env at about $0.039 a call — real spend on the owner's account, so confirm the subject list before a batch. What the generator does and does not respond to is measured and written down in docs/CONCEPT-LEDGER.md; read it before writing prompts, and record what each plate MISSED, because the next person builds from the picture and will otherwise build the miss.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-concept-art",
+        "branch": "feat/concept-art"
+      }
+    },
+    {
+      "legacy_id": "controller-input",
+      "id": "controller-input",
+      "title": "Controller & input design",
+      "kind": "development",
+      "scope": [
+        "action map, gamepad, rebinding, Steam Input"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "camera-hud",
+        "steam"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/controller-input",
+      "worktree_name": "COMBATRIG-controller-input",
+      "prompt_source": "docs/agents/prompts/controller-input.md",
+      "prompt_sha256": "6ac64f17ce34689760d1b4c4e743696d622fa5a6fdf5067e9a4210449a6057db",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/controller-input.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-controller-input",
+        "branch": "feat/controller-input"
+      }
+    },
+    {
+      "legacy_id": "gameplay",
+      "id": "gameplay",
+      "title": "Gameplay adjustments",
+      "kind": "development",
+      "scope": [
+        "feel and moment-to-moment play; currently the death camera and loss debrief"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "camera-hud",
+        "rigs-vehicles",
+        "weapons"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/gameplay-adjustments",
+      "worktree_name": "COMBATRIG-gameplay",
+      "prompt_source": "docs/agents/prompts/gameplay.md",
+      "prompt_sha256": "e6f02738bb980ec1cc1e7b18ea64fa41e8e8a4742b6a24996b5b95180644224b",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/gameplay.md"
+      ],
+      "legacy_notes": "Despite the name it has touched no balance values — say so before assuming a collision.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-gameplay",
+        "branch": "feat/gameplay-adjustments"
+      }
+    },
+    {
+      "legacy_id": "lore",
+      "id": "lore",
+      "title": "Lore & universe building",
+      "kind": "development",
+      "scope": [
+        "factions, regions, timeline, in-world texts, data/codex"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "ai-writers-voice",
+        "mission-depth"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/lore-universe",
+      "worktree_name": "COMBATRIG-lore",
+      "prompt_source": "docs/agents/prompts/lore.md",
+      "prompt_sha256": "baf33ecfd3d5b2a128a5b836f38cef8d5a03fd14046bb5fbf2c5f49f92fb5a54",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/lore.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-lore",
+        "branch": "feat/lore-universe"
+      }
+    },
+    {
+      "legacy_id": "mission-depth",
+      "id": "mission-depth",
+      "title": "Mission depth",
+      "kind": "development",
+      "scope": [
+        "objectives, contract structure, mission entities"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "assets",
+        "ai-qa",
+        "rigs-vehicles"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/mission-depth-3",
+      "worktree_name": "COMBATRIG-mission-depth",
+      "prompt_source": "docs/agents/prompts/mission-depth.md",
+      "prompt_sha256": "a3d5653dbd2aa3150fc197a6f64e693235c720f9d27222f1b2d377928835524a",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/mission-depth.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-mission-depth",
+        "branch": "feat/mission-depth-3"
+      }
+    },
+    {
+      "legacy_id": "multiplayer",
+      "id": "multiplayer",
+      "title": "Multiplayer",
+      "kind": "development",
+      "scope": [
+        "dropship insertion, free-for-all, lobby liveness, src/net/identity.ts"
+      ],
+      "not_scope": [
+        "src/platform/ and Steam-managed identity — unclaimed, see steam"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "steam"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/multiplayer",
+      "worktree_name": "COMBATRIG-multiplayer",
+      "prompt_source": "docs/agents/prompts/multiplayer.md",
+      "prompt_sha256": "a7035f54f3a29ba660e912ba10393e121f96356976154ac3b7ffa2d93c453882",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/multiplayer.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-multiplayer",
+        "branch": "feat/multiplayer"
+      }
+    },
+    {
+      "legacy_id": "new-features",
+      "id": "new-features",
+      "title": "New features",
+      "kind": "development",
+      "scope": [
+        "UNDECIDED — awaiting the owner's choice. The owner has nothing in mind here (2026-09-08) and idle is an acceptable state; they will hear one pitch. The only unclaimed surface found is Editor Phase 2 (docs/COMBATRIG-Level-Map-Editor-Dev-Plan.md), which is a tool rather than something a player feels."
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "gameplay"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/new-features",
+      "worktree_name": "COMBATRIG-new-features",
+      "prompt_source": "docs/agents/prompts/new-features.md",
+      "prompt_sha256": "46f64164a8f41284d617ff725ddbf0faf8ffd075489e1aab8572f5a1ceae760a",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/new-features.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-new-features",
+        "branch": "feat/new-features"
+      }
+    },
+    {
+      "legacy_id": "particles",
+      "id": "particles",
+      "title": "Particle systems",
+      "kind": "development",
+      "scope": [
+        "src/fx/particles.ts, emitters and channels"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "weapons",
+        "audio"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/particle-systems",
+      "worktree_name": "COMBATRIG-particles",
+      "prompt_source": "docs/agents/prompts/particles.md",
+      "prompt_sha256": "403448eca550ae55d58dab51be2084140ef12d144e859dd5f55379002d0ac9d5",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/particles.md"
+      ],
+      "legacy_notes": "burst() takes a channel as its required FIRST argument: 'combat' for hits/impacts (reserved band), 'fire', 'ambient' for scenery.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-particles",
+        "branch": "feat/particle-systems"
+      }
+    },
+    {
+      "legacy_id": "perf",
+      "id": "perf",
+      "title": "Performance optimizations",
+      "kind": "development",
+      "scope": [
+        "frame cost, triangle budgets, measurement tooling (__combatrig.frameBreakdown, tools/test/shot.mjs)"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "terrain",
+        "browser-issues",
+        "vegetation"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "perf/performance-optimizations",
+      "worktree_name": "COMBATRIG-perf",
+      "prompt_source": "docs/agents/prompts/perf.md",
+      "prompt_sha256": "0b9f0e840c507e04e514240e42024c510814a32ba9d2010f3cadca668b07c0ef",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/perf.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-perf",
+        "branch": "perf/performance-optimizations"
+      }
+    },
+    {
+      "legacy_id": "rigs-vehicles",
+      "id": "rigs-vehicles",
+      "title": "New rigs & vehicles",
+      "kind": "development",
+      "scope": [
+        "rig chassis, vehicle driver, convoys, NavGrid planning"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "ai-combat",
+        "mission-depth",
+        "gameplay"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/rigs-vehicles",
+      "worktree_name": "COMBATRIG-rigs-vehicles",
+      "prompt_source": "docs/agents/prompts/rigs-vehicles.md",
+      "prompt_sha256": "45973960d8513584c89b7cb725a4496a5da540e53494e42c0f72878070cbc994",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/rigs-vehicles.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-rigs-vehicles",
+        "branch": "feat/rigs-vehicles"
+      }
+    },
+    {
+      "legacy_id": "road-rail-city",
+      "id": "road-rail-city",
+      "title": "Roadway, railway & city system",
+      "kind": "development",
+      "scope": [
+        "road classes, rail, city and settlement layout, transportGraph"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "terrain",
+        "vegetation"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/road-rail-city",
+      "worktree_name": "COMBATRIG-road-rail-city",
+      "prompt_source": "docs/agents/prompts/road-rail-city.md",
+      "prompt_sha256": "9f5324d1311f0c6ba0c317b26756a6393b027c1dc5c822412ff16bc18ec6b5a7",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/road-rail-city.md"
+      ],
+      "legacy_notes": "COMBATRIG-road-base is its scratch checkout, detached on purpose.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-road-rail-city",
+        "branch": "feat/road-rail-city"
+      }
+    },
+    {
+      "legacy_id": "skybox-weather",
+      "id": "skybox-weather",
+      "title": "Skybox & weather",
+      "kind": "development",
+      "scope": [
+        "sky dome, atmosphere, weather states, terrain coupling"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "terrain",
+        "perf"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/skybox-weather",
+      "worktree_name": "COMBATRIG-skybox-weather",
+      "prompt_source": "docs/agents/prompts/skybox-weather.md",
+      "prompt_sha256": "121b4ee790a9ef7bb502cf26d4306900dfb093ca8041e7071ac3d460867ebb2a",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/skybox-weather.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-skybox-weather",
+        "branch": "feat/skybox-weather"
+      }
+    },
+    {
+      "legacy_id": "steam",
+      "id": "steam",
+      "title": "Steam packaging & installers",
+      "kind": "development",
+      "scope": [
+        "Electron desktop wrapper, Steamworks, per-OS installers, src/platform/"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "multiplayer",
+        "controller-input"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/steam-packaging",
+      "worktree_name": "COMBATRIG-steam",
+      "prompt_source": "docs/agents/prompts/steam.md",
+      "prompt_sha256": "d57c56a554a1fb0bc8599c04e406be11ffa832ea779fc633b80e83de629cdcc2",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/steam.md"
+      ],
+      "legacy_notes": "Multiplayer has no claim on src/platform/; treat src/net/identity.ts as the seam to adapt, not replace.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-steam",
+        "branch": "feat/steam-packaging"
+      }
+    },
+    {
+      "legacy_id": "terrain",
+      "id": "terrain",
+      "title": "Terrain & world design",
+      "kind": "development",
+      "scope": [
+        "the landscape compiler, scatter, LOD, terrain-detail"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "vegetation",
+        "road-rail-city",
+        "perf",
+        "textures"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/terrain-world-design",
+      "worktree_name": "COMBATRIG-terrain",
+      "prompt_source": "docs/agents/prompts/terrain.md",
+      "prompt_sha256": "b8a51c46ed78bc491467fef952ee351f2bbedb33660c543c8f62016a9af4925e",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/terrain.md"
+      ],
+      "legacy_notes": "perf measures terrain-detail as the single biggest frame owner (66-102k triangles, all cast into the shadow map). Owns the E5 field dressing and E6 furniture/pit kit PLACEMENT, and the weather channels: vegetationTint for plants and the structural weathering by KitSlot (c4b337a).",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-terrain",
+        "branch": "feat/terrain-world-design"
+      }
+    },
+    {
+      "legacy_id": "textures",
+      "id": "textures",
+      "title": "Texture development",
+      "kind": "development",
+      "scope": [
+        "materials, atlases, rig livery (src/canon/livery.ts), meshcraft surface work"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "terrain",
+        "vegetation",
+        "assets"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/textures",
+      "worktree_name": "COMBATRIG-textures",
+      "prompt_source": "docs/agents/prompts/textures.md",
+      "prompt_sha256": "b3e555673f8595c008adc804a555d5c5f4344a055ad08568863070ead44b81fe",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/textures.md"
+      ],
+      "legacy_notes": "The faction to insignia table is now one module, src/canon/livery.ts — import it, never copy it.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-textures",
+        "branch": "feat/textures"
+      }
+    },
+    {
+      "legacy_id": "vegetation",
+      "id": "vegetation",
+      "title": "Vegetation & world detail",
+      "kind": "development",
+      "scope": [
+        "the authored prop kit (src/world/propKit.ts), field dressing, deadwood, pit gear"
+      ],
+      "not_scope": [
+        "the scatter/LOD path — coverArt.ts, cover cards, near ring, impostors, reaches belong to terrain"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "terrain",
+        "textures",
+        "assets"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/vegetation-detail",
+      "worktree_name": "COMBATRIG-vegetation",
+      "prompt_source": "docs/agents/prompts/vegetation.md",
+      "prompt_sha256": "fed84803e810acf837f241701a55c0f0b8b7d81dfc767626216ff31796107780",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/vegetation.md"
+      ],
+      "legacy_notes": "SHARED with terrain and the line is not where either roster entry implied (2026-09-09): terrain authored the PLACEMENT — the E5 field dressing (field-wall/gate/shed/trough) and the E6 furniture and pit kit (winch house, headframe, cart, belt, trestle) — and vegetation authored the KIT PARTS that replaced the primitives in those paths. Both are partly right about 'the prop kit'. Check the commit subjects before assuming a hand-off; git author cannot distinguish sessions on this box. The split confirmed by both sides: PARTS are vegetation's, PLACEMENT is terrain's — where a trough stands in a pasture, where a cart is left on a spur. Two exceptions worth carrying so nobody rediscovers them: the field gate's yaw and its width were placement fixes vegetation made, because the authored parts are what made the faults visible.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-vegetation",
+        "branch": "feat/vegetation-detail"
+      }
+    },
+    {
+      "legacy_id": "weapons",
+      "id": "weapons",
+      "title": "Weapons development",
+      "kind": "development",
+      "scope": [
+        "weapon systems, hit registration, boresight, src/weapons/"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "audio",
+        "particles",
+        "gameplay",
+        "ai-qa"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/weapons",
+      "worktree_name": "COMBATRIG-weapons",
+      "prompt_source": "docs/agents/prompts/weapons.md",
+      "prompt_sha256": "f577cdef3ef5fe53c02ffeeccd6da400bf20cdd041a05e9419cb2207eadb4ab7",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/weapons.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-weapons",
+        "branch": "feat/weapons"
+      }
+    },
+    {
+      "legacy_id": "web-ui",
+      "id": "web-ui",
+      "title": "Web UI / UX",
+      "kind": "development",
+      "scope": [
+        "the site and in-game UI shell, dev page"
+      ],
+      "not_scope": [],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "camera-hud",
+        "browser-issues"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/web-ui",
+      "worktree_name": "COMBATRIG-web-ui",
+      "prompt_source": "docs/agents/prompts/web-ui.md",
+      "prompt_sha256": "1cab146332037001269305e69e770ebc92ab65eb060d7b12ad9c4af0b3fbfa6b",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/web-ui.md"
+      ],
+      "legacy_notes": null,
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-web-ui",
+        "branch": "feat/web-ui"
+      }
+    },
+    {
+      "legacy_id": "story-campaign",
+      "id": "story-campaign",
+      "title": "Story campaign — missions, dialogue, campaign production",
+      "kind": "development",
+      "scope": [
+        "src/story/, data/story/, docs/story/, docs/STORY-LEDGER.md, src/audio/combatAwareDialogue.ts; story integration in schemas/mission.schema.json coordinated with mission-depth; Halden M1-3 qualification, migration and signed-history sync; the story-missions phase of the program (ai-s-6) and Phase 3 of the Field Service System with mission-depth"
+      ],
+      "not_scope": [
+        "General contract generation and Long War generator ownership (mission-depth); lore retrieval, writer prompts and Piper reader (ai-writers-voice); global audio bus/music (music); Rig mechanics and transport mesh ownership; unrelated src/main.ts sections; shared schema changes require coordination"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "mission-depth",
+        "ai-writers-voice",
+        "ai-combat",
+        "rigs-vehicles",
+        "session-manager"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/story-campaign",
+      "worktree_name": "COMBATRIG-story-campaign",
+      "prompt_source": "docs/agents/prompts/story-campaign.md",
+      "prompt_sha256": "a0a63756075ceabec667aea854cb967660e2849da83cda8286a5a727064e2cf0",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/story-campaign.md"
+      ],
+      "legacy_notes": "Claude session, created 2026-09-15 to replace Astra (ChatGPT, out 2026-09-14). Read docs/agents/ASTRA.md for the history, docs/handoff/story-campaign-2026-09-14.md (item 6 corrected) and docs/design/story-campaign-development-plan.md. Ship-time data lives under data/story/, never docs/ (test:sessions holds it). Nothing authored lands without a generator hook (mission-depth accepts).",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-story-campaign",
+        "branch": "feat/story-campaign"
+      }
+    },
+    {
+      "legacy_id": "asset-producer",
+      "id": "asset-producer",
+      "title": "Asset producer — the rig, vehicle and weapon pipeline",
+      "kind": "development",
+      "scope": [
+        "per-asset dossiers under docs/assets/<id>/ and their stage order (spec -> concept plates -> model sheet -> mesh -> texture -> fx -> armature -> integration -> QA sign-off); the asset foundry workflow, tools/asset/ and .agents/skills/asset-foundry; the ASSET QUEUE order and each asset's acceptance; docs/ASSET-LEDGER.md"
+      ],
+      "not_scope": [
+        "geometry (meshcraft), surfaces (textures), effects (particles), armature and animation (animation), mechanics and chassis files (rigs-vehicles), weapon specs (weapons) — the producer sequences and signs off, it does not build"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "assets",
+        "textures",
+        "particles",
+        "animation",
+        "rigs-vehicles",
+        "weapons",
+        "concept-art",
+        "camera-hud"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/asset-producer",
+      "worktree_name": "COMBATRIG-asset-producer",
+      "prompt_source": "docs/agents/prompts/asset-producer.md",
+      "prompt_sha256": "1f209bf21234892283a16faae4783dd62bcd5816b21211ebfce80b372dd1c374",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/asset-producer.md"
+      ],
+      "legacy_notes": "Created 2026-09-15. Owns the SEQUENCE and the dossier, not the parts: every asset has one dossier with one open stage at a time, an acceptance line per stage, and the producer is who says an asset is done. First job: the cockpit interior (asse-22) and the DS-6 dossier as the template; then the Field Support Group hulls (rigs-19) when phase 2 opens.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-asset-producer",
+        "branch": "feat/asset-producer"
+      }
+    },
+    {
+      "legacy_id": "art-director",
+      "id": "art-director",
+      "title": "Art Director",
+      "kind": "development",
+      "scope": [
+        "how the game looks and reads on screen in the PS2 / early-2000s PC era: rulings on taste, review of every look-moving change before it lands, lore/STYLE.md, the shell design-system record, docs/design/ART-RULINGS.md"
+      ],
+      "not_scope": [
+        "no src/, no gates, no landing, no schedule; never photographs anything itself (asks the area for the frame)"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "all"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/art-director",
+      "worktree_name": "COMBATRIG-art-director",
+      "prompt_source": "docs/agents/prompts/art-director.md",
+      "prompt_sha256": "fd71ee30ea98509969662b24762a3e9e15f3fe9c5a6cde97fca75df9d816acc0",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/art-director.md"
+      ],
+      "legacy_notes": "Charter: docs/agents/ART-DIRECTOR.md. Created 2026-09-23 at the owner's ask. Rules on taste; the dispatcher rules on priority; the owner overrides either.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-art-director",
+        "branch": "feat/art-director"
+      }
+    },
+    {
+      "legacy_id": "infantry",
+      "id": "infantry",
+      "title": "Infantry & FPS gameplay (experimental)",
+      "kind": "development",
+      "scope": [
+        "the on-foot experiment: src/player/infantry/*, infantry.html + src/infantryCourse.ts, the hangar walk (bayWalk), footImpact/cameraImpulse, the on-foot HUD and audio hooks, tools/test/infantry.mjs, docs/design/infantry-observer.md; the ?infantry=1 / walk=1 flags"
+      ],
+      "not_scope": [
+        "the rig game itself: rig controls and weapons (weapons, controller-input), the action map (controller-input owns the 'foot' context), sound pipeline (audio), hangar geometry (web-ui, assets), AI behaviour (ai-combat) — ask, do not edit"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "new-features",
+        "controller-input",
+        "audio",
+        "web-ui",
+        "ai-qa",
+        "camera-hud",
+        "art-director"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/infantry",
+      "worktree_name": "COMBATRIG-infantry",
+      "prompt_source": "docs/agents/prompts/infantry.md",
+      "prompt_sha256": "830e8a7bef550ee230d890c6a911cd30d49e99b677bea4a73ab6470a7349b1db",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/infantry.md"
+      ],
+      "legacy_notes": "Created 2026-09-24 at the owner's ask. EXPERIMENTAL: the owner started it with cloud sessions (branch claude/clever-volta-0e65f1) to learn whether a battle is fun from 1.7 m; nothing here is committed to shipping. Everything stays behind flags, the rig game byte-identical with them off. Window 18 (landing the MVP behind flags) is New Features' until it lands; this area owns the experiment after that. Cloud twin works on cloud/infantry.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-infantry",
+        "branch": "feat/infantry"
+      }
+    },
+    {
+      "legacy_id": "vehicle-combat",
+      "id": "vehicle-combat",
+      "title": "Vehicle combat (experimental)",
+      "kind": "development",
+      "scope": [
+        "the PLAYER driving and fighting from a ground vehicle (tanks, APCs, trucks, emplacement-mounted guns, any non-rig vehicle we add) behind a ?drive=1 flag: mount/dismount, the drive and turret controls, the vehicle HUD, damage from the crew seat, docs/design/vehicle-combat.md"
+      ],
+      "not_scope": [
+        "AI-driven vehicles, convoys and the vehicle driver/physics (rigs-vehicles — ask, reuse, never fork); rigs; aircraft (aircraft); the on-foot mount path (infantry owns the person, you own the seat)"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "rigs-vehicles",
+        "infantry",
+        "controller-input",
+        "camera-hud",
+        "weapons",
+        "audio",
+        "ai-qa",
+        "art-director"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/vehicle-combat",
+      "worktree_name": "COMBATRIG-vehicle-combat",
+      "prompt_source": "docs/agents/prompts/vehicle-combat.md",
+      "prompt_sha256": "5dcd71d55ea6a5d76f08f715088b0001876cc2d8d6f950bfa496aefe5649c328",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/vehicle-combat.md"
+      ],
+      "legacy_notes": "Created 2026-09-24 at the owner's ask: \"vehicle combat, basically any other vehicle we create in game … very experimental only\". Everything behind flags; the rig game byte-identical with them off. Cloud twin on cloud/vehicle-combat.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-vehicle-combat",
+        "branch": "feat/vehicle-combat"
+      }
+    },
+    {
+      "legacy_id": "aircraft",
+      "id": "aircraft",
+      "title": "Aircraft (experimental)",
+      "kind": "development",
+      "scope": [
+        "the PLAYER flying: VTOLs, gunships, the DS-6/Wayfarer class and anything airborne we add, behind a ?fly=1 flag: flight model, controls, the flight HUD, how the world holds up at altitude and speed (draw distance, terrain LOD, streaming, frame cost), docs/design/aircraft.md"
+      ],
+      "not_scope": [
+        "the AI dropship/pickup flight and its missions (gameplay, contracts, multiplayer), ship meshes (assets), ground vehicles (vehicle-combat), terrain LOD itself (terrain — measure and ask)"
+      ],
+      "owned_paths": [],
+      "shared_paths": [],
+      "neighbours": [
+        "terrain",
+        "perf",
+        "assets",
+        "gameplay",
+        "controller-input",
+        "camera-hud",
+        "skybox-weather",
+        "ai-qa",
+        "art-director"
+      ],
+      "required_checks": [
+        "test-sessions"
+      ],
+      "runtime": "claude",
+      "branch": "feat/aircraft",
+      "worktree_name": "COMBATRIG-aircraft",
+      "prompt_source": "docs/agents/prompts/aircraft.md",
+      "prompt_sha256": "3242e0b094a82649e3ce4df1bdabdc962f2a45dd5c7ae4eade69a5303cf1f647",
+      "evidence": [
+        "docs/agents/roster.json",
+        "docs/agents/prompts/aircraft.md"
+      ],
+      "legacy_notes": "Created 2026-09-24, split from vehicle combat because flight stresses different systems: the world was built for ground-level speeds and sightlines, so altitude is a terrain/perf question first. Very experimental. Cloud twin on cloud/aircraft.",
+      "worktree_status": {
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-aircraft",
+        "branch": "feat/aircraft"
+      }
+    }
+  ],
+  "collisions": [
+    {
+      "domains": [
+        "ai-combat",
+        "ai-qa"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-combat",
+        "gameplay"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-combat",
+        "rigs-vehicles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-combat",
+        "story-campaign"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "aircraft"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "animation"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "infantry"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "mission-depth"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "rigs-vehicles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-qa",
+        "weapons"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-writers-voice",
+        "lore"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-writers-voice",
+        "mission-depth"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "ai-writers-voice",
+        "story-campaign"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "art-director"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "assets"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "camera-hud"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "controller-input"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "gameplay"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "perf"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "skybox-weather"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "aircraft",
+        "terrain"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "animation",
+        "asset-producer"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "animation",
+        "assets"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "animation",
+        "audio"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "animation",
+        "camera-hud"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "animation",
+        "particles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "animation",
+        "rigs-vehicles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "art-director",
+        "infantry"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "art-director",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "assets"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "camera-hud"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "concept-art"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "particles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "rigs-vehicles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "textures"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "asset-producer",
+        "weapons"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "assets",
+        "concept-art"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "assets",
+        "mission-depth"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "assets",
+        "textures"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "assets",
+        "vegetation"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "audio",
+        "camera-hud"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "audio",
+        "infantry"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "audio",
+        "particles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "audio",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "audio",
+        "weapons"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "browser-issues",
+        "perf"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "browser-issues",
+        "terrain"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "browser-issues",
+        "web-ui"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "camera-hud",
+        "controller-input"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "camera-hud",
+        "gameplay"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "camera-hud",
+        "infantry"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "camera-hud",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "camera-hud",
+        "web-ui"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "concept-art",
+        "lore"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "concept-art",
+        "skybox-weather"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "concept-art",
+        "terrain"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "concept-art",
+        "textures"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "controller-input",
+        "infantry"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "controller-input",
+        "steam"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "controller-input",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "gameplay",
+        "new-features"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "gameplay",
+        "rigs-vehicles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "gameplay",
+        "weapons"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "infantry",
+        "new-features"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "infantry",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "infantry",
+        "web-ui"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "lore",
+        "mission-depth"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "mission-depth",
+        "rigs-vehicles"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "mission-depth",
+        "story-campaign"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "multiplayer",
+        "steam"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "particles",
+        "weapons"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "perf",
+        "skybox-weather"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "perf",
+        "terrain"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "perf",
+        "vegetation"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "rigs-vehicles",
+        "story-campaign"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "rigs-vehicles",
+        "vehicle-combat"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "road-rail-city",
+        "terrain"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "road-rail-city",
+        "vegetation"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "skybox-weather",
+        "terrain"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "terrain",
+        "textures"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "terrain",
+        "vegetation"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "textures",
+        "vegetation"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "vehicle-combat",
+        "weapons"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "legacy-neighbour",
+          "evidence": "docs/agents/roster.json"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "test-sessions",
+      "title": "test:sessions",
+      "command": "npm",
+      "args": [
+        "run",
+        "test:sessions"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node tools/test/sessions.mjs"
+      },
+      "resources": []
+    },
+    {
+      "id": "build",
+      "title": "build",
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "tsc --noEmit && vite build"
+      },
+      "resources": []
+    },
+    {
+      "id": "test",
+      "title": "test",
+      "command": "npm",
+      "args": [
+        "run",
+        "test"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node tools/test/all.mjs"
+      },
+      "resources": [
+        "browser-renderer"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "browser-renderer",
+      "capacity": 2,
+      "queue": "fifo",
+      "max_hold_seconds": 10800,
+      "evidence": "tools/test/serve.mjs"
+    }
+  ],
+  "architecture": {
+    "components": [],
+    "dependencies": [],
+    "sharedSurfaces": [],
+    "verificationSurfaces": [],
+    "operationalSurfaces": []
+  },
+  "compatibility": {
+    "source": "combatrig-portable-fleet",
+    "sourceRoster": "docs/agents/roster.json",
+    "areas": {
+      "total": 33,
+      "domains": 32,
+      "managerLegacyId": "ai-sessions"
+    },
+    "backlog": {
+      "total": 570,
+      "byStatus": {
+        "assigned": 148,
+        "done": 322,
+        "open": 95,
+        "blocked": 5
+      },
+      "invalid": [],
+      "examples": [
+        {
+          "id": "af-1",
+          "area": "asset-producer",
+          "status": "assigned"
+        },
+        {
+          "id": "af-2",
+          "area": "assets",
+          "status": "done"
+        },
+        {
+          "id": "af-3",
+          "area": "assets",
+          "status": "done"
+        },
+        {
+          "id": "af-4",
+          "area": "assets",
+          "status": "done"
+        },
+        {
+          "id": "af-5",
+          "area": "assets",
+          "status": "assigned"
+        },
+        {
+          "id": "af-6",
+          "area": "assets",
+          "status": "open"
+        },
+        {
+          "id": "af-7",
+          "area": "assets",
+          "status": "open"
+        },
+        {
+          "id": "af-8",
+          "area": "assets",
+          "status": "done"
+        }
+      ]
+    },
+    "checkCatalog": [
+      {
+        "name": "test:platform",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/platform.mjs"
+      },
+      {
+        "name": "test:steaminput",
+        "command": "node tools/test/steaminput.mjs"
+      },
+      {
+        "name": "build",
+        "command": "tsc --noEmit && vite build"
+      },
+      {
+        "name": "test:world",
+        "command": "node tools/test/world.mjs"
+      },
+      {
+        "name": "test:hydro",
+        "command": "node tools/test/hydro.mjs"
+      },
+      {
+        "name": "test:formation",
+        "command": "node tools/test/formation.mjs"
+      },
+      {
+        "name": "test:formationyield",
+        "command": "node tools/test/formationyield.mjs"
+      },
+      {
+        "name": "test:cover",
+        "command": "node tools/test/cover.mjs"
+      },
+      {
+        "name": "test:fields",
+        "command": "node tools/test/fields.mjs"
+      },
+      {
+        "name": "test:placement",
+        "command": "node tools/test/placement.mjs"
+      },
+      {
+        "name": "test:weathering",
+        "command": "node tools/test/weathering.mjs"
+      },
+      {
+        "name": "test:water-stability-policy",
+        "command": "node tools/test/water-stability-policy.mjs"
+      },
+      {
+        "name": "test:waterhue",
+        "command": "node tools/test/waterhue.mjs"
+      },
+      {
+        "name": "test:objectiveanchor",
+        "command": "node tools/test/objectiveanchor.mjs"
+      },
+      {
+        "name": "test:propkit",
+        "command": "node tools/test/propkit.mjs"
+      },
+      {
+        "name": "test:vegetation",
+        "command": "node tools/test/vegetation.mjs"
+      },
+      {
+        "name": "test:wateredge",
+        "command": "node tools/test/wateredge.mjs"
+      },
+      {
+        "name": "test:sky",
+        "command": "node tools/test/sky.mjs"
+      },
+      {
+        "name": "test:skywiring",
+        "command": "node tools/test/skywiring.mjs"
+      },
+      {
+        "name": "test:skyevents",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/skyevents.mjs"
+      },
+      {
+        "name": "test:privatesun",
+        "command": "node tools/test/privatesun.mjs"
+      },
+      {
+        "name": "test:toolimports",
+        "command": "node tools/test/toolimports.mjs"
+      },
+      {
+        "name": "test:gatelock",
+        "command": "node tools/test/gatelock.mjs"
+      },
+      {
+        "name": "test:sessions",
+        "command": "node tools/test/sessions.mjs"
+      },
+      {
+        "name": "test:weather",
+        "command": "node tools/test/weather.mjs"
+      },
+      {
+        "name": "test:weathersweep",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/weathersweep.mjs"
+      },
+      {
+        "name": "test:precipclimate",
+        "command": "node tools/test/precipclimate.mjs"
+      },
+      {
+        "name": "test:thermalenv",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/thermalenv.mjs"
+      },
+      {
+        "name": "test:predicates",
+        "command": "node tools/test/predicates.mjs"
+      },
+      {
+        "name": "test:input",
+        "command": "node tools/test/input.mjs"
+      },
+      {
+        "name": "test:framing",
+        "command": "node tools/test/framing.mjs"
+      },
+      {
+        "name": "test:ownership",
+        "command": "node tools/test/ownership.mjs"
+      },
+      {
+        "name": "test:hudlegible",
+        "command": "node tools/test/hudlegible.mjs"
+      },
+      {
+        "name": "test:radarsense",
+        "command": "node tools/test/radarsense.mjs"
+      },
+      {
+        "name": "test:targetentities",
+        "command": "node tools/test/targetentities.mjs"
+      },
+      {
+        "name": "test:fsgbay",
+        "command": "node tools/test/fsgbay.mjs"
+      },
+      {
+        "name": "test:fsgrelocate",
+        "command": "node tools/test/fsgrelocate.mjs"
+      },
+      {
+        "name": "test:lavawade",
+        "command": "node tools/test/lavawade.mjs"
+      },
+      {
+        "name": "test:sensorvision",
+        "command": "node tools/test/sensorvision.mjs"
+      },
+      {
+        "name": "test:chaseaim",
+        "command": "node tools/test/chaseaim.mjs"
+      },
+      {
+        "name": "test:viewmotion",
+        "command": "node tools/test/viewmotion.mjs"
+      },
+      {
+        "name": "test:hudreadouts",
+        "command": "node tools/test/hudreadouts.mjs"
+      },
+      {
+        "name": "test:retrolook",
+        "command": "node tools/test/retrolook.mjs"
+      },
+      {
+        "name": "test:designation",
+        "command": "node tools/test/designation.mjs"
+      },
+      {
+        "name": "test:aimalign",
+        "command": "node tools/probe/aimalign.mjs"
+      },
+      {
+        "name": "test:pad",
+        "command": "node tools/test/pad.mjs"
+      },
+      {
+        "name": "test:menunav",
+        "command": "node tools/test/menunav.mjs"
+      },
+      {
+        "name": "test:hitreg",
+        "command": "node tools/test/hitreg.mjs"
+      },
+      {
+        "name": "test:rearm",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/rearm.mjs"
+      },
+      {
+        "name": "test:seedstreams",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/seedstreams.mjs"
+      },
+      {
+        "name": "test:simdeterminism",
+        "command": "node tools/test/simdeterminism.mjs"
+      },
+      {
+        "name": "test:onepickup",
+        "command": "node tools/test/onepickup.mjs"
+      },
+      {
+        "name": "test:vesselhit",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/vesselhit.mjs"
+      },
+      {
+        "name": "test:weapongroups",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/weapongroups.mjs"
+      },
+      {
+        "name": "test:heatsinks",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/heatsinks.mjs"
+      },
+      {
+        "name": "test:weaponthermal",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/weaponthermal.mjs"
+      },
+      {
+        "name": "test:topattack",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/topattack.mjs"
+      },
+      {
+        "name": "test:missiledamage",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/missiledamage.mjs"
+      },
+      {
+        "name": "test:lancespotter",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lancespotter.mjs"
+      },
+      {
+        "name": "test:lanceservice",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lanceservice.mjs"
+      },
+      {
+        "name": "test:covermulti",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/covermulti.mjs"
+      },
+      {
+        "name": "test:navhazard",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/navhazard.mjs"
+      },
+      {
+        "name": "test:coverwalk",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/coverwalk.mjs"
+      },
+      {
+        "name": "test:lethalhealth",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lethalhealth.mjs"
+      },
+      {
+        "name": "test:interiorgarrison",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/interiorgarrison.mjs"
+      },
+      {
+        "name": "test:withdraw",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/withdraw.mjs"
+      },
+      {
+        "name": "test:hitsource",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/hitsource.mjs"
+      },
+      {
+        "name": "test:aisprint",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/aisprint.mjs"
+      },
+      {
+        "name": "test:gunsight",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/gunsight.mjs"
+      },
+      {
+        "name": "test:writcrew",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/writcrew.mjs"
+      },
+      {
+        "name": "test:howitzer",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/howitzer.mjs"
+      },
+      {
+        "name": "test:modulehits",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/modulehits.mjs"
+      },
+      {
+        "name": "test:landeddamage",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/landeddamage.mjs"
+      },
+      {
+        "name": "test:ew",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/ew.mjs"
+      },
+      {
+        "name": "test:approachring",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/approachring.mjs"
+      },
+      {
+        "name": "test:placemission",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/placemission.mjs"
+      },
+      {
+        "name": "test:authoredplacement",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/authoredplacement.mjs"
+      },
+      {
+        "name": "test:escortpace",
+        "command": "node tools/test/escortpace.mjs"
+      },
+      {
+        "name": "test:writrating",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/writrating.mjs"
+      },
+      {
+        "name": "test:fsgcompose",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fsgcompose.mjs"
+      },
+      {
+        "name": "test:buildingrequest",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/buildingrequest.mjs"
+      },
+      {
+        "name": "test:interior",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/interior.mjs"
+      },
+      {
+        "name": "test:interiordrive",
+        "command": "node tools/probe/interiorshot.mjs"
+      },
+      {
+        "name": "test:objectivehint",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/objectivehint.mjs"
+      },
+      {
+        "name": "test:escorthold",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/escorthold.mjs"
+      },
+      {
+        "name": "test:servicegeneration",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/servicegeneration.mjs"
+      },
+      {
+        "name": "test:serviceobjective",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/serviceobjective.mjs"
+      },
+      {
+        "name": "test:servicebay",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/servicebay.mjs"
+      },
+      {
+        "name": "test:finishprojection",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/finishprojection.mjs"
+      },
+      {
+        "name": "test:difficulty",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/difficulty.mjs"
+      },
+      {
+        "name": "test:footprints",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/footprints.mjs"
+      },
+      {
+        "name": "test:groundalbedo",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/groundalbedo.mjs"
+      },
+      {
+        "name": "test:thermalsystem",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/thermalsystem.mjs"
+      },
+      {
+        "name": "test:thermaltypes",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/thermaltypes.mjs"
+      },
+      {
+        "name": "test:servicestop",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/servicestop.mjs"
+      },
+      {
+        "name": "test:salvagedenial",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/salvagedenial.mjs"
+      },
+      {
+        "name": "test:coldpad",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/coldpad.mjs"
+      },
+      {
+        "name": "test:servicedata",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/servicedata.mjs"
+      },
+      {
+        "name": "test:recipeidentity",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/recipeidentity.mjs"
+      },
+      {
+        "name": "test:objectives",
+        "command": "node tools/test/objectives.mjs"
+      },
+      {
+        "name": "test:contracts",
+        "command": "node tools/test/contracts.mjs"
+      },
+      {
+        "name": "test:objgraph",
+        "command": "node tools/test/objgraph.mjs"
+      },
+      {
+        "name": "test:actors",
+        "command": "node --experimental-transform-types tools/test/actors.mjs"
+      },
+      {
+        "name": "test:detach",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/detach.mjs"
+      },
+      {
+        "name": "test:wrecklift",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/wrecklift.mjs"
+      },
+      {
+        "name": "test:footfall",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/footfall.mjs"
+      },
+      {
+        "name": "test:railpin",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/railpin.mjs"
+      },
+      {
+        "name": "test:berthrefuse",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/berthrefuse.mjs"
+      },
+      {
+        "name": "test:dropburn",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dropburn.mjs"
+      },
+      {
+        "name": "test:gait",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/gait.mjs"
+      },
+      {
+        "name": "test:roster",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/roster.mjs"
+      },
+      {
+        "name": "test:torso",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/torso.mjs"
+      },
+      {
+        "name": "test:convoy",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/convoy.mjs"
+      },
+      {
+        "name": "test:pointdefense",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/pointdefense.mjs"
+      },
+      {
+        "name": "test:branching",
+        "command": "node tools/test/branching.mjs"
+      },
+      {
+        "name": "test:route",
+        "command": "node tools/test/route.mjs"
+      },
+      {
+        "name": "test:garrison",
+        "command": "node tools/test/garrison.mjs"
+      },
+      {
+        "name": "test:lance",
+        "command": "node tools/test/lance.mjs"
+      },
+      {
+        "name": "test:lancemath",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lancemath.mjs"
+      },
+      {
+        "name": "test:dropshiptarget",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dropship-target-policy.mjs"
+      },
+      {
+        "name": "test:inputconsumers",
+        "command": "node tools/test/inputconsumers.mjs"
+      },
+      {
+        "name": "test:lanceservicebay",
+        "command": "node tools/test/lanceservicebay.mjs"
+      },
+      {
+        "name": "test:interiorgarrisonbay",
+        "command": "node tools/test/interiorgarrisonbay.mjs"
+      },
+      {
+        "name": "test:lancescreen",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lancescreen.mjs"
+      },
+      {
+        "name": "test:lanceroster",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lanceroster.mjs"
+      },
+      {
+        "name": "test:pilottelemetry",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/pilottelemetry.mjs"
+      },
+      {
+        "name": "test:incoming",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/incoming.mjs"
+      },
+      {
+        "name": "test:torsoreach",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/torsoreach.mjs"
+      },
+      {
+        "name": "test:gunwatch",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/gunwatch.mjs"
+      },
+      {
+        "name": "test:stallstate",
+        "command": "node tools/test/stallstate.mjs"
+      },
+      {
+        "name": "test:loscost",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/loscost.mjs"
+      },
+      {
+        "name": "test:salvage",
+        "command": "node tools/test/salvage.mjs"
+      },
+      {
+        "name": "test:company",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/company.mjs"
+      },
+      {
+        "name": "test:sparks",
+        "command": "node tools/test/sparks.mjs"
+      },
+      {
+        "name": "test:sfx",
+        "command": "node tools/test/sfxsynth.mjs"
+      },
+      {
+        "name": "test:music",
+        "command": "node tools/test/musicpack.mjs"
+      },
+      {
+        "name": "test:deaths",
+        "command": "node tools/test/deathkind.mjs"
+      },
+      {
+        "name": "test:voicebus",
+        "command": "node tools/test/voicebus.mjs"
+      },
+      {
+        "name": "test:vacuum",
+        "command": "node tools/test/vacuumworld.mjs"
+      },
+      {
+        "name": "test:focusmute",
+        "command": "node tools/test/focusmute.mjs"
+      },
+      {
+        "name": "test:listenerviewer",
+        "command": "node tools/test/listenerviewer.mjs"
+      },
+      {
+        "name": "test:vosktier",
+        "command": "node tools/test/moltenpulse.mjs"
+      },
+      {
+        "name": "test:particles",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/particles.mjs"
+      },
+      {
+        "name": "test:ejection",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/ejection.mjs"
+      },
+      {
+        "name": "test:detachfx",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/detachfx.mjs"
+      },
+      {
+        "name": "test:deathfx",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/deathfx.mjs"
+      },
+      {
+        "name": "test:impactfx",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/impactfx.mjs"
+      },
+      {
+        "name": "test:particlewind",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/particlewind.mjs"
+      },
+      {
+        "name": "test:plumecolumn",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/plumecolumn.mjs"
+      },
+      {
+        "name": "test:jetcones",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/jetcones.mjs"
+      },
+      {
+        "name": "test:emberdrift",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/emberdrift.mjs"
+      },
+      {
+        "name": "test:brinevapour",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/brinevapour.mjs"
+      },
+      {
+        "name": "test:precipstyle",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/precipstyle.mjs"
+      },
+      {
+        "name": "test:fxheat",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fxheat.mjs"
+      },
+      {
+        "name": "test:fireforlook",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fireforlook.mjs"
+      },
+      {
+        "name": "test:netproto",
+        "command": "node tools/test/netproto.mjs"
+      },
+      {
+        "name": "test:netallies",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/netallies.mjs"
+      },
+      {
+        "name": "test:transportcollisions",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportcollisions.mjs"
+      },
+      {
+        "name": "test:carrierpresentation",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/carrierpresentation.mjs"
+      },
+      {
+        "name": "test:bootorder",
+        "command": "node tools/test/bootorder.mjs"
+      },
+      {
+        "name": "test:lobbylive",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lobbylive.mjs"
+      },
+      {
+        "name": "test:invites",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/invites.mjs"
+      },
+      {
+        "name": "test:onedevice",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/onedevice.mjs"
+      },
+      {
+        "name": "test:inviteonly",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/inviteonly.mjs"
+      },
+      {
+        "name": "test:roomchain",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/roomchain.mjs"
+      },
+      {
+        "name": "test:succession",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/succession.mjs"
+      },
+      {
+        "name": "test:successorpack",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/successorpack.mjs"
+      },
+      {
+        "name": "test:remotetrigger",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/remotetrigger.mjs"
+      },
+      {
+        "name": "test:cutover",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/cutover.mjs"
+      },
+      {
+        "name": "test:extractmode",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/extractmode.mjs"
+      },
+      {
+        "name": "test:plandigest",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/plandigest.mjs"
+      },
+      {
+        "name": "test:settleonce",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/settleonce.mjs"
+      },
+      {
+        "name": "test:coopresult",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/coopresult.mjs"
+      },
+      {
+        "name": "qa:netspike",
+        "command": "node tools/test/netspike.mjs"
+      },
+      {
+        "name": "qa:drop",
+        "command": "node tools/test/drop.mjs"
+      },
+      {
+        "name": "qa:netdrop",
+        "command": "node tools/test/netdrop.mjs"
+      },
+      {
+        "name": "qa:cutover",
+        "command": "node tools/test/cutoverlive.mjs"
+      },
+      {
+        "name": "qa:extract",
+        "command": "node tools/test/extract.mjs"
+      },
+      {
+        "name": "qa:reap",
+        "command": "node tools/dev/reap.mjs --kill"
+      },
+      {
+        "name": "test:canonfp",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/canonfp.mjs"
+      },
+      {
+        "name": "test:teamarrival",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/teamarrival.mjs"
+      },
+      {
+        "name": "test:arrivaleligibility",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/arrivaleligibility.mjs"
+      },
+      {
+        "name": "test:matchseed",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/matchseed.mjs"
+      },
+      {
+        "name": "test:modecatalog",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/modecatalog.mjs"
+      },
+      {
+        "name": "test:twodoors",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/twodoors.mjs"
+      },
+      {
+        "name": "qa:menushot",
+        "command": "node tools/qa/menushot.mjs"
+      },
+      {
+        "name": "qa:explain",
+        "command": "node tools/qa/explain.mjs"
+      },
+      {
+        "name": "qa:doctor",
+        "command": "node tools/qa/doctor.mjs"
+      },
+      {
+        "name": "qa:play",
+        "command": "node tools/qa/run.mjs"
+      },
+      {
+        "name": "qa:validate",
+        "command": "node tools/qa/validate.mjs"
+      },
+      {
+        "name": "qa:replay",
+        "command": "node tools/qa/run.mjs --policy replay --replay-from"
+      },
+      {
+        "name": "qa:compare",
+        "command": "node tools/qa/compare.mjs"
+      },
+      {
+        "name": "qa:probe",
+        "command": "node tools/qa/probe.mjs"
+      },
+      {
+        "name": "qa:sweep",
+        "command": "node tools/qa/sweep.mjs"
+      },
+      {
+        "name": "qa:liveplay",
+        "command": "node tools/qa/liveplay.mjs"
+      },
+      {
+        "name": "qa:coverage",
+        "command": "node tools/qa/coverage.mjs"
+      },
+      {
+        "name": "qa:routediff",
+        "command": "node tools/qa/routediff.mjs"
+      },
+      {
+        "name": "test:patrol",
+        "command": "node tools/test/patrol.mjs"
+      },
+      {
+        "name": "test:reach",
+        "command": "node tools/test/reach.mjs"
+      },
+      {
+        "name": "test:orphanguard",
+        "command": "node tools/test/orphanguard.mjs"
+      },
+      {
+        "name": "test:effectiveness",
+        "command": "node tools/test/effectiveness.mjs"
+      },
+      {
+        "name": "test:policies",
+        "command": "node tools/test/policies.mjs"
+      },
+      {
+        "name": "test:framecost",
+        "command": "node tools/test/framecost.mjs"
+      },
+      {
+        "name": "test:loadprofile",
+        "command": "node tools/test/loadprofile.mjs"
+      },
+      {
+        "name": "test:buildidentity",
+        "command": "node tools/test/buildidentity.mjs"
+      },
+      {
+        "name": "test:roadclass",
+        "command": "node tools/test/roadclass.mjs"
+      },
+      {
+        "name": "test:alignment",
+        "command": "node tools/test/alignment.mjs"
+      },
+      {
+        "name": "test:roadreview",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/roadreview.mjs"
+      },
+      {
+        "name": "test:roadquality",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/roadquality.mjs"
+      },
+      {
+        "name": "test:interchange",
+        "command": "node tools/test/interchange.mjs"
+      },
+      {
+        "name": "test:streetkit",
+        "command": "node tools/test/streetkit.mjs"
+      },
+      {
+        "name": "test:livery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/livery.mjs"
+      },
+      {
+        "name": "test:ink",
+        "command": "node tools/test/inkcontrast.mjs"
+      },
+      {
+        "name": "test:surfaces",
+        "command": "node tools/test/surfaces.mjs"
+      },
+      {
+        "name": "test:icesite",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/icesite.mjs"
+      },
+      {
+        "name": "test:padedge",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/padedge.mjs"
+      },
+      {
+        "name": "test:mouthcut",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/mouthcut.mjs"
+      },
+      {
+        "name": "test:tubedrive",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/tubedrive.mjs"
+      },
+      {
+        "name": "test:tubefooting",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/tubefooting.mjs"
+      },
+      {
+        "name": "test:ribbonsection",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/ribbonsection.mjs"
+      },
+      {
+        "name": "test:deckreach",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/deckreach.mjs"
+      },
+      {
+        "name": "test:dunekernel",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dunekernel.mjs"
+      },
+      {
+        "name": "test:servicepad",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/servicepad.mjs"
+      },
+      {
+        "name": "test:shelfcarve",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/shelfcarve.mjs"
+      },
+      {
+        "name": "test:poollights",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/poollights.mjs"
+      },
+      {
+        "name": "test:cloudparameters",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/cloudparameters.mjs"
+      },
+      {
+        "name": "test:cloudfield",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/cloudfield.mjs"
+      },
+      {
+        "name": "test:clouddensity",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/clouddensity.mjs"
+      },
+      {
+        "name": "test:clouddensityparity",
+        "command": "node tools/test/clouddensityparity.mjs"
+      },
+      {
+        "name": "test:shaderscompile",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/shaderscompile.mjs"
+      },
+      {
+        "name": "test:worldlook",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/worldlook.mjs"
+      },
+      {
+        "name": "test:fluidaxis",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fluidaxis.mjs"
+      },
+      {
+        "name": "test:depositid",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/depositid.mjs"
+      },
+      {
+        "name": "test:fumarolesite",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fumarolesite.mjs"
+      },
+      {
+        "name": "test:wadisite",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/wadisite.mjs"
+      },
+      {
+        "name": "test:rimsite",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/rimsite.mjs"
+      },
+      {
+        "name": "test:ventfield",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/ventfield.mjs"
+      },
+      {
+        "name": "test:surfacecolour",
+        "command": "node tools/test/surfacecolour.mjs"
+      },
+      {
+        "name": "test:worldcover",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/worldcover.mjs"
+      },
+      {
+        "name": "test:frozenseas",
+        "command": "node tools/test/frozenseas.mjs"
+      },
+      {
+        "name": "test:groundseams",
+        "command": "node tools/test/groundseams.mjs"
+      },
+      {
+        "name": "test:saltlagoon",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/saltlagoon.mjs"
+      },
+      {
+        "name": "test:planetsurface",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/planetsurface.mjs"
+      },
+      {
+        "name": "test:worldart",
+        "command": "node tools/test/worldart.mjs"
+      },
+      {
+        "name": "test:roadflow",
+        "command": "node tools/test/roadflow.mjs"
+      },
+      {
+        "name": "test:hierarchy",
+        "command": "node tools/test/hierarchy.mjs"
+      },
+      {
+        "name": "test:gore",
+        "command": "node tools/test/gore.mjs"
+      },
+      {
+        "name": "test:serial",
+        "command": "node tools/test/all.mjs --jobs 1"
+      },
+      {
+        "name": "test",
+        "command": "node tools/test/all.mjs"
+      },
+      {
+        "name": "test:missions",
+        "command": "node tools/test/missions.mjs"
+      },
+      {
+        "name": "test:tacmaps",
+        "command": "node tools/test/tacmaps.mjs"
+      },
+      {
+        "name": "test:fence",
+        "command": "node tools/test/fence.mjs"
+      },
+      {
+        "name": "test:navring",
+        "command": "node tools/test/navring.mjs"
+      },
+      {
+        "name": "test:fenceprobe",
+        "command": "node tools/test/fenceprobe.mjs"
+      },
+      {
+        "name": "test:taclabels",
+        "command": "node tools/test/taclabels.mjs"
+      },
+      {
+        "name": "test:tacfence",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/tacfence.mjs"
+      },
+      {
+        "name": "test:shellnav",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/shellnav.mjs"
+      },
+      {
+        "name": "test:buildstamp",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/buildstamp.mjs"
+      },
+      {
+        "name": "test:stalebuild",
+        "command": "node tools/test/stalebuild.mjs"
+      },
+      {
+        "name": "test:staleclassify",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/staleclassify.mjs"
+      },
+      {
+        "name": "test:crtsweep",
+        "command": "node tools/test/crtsweep.mjs"
+      },
+      {
+        "name": "test:debriefexits",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/debriefexits.mjs"
+      },
+      {
+        "name": "qa:fenceshot",
+        "command": "node tools/test/fenceshot.mjs"
+      },
+      {
+        "name": "qa:linkopen",
+        "command": "node tools/test/linkopen.mjs"
+      },
+      {
+        "name": "test:planhash",
+        "command": "node tools/test/planhash.mjs"
+      },
+      {
+        "name": "test:enginehash",
+        "command": "node tools/test/enginehash.mjs"
+      },
+      {
+        "name": "test:campaign",
+        "command": "node tools/test/campaign.mjs"
+      },
+      {
+        "name": "test:longwar",
+        "command": "node tools/test/longwar.mjs"
+      },
+      {
+        "name": "test:active-recovery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/active-game-recovery.mjs"
+      },
+      {
+        "name": "test:recoverymotion",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/recoverymotion.mjs"
+      },
+      {
+        "name": "test:repairquote",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/repairquote.mjs"
+      },
+      {
+        "name": "test:repairyard",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/repairyard.mjs"
+      },
+      {
+        "name": "test:weaponprices",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/weaponprices.mjs"
+      },
+      {
+        "name": "test:fsgservice",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fsgservice.mjs"
+      },
+      {
+        "name": "test:roundsbilled",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/roundsbilled.mjs"
+      },
+      {
+        "name": "test:lavahazard",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lavahazard.mjs"
+      },
+      {
+        "name": "test:weathercooling",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/weathercooling.mjs"
+      },
+      {
+        "name": "test:thermalfield",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/thermalfield.mjs"
+      },
+      {
+        "name": "test:active-recovery-stats-policy",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/active-recovery-stats-policy.mjs"
+      },
+      {
+        "name": "test:company-ship-architecture",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/companyshiparchitecture.mjs"
+      },
+      {
+        "name": "test:starmap",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/starmap.mjs"
+      },
+      {
+        "name": "test:downloadpanel",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/downloadpanel.mjs"
+      },
+      {
+        "name": "test:pausesettings",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/pausesettings.mjs"
+      },
+      {
+        "name": "test:placecards",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/placecards.mjs"
+      },
+      {
+        "name": "test:menuhangar",
+        "command": "node tools/test/menuhangar.mjs"
+      },
+      {
+        "name": "test:briefhero",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/briefhero.mjs"
+      },
+      {
+        "name": "test:crtspans",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/crtspans.mjs"
+      },
+      {
+        "name": "test:debtline",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/debtline.mjs"
+      },
+      {
+        "name": "test:hangarplanet",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/hangarplanet.mjs"
+      },
+      {
+        "name": "test:invitetoast",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/invitetoast.mjs"
+      },
+      {
+        "name": "test:shelllegible",
+        "command": "node tools/test/shelllegible.mjs"
+      },
+      {
+        "name": "test:shellv2specimen",
+        "command": "node tools/test/shellv2specimen.mjs"
+      },
+      {
+        "name": "test:controlslist",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/controlslist.mjs"
+      },
+      {
+        "name": "test:codexlinks",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/codexlinks.mjs"
+      },
+      {
+        "name": "test:relayhtml",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/relayhtml.mjs"
+      },
+      {
+        "name": "test:tacmapfence",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/tacmapfence.mjs"
+      },
+      {
+        "name": "test:navroutes",
+        "command": "node tools/test/navroutes.mjs"
+      },
+      {
+        "name": "test:devnav",
+        "command": "node tools/test/devnav.mjs"
+      },
+      {
+        "name": "test:railrecovery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/railrecovery.mjs"
+      },
+      {
+        "name": "test:transportownership",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportownership.mjs"
+      },
+      {
+        "name": "test:servicestation",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/servicestation.mjs"
+      },
+      {
+        "name": "test:experiencereceipt",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/experiencereceipt.mjs"
+      },
+      {
+        "name": "test:scrapped",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/scrapped.mjs"
+      },
+      {
+        "name": "test:active-recovery-browser",
+        "command": "node tools/test/active-recovery-browser.mjs && node tools/test/active-resume-browser.mjs"
+      },
+      {
+        "name": "test:deathcam",
+        "command": "node tools/test/deathcam.mjs"
+      },
+      {
+        "name": "test:killingblow",
+        "command": "node tools/test/killingblow.mjs"
+      },
+      {
+        "name": "test:standdown",
+        "command": "node tools/test/standdown.mjs"
+      },
+      {
+        "name": "test:bridges",
+        "command": "node tools/test/bridges.mjs"
+      },
+      {
+        "name": "test:traverse",
+        "command": "node tools/test/traverse.mjs"
+      },
+      {
+        "name": "qa:vistas",
+        "command": "node tools/test/vistas.mjs"
+      },
+      {
+        "name": "qa:water",
+        "command": "node tools/test/watershot.mjs"
+      },
+      {
+        "name": "test:canon",
+        "command": "node tools/test/canon.mjs"
+      },
+      {
+        "name": "test:story",
+        "command": "node tools/test/story.mjs"
+      },
+      {
+        "name": "test:story-models",
+        "command": "node tools/test/story-models.mjs"
+      },
+      {
+        "name": "test:share",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/share.mjs"
+      },
+      {
+        "name": "test:voice",
+        "command": "node tools/test/voice.mjs"
+      },
+      {
+        "name": "test:rail",
+        "command": "node tools/test/rail.mjs"
+      },
+      {
+        "name": "test:wayfarer",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/wayfarer.mjs"
+      },
+      {
+        "name": "test:lots",
+        "command": "node tools/test/lots.mjs"
+      },
+      {
+        "name": "qa:watersheet",
+        "command": "node tools/test/watersheet.mjs"
+      },
+      {
+        "name": "qa:roadsheet",
+        "command": "node tools/test/roadsheet.mjs"
+      },
+      {
+        "name": "qa:skysheet",
+        "command": "node tools/test/skysheet.mjs"
+      },
+      {
+        "name": "qa:wireshot",
+        "command": "node tools/test/wireshot.mjs"
+      },
+      {
+        "name": "qa:salvageshot",
+        "command": "node tools/test/salvageshot.mjs"
+      },
+      {
+        "name": "test:publishexits",
+        "command": "node tools/test/publishexits.mjs"
+      },
+      {
+        "name": "qa:bayshot",
+        "command": "node tools/test/bayshot.mjs"
+      },
+      {
+        "name": "qa:liveryshot",
+        "command": "node tools/test/liveryshot.mjs"
+      },
+      {
+        "name": "qa:shellfit",
+        "command": "node tools/test/shellfit.mjs"
+      },
+      {
+        "name": "qa:navlive",
+        "command": "node tools/test/navlive.mjs"
+      },
+      {
+        "name": "qa:rigbayshot",
+        "command": "node tools/test/rigbayshot.mjs"
+      },
+      {
+        "name": "qa:lobbyshot",
+        "command": "node tools/test/lobbyshot.mjs"
+      },
+      {
+        "name": "qa:loadershot",
+        "command": "node tools/test/loadershot.mjs"
+      },
+      {
+        "name": "test:asset",
+        "command": "node --test tools/asset/test.mjs"
+      },
+      {
+        "name": "test:silhouette",
+        "command": "python3 tools/asset/silhouette.py self-test"
+      },
+      {
+        "name": "test:surfacegate",
+        "command": "python3 tools/asset/surfacegate.py self-test"
+      },
+      {
+        "name": "test:voicerender",
+        "command": "node tools/test/voicerender.mjs"
+      },
+      {
+        "name": "test:growin",
+        "command": "node tools/test/growin.mjs"
+      },
+      {
+        "name": "test:skewpin",
+        "command": "node tools/test/skewpin.mjs"
+      },
+      {
+        "name": "test:fleet",
+        "command": "node tools/test/fleet.mjs"
+      },
+      {
+        "name": "test:gaitrecovery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/gaitrecovery.mjs"
+      },
+      {
+        "name": "test:hipassembly",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/hipassembly.mjs"
+      },
+      {
+        "name": "qa:hips",
+        "command": "node tools/asset/hip-review.mjs"
+      },
+      {
+        "name": "test:extractionlift",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/extractionlift.mjs"
+      },
+      {
+        "name": "qa:lift",
+        "command": "node tools/asset/extraction-review.mjs"
+      },
+      {
+        "name": "test:dropshipfx",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dropshipfx.mjs"
+      },
+      {
+        "name": "test:dropshipresources",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dropshipresources.mjs"
+      },
+      {
+        "name": "qa:interactions",
+        "command": "node tools/asset/interaction-review.mjs"
+      },
+      {
+        "name": "test:reardrop",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/reardrop.mjs"
+      },
+      {
+        "name": "qa:reardrop",
+        "command": "node tools/asset/rear-drop-review.mjs"
+      },
+      {
+        "name": "test:thrustgimbal",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/thrustgimbal.mjs"
+      },
+      {
+        "name": "test:transportmanifest",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportmanifest.mjs"
+      },
+      {
+        "name": "test:transportprofiles",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportprofiles.mjs"
+      },
+      {
+        "name": "qa:transportmanifest",
+        "command": "node tools/asset/transport-review.mjs"
+      },
+      {
+        "name": "test:reartransport",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/reartransport.mjs"
+      },
+      {
+        "name": "test:rearboarding",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/rearboarding.mjs"
+      },
+      {
+        "name": "test:liftmanifest",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/liftmanifest.mjs"
+      },
+      {
+        "name": "test:lifttransport",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lifttransport.mjs"
+      },
+      {
+        "name": "test:liftboarding",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/liftboarding.mjs"
+      },
+      {
+        "name": "test:transportevents",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportevents.mjs"
+      },
+      {
+        "name": "qa:missiontransport",
+        "command": "node tools/test/missiontransport.mjs"
+      },
+      {
+        "name": "test:transportgeneration",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportgeneration.mjs"
+      },
+      {
+        "name": "test:repairslice",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/repairslice.mjs"
+      },
+      {
+        "name": "test:railclear",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/railclear.mjs"
+      },
+      {
+        "name": "test:placestate",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/placestate.mjs"
+      },
+      {
+        "name": "test:voxrefs",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/voxrefs.mjs"
+      },
+      {
+        "name": "test:servicehangar",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/servicehangar.mjs"
+      },
+      {
+        "name": "test:briefweather",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/briefweather.mjs"
+      },
+      {
+        "name": "test:missionid",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/missionid.mjs"
+      },
+      {
+        "name": "test:doublearticle",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/doublearticle.mjs"
+      },
+      {
+        "name": "test:transportdegrade",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportdegrade.mjs"
+      },
+      {
+        "name": "test:netcarriers",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/netcarriers.mjs"
+      },
+      {
+        "name": "test:squadorders",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/squadorders.mjs"
+      },
+      {
+        "name": "test:dropplan",
+        "command": "node tools/test/dropplan.mjs"
+      },
+      {
+        "name": "test:legacyreserve",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/legacyreserve.mjs"
+      },
+      {
+        "name": "test:transportrecipe",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/transportrecipe.mjs"
+      },
+      {
+        "name": "test:transportpolicy",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportpolicy.mjs"
+      },
+      {
+        "name": "test:transportreport",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportreport.mjs"
+      },
+      {
+        "name": "test:sharedpickup",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/sharedpickup.mjs"
+      },
+      {
+        "name": "test:teamdeployment",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/teamdeployment.mjs"
+      },
+      {
+        "name": "test:meshcraftbatch",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/meshcraftbatch.mjs"
+      },
+      {
+        "name": "test:transportinspectorexport",
+        "command": "node --import ./tools/test/tsloader.mjs tools/test/transportinspector-export.mjs"
+      },
+      {
+        "name": "qa:transportinspector",
+        "command": "node tools/test/transportinspector.mjs"
+      },
+      {
+        "name": "qa:transportperf",
+        "command": "node tools/test/transportperf.mjs"
+      },
+      {
+        "name": "qa:solocamera",
+        "command": "node tools/test/solocamera.mjs"
+      },
+      {
+        "name": "test:solotransport",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/solotransport.mjs"
+      },
+      {
+        "name": "test:playertransport",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/playertransport.mjs"
+      },
+      {
+        "name": "test:netreconnect",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/netreconnect.mjs"
+      },
+      {
+        "name": "test:dronerecovery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dronerecovery.mjs"
+      },
+      {
+        "name": "qa:drone",
+        "command": "node tools/asset/drone-review.mjs"
+      },
+      {
+        "name": "test:buildingplan",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/buildingplan.mjs"
+      },
+      {
+        "name": "test:buildingshell",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/buildingshell.mjs"
+      },
+      {
+        "name": "test:buildings",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/buildings.mjs"
+      },
+      {
+        "name": "test:boregeometry",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/boregeometry.mjs"
+      },
+      {
+        "name": "test:carrierdrone",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/carrierdrone.mjs"
+      },
+      {
+        "name": "test:railclearance",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/railclearance.mjs"
+      },
+      {
+        "name": "qa:salvage",
+        "command": "node tools/asset/salvage-review.mjs"
+      },
+      {
+        "name": "test:wrecksalvage",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/wrecksalvage.mjs"
+      },
+      {
+        "name": "test:battlesalvage",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/battlesalvage.mjs"
+      },
+      {
+        "name": "qa:dronefleet",
+        "command": "node tools/asset/drone-fleet-review.mjs"
+      },
+      {
+        "name": "test:dronefleet",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/dronefleet.mjs"
+      },
+      {
+        "name": "test:storyfoundation",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storyfoundation.mjs"
+      },
+      {
+        "name": "test:storyhistorysync",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storyhistorysync.mjs"
+      },
+      {
+        "name": "test:storycampaign",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storycampaign.mjs"
+      },
+      {
+        "name": "test:haldenm01",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/haldenm01.mjs"
+      },
+      {
+        "name": "test:m01breakoff",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/m01breakoff.mjs"
+      },
+      {
+        "name": "test:storyinheritance",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storyinheritance.mjs"
+      },
+      {
+        "name": "test:economystore",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/economystore.mjs"
+      },
+      {
+        "name": "test:pilots",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/pilots.mjs"
+      },
+      {
+        "name": "test:pilotbackup",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/pilotbackup.mjs"
+      },
+      {
+        "name": "test:pilotbackup:browser",
+        "command": "node tools/test/pilotbackup-browser.mjs"
+      },
+      {
+        "name": "test:pilots:browser",
+        "command": "node tools/test/pilots-browser.mjs"
+      },
+      {
+        "name": "test:economyapp:browser",
+        "command": "node tools/test/economyapp-browser.mjs"
+      },
+      {
+        "name": "test:storyfoundation:browser",
+        "command": "node tools/test/storyfoundation-browser.mjs"
+      },
+      {
+        "name": "test:economyidb:browser",
+        "command": "node tools/test/economyidb-browser.mjs"
+      },
+      {
+        "name": "test:storyrecovery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storyrecovery.mjs"
+      },
+      {
+        "name": "test:storycombat",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storycombat.mjs"
+      },
+      {
+        "name": "test:storycombat:browser",
+        "command": "node tools/test/storycombat-browser.mjs artifacts/storycombat-browser"
+      },
+      {
+        "name": "test:crewcallouts",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/crewcallouts.mjs"
+      },
+      {
+        "name": "test:reservearrival",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/reservearrival.mjs"
+      },
+      {
+        "name": "test:reserverestore",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/reserverestore.mjs"
+      },
+      {
+        "name": "test:reserveunits",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/reserveunits.mjs"
+      },
+      {
+        "name": "test:storyopening",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storyopening.mjs"
+      },
+      {
+        "name": "test:voxdialogue",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/voxdialogue.mjs"
+      },
+      {
+        "name": "test:storydialogue",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/storydialogue.mjs"
+      },
+      {
+        "name": "test:enemyrecovery",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/enemyrecovery.mjs"
+      },
+      {
+        "name": "test:enemyrecovery:browser",
+        "command": "node tools/test/enemyrecovery-browser.mjs artifacts/enemy-recovery-browser"
+      },
+      {
+        "name": "test:arrivalintro",
+        "command": "node tools/test/arrivalintro.mjs"
+      },
+      {
+        "name": "test:arrivalintro:browser",
+        "command": "node tools/test/arrivalintro-browser.mjs artifacts/arrival-intro-browser"
+      },
+      {
+        "name": "test:frontendaudio:browser",
+        "command": "node tools/test/frontendaudio-browser.mjs artifacts/frontend-audio-browser"
+      },
+      {
+        "name": "test:recoverystorm",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/recoverystorm.mjs"
+      },
+      {
+        "name": "test:scanoverlay",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/scanoverlay.mjs"
+      },
+      {
+        "name": "test:pickupreveal",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/pickupreveal.mjs"
+      },
+      {
+        "name": "test:startupvox",
+        "command": "node --disable-warning=ExperimentalWarning tools/test/startupvox.mjs"
+      },
+      {
+        "name": "test:missionexperience",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/missionexperience.mjs"
+      },
+      {
+        "name": "test:missionexperience:browser",
+        "command": "node tools/test/missionexperience-browser.mjs artifacts/mission-experience-browser"
+      },
+      {
+        "name": "test:cockpit-engine-smoke-policy",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/cockpit-engine-smoke-policy.mjs"
+      },
+      {
+        "name": "test:storyweather-smoke:browser",
+        "command": "node tools/test/storyweather-smoke-browser.mjs artifacts/storyweather-smoke-browser"
+      },
+      {
+        "name": "test:stalechunk",
+        "command": "node tools/test/stalechunk.mjs"
+      },
+      {
+        "name": "test:carriage",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/carriage.mjs"
+      },
+      {
+        "name": "test:campaignentry",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/campaignentry.mjs"
+      },
+      {
+        "name": "qa:prefix",
+        "command": "node tools/qa/prefix.mjs"
+      },
+      {
+        "name": "qa:bandcount",
+        "command": "node tools/qa/bandcount.mjs"
+      },
+      {
+        "name": "qa:guns",
+        "command": "node tools/qa/guns.mjs"
+      },
+      {
+        "name": "test:shadowbudget",
+        "command": "node tools/test/shadowbudget.mjs"
+      },
+      {
+        "name": "test:briefingopen",
+        "command": "node tools/test/briefingopen.mjs"
+      },
+      {
+        "name": "test:assetcache",
+        "command": "node tools/test/assetcache.mjs"
+      },
+      {
+        "name": "test:station",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/station.mjs"
+      },
+      {
+        "name": "test:campaignhashes",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/campaignhashes.mjs"
+      },
+      {
+        "name": "test:thermalzones",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/thermalzones.mjs"
+      },
+      {
+        "name": "test:wallpush",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/wallpush.mjs"
+      },
+      {
+        "name": "test:deckentry",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/deckentry.mjs"
+      },
+      {
+        "name": "test:vehiclecollide",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/vehiclecollide.mjs"
+      },
+      {
+        "name": "test:convoydrive",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/convoydrive.mjs"
+      },
+      {
+        "name": "test:fsg",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/fsg.mjs"
+      },
+      {
+        "name": "test:mattock",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/mattock.mjs"
+      },
+      {
+        "name": "test:deadfall",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/deadfall.mjs"
+      },
+      {
+        "name": "test:lantern",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/lantern.mjs"
+      },
+      {
+        "name": "test:warrant",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/warrant.mjs"
+      },
+      {
+        "name": "test:sectionreach",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/sectionreach.mjs"
+      },
+      {
+        "name": "test:transportsave",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/transportsave.mjs"
+      },
+      {
+        "name": "test:crdate",
+        "command": "node --experimental-transform-types --import ./tools/test/tsloader.mjs tools/test/crdate.mjs"
+      }
+    ],
+    "schedules": [
+      {
+        "id": "release",
+        "lifetime": "system",
+        "authority": "owner",
+        "expression": "0 8,16 * * *",
+        "command": "tools/dev/release.sh",
+        "detected": true
+      },
+      {
+        "id": "dispatcher-hygiene",
+        "lifetime": "session",
+        "authority": "session-manager",
+        "detected": true
+      }
+    ],
+    "release": {
+      "provider": "custom-command",
+      "authority": "owner",
+      "command": "tools/dev/release.sh"
+    },
+    "worktrees": [
+      {
+        "areaId": "ai-combat",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-combat",
+        "branch": "feat/ai-combat"
+      },
+      {
+        "areaId": "ai-qa",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-qa",
+        "branch": "docs/ai-qa-playtester-plan"
+      },
+      {
+        "areaId": "session-manager",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-sessions",
+        "branch": "feat/ai-session-management"
+      },
+      {
+        "areaId": "ai-writers-voice",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-ai-writers-voice",
+        "branch": "feat/ai-writers-voice"
+      },
+      {
+        "areaId": "animation",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-animation",
+        "branch": "feat/animation"
+      },
+      {
+        "areaId": "assets",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-assets",
+        "branch": "feat/mission-assets"
+      },
+      {
+        "areaId": "audio",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-audio",
+        "branch": "feat/audio-music-sfx"
+      },
+      {
+        "areaId": "browser-issues",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-browser-issues",
+        "branch": "fix/browser-issues"
+      },
+      {
+        "areaId": "camera-hud",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-camera-hud",
+        "branch": "feat/camera-hud"
+      },
+      {
+        "areaId": "concept-art",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-concept-art",
+        "branch": "feat/concept-art"
+      },
+      {
+        "areaId": "controller-input",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-controller-input",
+        "branch": "feat/controller-input"
+      },
+      {
+        "areaId": "gameplay",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-gameplay",
+        "branch": "feat/gameplay-adjustments"
+      },
+      {
+        "areaId": "lore",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-lore",
+        "branch": "feat/lore-universe"
+      },
+      {
+        "areaId": "mission-depth",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-mission-depth",
+        "branch": "feat/mission-depth-3"
+      },
+      {
+        "areaId": "multiplayer",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-multiplayer",
+        "branch": "feat/multiplayer"
+      },
+      {
+        "areaId": "new-features",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-new-features",
+        "branch": "feat/new-features"
+      },
+      {
+        "areaId": "particles",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-particles",
+        "branch": "feat/particle-systems"
+      },
+      {
+        "areaId": "perf",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-perf",
+        "branch": "perf/performance-optimizations"
+      },
+      {
+        "areaId": "rigs-vehicles",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-rigs-vehicles",
+        "branch": "feat/rigs-vehicles"
+      },
+      {
+        "areaId": "road-rail-city",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-road-rail-city",
+        "branch": "feat/road-rail-city"
+      },
+      {
+        "areaId": "skybox-weather",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-skybox-weather",
+        "branch": "feat/skybox-weather"
+      },
+      {
+        "areaId": "steam",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-steam",
+        "branch": "feat/steam-packaging"
+      },
+      {
+        "areaId": "terrain",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-terrain",
+        "branch": "feat/terrain-world-design"
+      },
+      {
+        "areaId": "textures",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-textures",
+        "branch": "feat/textures"
+      },
+      {
+        "areaId": "vegetation",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-vegetation",
+        "branch": "feat/vegetation-detail"
+      },
+      {
+        "areaId": "weapons",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-weapons",
+        "branch": "feat/weapons"
+      },
+      {
+        "areaId": "web-ui",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-web-ui",
+        "branch": "feat/web-ui"
+      },
+      {
+        "areaId": "story-campaign",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-story-campaign",
+        "branch": "feat/story-campaign"
+      },
+      {
+        "areaId": "asset-producer",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-asset-producer",
+        "branch": "feat/asset-producer"
+      },
+      {
+        "areaId": "art-director",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-art-director",
+        "branch": "feat/art-director"
+      },
+      {
+        "areaId": "infantry",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-infantry",
+        "branch": "feat/infantry"
+      },
+      {
+        "areaId": "vehicle-combat",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-vehicle-combat",
+        "branch": "feat/vehicle-combat"
+      },
+      {
+        "areaId": "aircraft",
+        "state": "missing",
+        "expectedPath": "/home/user/Documents/GitHub/COMBATRIG-aircraft",
+        "branch": "feat/aircraft"
+      }
+    ],
+    "migrationGaps": [
+      {
+        "areaId": "ai-combat",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "ai-combat",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "ai-qa",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "ai-qa",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "session-manager",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "session-manager",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "ai-writers-voice",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "ai-writers-voice",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "animation",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "assets",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "assets",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "audio",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "audio",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "browser-issues",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "browser-issues",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "camera-hud",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "camera-hud",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "concept-art",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "controller-input",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "controller-input",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "gameplay",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "gameplay",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "lore",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "lore",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "mission-depth",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "mission-depth",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "multiplayer",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "new-features",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "new-features",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "particles",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "particles",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "perf",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "perf",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "rigs-vehicles",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "rigs-vehicles",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "road-rail-city",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "road-rail-city",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "skybox-weather",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "skybox-weather",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "steam",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "steam",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "terrain",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "terrain",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "textures",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "textures",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "vegetation",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "weapons",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "weapons",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "web-ui",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "web-ui",
+        "field": "not_scope",
+        "severity": "blocking",
+        "reason": "legacy roster has no explicit exclusion"
+      },
+      {
+        "areaId": "story-campaign",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "asset-producer",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "art-director",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "infantry",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "vehicle-combat",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      },
+      {
+        "areaId": "aircraft",
+        "field": "owned_paths",
+        "severity": "blocking",
+        "reason": "legacy roster is prose-only"
+      }
+    ],
+    "readyForApproval": false
+  }
+}

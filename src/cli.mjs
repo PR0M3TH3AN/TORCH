@@ -11,6 +11,7 @@ import { asErrorRecord, TorchError } from './kernel/errors.mjs';
 import { inspectRepository } from './kernel/git.mjs';
 import { installProject, planInstall, uninstallProject } from './kernel/install.mjs';
 import { IntegrationService } from './integration/service.mjs';
+import { analyzeCombatrigFleet } from './importers/combatrig.mjs';
 import { proposeDomains } from './kernel/domains.mjs';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -72,6 +73,7 @@ Usage:
   torch candidate test --version <version> [--json]
   torch upgrade --version <version> [--dry-run] --yes [--json]
   torch rollback [--dry-run] --yes [--json]
+  torch import combatrig --source <path> [--output <path>] [--json]
   torch doctor [--json]
   torch uninstall [--dry-run] [--purge] [--json]
 `;
@@ -149,6 +151,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['resource-lifecycle', ['SCN-resource-fifo']],
     ['capture-stop-resume', ['SCN-fleet-fresh-resume']],
     ['detach-uninstall', ['SCN-install-doctor-purge']],
+    ['combatrig-compatibility', ['SCN-combatrig-import', 'SCN-cli-combatrig-import']],
   ]);
   const scenarios = CANDIDATE_ACCEPTANCE_SCENARIOS.filter((scenario) =>
     (evidenceByScenario.get(scenario) ?? []).every((marker) => testOutput.includes(marker)));
@@ -250,6 +253,25 @@ export async function runCli(argv = process.argv.slice(2), {
       }
       print(versions.rollback(), { json });
       return 0;
+    }
+    if (command === 'import') {
+      const format = argv[1];
+      if (format !== 'combatrig') {
+        throw new TorchError(`Unsupported fleet import format: ${format ?? '<missing>'}`, {
+          code: 'IMPORT_FORMAT_UNSUPPORTED',
+        });
+      }
+      const source = optionValue(argv, '--source');
+      if (!source) throw new TorchError('COMBATRIG import requires --source', { code: 'IMPORT_SOURCE_REQUIRED' });
+      const sourceRepository = inspectRepository(resolve(cwd, source));
+      const proposal = analyzeCombatrigFleet({ repository: sourceRepository });
+      const output = optionValue(argv, '--output');
+      if (output) {
+        const path = resolve(cwd, output);
+        writeNewFile(path, `${JSON.stringify(proposal, null, 2)}\n`);
+        print({ proposal, output: path, mutationPerformed: true }, { json });
+      } else print({ proposal, mutationPerformed: false }, { json });
+      return proposal.compatibility.readyForApproval ? 0 : 1;
     }
     const repository = inspectRepository(cwd);
     if (command === 'init' || command === 'analyze') {
