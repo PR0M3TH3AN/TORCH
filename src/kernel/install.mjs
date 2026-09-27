@@ -9,6 +9,7 @@ import { fileHash, writeNewFile } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
 import { validateApprovedProposal } from './domains.mjs';
 import { inspectManagedWorktree } from './worktree-state.mjs';
+import { renderDomainPrompt } from './prompts.mjs';
 
 const TRACKED_DIR = '.torch';
 
@@ -146,32 +147,7 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
     ['INSTALLATION.md', `# TORCH installation\n\nInstalled ${createdAt}. Run \`torch doctor\` before starting the fleet.\n`],
   ]);
   for (const domain of config.domains) {
-    const generatedPrompt = [
-      `# ${domain.title}`,
-      '',
-      `Area ID: ${domain.id}`,
-      '',
-      '## Owns',
-      '',
-      ...domain.scope.map((item) => `- ${item}`),
-      '',
-      '## Does not own',
-      '',
-      ...(domain.not_scope.length ? domain.not_scope : ['No exclusions recorded.']).map((item) => `- ${item}`),
-      '',
-      '## Neighbours',
-      '',
-      ...(domain.neighbours.length ? domain.neighbours : ['None identified.']).map((item) => `- ${item}`),
-      '',
-      '## Resources',
-      '',
-      ...(domain.resources.length ? domain.resources : ['No scarce resources declared.']).map((item) => `- ${item}`),
-      '',
-      '## First move',
-      '',
-      'Query live ownership, read the assigned backlog item, and report current repository evidence to the Session Manager.',
-      '',
-    ].join('\n');
+    const generatedPrompt = renderDomainPrompt(domain);
     const proposalDomain = proposal.domains.find((candidate) => candidate.id === domain.id);
     files.set(`prompts/${domain.id}.md`, promptContent(proposalDomain?.prompt_source, generatedPrompt));
   }

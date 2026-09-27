@@ -9,6 +9,7 @@ import { readInstallManifest } from '../kernel/install.mjs';
 import { ensureTaskIgnored, removeTaskIgnore } from '../kernel/worktrees.mjs';
 import { loadProjectConfig } from '../kernel/config.mjs';
 import { inspectManagedWorktree } from '../kernel/worktree-state.mjs';
+import { renderDomainPrompt } from '../kernel/prompts.mjs';
 
 const CHANGE_STATES = Object.freeze(['proposed', 'approved', 'provisioning', 'active', 'retired', 'rejected']);
 
@@ -126,18 +127,7 @@ function rowToChange(row) {
 }
 
 function promptFor(domain) {
-  return [
-    `# ${domain.title}`, '', `Area ID: ${domain.id}`, '', '## Owns', '',
-    ...domain.scope.map((item) => `- ${item}`), '', '## Does not own', '',
-    ...(domain.not_scope.length ? domain.not_scope : ['No exclusions recorded.']).map((item) => `- ${item}`),
-    '', '## Neighbours', '',
-    ...(domain.neighbours.length ? domain.neighbours : ['None identified.']).map((item) => `- ${item}`),
-    '', '## Resources', '',
-    ...(domain.resources.length ? domain.resources : ['No scarce resources declared.']).map((item) => `- ${item}`),
-    '', '## First move', '',
-    'Query live ownership, read the assigned backlog item, and report current repository evidence to the Session Manager.',
-    '',
-  ].join('\n');
+  return renderDomainPrompt(domain);
 }
 
 function initialize(database) {

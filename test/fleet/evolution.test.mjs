@@ -262,7 +262,12 @@ test('SCN-fleet-evolution: the manager proposes and owner activates a newly just
   assert.equal(activated.identity.state, 'offline');
   assert.equal(activated.identity.model, 'gpt-test');
   assert.equal(existsSync(activated.worktree), true);
-  assert.equal(existsSync(join(activated.worktree, '.torch', 'prompts', 'payments.md')), true);
+  const paymentPromptPath = join(activated.worktree, '.torch', 'prompts', 'payments.md');
+  assert.equal(existsSync(paymentPromptPath), true);
+  const paymentPrompt = readFileSync(paymentPromptPath, 'utf8');
+  assert.match(paymentPrompt, /## Owned paths[\s\S]*src\/payments\/\*\*/);
+  assert.match(paymentPrompt, /## Authority/);
+  assert.match(paymentPrompt, /## Initial backlog/);
   assert.equal(execFileSync('git', ['-C', activated.worktree, 'status', '--porcelain'], { encoding: 'utf8' }), '');
   assert.equal(execFileSync('git', ['-C', context.root, 'status', '--porcelain'], { encoding: 'utf8' }), '');
   const roster = JSON.parse(readFileSync(join(context.root, '.torch', 'roster.yaml'), 'utf8'));

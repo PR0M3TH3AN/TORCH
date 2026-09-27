@@ -86,6 +86,13 @@ test('SCN-bootstrap-acceptance: one installed fixture proves the complete organi
   for (const action of up.actions) {
     assert.match(readFileSync(action.promptFile, 'utf8'), new RegExp(`Area ID: ${action.areaId}|TORCH Session Manager`));
   }
+  const serverPrompt = readFileSync(up.actions.find((action) => action.areaId === 'server').promptFile, 'utf8');
+  assert.match(serverPrompt, /## Owned paths[\s\S]*src\/server\/\*\*/);
+  assert.match(serverPrompt, /## Shared paths[\s\S]*src\/contracts\/\*\*/);
+  assert.match(serverPrompt, /## Required checks[\s\S]*verify/);
+  assert.match(serverPrompt, /## Authority[\s\S]*Integration authority does not grant release or deployment authority/);
+  assert.match(serverPrompt, /## Project invariants[\s\S]*Repository and TORCH durable state outrank conversation memory/);
+  assert.match(serverPrompt, /## Initial backlog[\s\S]*No task is implied by session creation/);
 
   for (const areaId of ['server', 'client']) {
     const message = control.sendMessage({ sender: 'session-manager', recipient: areaId, body: `Own ${areaId} work.` });

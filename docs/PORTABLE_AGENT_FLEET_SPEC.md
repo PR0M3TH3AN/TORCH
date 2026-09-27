@@ -548,6 +548,14 @@ For each approved domain TORCH generates:
 Prompts MUST be derived from configuration and recorded decisions. Generated
 prose MUST NOT become a competing source of truth.
 
+Implementation checkpoint (2026-09-27): initial installation and later
+owner-approved domain activation share one deterministic domain-prompt
+renderer. Every generated briefing externalizes responsibilities, owned and
+shared paths, exclusions, neighbours, required checks, scarce resources,
+authority limits, project invariants, an explicit empty initial-backlog state,
+and first-move instructions. Runtime prompt composition still combines this
+reviewable domain materialization with the common Fleet rules.
+
 ### 10.7 Worktree creation
 
 For every persistent development domain, TORCH creates or verifies a branch

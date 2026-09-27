@@ -45,7 +45,7 @@ test_integrity_note:
     - id: SCN-bootstrap-acceptance
       given: one approved three-identity fixture with checks, a scarce resource, and neighboring domains
       when: TORCH installs worktrees, starts virtualized sessions, coordinates messages, runs backlog/check/resource lifecycles, diagnoses, captures, stops, reopens, resumes, and previews reversal
-      then: the complete section 10.8 organization lifecycle is proven in one scenario and unsafe reversal state is reported rather than hidden
+      then: the complete section 10.8 organization lifecycle is proven in one scenario, domain briefings externalize the approved operating contract, and unsafe reversal state is reported rather than hidden
     - id: SCN-worktree-purge-safety
       given: a TORCH-managed domain worktree containing uncommitted or uniquely committed work
       when: project purge is requested
@@ -245,6 +245,7 @@ test_integrity_note:
     - bootstrap trust boundary, unassigned components, unmatched specification signals, and pending output contract
     - provider plan isolation, explicit execution authority, parsed proposal, semantic findings, and retained pending review state
     - durable Fleet-change state, owner approval, configuration commit, clean worktree, prompt, live identity discovery, and isolated runtime start plan
+    - generated prompt ownership, shared paths, checks, authority, invariants, initial backlog, and first-move instructions
     - recurring boundary signals, advisory recommendation, unchanged change ledger, and manager-only assessment authority
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
@@ -314,6 +315,7 @@ test_integrity_note:
       - interrupted pointer swaps leaving version metadata ambiguous
       - specifications being executed as instructions or changing after owner review
       - generic fleet templates replacing project-derived responsibilities
+      - dynamically added domains receiving a weaker or divergent operating contract than initially installed domains
       - a code-layout heuristic being presented as AI architectural judgment
       - bootstrap silently calling a paid model or copying COMBATRIG domains
       - an architect provider inheriting project instructions, mutating the repository, inventing evidence, or approving its own organization
