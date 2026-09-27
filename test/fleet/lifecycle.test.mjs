@@ -48,6 +48,8 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   const fresh = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter, fresh: true });
   assert.equal(fresh.actions.at(-1).areaId, 'session-manager');
   assert.equal(fresh.actions.every((action) => action.mode === 'create'), true);
+  assert.equal(fresh.actions.every((action) => action.mcp.args.includes(action.areaId)), true);
+  assert.equal(fresh.actions.every((action) => action.launch.args.includes('--mcp-config')), true);
   assert.equal(fresh.mutationPerformed, false);
 
   const launches = [];
@@ -133,7 +135,10 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   assert.equal(plan.actions[0].areaId, fixture.worker);
   assert.equal(plan.actions[0].runtime, 'codex');
   assert.equal(plan.actions[0].launch.args[0], 'exec');
+  assert.equal(plan.actions[0].launch.args.some((arg) => arg.includes('mcp_servers.')), true);
+  assert.equal(plan.actions[0].launch.args.some((arg) => arg.includes(fixture.worker)), true);
   assert.equal(plan.actions.at(-1).runtime, 'claude');
+  assert.equal(plan.actions.at(-1).launch.args.includes('--mcp-config'), true);
   assert.equal(plan.actions.at(-1).runtimeSessionId, 'claude-manager-1');
 
   const started = startFleet({

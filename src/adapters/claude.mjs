@@ -28,6 +28,16 @@ function commandRecord(command, args, cwd) {
   return { command, args, cwd, mutatesRuntime: true };
 }
 
+function mcpArgs(mcp) {
+  if (!mcp) return [];
+  if (typeof mcp.name !== 'string' || typeof mcp.command !== 'string' || !Array.isArray(mcp.args)) {
+    throw new TorchError('Claude MCP launch configuration is invalid', { code: 'INVALID_RUNTIME_INPUT' });
+  }
+  return ['--mcp-config', JSON.stringify({
+    mcpServers: { [mcp.name]: { command: mcp.command, args: mcp.args } },
+  })];
+}
+
 function mcpName(areaId) {
   return `torch-${areaId.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '')}`;
 }
@@ -85,7 +95,7 @@ export class ClaudeRuntimeAdapter {
     };
   }
 
-  createSession({ areaId, title, worktree, promptFile, firstMessage, model = 'opus', background = true } = {}) {
+  createSession({ areaId, title, worktree, promptFile, firstMessage, model = 'opus', background = true, mcp } = {}) {
     const runtimeSessionId = this.idFactory();
     const args = [];
     if (background) args.push('--bg');
@@ -94,6 +104,7 @@ export class ClaudeRuntimeAdapter {
       '--session-id', runtimeSessionId,
       '-n', `TORCH · ${text(title ?? areaId, 'title')}`,
       '--append-system-prompt-file', text(promptFile, 'promptFile'),
+      ...mcpArgs(mcp),
     );
     if (firstMessage) args.push(text(firstMessage, 'firstMessage'));
     return {
@@ -102,10 +113,10 @@ export class ClaudeRuntimeAdapter {
     };
   }
 
-  resumeSession({ areaId, runtimeSessionId, worktree, model = 'opus', message, background = true } = {}) {
+  resumeSession({ areaId, runtimeSessionId, worktree, model = 'opus', message, background = true, mcp } = {}) {
     const args = [];
     if (background) args.push('--bg');
-    args.push('--model', text(model, 'model'), '--resume', text(runtimeSessionId, 'runtimeSessionId'));
+    args.push('--model', text(model, 'model'), ...mcpArgs(mcp), '--resume', text(runtimeSessionId, 'runtimeSessionId'));
     if (message) args.push(text(message, 'message'));
     return {
       adapter: this.name, areaId: text(areaId, 'areaId'), runtimeSessionId,

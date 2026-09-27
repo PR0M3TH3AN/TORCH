@@ -83,12 +83,16 @@ test('SCN-claude-adapter: planning is deterministic, capabilities are honest, an
   assert.equal(configuration.mcp.args.at(-1), context.worker);
   const launch = adapter.createSession({
     areaId: context.worker, title: 'Core', worktree: '/tmp/core', promptFile: '/tmp/core.md',
-    firstMessage: 'Resume TASK-1.', model: 'opus',
+    firstMessage: 'Resume TASK-1.', model: 'opus', mcp: configuration.mcp,
   });
   assert.equal(launch.runtimeSessionId, 'runtime-123');
   assert.deepEqual(launch.launch.args.slice(0, 7), [
     '--bg', '--model', 'opus', '--session-id', 'runtime-123', '-n', 'TORCH · Core',
   ]);
+  const mcpIndex = launch.launch.args.indexOf('--mcp-config');
+  const launchMcp = JSON.parse(launch.launch.args[mcpIndex + 1]).mcpServers[`torch-${context.worker}`];
+  assert.equal(launchMcp.command, process.execPath);
+  assert.equal(launchMcp.args.at(-1), context.worker);
   assert.equal(calls.length, 0, 'creating a launch plan must not execute Claude');
   assert.equal(adapter.getStatus({ runtimeSessionId: 'runtime-123' }).status, 'idle');
   assert.equal(calls.length, 1);
@@ -110,14 +114,13 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
     repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER,
   });
   assert.equal(configuration.mutationPerformed, false);
-  assert.deepEqual(configuration.mcp.args.slice(0, 4), [
-    'mcp', 'add', `torch-${context.worker}`, '--',
-  ]);
+  assert.equal(configuration.mcp.command, process.execPath);
+  assert.equal(configuration.mcp.args[0], MCP_SERVER);
   assert.equal(configuration.mcp.args.includes(context.worker), true);
 
   const launch = adapter.createSession({
     areaId: context.worker, worktree: '/tmp/codex-core', promptFile: '/tmp/codex-core.md',
-    firstMessage: 'Resume TASK-2.', model: 'gpt-test',
+    firstMessage: 'Resume TASK-2.', model: 'gpt-test', mcp: configuration.mcp,
   });
   assert.equal(launch.runtimeSessionId, null);
   assert.equal(launch.requiresRuntimeIdCapture, true);
@@ -125,6 +128,8 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
   assert.deepEqual(launch.launch.args.slice(0, 7), [
     'exec', '--json', '--cd', '/tmp/codex-core', '--sandbox', 'workspace-write', '--approve-for-me',
   ]);
+  assert.equal(launch.launch.args.includes(`mcp_servers.torch-${context.worker}.command=${JSON.stringify(process.execPath)}`), true);
+  assert.equal(launch.launch.args.some((arg) => arg.includes(MCP_SERVER)), true);
   assert.equal(calls.length, 0, 'creating a launch plan must not execute Codex');
   assert.equal(adapter.captureRuntimeId({
     areaId: context.worker,
@@ -133,10 +138,11 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
 
   const resumed = adapter.resumeSession({
     areaId: context.worker, runtimeSessionId: 'codex-thread-123', worktree: '/tmp/codex-core',
-    message: 'Continue.',
+    message: 'Continue.', mcp: configuration.mcp,
   });
   assert.equal(resumed.launch.args.includes('resume'), true);
   assert.equal(resumed.launch.args.includes('codex-thread-123'), true);
+  assert.equal(resumed.launch.args.some((arg) => arg.includes(MCP_SERVER)), true);
 
   const delivery = adapter.sendOrSteer({
     controlPlane: control, recipient: context.worker, body: 'Check your durable inbox.',

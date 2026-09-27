@@ -31,6 +31,18 @@ function commandRecord(command, args, cwd) {
   return { command, args, cwd, mutatesRuntime: true };
 }
 
+function mcpArgs(mcp) {
+  if (!mcp) return [];
+  if (typeof mcp.name !== 'string' || !/^[a-z0-9_-]+$/.test(mcp.name)
+    || typeof mcp.command !== 'string' || !Array.isArray(mcp.args)) {
+    throw new TorchError('Codex MCP launch configuration is invalid', { code: 'INVALID_RUNTIME_INPUT' });
+  }
+  return [
+    '-c', `mcp_servers.${mcp.name}.command=${JSON.stringify(mcp.command)}`,
+    '-c', `mcp_servers.${mcp.name}.args=${JSON.stringify(mcp.args)}`,
+  ];
+}
+
 function mcpName(areaId) {
   return `torch-${areaId.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '')}`;
 }
@@ -89,19 +101,20 @@ export class CodexRuntimeAdapter {
       mutationPerformed: false,
       mcp: {
         name: mcpName(id),
-        command: this.executable,
-        args: ['mcp', 'add', mcpName(id), '--', this.nodeExecutable, entry, '--root', root, '--area', id],
+        command: this.nodeExecutable,
+        args: [entry, '--root', root, '--area', id],
         cwd: root,
       },
-      note: 'Apply this identity-bound MCP registration only through an owner-approved Codex configuration change.',
+      note: 'Pass this identity-bound MCP server as an invocation-scoped Codex configuration.',
     };
   }
 
-  createSession({ areaId, worktree, promptFile, firstMessage, model } = {}) {
+  createSession({ areaId, worktree, promptFile, firstMessage, model, mcp } = {}) {
     const id = text(areaId, 'areaId');
     const cwd = text(worktree, 'worktree');
     const args = [
       'exec', '--json', '--cd', cwd, '--sandbox', 'workspace-write', '--approve-for-me',
+      ...mcpArgs(mcp),
       ...optionalModelArgs(model),
       `${text(firstMessage, 'firstMessage')}\n\nRead and follow the TORCH domain prompt at ${text(promptFile, 'promptFile')}.`,
     ];
@@ -115,12 +128,13 @@ export class CodexRuntimeAdapter {
     };
   }
 
-  resumeSession({ areaId, runtimeSessionId, worktree, message, model } = {}) {
+  resumeSession({ areaId, runtimeSessionId, worktree, message, model, mcp } = {}) {
     const id = text(areaId, 'areaId');
     const sessionId = text(runtimeSessionId, 'runtimeSessionId');
     const cwd = text(worktree, 'worktree');
     const args = [
       'exec', '--json', '--cd', cwd, '--sandbox', 'workspace-write', '--approve-for-me',
+      ...mcpArgs(mcp),
       ...optionalModelArgs(model), 'resume', sessionId, text(message, 'message'),
     ];
     return {

@@ -109,7 +109,7 @@ test_integrity_note:
     - id: SCN-mixed-runtime
       given: one approved Codex worker domain and one Claude Session Manager with stable Fleet identities
       when: the mixed fleet starts and winds down through virtualized runtime boundaries
-      then: provider-specific commands and runtime IDs remain separate, the manager starts last, Codex completes idle, and only resident processes are stopped
+      then: provider-specific commands and runtime IDs remain separate, every create and resume launch receives identity-bound TORCH MCP access, the manager starts last, Codex completes idle, and only resident processes are stopped
     - id: SCN-backlog-lifecycle
       given: tracked tasks in the Session Manager worktree with domain owners, dependencies, and an integration lookup
       when: tasks move through assignment, work, blocking, verification, readiness, landing, and completion
@@ -296,6 +296,7 @@ test_integrity_note:
       - MCP and CLI drifting onto separate business logic
       - launch plans that execute provider commands during preview
       - a mixed-runtime claim implemented as renamed Claude-only commands
+      - runtime sessions launching without their identity-bound TORCH tool surface
       - lost Codex thread IDs or native steering that bypasses durable messaging
       - manager-first startup or manager-first shutdown
       - passing receipts detached from the commit actually measured

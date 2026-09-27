@@ -1,10 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
 import { validateRuntimeAdapter } from '../adapters/runtime.mjs';
+
+const MCP_ENTRY = fileURLToPath(new URL('../mcp/server.mjs', import.meta.url));
 
 function localStateRoot(manifest) {
   const record = (manifest.external ?? []).find((entry) => entry.type === 'local-state');
@@ -140,6 +143,15 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
     }
     validateRuntimeAdapter(runtimeAdapter);
     const identity = controlPlane.identity(area.id);
+    const runtimeIntegration = runtimeAdapter.configure({
+      repositoryRoot, areaId: area.id, mcpEntry: MCP_ENTRY,
+    });
+    if (runtimeIntegration?.mutationPerformed !== false || !runtimeIntegration?.mcp) {
+      blockers.push({
+        areaId: area.id, code: 'RUNTIME_CONFIGURATION_INVALID', runtime,
+      });
+      continue;
+    }
     const prompts = promptPaths(stateRoot, worktree, area.id);
     const runtimeConfig = config.runtimes?.[runtime] ?? {};
     const model = area.model ?? runtimeConfig.model;
@@ -148,11 +160,11 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
     const runtimePlan = shouldResume
       ? runtimeAdapter.resumeSession({
         areaId: area.id, runtimeSessionId: identity.runtimeSessionId, worktree: worktree.path,
-        model, background, message: startupMessage(area.id, false),
+        model, background, message: startupMessage(area.id, false), mcp: runtimeIntegration.mcp,
       })
       : runtimeAdapter.createSession({
         areaId: area.id, title: area.title, worktree: worktree.path, promptFile: prompts.combined,
-        firstMessage: startupMessage(area.id, true), model, background,
+        firstMessage: startupMessage(area.id, true), model, background, mcp: runtimeIntegration.mcp,
       });
     actions.push({
       areaId: area.id, title: area.title, mode: shouldResume ? 'resume' : 'create',
@@ -160,7 +172,8 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
       requiresRuntimeIdCapture: runtimePlan.requiresRuntimeIdCapture ?? false,
       completionState: runtimePlan.completionState ?? 'starting',
       worktree: worktree.path, branch: worktree.branch, promptFile: prompts.combined,
-      promptSources: [prompts.common, prompts.area], launch: runtimePlan.launch,
+      promptSources: [prompts.common, prompts.area], mcp: runtimeIntegration.mcp,
+      launch: runtimePlan.launch,
     });
   }
 
@@ -200,6 +213,16 @@ export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adap
   }
   validateRuntimeAdapter(runtimeAdapter);
   const identity = controlPlane.identity(area.id);
+  const runtimeIntegration = runtimeAdapter.configure({
+    repositoryRoot, areaId: area.id, mcpEntry: MCP_ENTRY,
+  });
+  if (runtimeIntegration?.mutationPerformed !== false || !runtimeIntegration?.mcp) {
+    return {
+      action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+      actions: [], blockers: [{ areaId, code: 'RUNTIME_CONFIGURATION_INVALID', runtime }],
+      canProceed: false, mutationPerformed: false,
+    };
+  }
   const prompts = promptPaths(localStateRoot(manifest), worktree, area.id);
   const runtimeConfig = config.runtimes?.[runtime] ?? {};
   const model = area.model ?? runtimeConfig.model;
@@ -208,11 +231,11 @@ export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adap
   const runtimePlan = shouldResume
     ? runtimeAdapter.resumeSession({
       areaId: area.id, runtimeSessionId: identity.runtimeSessionId, worktree: worktree.path,
-      model, background, message: startupMessage(area.id, false),
+      model, background, message: startupMessage(area.id, false), mcp: runtimeIntegration.mcp,
     })
     : runtimeAdapter.createSession({
       areaId: area.id, title: area.title, worktree: worktree.path, promptFile: prompts.combined,
-      firstMessage: startupMessage(area.id, true), model, background,
+      firstMessage: startupMessage(area.id, true), model, background, mcp: runtimeIntegration.mcp,
     });
   const action = {
     areaId: area.id, title: area.title, mode: shouldResume ? 'resume' : 'create',
@@ -220,7 +243,8 @@ export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adap
     requiresRuntimeIdCapture: runtimePlan.requiresRuntimeIdCapture ?? false,
     completionState: runtimePlan.completionState ?? 'starting',
     worktree: worktree.path, branch: worktree.branch, promptFile: prompts.combined,
-    promptSources: [prompts.common, prompts.area], launch: runtimePlan.launch,
+    promptSources: [prompts.common, prompts.area], mcp: runtimeIntegration.mcp,
+    launch: runtimePlan.launch,
   };
   return {
     action: 'area-up', projectId: manifest.projectId, areaId, fresh,

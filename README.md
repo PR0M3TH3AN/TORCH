@@ -40,6 +40,8 @@ and the first Claude reference-fleet path:
 - an explicit-capability Claude adapter with durable-message fallback;
 - an explicit-capability Codex adapter with resumable JSONL thread capture;
 - per-domain mixed Claude/Codex runtime planning and identity-bound MCP registration plans;
+- invocation-scoped MCP injection on every Claude/Codex create and resume
+  launch, without changing the user's global runtime configuration;
 - durable-first Codex steering with native `queue` notification when available;
 - worker-first/Session-Manager-last fresh start and resume planning;
 - safe wind-down with active-work refusal and local resume snapshots.

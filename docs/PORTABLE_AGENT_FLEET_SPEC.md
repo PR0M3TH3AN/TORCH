@@ -1482,9 +1482,13 @@ Exit gate: Claude and Codex occupy persistent domains in one Fleet and
 coordinate through TORCH rather than native vendor messaging.
 
 Implementation checkpoint (2026-09-27): the Codex adapter, mixed-runtime
-planning, identity-bound MCP configuration plans, JSONL runtime-ID capture,
-durable-first steering, and explicit degraded capabilities are implemented and
-scenario-tested with virtualized runners. The exit gate remains open until an
+planning, invocation-scoped identity-bound MCP configuration for every create
+and resume launch, JSONL runtime-ID capture, durable-first steering, and
+explicit degraded capabilities are implemented and scenario-tested with
+virtualized runners plus a real local stdio MCP handshake. Claude receives an
+ephemeral `--mcp-config`; Codex receives invocation-local `mcp_servers`
+overrides, so TORCH does not rewrite either runtime's global configuration.
+The exit gate remains open until an
 owner-authorized live Claude/Codex acceptance run demonstrates coordination;
 the automated suite intentionally incurs no provider usage.
 
