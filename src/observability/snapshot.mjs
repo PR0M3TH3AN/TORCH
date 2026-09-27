@@ -7,6 +7,8 @@ import { inspectRepository } from '../kernel/git.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { projectStatePath } from '../kernel/paths.mjs';
 import { loadProjectConfig } from '../kernel/config.mjs';
+import { inspectManagedWorktree } from '../kernel/worktree-state.mjs';
+import { classifyRecoverability } from '../canonical/local.mjs';
 
 function json(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -59,8 +61,25 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
   const config = loadProjectConfig(repository.root);
   const roster = json(join(repository.root, '.torch', 'roster.yaml'));
   const manifest = readInstallManifest(repository.root);
+  const doctor = diagnoseProject({ repository, env });
   const stateRoot = projectStatePath(manifest.projectId, env);
   const databasePath = join(stateRoot, 'state.db');
+  const areas = roster.areas ?? [];
+  const edges = [];
+  const seenEdges = new Set();
+  for (const area of areas) {
+    for (const neighbour of area.neighbours ?? []) {
+      if (neighbour === 'all') continue;
+      const key = [area.id, neighbour].sort().join('\0');
+      if (!seenEdges.has(key)) {
+        seenEdges.add(key);
+        edges.push({ from: area.id, to: neighbour });
+      }
+    }
+  }
+  const forgeFinding = doctor.findings.find((finding) => [
+    'FORGE_UNAVAILABLE', 'FORGE_SYNCHRONIZATION_PENDING', 'FORGE_STATUS_INVALID',
+  ].includes(finding.code));
   const result = {
     schema: 'torch.dev/observation/v1alpha1', generatedAt: now().toISOString(),
     mode: 'installed', mutationPerformed: false,
@@ -69,8 +88,13 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       root: repository.root, branch: repository.branch, head: repository.head,
       dirty: repository.dirtyEntries.length > 0,
     },
-    doctor: diagnoseProject({ repository, env }),
-    agents: (roster.areas ?? []).map((area) => ({
+    doctor,
+    organization: {
+      sessionManager: areas.find((area) => area.id === 'session-manager') ?? null,
+      domains: areas.filter((area) => area.id !== 'session-manager'),
+      edges,
+    },
+    agents: areas.map((area) => ({
       areaId: area.id, title: area.title, state: 'offline', runtime: area.runtime ?? null,
       runtimeSessionId: null, summary: null, task: null, heartbeatAt: null,
     })),
@@ -82,6 +106,29 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
     deliveries: [],
     fleetChanges: [],
     schedules: config.schedules ?? [],
+    worktrees: (manifest.external ?? [])
+      .filter((entry) => entry.type === 'worktree')
+      .map((entry) => inspectManagedWorktree(repository.root, entry, config.project.main_branch)),
+    recoverability: classifyRecoverability({ repositoryRoot: repository.root }),
+    decisions: {
+      path: '.torch/decisions.md',
+      content: readFileSync(join(repository.root, '.torch', 'decisions.md'), 'utf8'),
+    },
+    providers: {
+      runtimes: Object.entries(config.runtimes)
+        .filter(([name]) => name !== 'default')
+        .map(([name, policy]) => ({ name, configured: true, policy })),
+      forge: config.forge.provider === 'none'
+        ? { provider: 'none', status: 'local-only', remote: null }
+        : {
+          provider: config.forge.provider, remote: config.forge.remote,
+          status: forgeFinding?.code === 'FORGE_UNAVAILABLE' ? 'degraded'
+            : (forgeFinding?.code === 'FORGE_SYNCHRONIZATION_PENDING' ? 'pending-sync'
+              : (forgeFinding ? 'invalid' : 'available')),
+          finding: forgeFinding ?? null,
+        },
+      delivery: config.delivery.adapters,
+    },
     audit: [],
     contextLocality: {
       measured: false, status: 'unavailable',
@@ -112,7 +159,13 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       result.messages.recent = database.prepare(`
         SELECT id, sender_id AS sender, recipient_id AS recipient, kind, body, created_at AS createdAt
         FROM messages ORDER BY created_at DESC LIMIT 20
-      `).all();
+      `).all().map((message) => ({
+        ...message,
+        acknowledgedBy: hasTable(database, 'message_acks')
+          ? database.prepare('SELECT area_id FROM message_acks WHERE message_id = ? ORDER BY area_id')
+            .all(message.id).map((row) => row.area_id)
+          : [],
+      }));
       if (hasTable(database, 'message_acks') && hasTable(database, 'identities')) {
         result.messages.unacknowledged = database.prepare(`
           SELECT COUNT(*) AS count FROM messages m

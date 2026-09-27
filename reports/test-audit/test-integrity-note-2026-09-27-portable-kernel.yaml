@@ -217,7 +217,7 @@ test_integrity_note:
     - id: SCN-console-readonly
       given: an installed Fleet without an initialized control-plane database
       when: the observation API and local HTTP console are requested
-      then: fixed assets and structured state are served with restrictive headers while Git and machine-local state remain unchanged
+      then: ownership, worktree drift, recoverability, decisions, providers, delivery, and operational state are served with restrictive headers while Git and machine-local state remain unchanged
     - id: SCN-context-locality
       given: measured provider usage and a separate heuristic estimate for one persistent Fleet identity
       when: CLI and identity-bound MCP record and aggregate the samples
@@ -247,6 +247,7 @@ test_integrity_note:
     - compatibility report counts and unchanged COMBATRIG Git status
     - HTTP status, content-security policy, fixed routes, and traversal refusal
     - unchanged Git status and absent database before and after console observation
+    - approved ownership graph, managed worktree drift, recoverability grade, decisions, delivery, and provider status in one read-only snapshot
     - measured and estimated context groups, cache-read ratio, and cost per verified item
     - schedule plan blockers, subprocess shell flag, retry count, and durable failure message
     - preservation of project source and modified owner configuration

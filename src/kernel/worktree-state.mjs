@@ -17,6 +17,11 @@ export function inspectManagedWorktree(root, entry, mainBranch) {
   const status = git(entry.path, ['status', '--porcelain=v1', '--untracked-files=all']);
   if (status) problems.push('worktree-dirty');
   const ahead = Number(git(root, ['rev-list', '--count', `${mainBranch}..${entry.branch}`]) || 0);
+  const behind = Number(git(root, ['rev-list', '--count', `${entry.branch}..${mainBranch}`]) || 0);
   if (ahead > 0) problems.push(`unique-commits:${ahead}`);
-  return { ...entry, actualBranch, ahead, safeToRemove: problems.length === 0, problems };
+  return {
+    ...entry, actualBranch, ahead, behind,
+    drift: ahead === 0 && behind === 0 ? 'current' : 'diverged',
+    safeToRemove: problems.length === 0, problems,
+  };
 }

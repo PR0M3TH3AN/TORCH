@@ -9,6 +9,7 @@ import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
+import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { observeProject } from '../../src/observability/snapshot.mjs';
 
 function fixture() {
@@ -35,6 +36,9 @@ test('SCN-product-site: public surface explains the portable fleet and separates
   assert.doesNotMatch(html, /nostr|relay coordination|task lock/i);
   assert.match(consoleHtml, /Local Fleet Console/);
   assert.match(consoleHtml, /noindex,nofollow/);
+  for (const label of ['Ownership', 'Worktrees', 'Delivery', 'Checks', 'Schedules', 'Providers', 'Decisions']) {
+    assert.match(consoleHtml, new RegExp(`>${label}<`));
+  }
 });
 
 test('SCN-architecture-decisions: every specification decision has an explicit accepted or gated boundary', () => {
@@ -57,6 +61,14 @@ test('SCN-console-readonly: HTTP console serves fixed assets and observes an ins
     status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
   };
   installProject({ repository, proposal, env, projectId: 'console-fixture' });
+  execFileSync('git', ['-C', root, 'add', '.torch']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'install torch']);
+  createWorktrees({
+    repository: inspectRepository(root),
+    parentOverride: mkdtempSync(join(tmpdir(), 'torch-console-worktrees-')),
+  });
+  execFileSync('git', ['-C', root, 'add', '.torch/install-manifest.json']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'record worktrees']);
   const databasePath = join(env.XDG_DATA_HOME, 'torch', 'projects', 'console-fixture', 'state.db');
   assert.equal(existsSync(databasePath), false);
   const before = execFileSync('git', ['-C', root, 'status', '--porcelain'], { encoding: 'utf8' });
@@ -64,6 +76,14 @@ test('SCN-console-readonly: HTTP console serves fixed assets and observes an ins
   assert.equal(observed.mode, 'installed');
   assert.equal(observed.mutationPerformed, false);
   assert.equal(observed.agents.length, proposal.domains.length + 1);
+  assert.equal(observed.organization.domains.length, proposal.domains.length);
+  assert.equal(observed.worktrees.length, proposal.domains.length + 1);
+  assert.equal(observed.worktrees.every((worktree) => Number.isInteger(worktree.behind)), true);
+  assert.equal(observed.recoverability.level, 'ONE-DISK');
+  assert.match(observed.decisions.content, /TORCH decisions/);
+  assert.equal(observed.providers.forge.status, 'local-only');
+  assert.equal(observed.providers.delivery.release.provider, 'none');
+  assert.deepEqual(observed.deliveries, []);
   assert.equal(observed.contextLocality.measured, false);
   assert.deepEqual(observed.fleetChanges, []);
   assert.equal(existsSync(databasePath), false);

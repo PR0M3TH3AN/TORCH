@@ -58,7 +58,10 @@ and the first Claude reference-fleet path:
   branch/worktree mappings, checks, resources, schedules, release boundaries,
   and backlog inventory while refusing to invent missing ownership boundaries.
 - a redesigned public product site and read-only local Fleet Console backed by
-  the same repository and runtime state rather than a separate dashboard model.
+  the same repository and runtime state rather than a separate dashboard model;
+  the Console covers ownership, domain relationships, worktree drift,
+  recoverability, acknowledgements, checks, integration, delivery, resources,
+  schedules, decisions, provider health, and context evidence.
 - identity-bound context-usage telemetry that separates measurements from
   estimates and relates cost/cache behavior to verified work;
 - validated system/session schedules with shell-free actions, authority,

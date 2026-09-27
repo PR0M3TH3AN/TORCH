@@ -113,9 +113,10 @@ footer div { display: flex; gap: 1.5rem; }
 .console-summary p { margin: 0 0 .3rem; color: var(--muted); font-size: .78rem; }
 .console-summary strong { font-family: var(--display); font-size: 1.12rem; }
 .console-error { background: #ffe4da; border-left: 4px solid var(--signal); padding: 1rem; }
-.console-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
-.console-panel { min-height: 280px; padding: 1.2rem; border: 1px solid var(--line); background: var(--paper); }
-.agents-panel, .messages-panel { grid-column: span 2; }
+.console-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+.console-panel { min-height: 210px; padding: 1.2rem; border: 1px solid var(--line); background: var(--paper); }
+.agents-panel { grid-column: span 3; }
+.messages-panel { grid-column: span 2; }
 .panel-heading { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: .8rem; }
 .panel-heading h1, .panel-heading h2 { font-size: 1.45rem; letter-spacing: -.02em; }
 .panel-heading span { color: var(--muted); font-size: .78rem; }
@@ -127,7 +128,8 @@ footer div { display: flex; gap: 1.5rem; }
 .presence.working, .presence.online { background: var(--field); }
 .presence.blocked { background: var(--signal); }
 .list-row, .message-row, .locality-row { display: flex; justify-content: space-between; gap: 1rem; padding: .72rem 0; border-bottom: 1px solid #d7e1e6; }
-.list-row small { display: block; color: var(--muted); }
+.list-row small, .message-row small { display: block; color: var(--muted); margin-top: .2rem; }
+.decision-copy { white-space: pre-wrap; color: var(--muted); line-height: 1.55; }
 .list-row > span { color: var(--route); font-size: .8rem; }
 .message-row { display: block; }
 .message-row p { margin: 0; font-size: .8rem; color: var(--muted); }
@@ -146,6 +148,8 @@ footer div { display: flex; gap: 1.5rem; }
   .blueprint article { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   .blueprint-index { margin-bottom: 2rem; }
   .console-summary { grid-template-columns: repeat(2, 1fr); }
+  .console-grid { grid-template-columns: repeat(2, 1fr); }
+  .agents-panel { grid-column: span 2; }
 }
 
 @media (max-width: 600px) {

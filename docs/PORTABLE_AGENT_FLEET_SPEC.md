@@ -1089,8 +1089,11 @@ commands require explicit invocation and normal authority checks.
 
 Implementation checkpoint (2026-09-27): a read-only observation service and
 `torch console snapshot` now expose project, health, identity, message,
-backlog, check, resource, integration, schedule, and audit state without
-initializing a missing database. Context-locality output explicitly reports
+backlog, check, resource, integration, delivery, schedule, and audit state
+without initializing a missing database. The same snapshot exposes approved
+ownership and neighbour relationships, managed worktree branch drift,
+recoverability, acknowledgement state, tracked decisions, configured runtime
+and delivery providers, and forge health. Context-locality output explicitly reports
 `unavailable` until runtime usage samples exist, preventing estimates from
 masquerading as measurements.
 
