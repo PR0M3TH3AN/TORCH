@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited commit: `fec36fb`  
+Latest audited commit: `c5cec6b`  
 
 ## Verdict
 
@@ -17,21 +17,19 @@ retirement, the public product surface, and the local Fleet Console.
 It is not yet a qualified first usable release. The remaining release gates
 require either a still-missing local subsystem or owner-authorized operation:
 
-1. one consolidated bootstrap acceptance fixture spanning the complete §10.8
-   lifecycle;
-2. owner-authorized installation and live qualification of the implemented
+1. owner-authorized installation and live qualification of the implemented
    persistent user-systemd schedule launcher;
-3. owner-authorized live Claude/Codex coordination and resume evidence;
-4. an installed stable TORCH managing this source checkout;
-5. owner resolution of COMBATRIG's 56 blocking ownership/exclusion gaps,
+2. owner-authorized live Claude/Codex coordination and resume evidence;
+3. an installed stable TORCH managing this source checkout;
+4. owner resolution of COMBATRIG's 56 blocking ownership/exclusion gaps,
    followed by an authorized cutover trial;
-6. standalone distribution qualification and, separately, public deployment.
+5. standalone distribution qualification and, separately, public deployment.
 
 Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **49/49 PASS** at `fec36fb`.
+- `npm test`: **50/50 PASS** at `c5cec6b`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -47,7 +45,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | --- | --- | --- | --- |
 | 0. Preserve and specify | Legacy branches `legacy/nostr-torch` and `legacy/development-network-v2`; rewrite branch; canonical spec and scenario inventory | Implemented locally | Owner product-boundary approval is represented by continuing this rewrite; no remote push was performed. |
 | 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
-| 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning` | Subsystems implemented; consolidated acceptance partial | Add one §10.8 fixture proving all bootstrap capabilities in one lifecycle. |
+| 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
 | 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical` | Implemented locally | Complete-lifecycle fixture remains; live runtime evidence belongs to Stage 3/5. |
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
@@ -124,7 +122,6 @@ These actions are deliberately not performed by the local build:
 
 ## Next implementation order
 
-1. consolidated bootstrap acceptance fixture;
-2. merge/split proposal records without automatic ownership mutation;
-3. standalone package smoke test;
-4. owner-authorized live/provider/install/scheduler/COMBATRIG gates.
+1. merge/split proposal records without automatic ownership mutation;
+2. standalone package smoke test;
+3. owner-authorized live/provider/install/scheduler/COMBATRIG gates.
