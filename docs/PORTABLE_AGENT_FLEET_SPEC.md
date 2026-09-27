@@ -1320,6 +1320,15 @@ TORCH SHOULD be treated as the product name rather than retaining the legacy
 Exit gate: the owner approves the product boundary and legacy preservation
 plan.
 
+Implementation checkpoint (2026-09-27): the former Nostr product is preserved
+at `legacy/nostr-torch`, the development-network experiment is preserved at
+`legacy/development-network-v2`, and active development occurs on
+`rewrite/portable-agent-fleet`. Once the replacement kernel and its acceptance
+suite were established, Nostr-era runtime code, dashboards, generated output,
+task logs, fixtures, and tests were removed from the rewrite branch rather
+than carried as a misleading second product. The legacy branches remain the
+recovery and history boundary.
+
 ### Stage 1: Portable kernel
 
 - configuration schema and loader;

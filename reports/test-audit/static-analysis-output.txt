@@ -1,2 +1,0 @@
-Found 4 suspicious files.
-Report written to reports/test-audit/suspicious-tests.json.

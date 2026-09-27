@@ -126,12 +126,30 @@ test_integrity_note:
       given: an installed project with no forge or remote
       when: the owner creates a local canonical Git store and later makes and pushes another commit
       then: TORCH distinguishes one-disk from local-remote recoverability without claiming off-machine backup
+    - id: SCN-combatrig-import
+      given: a legacy COMBATRIG fleet with prompts, worktree mappings, backlog, checks, and schedules
+      when: TORCH analyzes it through the compatibility service
+      then: source state is unchanged, observed evidence is preserved, and missing ownership blocks approval
+    - id: SCN-cli-combatrig-import
+      given: the same legacy fleet selected through the public CLI
+      when: a compatibility report is requested outside the source repository
+      then: the report is written, the command returns blocking status, and the source remains unchanged
+    - id: SCN-spec-fleet-design
+      given: a new Git project shell and an external prose product specification
+      when: TORCH analyzes and proposes its persistent project domains
+      then: project-specific responsibilities and evidence are retained while nonexistent path ownership remains unresolved
+    - id: SCN-cli-spec-design
+      given: a caller outside a selected Git repository with an external specification
+      when: torch design is invoked with explicit repo and spec paths
+      then: a pending project-specific proposal is produced without creating TORCH state in the project
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
     - doctor health and finding codes
     - CLI exit status and structured error code
     - proposal review status, repository commit binding, and generated domain count
+    - specification digest, evidence-linked responsibility, and stale-spec refusal
+    - compatibility report counts and unchanged COMBATRIG Git status
     - preservation of project source and modified owner configuration
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
@@ -156,6 +174,8 @@ test_integrity_note:
     - local-only bare Git remote with no network dependency
     - isolated XDG version roots, synthetic artifacts, and injected acceptance results
     - injected post-pointer interruption with deterministic recovery timestamps
+    - external temporary Markdown specification with no provider or network calls
+    - synthetic COMBATRIG layout in an isolated temporary Git repository
   anti_cheat_rationale:
     prevents:
       - init that silently writes files
@@ -182,6 +202,9 @@ test_integrity_note:
       - a merely passing command being mislabeled as complete candidate acceptance
       - candidate staging silently replacing stable or accepted code changing before activation
       - interrupted pointer swaps leaving version metadata ambiguous
+      - specifications being executed as instructions or changing after owner review
+      - generic fleet templates replacing project-derived responsibilities
+      - COMBATRIG compatibility inventing path ownership to force a green migration
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
