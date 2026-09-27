@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { createClaudeAdapter } from '../../src/adapters/claude.mjs';
+import { createCodexAdapter } from '../../src/adapters/codex.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
@@ -75,6 +76,11 @@ test('SCN-claude-adapter: planning is deterministic, capabilities are honest, an
   });
   assert.equal(adapter.capabilities.liveSteering, false);
   assert.equal(adapter.capabilities.sendOrSteer, 'durable-fallback');
+  const configuration = adapter.configure({
+    repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER,
+  });
+  assert.equal(configuration.mcp.name, `torch-${context.worker}`);
+  assert.equal(configuration.mcp.args.at(-1), context.worker);
   const launch = adapter.createSession({
     areaId: context.worker, title: 'Core', worktree: '/tmp/core', promptFile: '/tmp/core.md',
     firstMessage: 'Resume TASK-1.', model: 'opus',
@@ -90,6 +96,58 @@ test('SCN-claude-adapter: planning is deterministic, capabilities are honest, an
 
   const noRunner = createClaudeAdapter({ idFactory: () => 'never-run' });
   assert.throws(() => noRunner.listSessions(), (error) => error.code === 'RUNTIME_EXECUTION_NOT_AUTHORIZED');
+});
+
+test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capability-honest', () => {
+  const context = fixture();
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const calls = [];
+  const adapter = createCodexAdapter({
+    executable: '/opt/codex/bin/codex',
+    runner: (command, args) => { calls.push({ command, args }); return { status: 1, stderr: 'not attached' }; },
+  });
+  const configuration = adapter.configure({
+    repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER,
+  });
+  assert.equal(configuration.mutationPerformed, false);
+  assert.deepEqual(configuration.mcp.args.slice(0, 4), [
+    'mcp', 'add', `torch-${context.worker}`, '--',
+  ]);
+  assert.equal(configuration.mcp.args.includes(context.worker), true);
+
+  const launch = adapter.createSession({
+    areaId: context.worker, worktree: '/tmp/codex-core', promptFile: '/tmp/codex-core.md',
+    firstMessage: 'Resume TASK-2.', model: 'gpt-test',
+  });
+  assert.equal(launch.runtimeSessionId, null);
+  assert.equal(launch.requiresRuntimeIdCapture, true);
+  assert.equal(launch.completionState, 'idle');
+  assert.deepEqual(launch.launch.args.slice(0, 7), [
+    'exec', '--json', '--cd', '/tmp/codex-core', '--sandbox', 'workspace-write', '--approve-for-me',
+  ]);
+  assert.equal(calls.length, 0, 'creating a launch plan must not execute Codex');
+  assert.equal(adapter.captureRuntimeId({
+    areaId: context.worker,
+    stdout: '{"type":"thread.started","thread_id":"codex-thread-123"}\n{"type":"turn.completed"}\n',
+  }).runtimeSessionId, 'codex-thread-123');
+
+  const resumed = adapter.resumeSession({
+    areaId: context.worker, runtimeSessionId: 'codex-thread-123', worktree: '/tmp/codex-core',
+    message: 'Continue.',
+  });
+  assert.equal(resumed.launch.args.includes('resume'), true);
+  assert.equal(resumed.launch.args.includes('codex-thread-123'), true);
+
+  const delivery = adapter.sendOrSteer({
+    controlPlane: control, recipient: context.worker, body: 'Check your durable inbox.',
+    runtimeSessionId: 'codex-thread-123',
+  });
+  assert.equal(delivery.delivery, 'durable');
+  assert.equal(delivery.liveSteeringAttempted, true);
+  assert.equal(control.readMessages({ recipient: context.worker }).at(-1).body, 'Check your durable inbox.');
+  assert.throws(() => adapter.listSessions(), (error) => error.code === 'RUNTIME_CAPABILITY_UNSUPPORTED');
+  assert.throws(() => adapter.stopSession(), (error) => error.code === 'RUNTIME_CAPABILITY_UNSUPPORTED');
+  control.close();
 });
 
 test('SCN-mcp-stdio: an MCP host can initialize and list the TORCH tool surface over stdio', async () => {

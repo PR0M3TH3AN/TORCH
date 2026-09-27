@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
 import { createClaudeAdapter } from '../../src/adapters/claude.mjs';
+import { createCodexAdapter } from '../../src/adapters/codex.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
@@ -13,7 +14,7 @@ import { installProject } from '../../src/kernel/install.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { planFleetDown, planFleetUp, startFleet, stopFleet } from '../../src/runtime/lifecycle.mjs';
 
-function fleetFixture() {
+function fleetFixture({ workerRuntime = 'claude' } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-lifecycle-'));
   execFileSync('git', ['init', '-b', 'main', root]);
   execFileSync('git', ['-C', root, 'config', 'user.email', 'torch-test@example.invalid']);
@@ -23,6 +24,7 @@ function fleetFixture() {
   execFileSync('git', ['-C', root, 'commit', '-m', 'fixture']);
   let repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  proposal.domains[0].runtime = workerRuntime;
   proposal.review = {
     status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
   };
@@ -99,5 +101,48 @@ test('SCN-fleet-wind-down-safety: active work blocks runtime shutdown and failed
     () => stopFleet({ plan: down, controlPlane: control, stopRuntime: () => ({ stopped: true }) }),
     (error) => error.code === 'FLEET_NOT_READY_TO_STOP',
   );
+  control.close();
+});
+
+test('SCN-mixed-runtime: Codex and Claude share stable identities while planning and capture stay provider-specific', () => {
+  const fixture = fleetFixture({ workerRuntime: 'codex' });
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const adapters = new Map([
+    ['claude', createClaudeAdapter({ idFactory: () => 'claude-manager-1' })],
+    ['codex', createCodexAdapter({ executable: 'codex' })],
+  ]);
+  const plan = planFleetUp({
+    repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true,
+  });
+  assert.equal(plan.canProceed, true);
+  assert.equal(plan.actions[0].areaId, fixture.worker);
+  assert.equal(plan.actions[0].runtime, 'codex');
+  assert.equal(plan.actions[0].launch.args[0], 'exec');
+  assert.equal(plan.actions.at(-1).runtime, 'claude');
+  assert.equal(plan.actions.at(-1).runtimeSessionId, 'claude-manager-1');
+
+  const started = startFleet({
+    plan, controlPlane: control, adapters,
+    executor: (launch) => launch.areaId === fixture.worker
+      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-worker-1"}\n' }
+      : { status: 0 },
+  });
+  assert.deepEqual(started.started.map((item) => item.runtimeSessionId), [
+    'codex-worker-1', 'claude-manager-1',
+  ]);
+  assert.equal(control.identity(fixture.worker).runtime, 'codex');
+  assert.equal(control.identity(fixture.worker).state, 'idle');
+  assert.equal(control.identity('session-manager').runtime, 'claude');
+  assert.equal(control.identity('session-manager').state, 'starting');
+
+  control.reportStatus({ areaId: 'session-manager', state: 'idle', summary: 'Ready to stop.' });
+  const down = planFleetDown({ repositoryRoot: fixture.root, controlPlane: control, adapters });
+  const stoppedRuntimes = [];
+  stopFleet({
+    plan: down, controlPlane: control,
+    stopRuntime: (action) => { stoppedRuntimes.push(action.runtime); return { stopped: true }; },
+  });
+  assert.deepEqual(stoppedRuntimes, ['claude']);
+  assert.equal(control.identity(fixture.worker).state, 'offline');
   control.close();
 });

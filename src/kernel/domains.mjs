@@ -136,6 +136,7 @@ function domainFromComponent(component) {
     shared_paths: [],
     neighbours: [],
     required_checks: [],
+    runtime: 'claude',
     evidence: component.evidence,
   };
 }
@@ -151,6 +152,7 @@ export function proposeDomains({ repository, analysis }) {
       id: 'core', title: 'Core project', kind: 'development',
       scope: ['initial project implementation and architecture'],
       not_scope: [], owned_paths: ['**'], shared_paths: [], neighbours: [], required_checks: [],
+      runtime: 'claude',
       evidence: analysis.inventory.manifests,
     });
   }
@@ -162,6 +164,7 @@ export function proposeDomains({ repository, analysis }) {
       not_scope: ['implementing domain features solely to make checks pass'],
       owned_paths: ['test/**', 'tests/**', 'e2e/**'], shared_paths: [], neighbours: [],
       required_checks: [], evidence: graph.verificationSurfaces.slice(0, 12),
+      runtime: 'claude',
     });
   }
   if (graph.operationalSurfaces.some((path) => /deploy|release/i.test(path))) {
@@ -171,6 +174,7 @@ export function proposeDomains({ repository, analysis }) {
       not_scope: ['feature implementation', 'deployment without configured authority'],
       owned_paths: graph.operationalSurfaces.filter((path) => /deploy|release|workflow/i.test(path)).slice(0, 20),
       shared_paths: [], neighbours: [], required_checks: [],
+      runtime: 'claude',
       evidence: graph.operationalSurfaces.slice(0, 12),
     });
   }
@@ -274,6 +278,9 @@ export function validateApprovedProposal({ proposal, repository }) {
     if (!domain.scope?.length) problems.push(`domain ${domain.id} has no scope`);
     if (!Array.isArray(domain.not_scope)) problems.push(`domain ${domain.id} has no not_scope list`);
     if (!domain.owned_paths?.length) problems.push(`domain ${domain.id} has no owned paths`);
+    if (domain.runtime !== undefined && (typeof domain.runtime !== 'string' || !domain.runtime.trim())) {
+      problems.push(`domain ${domain.id} has an invalid runtime`);
+    }
   }
   for (const collision of proposal?.collisions ?? []) {
     if (!collision.resolution?.strategy) problems.push(`collision ${collision.domains?.join('/')} has no resolution`);

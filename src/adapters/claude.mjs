@@ -28,6 +28,10 @@ function commandRecord(command, args, cwd) {
   return { command, args, cwd, mutatesRuntime: true };
 }
 
+function mcpName(areaId) {
+  return `torch-${areaId.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '')}`;
+}
+
 export class ClaudeRuntimeAdapter {
   constructor({
     env = process.env,
@@ -69,12 +73,13 @@ export class ClaudeRuntimeAdapter {
   configure({ repositoryRoot, areaId, mcpEntry } = {}) {
     const root = text(repositoryRoot, 'repositoryRoot');
     const entry = text(mcpEntry, 'mcpEntry');
+    const id = text(areaId, 'areaId');
     return {
       adapter: this.name,
       mutationPerformed: false,
       mcp: {
-        name: 'torch', command: this.nodeExecutable,
-        args: [entry, '--root', root, '--area', text(areaId, 'areaId')], cwd: root,
+        name: mcpName(id), command: this.nodeExecutable,
+        args: [entry, '--root', root, '--area', id], cwd: root,
       },
       note: 'Apply this MCP registration through the owner-approved Claude configuration surface.',
     };

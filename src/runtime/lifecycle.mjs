@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
+import { validateRuntimeAdapter } from '../adapters/runtime.mjs';
 
 function localStateRoot(manifest) {
   const record = (manifest.external ?? []).find((entry) => entry.type === 'local-state');
@@ -20,6 +21,21 @@ function worktreesByArea(manifest) {
 function orderedAreas(roster) {
   return [...roster.areas.filter((area) => area.id !== 'session-manager'),
     ...roster.areas.filter((area) => area.id === 'session-manager')];
+}
+
+function adapterMap({ adapter, adapters } = {}) {
+  if (adapters instanceof Map) return adapters;
+  if (adapters && typeof adapters === 'object') return new Map(Object.entries(adapters));
+  if (adapter) return new Map([[adapter.name, adapter]]);
+  return new Map();
+}
+
+function configuredRuntime(area, config) {
+  if (area.id === 'session-manager') {
+    return area.runtime ?? config.session_manager?.runtime ?? config.runtimes?.default;
+  }
+  return area.runtime ?? config.domains?.find((domain) => domain.id === area.id)?.runtime
+    ?? config.runtimes?.default;
 }
 
 function promptPaths(stateRoot, worktree, areaId) {
@@ -59,11 +75,12 @@ function inspectWorktree(worktree) {
   };
 }
 
-export function planFleetUp({ repositoryRoot, controlPlane, adapter, fresh = false } = {}) {
+export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, fresh = false } = {}) {
   const { config, roster } = loadFleetDefinition(repositoryRoot);
   const manifest = readInstallManifest(repositoryRoot);
   const worktrees = worktreesByArea(manifest);
   const stateRoot = localStateRoot(manifest);
+  const runtimes = adapterMap({ adapter, adapters });
   const actions = [];
   const blockers = [];
 
@@ -73,23 +90,39 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, fresh = fal
       blockers.push({ areaId: area.id, code: 'WORKTREE_MISSING' });
       continue;
     }
+    const runtime = configuredRuntime(area, config);
+    const runtimeAdapter = runtimes.get(runtime);
+    if (!runtimeAdapter) {
+      blockers.push({ areaId: area.id, code: 'RUNTIME_ADAPTER_MISSING', runtime });
+      continue;
+    }
+    if (runtimeAdapter.name !== runtime) {
+      blockers.push({
+        areaId: area.id, code: 'RUNTIME_ADAPTER_MISMATCH', runtime, adapter: runtimeAdapter.name,
+      });
+      continue;
+    }
+    validateRuntimeAdapter(runtimeAdapter);
     const identity = controlPlane.identity(area.id);
     const prompts = promptPaths(stateRoot, worktree, area.id);
-    const model = area.model ?? config.runtimes?.claude?.model ?? 'opus';
-    const background = config.runtimes?.claude?.background ?? true;
-    const shouldResume = !fresh && Boolean(identity.runtimeSessionId);
+    const runtimeConfig = config.runtimes?.[runtime] ?? {};
+    const model = area.model ?? runtimeConfig.model;
+    const background = runtimeConfig.background ?? true;
+    const shouldResume = !fresh && identity.runtime === runtime && Boolean(identity.runtimeSessionId);
     const runtimePlan = shouldResume
-      ? adapter.resumeSession({
+      ? runtimeAdapter.resumeSession({
         areaId: area.id, runtimeSessionId: identity.runtimeSessionId, worktree: worktree.path,
         model, background, message: startupMessage(area.id, false),
       })
-      : adapter.createSession({
+      : runtimeAdapter.createSession({
         areaId: area.id, title: area.title, worktree: worktree.path, promptFile: prompts.combined,
         firstMessage: startupMessage(area.id, true), model, background,
       });
     actions.push({
       areaId: area.id, title: area.title, mode: shouldResume ? 'resume' : 'create',
-      runtime: adapter.name, runtimeSessionId: runtimePlan.runtimeSessionId,
+      runtime: runtimeAdapter.name, runtimeSessionId: runtimePlan.runtimeSessionId,
+      requiresRuntimeIdCapture: runtimePlan.requiresRuntimeIdCapture ?? false,
+      completionState: runtimePlan.completionState ?? 'starting',
       worktree: worktree.path, branch: worktree.branch, promptFile: prompts.combined,
       promptSources: [prompts.common, prompts.area], launch: runtimePlan.launch,
     });
@@ -107,7 +140,7 @@ function writeCombinedPrompt(action) {
   writeFileSync(action.promptFile, `${content}\n`, { encoding: 'utf8', mode: 0o600 });
 }
 
-export function startFleet({ plan, controlPlane, executor } = {}) {
+export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   if (!plan?.canProceed) {
     throw new TorchError('Fleet startup plan has unresolved blockers', {
       code: 'FLEET_NOT_READY_TO_START', details: plan?.blockers ?? [],
@@ -119,6 +152,7 @@ export function startFleet({ plan, controlPlane, executor } = {}) {
     });
   }
   const started = [];
+  const runtimes = adapterMap({ adapters });
   for (const action of plan.actions) {
     controlPlane.assertIdentity(action.areaId);
     if (action.mode === 'create') writeCombinedPrompt(action);
@@ -133,31 +167,70 @@ export function startFleet({ plan, controlPlane, executor } = {}) {
         details: { areaId: action.areaId, status: result.status, stderr: result.stderr ?? null, started },
       });
     }
+    let runtimeSessionId = action.runtimeSessionId;
+    if (action.requiresRuntimeIdCapture) {
+      const runtimeAdapter = runtimes.get(action.runtime);
+      if (!runtimeAdapter) {
+        controlPlane.reportStatus({
+          areaId: action.areaId, state: 'offline', runtime: action.runtime,
+          summary: 'Runtime launched but its durable session ID could not be captured.',
+        });
+        throw new TorchError(`Fleet startup could not capture a runtime ID for ${action.areaId}`, {
+          code: 'RUNTIME_ADAPTER_MISSING', details: { areaId: action.areaId, runtime: action.runtime, started },
+        });
+      }
+      try {
+        runtimeSessionId = runtimeAdapter.captureRuntimeId({
+          areaId: action.areaId, runtimeSessionId, stdout: result?.stdout, output: result?.output,
+        }).runtimeSessionId;
+      } catch (error) {
+        controlPlane.reportStatus({
+          areaId: action.areaId, state: 'offline', runtime: action.runtime,
+          summary: 'Runtime launch completed without a capturable durable session ID.',
+        });
+        throw new TorchError(`Fleet startup could not capture a runtime ID for ${action.areaId}`, {
+          code: 'FLEET_START_FAILED',
+          details: { areaId: action.areaId, cause: error.code ?? error.message, started },
+        });
+      }
+    }
     const identity = controlPlane.reportStatus({
-      areaId: action.areaId, state: 'starting', runtime: action.runtime,
-      runtimeSessionId: action.runtimeSessionId, summary: `${action.mode} requested`,
+      areaId: action.areaId, state: action.completionState, runtime: action.runtime,
+      runtimeSessionId, summary: action.completionState === 'idle'
+        ? `${action.mode} turn completed` : `${action.mode} requested`,
     });
     started.push({ areaId: action.areaId, runtimeSessionId: identity.runtimeSessionId, mode: action.mode });
   }
   return { projectId: plan.projectId, started, mutationPerformed: true };
 }
 
-export function planFleetDown({ repositoryRoot, controlPlane } = {}) {
+export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
   const { roster } = loadFleetDefinition(repositoryRoot);
   const manifest = readInstallManifest(repositoryRoot);
   const worktrees = worktreesByArea(manifest);
+  const runtimes = adapterMap({ adapters });
+  const adapterRegistryProvided = adapters !== undefined;
   const actions = orderedAreas(roster).map((area) => {
     const identity = controlPlane.identity(area.id);
     const worktree = worktrees.get(area.id);
     return {
       areaId: area.id, state: identity.state, runtime: identity.runtime,
       runtimeSessionId: identity.runtimeSessionId,
+      requiresRuntimeStop: identity.runtimeSessionId
+        ? runtimes.get(identity.runtime)?.capabilities.stopSession !== false
+        : false,
+      runtimeAdapterMissing: Boolean(
+        adapterRegistryProvided && identity.runtimeSessionId && !runtimes.has(identity.runtime),
+      ),
       worktree: worktree ? inspectWorktree(worktree) : null,
     };
   });
   const blockers = actions
     .filter((action) => ['starting', 'working', 'stopping'].includes(action.state))
     .map((action) => ({ areaId: action.areaId, state: action.state, code: 'ACTIVE_SESSION' }));
+  blockers.push(...actions
+    .filter((action) => action.runtimeAdapterMissing)
+    .map((action) => ({ areaId: action.areaId, runtime: action.runtime, code: 'RUNTIME_ADAPTER_MISSING' })));
   return {
     action: 'fleet-down', projectId: manifest.projectId, stateRoot: localStateRoot(manifest),
     actions, blockers, canProceed: blockers.length === 0, mutationPerformed: false,
@@ -177,8 +250,14 @@ export function stopFleet({ plan, controlPlane, stopRuntime, now = () => new Dat
   }
   const stopped = [];
   for (const action of plan.actions) {
-    if (!action.runtimeSessionId || action.state === 'offline') {
-      stopped.push({ areaId: action.areaId, runtimeSessionId: action.runtimeSessionId, alreadyOffline: true });
+    if (!action.runtimeSessionId || action.state === 'offline' || action.requiresRuntimeStop === false) {
+      if (action.state !== 'offline') {
+        controlPlane.reportStatus({ areaId: action.areaId, state: 'offline', summary: 'No resident runtime process to stop.' });
+      }
+      stopped.push({
+        areaId: action.areaId, runtimeSessionId: action.runtimeSessionId,
+        alreadyOffline: true, residentProcess: action.requiresRuntimeStop !== false,
+      });
       continue;
     }
     controlPlane.reportStatus({ areaId: action.areaId, state: 'stopping', summary: 'TORCH wind-down requested.' });

@@ -34,6 +34,9 @@ and the first Claude reference-fleet path:
 - equivalent CLI and identity-bound MCP surfaces;
 - current MCP stdio interoperability through the official protocol SDK;
 - an explicit-capability Claude adapter with durable-message fallback;
+- an explicit-capability Codex adapter with resumable JSONL thread capture;
+- per-domain mixed Claude/Codex runtime planning and identity-bound MCP registration plans;
+- durable-first Codex steering with native `queue` notification when available;
 - worker-first/Session-Manager-last fresh start and resume planning;
 - safe wind-down with active-work refusal and local resume snapshots.
 - shell-free configured checks with exact-commit receipts;
@@ -42,8 +45,8 @@ and the first Claude reference-fleet path:
 - a local bare canonical Git option with honest one-disk/local-remote grading;
 - mutation audit events tied to project and Fleet identity.
 
-Codex portability, self-hosting, COMBATRIG re-import, scheduling, richer
-observability, and the Fleet Console remain staged work.
+Live mixed-provider qualification, self-hosting, COMBATRIG re-import,
+scheduling, richer observability, and the Fleet Console remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -83,7 +86,8 @@ node bin/torch.mjs worktrees --yes --json
 node bin/torch.mjs up --fresh --dry-run --json
 ```
 
-Starting or stopping Claude sessions is always a separate explicit step:
+Starting or stopping configured runtime sessions is always a separate explicit
+step:
 
 ```bash
 node bin/torch.mjs up --fresh --yes --json
@@ -105,9 +109,10 @@ specialist can keep its relevant working set hot instead of one general session
 reloading unrelated project areas. TORCH treats cache/token savings as a
 measurement hypothesis until provider usage and verified task outcomes prove it.
 
-This is still an alpha. The lifecycle is scenario-tested with a virtualized
-Claude boundary; a paid live-Claude multi-domain acceptance run remains an
-explicit owner-authorized qualification gate.
+This is still an alpha. The lifecycle is scenario-tested with virtualized
+Claude and Codex boundaries. The tests make no paid provider calls. A live
+mixed-provider, multi-domain acceptance run remains an explicit
+owner-authorized qualification gate.
 
 ## Product principles
 

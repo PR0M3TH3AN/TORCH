@@ -34,7 +34,11 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       allow_force_push: false, allow_bare_stash: false,
     },
     synchronization: { strategy: 'dispatcher-managed', auto_merge_worktrees: false },
-    runtimes: { default: 'claude', claude: { model: 'opus', background: true } },
+    runtimes: {
+      default: 'claude',
+      claude: { model: 'opus', background: true },
+      codex: { sandbox: 'workspace-write', approval: 'approve-for-me' },
+    },
     checks: proposal.checks ?? [],
     resources: proposal.resources ?? [],
     integration: {
@@ -42,7 +46,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       required_checks: (proposal.checks ?? []).map((check) => check.id),
       landing_authority: ['session-manager'],
     },
-    session_manager: { id: 'session-manager', start_last: true },
+    session_manager: { id: 'session-manager', runtime: 'claude', start_last: true },
     domains: proposal.domains.map((domain) => ({
       id: domain.id,
       title: domain.title,
@@ -52,6 +56,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       shared_paths: domain.shared_paths ?? [],
       neighbours: domain.neighbours ?? [],
       required_checks: domain.required_checks ?? [],
+      runtime: domain.runtime ?? 'claude',
     })),
   };
   const roster = {
@@ -61,6 +66,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       scope: ['routing', 'priority', 'ownership rulings', 'fleet health'],
       not_scope: ['project feature implementation by default'],
       neighbours: ['all'],
+      runtime: config.session_manager.runtime,
     }, ...config.domains],
   };
 

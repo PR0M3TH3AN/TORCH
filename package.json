@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/cli.mjs",
     "./adapters/claude": "./src/adapters/claude.mjs",
+    "./adapters/codex": "./src/adapters/codex.mjs",
     "./canonical/local": "./src/canonical/local.mjs",
     "./checks": "./src/checks/service.mjs",
     "./control-plane": "./src/control-plane/service.mjs",

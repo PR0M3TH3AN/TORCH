@@ -1,5 +1,6 @@
 import { analyzeRepository } from './kernel/analyze.mjs';
 import { createClaudeAdapter } from './adapters/claude.mjs';
+import { createCodexAdapter } from './adapters/codex.mjs';
 import { CheckService } from './checks/service.mjs';
 import { classifyRecoverability, createLocalCanonical, planLocalCanonical } from './canonical/local.mjs';
 import { openControlPlane } from './control-plane/service.mjs';
@@ -97,6 +98,13 @@ function withControlPlane(repository, env, callback) {
   }
 }
 
+function runtimeAdapters() {
+  return new Map([
+    ['claude', createClaudeAdapter()],
+    ['codex', createCodexAdapter()],
+  ]);
+}
+
 export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd(), env = process.env } = {}) {
   const command = argv.find((arg) => !arg.startsWith('-')) ?? 'help';
   const json = argv.includes('--json');
@@ -163,9 +171,9 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
     if (command === 'up') {
       const control = openControlPlane({ repositoryRoot: repository.root, env });
       try {
-        const adapter = createClaudeAdapter();
+        const adapters = runtimeAdapters();
         const plan = planFleetUp({
-          repositoryRoot: repository.root, controlPlane: control, adapter, fresh: argv.includes('--fresh'),
+          repositoryRoot: repository.root, controlPlane: control, adapters, fresh: argv.includes('--fresh'),
         });
         if (argv.includes('--dry-run')) {
           print(plan, { json });
@@ -177,7 +185,7 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
           });
         }
         print(startFleet({
-          plan, controlPlane: control,
+          plan, controlPlane: control, adapters,
           executor: (launch) => spawnSync(launch.command, launch.args, {
             cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
           }),
@@ -190,7 +198,8 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
     if (command === 'down') {
       const control = openControlPlane({ repositoryRoot: repository.root, env });
       try {
-        const plan = planFleetDown({ repositoryRoot: repository.root, controlPlane: control });
+        const adapters = runtimeAdapters();
+        const plan = planFleetDown({ repositoryRoot: repository.root, controlPlane: control, adapters });
         if (argv.includes('--dry-run')) {
           print(plan, { json });
           return plan.canProceed ? 0 : 1;
@@ -200,14 +209,18 @@ export async function runCli(argv = process.argv.slice(2), { cwd = process.cwd()
             code: 'APPROVAL_REQUIRED',
           });
         }
-        const adapter = createClaudeAdapter({
+        const runtimeStoppers = new Map([
+          ['claude', createClaudeAdapter({
           runner: (executable, args) => spawnSync(executable, args, {
             encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
           }),
-        });
+          })],
+          ['codex', createCodexAdapter()],
+        ]);
         print(stopFleet({
           plan, controlPlane: control,
-          stopRuntime: (action) => adapter.stopSession({ runtimeSessionId: action.runtimeSessionId }),
+          stopRuntime: (action) => runtimeStoppers.get(action.runtime)
+            .stopSession({ runtimeSessionId: action.runtimeSessionId }),
         }), { json });
         return 0;
       } finally {
