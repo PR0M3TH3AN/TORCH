@@ -34,6 +34,7 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       allow_force_push: false, allow_bare_stash: false,
     },
     synchronization: { strategy: 'dispatcher-managed', auto_merge_worktrees: false },
+    runtimes: { default: 'claude', claude: { model: 'opus', background: true } },
     session_manager: { id: 'session-manager', start_last: true },
     domains: proposal.domains.map((domain) => ({
       id: domain.id,

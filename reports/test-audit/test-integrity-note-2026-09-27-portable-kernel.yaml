@@ -42,6 +42,46 @@ test_integrity_note:
       given: a configured fleet branch already exists outside the approved worktree mapping
       when: worktree creation is previewed or requested
       then: TORCH reports the exact branch collision and creates no partial fleet
+    - id: SCN-durable-message
+      given: direct and group messages queued for persistent Fleet identities
+      when: the control-plane process closes, reopens, reads, and acknowledges them
+      then: messages and references survive restart and only addressed identities can acknowledge them
+    - id: SCN-identity-presence-authority
+      given: one stable Fleet identity across replacement Claude runtime sessions
+      when: presence and runtime IDs change or a forged identity attempts a mutation
+      then: the area identity remains stable, the current runtime mapping is live, and forged actors are rejected
+    - id: SCN-local-state-path-safety
+      given: a repository-edited installation manifest pointing local state at another directory
+      when: the control plane attempts to open its SQLite database
+      then: it rejects the path mismatch before creating or modifying a database there
+    - id: SCN-ownership-handoff
+      given: an approved path owner requesting a handoff
+      when: the request is recorded and routed to the Session Manager
+      then: the request is durable but approved ownership does not change implicitly
+    - id: SCN-cli-control-plane
+      given: an installed project using no MCP-capable runtime
+      when: an agent sends, reads, acknowledges, reports status, and queries ownership through CLI
+      then: each operation observes the same durable control-plane state
+    - id: SCN-mcp-parity
+      given: the provider-independent control-plane service
+      when: all specified MCP tools invoke it
+      then: the complete tool surface uses the same validation, ownership, and durable message semantics
+    - id: SCN-mcp-stdio
+      given: an installed TORCH project and an MCP host process
+      when: the host performs the initialize handshake and lists tools over stdio
+      then: the official MCP transport identifies TORCH and advertises the exact 14-tool contract
+    - id: SCN-claude-adapter
+      given: a Claude runtime adapter with a virtualized command runner
+      when: sessions are planned and runtime state is queried
+      then: command construction is deterministic, capabilities are explicit, and planning launches no process
+    - id: SCN-fleet-fresh-resume
+      given: approved identities and managed worktrees with a virtualized Claude executor
+      when: the fleet starts fresh, winds down safely, and plans its next start
+      then: workers start before the manager, runtime IDs persist, the manager stops last, and the next start resumes
+    - id: SCN-fleet-wind-down-safety
+      given: a launch failure or a domain reporting active work
+      when: startup or wind-down is attempted
+      then: manager launch is prevented after worker failure and active work blocks shutdown
   observable_outcomes:
     - Git status before and after read-only analysis
     - presence or absence of .torch and XDG-local project state
@@ -49,11 +89,18 @@ test_integrity_note:
     - CLI exit status and structured error code
     - proposal review status, repository commit binding, and generated domain count
     - preservation of project source and modified owner configuration
+    - SQLite state after process restart
+    - CLI and MCP output over real process boundaries
+    - runtime command plans and execution order
+    - local resume snapshot and presence transitions
   determinism_controls:
     - isolated temporary Git repositories
     - fixed test Git identity
     - fixed installation timestamp where content is asserted
     - per-fixture XDG_DATA_HOME
+    - injected UUID sequence and clock where ordering matters
+    - virtualized Claude command runner with no provider calls
+    - local stdio MCP child process with bounded response timeout
   anti_cheat_rationale:
     prevents:
       - init that silently writes files
@@ -61,6 +108,13 @@ test_integrity_note:
       - doctor that reports healthy without required state
       - uninstall that deletes owner-modified configuration
       - CLI that mutates without explicit approval
+      - in-memory-only messaging that disappears on restart
+      - runtime session IDs masquerading as durable Fleet identities
+      - messages or handoffs silently granting authority
+      - repository content redirecting machine-local database writes
+      - MCP and CLI drifting onto separate business logic
+      - launch plans that execute provider commands during preview
+      - manager-first startup or manager-first shutdown
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

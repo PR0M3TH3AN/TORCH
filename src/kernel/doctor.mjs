@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fileHash } from './files.mjs';
 import { projectStatePath } from './paths.mjs';
 import { inspectManagedWorktree } from './worktree-state.mjs';
@@ -36,8 +37,40 @@ export function diagnoseProject({ repository, env = process.env }) {
       if (!existsSync(path)) findings.push({ severity: 'error', code: 'OWNED_FILE_MISSING', path: record.path });
       else if (fileHash(path) !== record.sha256) findings.push({ severity: 'info', code: 'OWNED_FILE_MODIFIED', path: record.path });
     }
-    const stateRoot = projectStatePath(manifest.projectId, env);
+    const expectedStateRoot = projectStatePath(manifest.projectId, env);
+    const recordedStateRoot = (manifest.external ?? []).find((entry) => entry.type === 'local-state')?.path;
+    if (recordedStateRoot && recordedStateRoot !== expectedStateRoot) {
+      findings.push({
+        severity: 'error', code: 'LOCAL_STATE_PATH_MISMATCH',
+        recorded: recordedStateRoot, expected: expectedStateRoot,
+      });
+    }
+    const stateRoot = expectedStateRoot;
     if (!existsSync(stateRoot)) findings.push({ severity: 'error', code: 'LOCAL_STATE_MISSING', path: stateRoot });
+    const databasePath = join(stateRoot, 'state.db');
+    if (existsSync(databasePath)) {
+      try {
+        const database = new DatabaseSync(databasePath, { readOnly: true });
+        const unacknowledged = database.prepare(`
+          SELECT COUNT(*) AS count
+          FROM messages m
+          JOIN identities i ON m.recipient_id = i.area_id OR m.recipient_id = 'all'
+          LEFT JOIN message_acks a ON a.message_id = m.id AND a.area_id = i.area_id
+          WHERE a.message_id IS NULL
+        `).get().count;
+        const present = database.prepare(`
+          SELECT area_id, state, runtime, runtime_session_id, heartbeat_at
+          FROM identities WHERE state != 'offline' ORDER BY area_id
+        `).all();
+        if (unacknowledged > 0) {
+          findings.push({ severity: 'warning', code: 'MESSAGE_BACKLOG', unacknowledged });
+        }
+        if (present.length > 0) findings.push({ severity: 'info', code: 'FLEET_PRESENCE', agents: present });
+        database.close();
+      } catch (error) {
+        findings.push({ severity: 'error', code: 'CONTROL_PLANE_INVALID', path: databasePath, message: error.message });
+      }
+    }
     for (const entry of (manifest.external ?? []).filter((item) => item.type === 'worktree')) {
       const state = inspectManagedWorktree(repository.root, entry, config?.project?.main_branch ?? 'main');
       for (const problem of state.problems) {

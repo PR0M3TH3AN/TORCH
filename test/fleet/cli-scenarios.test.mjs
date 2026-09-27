@@ -66,3 +66,36 @@ test('SCN-cli-domain-review: a generated proposal must be approved before instal
   assert.equal(installed.status, 0, installed.stderr || installed.stdout);
   assert.equal(existsSync(join(root, '.torch', 'domain-proposal.approved.json')), true);
 });
+
+test('SCN-cli-control-plane: CLI messages, acknowledgements, ownership, and status share durable state', () => {
+  const root = repo();
+  const proposalPath = join(root, 'fleet-proposal.json');
+  run(root, ['domains', '--output', proposalPath, '--json']);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  proposal.review = {
+    status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
+  };
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  assert.equal(run(root, ['install', '--proposal', proposalPath, '--yes', '--json']).status, 0);
+  const worker = proposal.domains[0].id;
+
+  const sent = run(root, [
+    'message', '--from', 'session-manager', '--to', worker, '--body', 'Use the CLI fallback.',
+    '--task', 'TASK-CLI', '--json',
+  ]);
+  assert.equal(sent.status, 0, sent.stderr || sent.stdout);
+  const message = JSON.parse(sent.stdout);
+  const inbox = JSON.parse(run(root, ['inbox', '--area', worker, '--unacknowledged', '--json']).stdout);
+  assert.equal(inbox.messages[0].id, message.id);
+  assert.equal(inbox.messages[0].references.task, 'TASK-CLI');
+  const acknowledged = run(root, ['ack', '--area', worker, '--message', message.id, '--json']);
+  assert.equal(acknowledged.status, 0, acknowledged.stderr || acknowledged.stdout);
+  assert.equal(JSON.parse(run(root, ['inbox', '--area', worker, '--unacknowledged', '--json']).stdout).messages.length, 0);
+  const status = JSON.parse(run(root, [
+    'status', '--area', worker, '--state', 'working', '--summary', 'Running TASK-CLI',
+    '--runtime', 'claude', '--session', 'runtime-cli', '--json',
+  ]).stdout);
+  assert.equal(status.runtimeSessionId, 'runtime-cli');
+  const ownership = JSON.parse(run(root, ['who-owns', '--path', 'README.md', '--json']).stdout);
+  assert.equal(ownership.owners.length > 0, true);
+});

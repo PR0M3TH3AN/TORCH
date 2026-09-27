@@ -12,8 +12,8 @@ architecture.
 ## Current status
 
 The rewrite is under active development on `rewrite/portable-agent-fleet`.
-The current implementation provides the portable kernel and the first fleet
-bootstrap path:
+The current implementation provides the portable kernel, project bootstrap,
+and the first Claude reference-fleet path:
 
 - read-only Git repository inspection;
 - repository inventory and check discovery;
@@ -28,9 +28,17 @@ bootstrap path:
 - reviewed worktree plans with branch/path collision protection;
 - isolated branches and worktrees with locally ignored task markers;
 - purge protection for dirty and uniquely committed domain work.
+- SQLite-backed stable Fleet identities and presence;
+- durable direct/group messages with per-recipient acknowledgement;
+- live ownership, neighbours, handoff, coordination, completion, and blocker operations;
+- equivalent CLI and 14-tool MCP surfaces;
+- current MCP stdio interoperability through the official protocol SDK;
+- an explicit-capability Claude adapter with durable-message fallback;
+- worker-first/Session-Manager-last fresh start and resume planning;
+- safe wind-down with active-work refusal and local resume snapshots.
 
-Session orchestration, messaging, checks, integration, runtime adapters,
-self-hosting, and the Fleet Console remain staged work.
+Checks, scarce-resource leases, integration policy, Codex portability,
+self-hosting, COMBATRIG re-import, and the Fleet Console remain staged work.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
@@ -67,10 +75,25 @@ node bin/torch.mjs install --proposal fleet-proposal.json --yes --json
 node bin/torch.mjs doctor --json
 node bin/torch.mjs worktrees --dry-run --json
 node bin/torch.mjs worktrees --yes --json
+node bin/torch.mjs up --fresh --dry-run --json
 ```
 
-The alpha kernel is not yet a working multi-agent fleet. Its install format may
-change before the first usable release.
+Starting or stopping Claude sessions is always a separate explicit step:
+
+```bash
+node bin/torch.mjs up --fresh --yes --json
+node bin/torch.mjs down --dry-run --json
+node bin/torch.mjs down --yes --json
+```
+
+The CLI fallback exposes `agents`, `who-owns`, `message`, `inbox`, `ack`,
+`status`, `complete`, `blocked`, `coordinate`, and `handoff`. MCP hosts launch
+`torch-mcp --root /path/to/repository --area <fleet-id>` and receive the same
+service operations, identity-bound to that Fleet area.
+
+This is still an alpha. The lifecycle is scenario-tested with a virtualized
+Claude boundary; a paid live-Claude multi-domain acceptance run remains an
+explicit owner-authorized qualification gate.
 
 ## Product principles
 
