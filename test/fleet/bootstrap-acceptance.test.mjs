@@ -149,7 +149,7 @@ test('SCN-bootstrap-acceptance: one installed fixture proves the complete organi
   assert.deepEqual(resume.actions.map((action) => action.runtimeSessionId), started.started.map((entry) => entry.runtimeSessionId));
   control.close();
 
-  const reversal = planUninstall({ repository: inspectRepository(context.root), purge: true });
+  const reversal = planUninstall({ repository: inspectRepository(context.root), purge: true, env: context.env });
   assert.equal(reversal.mutationPerformed, false);
   assert.equal(reversal.manifest.external.filter((entry) => entry.type === 'worktree').length, roster.agents.length);
   assert.equal(reversal.problems.some((problem) => problem.type === 'unsafe-worktree'), true,

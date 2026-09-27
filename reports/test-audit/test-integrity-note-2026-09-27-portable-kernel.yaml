@@ -9,7 +9,7 @@ test_integrity_note:
     - id: SCN-install-doctor-purge
       given: a reviewed fresh installation into a Git repository
       when: TORCH installs, diagnoses, and purges its unchanged state
-      then: doctor reports healthy, all owned TORCH state is removed, and project source remains unchanged
+      then: active runtime state blocks purge, historical durable state remains safely reversible after shutdown, all owned TORCH state is removed, and project source remains unchanged
     - id: SCN-existing-repository-preservation
       given: an existing repository with history, a long-lived branch, owner configuration, and an untracked file
       when: TORCH is installed and safely purged
@@ -254,6 +254,7 @@ test_integrity_note:
     - measured and estimated context groups, cache-read ratio, and cost per verified item
     - schedule plan blockers, subprocess shell flag, retry count, and durable failure message
     - preservation of project source and modified owner configuration
+    - explicit purge approval, exact XDG project-state path, and active versus historical local-state classification
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
     - runtime command plans and execution order
@@ -290,6 +291,8 @@ test_integrity_note:
       - doctor that reports healthy without required state
       - doctor hiding convergence age, an active Git operation, a missing runtime, or one-disk-only recovery
       - uninstall that deletes owner-modified configuration
+      - purge without explicit confirmation or through a redirected local-state path
+      - historical messages making safe reversal permanently impossible
       - CLI that mutates without explicit approval
       - in-memory-only messaging that disappears on restart
       - runtime session IDs masquerading as durable Fleet identities

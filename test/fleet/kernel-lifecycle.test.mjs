@@ -15,6 +15,7 @@ import {
 } from '../../src/kernel/install.mjs';
 import { proposeDomains, validateApprovedProposal } from '../../src/kernel/domains.mjs';
 import { createLocalCanonical } from '../../src/canonical/local.mjs';
+import { openControlPlane } from '../../src/control-plane/service.mjs';
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), 'torch-kernel-'));
@@ -72,7 +73,16 @@ test('SCN-install-doctor-purge: a fresh install is healthy and exactly reversibl
   assert.equal(diagnosis.healthy, true);
   assert.equal(diagnosis.status, 'ok');
 
-  const result = uninstallProject({ repository: inspectRepository(root), purge: true });
+  const control = openControlPlane({ repositoryRoot: root, env });
+  control.sendMessage({ sender: 'session-manager', recipient: proposal.domains[0].id, body: 'Historical state remains reversible.' });
+  control.reportStatus({ areaId: proposal.domains[0].id, state: 'working', summary: 'Still active.' });
+  control.close();
+  const activePlan = planUninstall({ repository: inspectRepository(root), purge: true, env });
+  assert.equal(activePlan.problems.some((problem) => problem.type === 'active-runtime-sessions'), true);
+  const reopened = openControlPlane({ repositoryRoot: root, env });
+  reopened.reportStatus({ areaId: proposal.domains[0].id, state: 'offline', summary: 'Stopped.' });
+  reopened.close();
+  const result = uninstallProject({ repository: inspectRepository(root), purge: true, env });
   assert.equal(result.mutationPerformed, true);
   assert.equal(existsSync(join(root, '.torch')), false);
   assert.equal(existsSync(installed.stateRoot), false);
@@ -93,7 +103,7 @@ test('SCN-existing-repository-preservation: install and purge preserve history, 
   installProject({
     repository, proposal: approvedProposal(repository), env: externalEnv, projectId: 'existing-repository',
   });
-  const purged = uninstallProject({ repository: inspectRepository(root), purge: true });
+  const purged = uninstallProject({ repository: inspectRepository(root), purge: true, env: externalEnv });
   assert.equal(purged.mutationPerformed, true);
   assert.equal(readFileSync(join(root, '.projectrc'), 'utf8'), 'owner-setting=true\n');
   assert.equal(readFileSync(join(root, 'owner-notes.txt'), 'utf8'), 'untracked owner data\n');
@@ -109,11 +119,31 @@ test('SCN-purge-protects-user-change: uninstall refuses to delete modified manag
   writeFileSync(configPath, `${readFileSync(configPath, 'utf8')}\n# owner change\n`);
 
   assert.throws(
-    () => uninstallProject({ repository: inspectRepository(root), purge: true }),
+    () => uninstallProject({ repository: inspectRepository(root), purge: true, env }),
     (error) => error.code === 'UNSAFE_TO_PURGE'
       && error.details.some((problem) => problem.type === 'modified' && problem.path === '.torch/torch.yaml'),
   );
   assert.equal(existsSync(configPath), true);
+});
+
+test('SCN-purge-protects-local-identity: uninstall refuses mismatched machine-local metadata', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const installed = installProject({
+    repository, proposal: approvedProposal(repository), env, projectId: 'expected-project',
+  });
+  const metadataPath = join(installed.stateRoot, 'project.json');
+  const metadata = JSON.parse(readFileSync(metadataPath, 'utf8'));
+  writeFileSync(metadataPath, `${JSON.stringify({ ...metadata, projectId: 'different-project' }, null, 2)}\n`);
+
+  const plan = planUninstall({ repository: inspectRepository(root), purge: true, env });
+  assert.equal(plan.canProceed, false);
+  assert.equal(plan.problems.some((problem) => problem.type === 'local-state-project-mismatch'), true);
+  assert.throws(
+    () => uninstallProject({ repository: inspectRepository(root), purge: true, env }),
+    (error) => error.code === 'UNSAFE_TO_PURGE',
+  );
+  assert.equal(existsSync(installed.stateRoot), true);
 });
 
 test('SCN-domain-approval: installation rejects stale or unapproved organizational proposals', () => {
@@ -180,15 +210,15 @@ test('SCN-canonical-reversal: owned local canonical state reverses only after un
   ], { encoding: 'utf8' }).trim();
   execFileSync('git', ['--git-dir', canonical.path, 'update-ref', 'refs/heads/remote-only', uniqueCommit]);
   repository = inspectRepository(root);
-  assert.equal(planUninstall({ repository, purge: true }).problems.some((problem) =>
+  assert.equal(planUninstall({ repository, purge: true, env: externalEnv }).problems.some((problem) =>
     problem.type === 'canonical-unique-commit' && problem.commit === uniqueCommit), true);
   assert.throws(
-    () => uninstallProject({ repository, purge: true }),
+    () => uninstallProject({ repository, purge: true, env: externalEnv }),
     (error) => error.code === 'UNSAFE_TO_PURGE',
   );
 
   execFileSync('git', ['--git-dir', canonical.path, 'update-ref', '-d', 'refs/heads/remote-only']);
-  const purged = uninstallProject({ repository: inspectRepository(root), purge: true });
+  const purged = uninstallProject({ repository: inspectRepository(root), purge: true, env: externalEnv });
   assert.equal(purged.mutationPerformed, true);
   assert.equal(existsSync(installed.stateRoot), false);
   assert.equal(execFileSync('git', ['-C', root, 'remote'], { encoding: 'utf8' }).includes('torch-canonical'), false);

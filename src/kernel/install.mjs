@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { DatabaseSync } from 'node:sqlite';
 import {
-  existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync,
+  existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync,
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { TorchError } from './errors.mjs';
@@ -268,15 +269,74 @@ export function installProject({
   }
 }
 
-function nonEmptyEntries(path, ignoredRoots = []) {
-  if (!existsSync(path)) return [];
-  return readdirSync(path, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile())
-    .map((entry) => resolve(entry.parentPath, entry.name))
-    .filter((entry) => entry !== join(resolve(path), 'project.json'))
-    .filter((entry) => !ignoredRoots.some((root) =>
-      entry === resolve(root) || entry.startsWith(`${resolve(root)}${sep}`)))
-    .map((entry) => relative(path, entry));
+function inspectLocalState(statePath, manifest, env, problems) {
+  const expected = projectStatePath(manifest.projectId, env);
+  if (resolve(statePath) !== resolve(expected)) {
+    problems.push({ type: 'unsafe-local-state-path', recorded: statePath, expected });
+    return;
+  }
+  try {
+    if (!lstatSync(statePath).isDirectory() || realpathSync(statePath) !== resolve(statePath)) {
+      problems.push({ type: 'unsafe-local-state-node', path: statePath });
+      return;
+    }
+  } catch (error) {
+    problems.push({ type: 'local-state-unreadable', path: statePath, message: error.message });
+    return;
+  }
+  const allowedFiles = new Set(['project.json', 'state.db', 'state.db-shm', 'state.db-wal']);
+  const allowedDirectories = new Set([
+    'sessions', 'messages', 'locks', 'leases', 'checks', 'integration', 'logs', 'remote.git',
+  ]);
+  const unexpected = readdirSync(statePath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory()
+      ? !allowedDirectories.has(entry.name) : !allowedFiles.has(entry.name))
+    .map((entry) => entry.name);
+  if (unexpected.length) problems.push({ type: 'unknown-local-state', path: statePath, entries: unexpected });
+  const locksPath = join(statePath, 'locks');
+  const locks = existsSync(locksPath) ? readdirSync(locksPath) : [];
+  if (locks.length) problems.push({ type: 'active-local-locks', path: locksPath, entries: locks });
+  const databasePath = join(statePath, 'state.db');
+  if (!existsSync(databasePath)) return;
+  let database;
+  try {
+    database = new DatabaseSync(databasePath, { readOnly: true });
+    const hasTable = (name) => Boolean(database.prepare(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+    ).get(name));
+    if (hasTable('identities')) {
+      const active = database.prepare(`
+        SELECT area_id AS areaId, state, runtime_session_id AS runtimeSessionId
+        FROM identities WHERE state != 'offline' ORDER BY area_id
+      `).all();
+      if (active.length) problems.push({ type: 'active-runtime-sessions', sessions: active });
+    }
+    if (hasTable('resource_leases')) {
+      const leases = database.prepare(`
+        SELECT resource_id AS resourceId, area_id AS areaId, expires_at AS expiresAt
+        FROM resource_leases WHERE released_at IS NULL ORDER BY resource_id, acquired_at
+      `).all();
+      if (leases.length) problems.push({ type: 'active-resource-leases', leases });
+    }
+    if (hasTable('worktree_guards')) {
+      const guards = database.prepare(`
+        SELECT area_id AS areaId, guard_type AS guardType, reason
+        FROM worktree_guards WHERE released_at IS NULL ORDER BY created_at, id
+      `).all();
+      if (guards.length) problems.push({ type: 'active-worktree-guards', guards });
+    }
+    if (hasTable('integration_requests')) {
+      const landing = database.prepare(`
+        SELECT id, source_area AS sourceArea, source_commit AS sourceCommit
+        FROM integration_requests WHERE state = 'landing' ORDER BY created_at, id
+      `).all();
+      if (landing.length) problems.push({ type: 'integration-landing-active', requests: landing });
+    }
+  } catch (error) {
+    problems.push({ type: 'local-state-database-invalid', path: databasePath, message: error.message });
+  } finally {
+    database?.close();
+  }
 }
 
 function gitOptional(root, args) {
@@ -310,7 +370,7 @@ function inspectCanonicalRemoval(repositoryRoot, entry, localStatePath) {
   return problems;
 }
 
-export function planUninstall({ repository, purge = false }) {
+export function planUninstall({ repository, purge = false, env = process.env }) {
   const manifest = readInstallManifest(repository.root);
   const problems = [];
   let mainBranch = repository.branch || 'main';
@@ -319,11 +379,18 @@ export function planUninstall({ repository, purge = false }) {
     mainBranch = config.project?.main_branch ?? mainBranch;
   } catch { /* created-file validation below reports the invalid config */ }
   const localState = (manifest.external ?? []).find((entry) => entry.type === 'local-state');
-  if (localState && existsSync(join(localState.path, 'project.json'))) {
+  if (localState && !existsSync(join(localState.path, 'project.json'))) {
+    problems.push({ type: 'local-state-metadata-missing', path: join(localState.path, 'project.json') });
+  } else if (localState) {
     try {
       const metadata = JSON.parse(readFileSync(join(localState.path, 'project.json'), 'utf8'));
       if (resolve(metadata.root) !== resolve(repository.root)) {
         problems.push({ type: 'not-installation-root', expected: metadata.root, actual: repository.root });
+      }
+      if (metadata.projectId !== manifest.projectId) {
+        problems.push({
+          type: 'local-state-project-mismatch', expected: manifest.projectId, actual: metadata.projectId ?? null,
+        });
       }
     } catch {
       problems.push({ type: 'local-state-metadata-invalid', path: localState.path });
@@ -336,11 +403,7 @@ export function planUninstall({ repository, purge = false }) {
   }
   for (const entry of manifest.external ?? []) {
     if (entry.type === 'local-state') {
-      const canonicalRoots = (manifest.external ?? [])
-        .filter((candidate) => candidate.type === 'canonical-remote')
-        .map((candidate) => candidate.path);
-      const extras = nonEmptyEntries(entry.path, canonicalRoots);
-      if (extras.length) problems.push({ type: 'local-state-not-empty', path: entry.path, entries: extras });
+      if (existsSync(entry.path)) inspectLocalState(entry.path, manifest, env, problems);
     }
     if (entry.type === 'canonical-remote') {
       if (!localState?.path) problems.push({ type: 'local-state-missing-for-canonical', path: entry.path });
@@ -361,8 +424,8 @@ export function planUninstall({ repository, purge = false }) {
   };
 }
 
-export function uninstallProject({ repository, purge = false, dryRun = false }) {
-  const plan = planUninstall({ repository, purge });
+export function uninstallProject({ repository, purge = false, dryRun = false, env = process.env }) {
+  const plan = planUninstall({ repository, purge, env });
   if (dryRun || !purge) return plan;
   if (!plan.canProceed) {
     throw new TorchError('TORCH purge stopped because managed state changed', {

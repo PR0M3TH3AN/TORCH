@@ -411,6 +411,16 @@ No uninstall mode may delete or remove a worktree containing:
 
 Uninstall MUST stop before destructive cleanup and report exact remediation.
 
+Implementation checkpoint (2026-09-27): CLI purge requires both `--purge` and
+explicit `--yes` after a dry-run review. Reversal validates the manifest's
+machine-local state path against the project ID and current XDG environment,
+allows TORCH-owned historical database and evidence files, and fails closed on
+unknown state entries, active runtime identities, local locks, resource leases,
+worktree guards, in-flight landing, unsafe worktrees, unique canonical history,
+or installed persistent launchers. Historical messages and receipts therefore
+do not make reversal permanently impossible, while active or unowned state
+still blocks deletion.
+
 ## 10. Project analysis and bootstrap
 
 ### 10.1 Repository reconnaissance

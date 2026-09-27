@@ -141,7 +141,7 @@ Usage:
   torch fleet activate --change <id> --by <owner> --yes [--json]
   torch fleet start --change <id> [--fresh] [--dry-run] --yes [--json]
   torch doctor [--json]
-  torch uninstall [--dry-run] [--purge] [--json]
+  torch uninstall [--dry-run] [--purge --yes] [--json]
 `;
 
 function print(value, { json = false } = {}) {
@@ -1149,10 +1149,16 @@ export async function runCli(argv = process.argv.slice(2), {
       }
     }
     if (command === 'uninstall') {
+      if (argv.includes('--purge') && !argv.includes('--dry-run') && !argv.includes('--yes')) {
+        throw new TorchError('Purging TORCH removes tracked configuration, managed worktrees, and local state. Review --dry-run, then re-run with --purge --yes.', {
+          code: 'APPROVAL_REQUIRED',
+        });
+      }
       const result = uninstallProject({
         repository,
         purge: argv.includes('--purge'),
         dryRun: argv.includes('--dry-run'),
+        env,
       });
       print(result, { json });
       return result.canProceed === false ? 1 : 0;

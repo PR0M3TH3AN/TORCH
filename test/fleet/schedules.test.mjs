@@ -133,7 +133,7 @@ test('SCN-system-schedule-launcher: exact-config user units install, dispatch, a
     ['--user', 'daemon-reload'], ['--user', 'enable'],
   ]);
   assert.equal(launcher.status().stale, false);
-  assert.equal(planUninstall({ repository: inspectRepository(context.root), purge: true }).problems
+  assert.equal(planUninstall({ repository: inspectRepository(context.root), purge: true, env: context.env }).problems
     .some((problem) => problem.type === 'persistent-integration-installed'), true);
 
   const originalConfig = readFileSync(join(context.root, '.torch', 'torch.yaml'), 'utf8');

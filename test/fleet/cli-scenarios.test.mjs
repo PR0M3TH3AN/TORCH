@@ -155,6 +155,9 @@ test('SCN-cli-lifecycle-surface: runtime selection, selective startup, capture, 
   const doctor = run(root, ['doctor', '--json']);
   assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
   assert.equal(JSON.parse(doctor.stdout).findings.some((finding) => finding.code === 'FLEET_DETACHED'), true);
+  const unapprovedPurge = run(root, ['uninstall', '--purge', '--json']);
+  assert.equal(unapprovedPurge.status, 2);
+  assert.equal(JSON.parse(unapprovedPurge.stdout).error, 'APPROVAL_REQUIRED');
 });
 
 test('SCN-cli-control-plane: CLI messages, acknowledgements, ownership, and status share durable state', () => {

@@ -29,7 +29,9 @@ and the first Claude reference-fleet path:
 - read-only health diagnostics covering installation integrity, runtime
   availability, worktree drift count and age, Git operations, and honest
   recoverability grade;
-- conservative, reversible purge;
+- conservative, explicitly confirmed purge that validates the exact local
+  state path and distinguishes owned history from live sessions, locks,
+  leases, guards, landing, persistent launchers, and unknown files;
 - reviewed worktree plans with branch/path collision protection;
 - isolated branches and worktrees with locally ignored task markers;
 - purge protection for dirty and uniquely committed domain work.

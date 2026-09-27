@@ -75,7 +75,7 @@ test('SCN-worktree-bootstrap: approved identities receive isolated branches and 
     finding.code === 'RECOVERABILITY' && finding.level === 'ONE-DISK'), true);
   assert.equal(diagnosis.findings.some((finding) => finding.code.startsWith('RUNTIME_')), true);
   unlinkSync(mergeHead);
-  uninstallProject({ repository: inspectRepository(fixture.root), purge: true });
+  uninstallProject({ repository: inspectRepository(fixture.root), purge: true, env: fixture.env });
   assert.equal(created.created.some((action) => existsSync(action.path)), false);
   assert.equal(readFileSync(join(fixture.root, '.git', 'info', 'exclude'), 'utf8').includes('.task'), false);
 });
@@ -86,19 +86,19 @@ test('SCN-worktree-purge-safety: modified or uniquely committed domain work bloc
   const core = created.created.find((entry) => entry.area === 'core');
   writeFileSync(join(core.path, 'domain-work.txt'), 'not safe to delete\n');
 
-  const plan = planUninstall({ repository: inspectRepository(fixture.root), purge: true });
+  const plan = planUninstall({ repository: inspectRepository(fixture.root), purge: true, env: fixture.env });
   assert.equal(plan.canProceed, false);
   assert.equal(plan.problems.some((problem) =>
     problem.type === 'unsafe-worktree' && problem.area === 'core'
       && problem.problems.includes('worktree-dirty')), true);
   execFileSync('git', ['-C', core.path, 'add', 'domain-work.txt']);
   execFileSync('git', ['-C', core.path, 'commit', '-m', 'domain work']);
-  const committedPlan = planUninstall({ repository: inspectRepository(fixture.root), purge: true });
+  const committedPlan = planUninstall({ repository: inspectRepository(fixture.root), purge: true, env: fixture.env });
   assert.equal(committedPlan.problems.some((problem) =>
     problem.type === 'unsafe-worktree' && problem.area === 'core'
       && problem.problems.includes('unique-commits:1')), true);
   assert.throws(
-    () => uninstallProject({ repository: inspectRepository(fixture.root), purge: true }),
+    () => uninstallProject({ repository: inspectRepository(fixture.root), purge: true, env: fixture.env }),
     (error) => error.code === 'UNSAFE_TO_PURGE',
   );
   assert.equal(existsSync(join(core.path, 'domain-work.txt')), true);
