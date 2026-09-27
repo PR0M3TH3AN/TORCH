@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited commit: `acfbc6d`  
+Latest audited commit: `fec36fb`  
 
 ## Verdict
 
@@ -17,9 +17,10 @@ retirement, the public product surface, and the local Fleet Console.
 It is not yet a qualified first usable release. The remaining release gates
 require either a still-missing local subsystem or owner-authorized operation:
 
-1. persistent system-schedule launcher installation and reversal;
-2. one consolidated bootstrap acceptance fixture spanning the complete §10.8
+1. one consolidated bootstrap acceptance fixture spanning the complete §10.8
    lifecycle;
+2. owner-authorized installation and live qualification of the implemented
+   persistent user-systemd schedule launcher;
 3. owner-authorized live Claude/Codex coordination and resume evidence;
 4. an installed stable TORCH managing this source checkout;
 5. owner resolution of COMBATRIG's 56 blocking ownership/exclusion gaps,
@@ -30,7 +31,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **48/48 PASS** at `acfbc6d`.
+- `npm test`: **49/49 PASS** at `fec36fb`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
@@ -98,9 +99,12 @@ is made without live comparative measurements.
 
 Machine-readable session/system schedules, authority, retry, failure reporting,
 and durable run evidence are implemented. Session schedules require a live
-Session Manager; mutating actions require explicit approval. Cron definitions
-still report `external-launcher`: TORCH does not yet own, install, or reverse a
-persistent timer/service through its installation manifest.
+Session Manager; mutating actions require explicit approval. An owner-approved
+user-systemd launcher can install manifest-owned service/timer units, dispatch
+due cron or interval schedules without duplicate minute runs, refuse tracked
+configuration drift, and remove only unchanged TORCH-owned units. The code is
+fixture-tested; it has not been installed or qualified persistently on this
+machine.
 
 ## Approval-bound qualification plan
 
@@ -113,15 +117,14 @@ These actions are deliberately not performed by the local build:
    outside the source tree.
 3. **COMBATRIG mutation:** review the generated ownership gaps before creating
    any `.torch` state or worktrees there.
-4. **System scheduler:** install/enable a user service or timer only after the
-   launcher implementation and reversal test pass.
+4. **System scheduler:** install/enable the implemented user service/timer only
+   with explicit approval, then verify its first real dispatch and reversal.
 5. **Remote/public state:** push branches, publish a package, or deploy the site
    only under explicit release scope.
 
 ## Next implementation order
 
-1. persistent schedule launcher with manifest-owned install/detach reversal;
-2. consolidated bootstrap acceptance fixture;
-3. merge/split proposal records without automatic ownership mutation;
-4. standalone package smoke test;
-5. owner-authorized live/provider/install/COMBATRIG gates.
+1. consolidated bootstrap acceptance fixture;
+2. merge/split proposal records without automatic ownership mutation;
+3. standalone package smoke test;
+4. owner-authorized live/provider/install/scheduler/COMBATRIG gates.
