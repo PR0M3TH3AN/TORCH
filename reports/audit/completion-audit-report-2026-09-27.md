@@ -3,7 +3,7 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited implementation commit: `1b0f53a`
+Latest audited implementation commit: `6740f33`
 
 ## Verdict
 
@@ -31,11 +31,15 @@ Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **60/60 PASS** against the tree committed as `1b0f53a`.
+- `npm test`: **60/60 PASS** against the tree committed as `6740f33`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
 - No live AI provider was called.
+- An isolated temporary self-host qualification built commit `6740f33` as
+  candidate `0.1.0-alpha.0`, recorded passing test/lint/syntax evidence,
+  atomically activated it, and executed its stable `torch` launcher. The
+  installed artifact excluded the pre-existing untracked owner fixture.
 - No stable version, system service, timer, COMBATRIG state, remote branch, or
   public deployment was changed.
 - The pre-existing untracked `test-torch-config-host-uQKdqL/` fixture remains
@@ -51,7 +55,7 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, capture/down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; provider session plus managed-worktree ownership verification before stop; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Implemented virtually | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, delivery-state separation, and read-only doctor evidence for drift count/age, Git operations, runtime availability, and recoverability; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance`, `SCN-worktree-bootstrap` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
 | 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP on create/resume without global config mutation, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Implemented virtually | Run one live mixed Claude/Codex shared-boundary task. |
-| 6. Self-hosting | Candidate isolation, acceptance receipts, side-by-side versions, atomic activation/reconciliation/rollback; self-host scenarios | Mechanics implemented | Install a stable TORCH outside this checkout and use it to manage/test/promote a candidate of this checkout. Persistent installation approval required. |
+| 6. Self-hosting | Clean-commit bounded candidate staging, exclusion of arbitrary untracked files, internal dependency-link validation, mode-aware tree hashing, acceptance receipts, side-by-side versions, conflict-safe stable launcher, atomic activation/reconciliation/rollback; self-host scenarios plus an isolated real-checkout build/activation of `6740f33` | Mechanics implemented and temporarily qualified | Install a stable TORCH in the user location and use it to manage/test/promote a later candidate of this checkout. Persistent installation approval required. |
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
 | 8. Product surface | Redesigned site and dispatch-board story; local read-only Console covering ownership graph, worktree drift, recoverability, acknowledgements, checks, integration, delivery, resources, schedules, decisions, provider health, and context evidence; desktop/mobile local rendering; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented | Registry publication and public deployment remain open. |
 
