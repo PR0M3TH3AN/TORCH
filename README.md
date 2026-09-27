@@ -176,8 +176,8 @@ Review the evidence in `fleet-proposal.json`, edit its `review.status` to
 `approved`, and identify the reviewer. Then inspect and apply the installation:
 
 ```bash
-node bin/torch.mjs install --proposal fleet-proposal.json --dry-run --json
-node bin/torch.mjs install --proposal fleet-proposal.json --yes --json
+node bin/torch.mjs install --proposal fleet-proposal.json --runtime claude --dry-run --json
+node bin/torch.mjs install --proposal fleet-proposal.json --runtime claude --yes --json
 node bin/torch.mjs doctor --json
 node bin/torch.mjs worktrees --dry-run --json
 node bin/torch.mjs worktrees --yes --json
@@ -189,9 +189,21 @@ step:
 
 ```bash
 node bin/torch.mjs up --fresh --yes --json
+node bin/torch.mjs up --only backend,qa --dry-run --json
+node bin/torch.mjs list --json
+node bin/torch.mjs brief --area backend --json
+node bin/torch.mjs capture --json
 node bin/torch.mjs down --dry-run --json
 node bin/torch.mjs down --yes --json
+node bin/torch.mjs detach --dry-run --json
+node bin/torch.mjs detach --yes --json
 ```
+
+`capture` externalizes the current stable identities, runtime IDs, presence,
+and worktree commits without stopping sessions. `detach` first enforces normal
+wind-down safety, then marks runtime integration detached while preserving the
+tracked organization, local state, branches, and worktrees. A later explicit
+`up` reattaches the selected runtime sessions.
 
 The Fleet can evolve when recurring work develops a coherent new boundary.
 The Session Manager may propose the domain through MCP or the CLI, but cannot
@@ -212,6 +224,19 @@ benefit, coordination cost, ownership, neighbours, checks, and runtime. TORCH
 rejects silent ownership overlap, unknown checks/runtimes, worker-created
 roster changes, stale activation commits, and activation without matching
 owner approval.
+
+The manager can also submit evidence-backed boundary changes:
+
+```bash
+torch fleet propose-merge --from session-manager --proposal merge.json --json
+torch fleet propose-split --from session-manager --proposal split.json --json
+torch fleet reject --change <change-id> --by <owner> --reason "Not yet" --yes --json
+```
+
+Every existing owned-path pattern must be assigned exactly once. Approval
+records the owner's decision but does not activate a merge or split: TORCH
+returns a migration-required blocker until backlog, prompts, worktrees,
+branches, neighbours, and ownership transfer have a separately proven plan.
 
 The CLI fallback exposes `agents`, `who-owns`, `message`, `inbox`, `ack`,
 `status`, `complete`, `blocked`, `coordinate`, `handoff`, and the tracked
@@ -280,9 +305,16 @@ torch schedules plan --id fleet-hygiene --actor session-manager --json
 torch schedules run --id fleet-hygiene --actor session-manager --json
 ```
 
-Mutating schedules additionally require `--yes`. Cron definitions are exposed
-for an external system launcher; TORCH does not silently install persistent
-timers.
+Mutating schedules additionally require `--yes`. TORCH can preview, install,
+inspect, and exactly remove its user-systemd launcher, but never installs the
+persistent timer implicitly:
+
+```bash
+torch schedules launcher plan --json
+torch schedules launcher install --yes --json
+torch schedules launcher status --json
+torch schedules launcher remove --yes --json
+```
 
 ## Product principles
 

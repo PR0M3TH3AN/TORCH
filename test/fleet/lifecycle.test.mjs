@@ -12,7 +12,9 @@ import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
-import { planFleetDown, planFleetUp, startFleet, stopFleet } from '../../src/runtime/lifecycle.mjs';
+import {
+  detachFleet, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
+} from '../../src/runtime/lifecycle.mjs';
 
 function fleetFixture({ workerRuntime = 'claude' } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-lifecycle-'));
@@ -70,12 +72,25 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   assert.equal(stoppedIds.length, fresh.actions.length);
   assert.equal(existsSync(down.snapshotPath), true);
 
+  const detached = detachFleet({
+    plan: planFleetDetach({ repositoryRoot: fixture.root, controlPlane: control }),
+    controlPlane: control, stopRuntime: () => ({ stopped: true }),
+    now: () => new Date('2026-09-27T13:00:00Z'),
+  });
+  assert.equal(detached.detachedAt, '2026-09-27T13:00:00.000Z');
+  const metadataPath = join(planFleetDown({
+    repositoryRoot: fixture.root, controlPlane: control,
+  }).stateRoot, 'project.json');
+  assert.equal(JSON.parse(readFileSync(metadataPath, 'utf8')).detachedAt, detached.detachedAt);
+
   const resumed = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter, fresh: false });
   assert.equal(resumed.actions.every((action) => action.mode === 'resume'), true);
   assert.deepEqual(
     resumed.actions.map((action) => action.runtimeSessionId),
     fresh.actions.map((action) => action.runtimeSessionId),
   );
+  startFleet({ plan: resumed, controlPlane: control, executor: () => ({ status: 0 }) });
+  assert.equal(JSON.parse(readFileSync(metadataPath, 'utf8')).detachedAt, null);
   control.close();
 });
 

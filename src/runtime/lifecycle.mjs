@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
@@ -21,6 +21,24 @@ function worktreesByArea(manifest) {
 function orderedAreas(roster) {
   return [...roster.areas.filter((area) => area.id !== 'session-manager'),
     ...roster.areas.filter((area) => area.id === 'session-manager')];
+}
+
+function selectedAreas(roster, only, blockers) {
+  const ordered = orderedAreas(roster);
+  if (only === undefined) return ordered;
+  const selected = Array.isArray(only)
+    ? [...new Set(only.map((id) => typeof id === 'string' ? id.trim() : '').filter(Boolean))]
+    : [];
+  if (!selected.length) {
+    blockers.push({ code: 'FLEET_SELECTION_EMPTY' });
+    return [];
+  }
+  const known = new Set(ordered.map((area) => area.id));
+  for (const areaId of selected.filter((id) => !known.has(id))) {
+    blockers.push({ areaId, code: 'FLEET_IDENTITY_MISSING' });
+  }
+  const wanted = new Set(selected);
+  return ordered.filter((area) => wanted.has(area.id));
 }
 
 function adapterMap({ adapter, adapters } = {}) {
@@ -64,6 +82,24 @@ function atomicJson(path, value) {
   renameSync(temporary, path);
 }
 
+function projectMetadata(stateRoot) {
+  const path = join(stateRoot, 'project.json');
+  if (!existsSync(path)) throw new TorchError('TORCH local project metadata is missing', { code: 'LOCAL_STATE_MISSING' });
+  try { return { path, value: JSON.parse(readFileSync(path, 'utf8')) }; } catch (error) {
+    throw new TorchError('TORCH local project metadata is invalid', { code: 'LOCAL_STATE_INVALID', details: error.message });
+  }
+}
+
+function captureSnapshot({ plan, controlPlane, now = () => new Date() }) {
+  const snapshotPath = join(plan.stateRoot, 'sessions', 'resume.json');
+  atomicJson(snapshotPath, {
+    schema: 'torch.dev/runtime-snapshot/v1alpha1', projectId: plan.projectId,
+    capturedAt: now().toISOString(), agents: controlPlane.listAgents(),
+    worktrees: plan.actions.map((action) => action.worktree).filter(Boolean),
+  });
+  return snapshotPath;
+}
+
 function inspectWorktree(worktree) {
   const git = (args) => execFileSync('git', ['-C', worktree.path, ...args], { encoding: 'utf8' }).trim();
   return {
@@ -75,16 +111,16 @@ function inspectWorktree(worktree) {
   };
 }
 
-export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, fresh = false } = {}) {
+export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, fresh = false, only } = {}) {
   const { config, roster } = loadFleetDefinition(repositoryRoot);
   const manifest = readInstallManifest(repositoryRoot);
   const worktrees = worktreesByArea(manifest);
   const stateRoot = localStateRoot(manifest);
   const runtimes = adapterMap({ adapter, adapters });
-  const actions = [];
   const blockers = [];
+  const actions = [];
 
-  for (const area of orderedAreas(roster)) {
+  for (const area of selectedAreas(roster, only, blockers)) {
     const worktree = worktrees.get(area.id);
     if (!worktree) {
       blockers.push({ areaId: area.id, code: 'WORKTREE_MISSING' });
@@ -129,7 +165,8 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
   }
 
   return {
-    action: 'fleet-up', projectId: manifest.projectId, fresh, actions, blockers,
+    action: 'fleet-up', projectId: manifest.projectId, stateRoot, fresh,
+    only: only ?? null, actions, blockers,
     canProceed: blockers.length === 0, mutationPerformed: false,
   };
 }
@@ -258,6 +295,12 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
     });
     started.push({ areaId: action.areaId, runtimeSessionId: identity.runtimeSessionId, mode: action.mode });
   }
+  if (plan.stateRoot) {
+    const metadata = projectMetadata(plan.stateRoot);
+    if (metadata.value.detachedAt) {
+      atomicJson(metadata.path, { ...metadata.value, detachedAt: null, attachedAt: new Date().toISOString() });
+    }
+  }
   return { projectId: plan.projectId, started, mutationPerformed: true };
 }
 
@@ -328,11 +371,59 @@ export function stopFleet({ plan, controlPlane, stopRuntime, now = () => new Dat
     controlPlane.reportStatus({ areaId: action.areaId, state: 'offline', summary: 'Runtime stopped cleanly.' });
     stopped.push({ areaId: action.areaId, runtimeSessionId: action.runtimeSessionId, alreadyOffline: false });
   }
-  const snapshotPath = join(plan.stateRoot, 'sessions', 'resume.json');
-  atomicJson(snapshotPath, {
-    schema: 'torch.dev/runtime-snapshot/v1alpha1', projectId: plan.projectId,
-    capturedAt: now().toISOString(), agents: controlPlane.listAgents(),
-    worktrees: plan.actions.map((action) => action.worktree).filter(Boolean),
-  });
+  const snapshotPath = captureSnapshot({ plan, controlPlane, now });
   return { projectId: plan.projectId, stopped, snapshotPath, mutationPerformed: true };
+}
+
+export function captureFleet({ repositoryRoot, controlPlane, now = () => new Date() } = {}) {
+  const plan = planFleetDown({ repositoryRoot, controlPlane });
+  const snapshotPath = captureSnapshot({ plan, controlPlane, now });
+  return {
+    action: 'capture', projectId: plan.projectId, snapshotPath,
+    agents: controlPlane.listAgents(), mutationPerformed: true,
+  };
+}
+
+export function createFleetBrief({ repositoryRoot, controlPlane, areaId } = {}) {
+  const { roster } = loadFleetDefinition(repositoryRoot);
+  const selected = areaId
+    ? roster.areas.filter((area) => area.id === areaId)
+    : orderedAreas(roster);
+  if (!selected.length) {
+    throw new TorchError(`Unknown Fleet identity: ${areaId}`, { code: 'UNKNOWN_FLEET_IDENTITY' });
+  }
+  const commonPath = join(repositoryRoot, '.torch', 'prompts', 'COMMON.md');
+  const common = readFileSync(commonPath, 'utf8').trimEnd();
+  return {
+    schema: 'torch.dev/fleet-brief/v1alpha1', mutationPerformed: false,
+    areas: selected.map((area) => {
+      const promptPath = join(repositoryRoot, '.torch', 'prompts', `${area.id}.md`);
+      return {
+        areaId: area.id, title: area.title, identity: controlPlane.identity(area.id),
+        promptSources: [commonPath, promptPath],
+        prompt: `${common}\n\n${readFileSync(promptPath, 'utf8').trimEnd()}\n`,
+      };
+    }),
+  };
+}
+
+export function planFleetDetach({ repositoryRoot, controlPlane, adapters } = {}) {
+  const plan = planFleetDown({ repositoryRoot, controlPlane, adapters });
+  return { ...plan, action: 'fleet-detach' };
+}
+
+export function detachFleet({ plan, controlPlane, stopRuntime, now = () => new Date() } = {}) {
+  if (plan?.action !== 'fleet-detach') {
+    throw new TorchError('Fleet detach requires a reviewed detach plan', { code: 'FLEET_DETACH_PLAN_REQUIRED' });
+  }
+  const stopped = stopFleet({ plan, controlPlane, stopRuntime, now });
+  const metadata = projectMetadata(plan.stateRoot);
+  const detachedAt = now().toISOString();
+  atomicJson(metadata.path, { ...metadata.value, detachedAt });
+  return {
+    action: 'fleet-detach', projectId: plan.projectId, detachedAt,
+    stopped: stopped.stopped, snapshotPath: stopped.snapshotPath,
+    preserved: ['tracked organization', 'worktrees', 'branches', 'local state'],
+    mutationPerformed: true,
+  };
 }

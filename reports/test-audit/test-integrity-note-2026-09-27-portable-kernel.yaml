@@ -182,6 +182,14 @@ test_integrity_note:
       given: an installed Fleet and a file-backed proposed domain
       when: the manager proposes it and the owner separately approves, plans, and activates it through the public CLI
       then: missing approval is refused and the activated identity is queryable through the ordinary Fleet CLI
+    - id: SCN-cli-lifecycle-surface
+      given: an approved installed Fleet with isolated worktrees
+      when: an operator selects runtimes, previews selected startup, reads list and brief output, captures state, and detaches
+      then: the documented lifecycle commands share durable state, preserve the organization and worktrees, and require approval before stopping integrations
+    - id: SCN-install-runtime-selection
+      given: an approved Fleet proposal with declared runtime assignments
+      when: installation selects its enabled runtime adapters
+      then: unsupported or incomplete selections fail closed and the installed configuration contains the reviewed adapters
     - id: SCN-product-site
       given: the redesigned TORCH public surface
       when: its product story and local-console boundary are inspected

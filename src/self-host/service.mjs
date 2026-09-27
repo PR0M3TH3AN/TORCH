@@ -14,6 +14,7 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'ai-fleet-planning',
   'fleet-evolution',
   'fleet-boundary-evolution',
+  'cli-lifecycle-surface',
   'review-install-roster',
   'branches-worktrees',
   'runtime-identities',

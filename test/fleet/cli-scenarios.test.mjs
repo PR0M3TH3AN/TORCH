@@ -37,6 +37,7 @@ function releaseCandidate(root, version) {
     'SCN-ai-fleet-planning',
     'SCN-fleet-evolution', 'SCN-cli-fleet-evolution',
     'SCN-fleet-boundary-evolution',
+    'SCN-cli-lifecycle-surface',
     'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
     'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
     'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',
@@ -98,6 +99,60 @@ test('SCN-cli-domain-review: a generated proposal must be approved before instal
   const installed = run(root, ['install', '--proposal', proposalPath, '--yes', '--json']);
   assert.equal(installed.status, 0, installed.stderr || installed.stdout);
   assert.equal(existsSync(join(root, '.torch', 'domain-proposal.approved.json')), true);
+});
+
+test('SCN-cli-lifecycle-surface: runtime selection, selective startup, capture, brief, list, and detach are public', () => {
+  const root = repo();
+  const proposalPath = join(root, 'fleet-proposal.json');
+  assert.equal(run(root, ['domains', '--output', proposalPath, '--json']).status, 0);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  proposal.review = {
+    status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
+  };
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  const preview = run(root, [
+    'install', '--proposal', proposalPath, '--runtime', 'claude', '--dry-run', '--json',
+  ]);
+  assert.equal(preview.status, 0, preview.stderr || preview.stdout);
+  assert.deepEqual(JSON.parse(preview.stdout).runtimes, ['claude']);
+  const installed = run(root, [
+    'install', '--proposal', proposalPath, '--runtime', 'claude', '--yes', '--json',
+  ]);
+  assert.equal(installed.status, 0, installed.stderr || installed.stdout);
+  const config = JSON.parse(readFileSync(join(root, '.torch', 'torch.yaml'), 'utf8'));
+  assert.deepEqual(Object.keys(config.runtimes).sort(), ['claude', 'default']);
+  execFileSync('git', ['-C', root, 'add', '.torch', 'fleet-proposal.json']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'install torch']);
+  const worktreeParent = join(tmpdir(), `${basename(root)}-cli-worktrees`);
+  const worktrees = run(root, ['worktrees', '--parent', worktreeParent, '--yes', '--json']);
+  assert.equal(worktrees.status, 0, worktrees.stderr || worktrees.stdout);
+  const worker = proposal.domains[0].id;
+
+  const listed = run(root, ['list', '--json']);
+  assert.equal(listed.status, 0, listed.stderr || listed.stdout);
+  assert.equal(JSON.parse(listed.stdout).agents.some((agent) => agent.areaId === worker), true);
+  const brief = run(root, ['brief', '--area', worker, '--json']);
+  assert.equal(brief.status, 0, brief.stderr || brief.stdout);
+  assert.equal(JSON.parse(brief.stdout).areas[0].areaId, worker);
+  assert.match(JSON.parse(brief.stdout).areas[0].prompt, /Common fleet rules/);
+  const selective = run(root, ['up', '--only', worker, '--dry-run', '--json']);
+  assert.equal(selective.status, 0, selective.stderr || selective.stdout);
+  assert.deepEqual(JSON.parse(selective.stdout).actions.map((action) => action.areaId), [worker]);
+  const unknown = run(root, ['up', '--only', 'not-a-domain', '--dry-run', '--json']);
+  assert.equal(unknown.status, 1);
+  assert.equal(JSON.parse(unknown.stdout).blockers[0].code, 'FLEET_IDENTITY_MISSING');
+  const captured = run(root, ['capture', '--json']);
+  assert.equal(captured.status, 0, captured.stderr || captured.stdout);
+  assert.equal(existsSync(JSON.parse(captured.stdout).snapshotPath), true);
+  assert.equal(JSON.parse(run(root, ['detach', '--json']).stdout).error, 'APPROVAL_REQUIRED');
+  const detached = run(root, ['detach', '--yes', '--json']);
+  assert.equal(detached.status, 0, detached.stderr || detached.stdout);
+  assert.deepEqual(JSON.parse(detached.stdout).preserved, [
+    'tracked organization', 'worktrees', 'branches', 'local state',
+  ]);
+  const doctor = run(root, ['doctor', '--json']);
+  assert.equal(doctor.status, 0, doctor.stderr || doctor.stdout);
+  assert.equal(JSON.parse(doctor.stdout).findings.some((finding) => finding.code === 'FLEET_DETACHED'), true);
 });
 
 test('SCN-cli-control-plane: CLI messages, acknowledgements, ownership, and status share durable state', () => {

@@ -16,7 +16,34 @@ function jsonYaml(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-function initialFiles({ repository, projectId, createdAt, proposal }) {
+const RUNTIME_DEFINITIONS = Object.freeze({
+  claude: { model: 'opus', background: true },
+  codex: { sandbox: 'workspace-write', approval: 'approve-for-me' },
+});
+
+function resolveInstallRuntimes(proposal, requested) {
+  const selected = requested === undefined
+    ? Object.keys(RUNTIME_DEFINITIONS)
+    : [...new Set(requested)];
+  if (!selected.length || selected.some((runtime) => typeof runtime !== 'string' || !RUNTIME_DEFINITIONS[runtime])) {
+    throw new TorchError('Install runtimes must be one or more supported adapters', {
+      code: 'INSTALL_RUNTIME_INVALID', details: { requested: selected, supported: Object.keys(RUNTIME_DEFINITIONS) },
+    });
+  }
+  const required = new Set([
+    proposal.session_manager?.runtime ?? 'claude',
+    ...proposal.domains.map((domain) => domain.runtime ?? 'claude'),
+  ]);
+  const missing = [...required].filter((runtime) => !selected.includes(runtime));
+  if (missing.length) {
+    throw new TorchError('Selected install runtimes do not cover the approved Fleet', {
+      code: 'INSTALL_RUNTIME_MISSING', details: { selected, required: [...required], missing },
+    });
+  }
+  return selected;
+}
+
+function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) {
   const promptContent = (source, fallback) => source
     ? readFileSync(safeProjectPath(repository.root, source), 'utf8')
     : fallback;
@@ -40,11 +67,10 @@ function initialFiles({ repository, projectId, createdAt, proposal }) {
       allow_force_push: false, allow_bare_stash: false,
     },
     synchronization: { strategy: 'dispatcher-managed', auto_merge_worktrees: false },
-    runtimes: {
-      default: 'claude',
-      claude: { model: 'opus', background: true },
-      codex: { sandbox: 'workspace-write', approval: 'approve-for-me' },
-    },
+    runtimes: Object.fromEntries([
+      ['default', proposal.session_manager?.runtime ?? 'claude'],
+      ...runtimes.map((runtime) => [runtime, RUNTIME_DEFINITIONS[runtime]]),
+    ]),
     checks: proposal.checks ?? [],
     resources: proposal.resources ?? [],
     schedules: proposal.schedules ?? [],
@@ -174,8 +200,9 @@ function safeProjectPath(root, relativePath) {
   return target;
 }
 
-export function planInstall({ repository, proposal, env = process.env }) {
+export function planInstall({ repository, proposal, env = process.env, runtimes: requestedRuntimes } = {}) {
   validateApprovedProposal({ proposal, repository });
+  const runtimes = resolveInstallRuntimes(proposal, requestedRuntimes);
   const trackedRoot = join(repository.root, TRACKED_DIR);
   return {
     action: 'install',
@@ -184,6 +211,7 @@ export function planInstall({ repository, proposal, env = process.env }) {
     stateParent: join(projectStatePath('<new-project-id>', env), '..'),
     wouldCreateTrackedState: !existsSync(trackedRoot),
     approvedDomainCount: proposal.domains.length,
+    runtimes,
     mutationPerformed: false,
   };
 }
@@ -194,8 +222,10 @@ export function installProject({
   env = process.env,
   projectId = randomUUID(),
   now = () => new Date(),
+  runtimes: requestedRuntimes,
 } = {}) {
   validateApprovedProposal({ proposal, repository });
+  const runtimes = resolveInstallRuntimes(proposal, requestedRuntimes);
   const trackedRoot = join(repository.root, TRACKED_DIR);
   if (existsSync(trackedRoot)) {
     throw new TorchError(`Refusing to replace existing ${trackedRoot}`, {
@@ -213,7 +243,7 @@ export function installProject({
 
   const created = [];
   try {
-    for (const [path, content] of initialFiles({ repository, projectId, createdAt, proposal })) {
+    for (const [path, content] of initialFiles({ repository, projectId, createdAt, proposal, runtimes })) {
       const absolute = join(trackedRoot, path);
       const record = writeNewFile(absolute, content);
       created.push({ path: relative(repository.root, record.path), sha256: record.sha256 });

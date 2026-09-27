@@ -19,7 +19,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { writeNewFile } from './kernel/files.mjs';
 import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
-import { planAreaUp, planFleetDown, planFleetUp, startFleet, stopFleet } from './runtime/lifecycle.mjs';
+import {
+  captureFleet, createFleetBrief, detachFleet, planAreaUp, planFleetDetach,
+  planFleetDown, planFleetUp, startFleet, stopFleet,
+} from './runtime/lifecycle.mjs';
 import { ResourceService } from './resources/service.mjs';
 import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
 import { observeProject } from './observability/snapshot.mjs';
@@ -44,10 +47,14 @@ Usage:
   torch architect validate --brief <path> --response <path> [--json]
   torch architect run --brief <path> --provider <claude|codex> --output <path> [--model <model>] [--max-budget-usd <amount>] --yes [--json]
   torch domains [--repo <path>] [--spec <path>] [--output <path>] [--json]
-  torch install --proposal <path> [--dry-run] [--yes] [--json]
+  torch install --proposal <path> [--runtime <claude|codex|claude,codex>] [--dry-run] [--yes] [--json]
   torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
-  torch up [--fresh] [--dry-run] [--yes] [--json]
+  torch up [--fresh] [--only <id,id>] [--dry-run] [--yes] [--json]
   torch down [--dry-run] [--yes] [--json]
+  torch capture [--json]
+  torch detach [--dry-run] [--yes] [--json]
+  torch list [--json]
+  torch brief [--area <id>] [--json]
   torch identity --area <id> [--json]
   torch agents [--json]
   torch agent --area <id> [--json]
@@ -181,6 +188,25 @@ function runtimeAdapters() {
   ]);
 }
 
+function runtimeStoppers(spawn) {
+  return new Map([
+    ['claude', createClaudeAdapter({
+      runner: (executable, args) => spawn(executable, args, {
+        encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+      }),
+    })],
+    ['codex', createCodexAdapter()],
+  ]);
+}
+
+function stopThrough(adapters, action) {
+  const adapter = adapters.get(action.runtime);
+  if (!adapter) throw new TorchError(`No runtime stopper for ${action.runtime}`, {
+    code: 'RUNTIME_ADAPTER_MISSING', details: { runtime: action.runtime },
+  });
+  return adapter.stopSession({ runtimeSessionId: action.runtimeSessionId });
+}
+
 function runCandidateAcceptance(candidateRoot, spawn) {
   const checks = [
     { id: 'test', args: ['test'] },
@@ -204,6 +230,7 @@ function runCandidateAcceptance(candidateRoot, spawn) {
     ['ai-fleet-planning', ['SCN-ai-fleet-planning']],
     ['fleet-evolution', ['SCN-fleet-evolution', 'SCN-cli-fleet-evolution']],
     ['fleet-boundary-evolution', ['SCN-fleet-boundary-evolution']],
+    ['cli-lifecycle-surface', ['SCN-cli-lifecycle-surface']],
     ['review-install-roster', ['SCN-cli-domain-review']],
     ['branches-worktrees', ['SCN-worktree-bootstrap']],
     ['runtime-identities', ['SCN-mixed-runtime']],
@@ -439,9 +466,11 @@ export async function runCli(argv = process.argv.slice(2), {
     }
     if (command === 'install') {
       const proposalPath = optionValue(argv, '--proposal');
+      const runtimeOption = optionValue(argv, '--runtime');
+      const runtimes = runtimeOption === undefined ? undefined : commaList(runtimeOption);
       if (argv.includes('--dry-run')) {
         const proposal = loadProposal(cwd, proposalPath);
-        print({ ...planInstall({ repository, proposal, env }), proposal: resolve(cwd, proposalPath) }, { json });
+        print({ ...planInstall({ repository, proposal, env, runtimes }), proposal: resolve(cwd, proposalPath) }, { json });
         return 0;
       }
       if (!argv.includes('--yes')) {
@@ -450,7 +479,7 @@ export async function runCli(argv = process.argv.slice(2), {
         });
       }
       const proposal = loadProposal(cwd, proposalPath);
-      print(installProject({ repository, proposal, env }), { json });
+      print(installProject({ repository, proposal, env, runtimes }), { json });
       return 0;
     }
     if (command === 'doctor') {
@@ -479,6 +508,7 @@ export async function runCli(argv = process.argv.slice(2), {
         const adapters = runtimeAdapters();
         const plan = planFleetUp({
           repositoryRoot: repository.root, controlPlane: control, adapters, fresh: argv.includes('--fresh'),
+          only: optionValue(argv, '--only') === undefined ? undefined : commaList(optionValue(argv, '--only')),
         });
         if (argv.includes('--dry-run')) {
           print(plan, { json });
@@ -514,18 +544,40 @@ export async function runCli(argv = process.argv.slice(2), {
             code: 'APPROVAL_REQUIRED',
           });
         }
-        const runtimeStoppers = new Map([
-          ['claude', createClaudeAdapter({
-          runner: (executable, args) => spawn(executable, args, {
-            encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
-          }),
-          })],
-          ['codex', createCodexAdapter()],
-        ]);
+        const stoppers = runtimeStoppers(spawn);
         print(stopFleet({
           plan, controlPlane: control,
-          stopRuntime: (action) => runtimeStoppers.get(action.runtime)
-            .stopSession({ runtimeSessionId: action.runtimeSessionId }),
+          stopRuntime: (action) => stopThrough(stoppers, action),
+        }), { json });
+        return 0;
+      } finally {
+        control.close();
+      }
+    }
+    if (command === 'capture') {
+      print(withControlPlane(repository, env, (control) => captureFleet({
+        repositoryRoot: repository.root, controlPlane: control,
+      })), { json });
+      return 0;
+    }
+    if (command === 'detach') {
+      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      try {
+        const stoppers = runtimeStoppers(spawn);
+        const plan = planFleetDetach({
+          repositoryRoot: repository.root, controlPlane: control, adapters: stoppers,
+        });
+        if (argv.includes('--dry-run')) {
+          print(plan, { json });
+          return plan.canProceed ? 0 : 1;
+        }
+        if (!argv.includes('--yes')) {
+          throw new TorchError('Fleet detach stops runtime sessions while preserving organization and worktrees. Review --dry-run, then use --yes.', {
+            code: 'APPROVAL_REQUIRED',
+          });
+        }
+        print(detachFleet({
+          plan, controlPlane: control, stopRuntime: (action) => stopThrough(stoppers, action),
         }), { json });
         return 0;
       } finally {
@@ -536,8 +588,14 @@ export async function runCli(argv = process.argv.slice(2), {
       print(withControlPlane(repository, env, (control) => control.identity(optionValue(argv, '--area'))), { json });
       return 0;
     }
-    if (command === 'agents') {
+    if (command === 'agents' || command === 'list') {
       print(withControlPlane(repository, env, (control) => ({ agents: control.listAgents() })), { json });
+      return 0;
+    }
+    if (command === 'brief') {
+      print(withControlPlane(repository, env, (control) => createFleetBrief({
+        repositoryRoot: repository.root, controlPlane: control, areaId: optionValue(argv, '--area'),
+      })), { json });
       return 0;
     }
     if (command === 'agent') {

@@ -48,6 +48,18 @@ export function diagnoseProject({ repository, env = process.env }) {
     }
     const stateRoot = expectedStateRoot;
     if (!existsSync(stateRoot)) findings.push({ severity: 'error', code: 'LOCAL_STATE_MISSING', path: stateRoot });
+    const projectMetadataPath = join(stateRoot, 'project.json');
+    if (existsSync(projectMetadataPath)) {
+      try {
+        const metadata = parseJsonYaml(projectMetadataPath);
+        if (metadata.detachedAt) findings.push({
+          severity: 'info', code: 'FLEET_DETACHED', detachedAt: metadata.detachedAt,
+          recommendation: 'Run torch up after reviewing its dry-run plan to attach runtime integrations again.',
+        });
+      } catch (error) {
+        findings.push({ severity: 'error', code: 'LOCAL_STATE_METADATA_INVALID', message: error.message });
+      }
+    }
     const databasePath = join(stateRoot, 'state.db');
     if (existsSync(databasePath)) {
       try {

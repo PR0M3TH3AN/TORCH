@@ -109,6 +109,28 @@ test('SCN-domain-approval: installation rejects stale or unapproved organization
   assert.equal(existsSync(join(root, '.torch')), false);
 });
 
+test('SCN-install-runtime-selection: approved runtime choices are explicit and cover every identity', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const proposal = approvedProposal(repository);
+  assert.deepEqual(planInstall({ repository, proposal, env, runtimes: ['claude'] }).runtimes, ['claude']);
+  proposal.domains[0].runtime = 'codex';
+  assert.throws(
+    () => planInstall({ repository, proposal, env, runtimes: ['claude'] }),
+    (error) => error.code === 'INSTALL_RUNTIME_MISSING' && error.details.missing.includes('codex'),
+  );
+  assert.throws(
+    () => planInstall({ repository, proposal, env, runtimes: ['unknown'] }),
+    (error) => error.code === 'INSTALL_RUNTIME_INVALID',
+  );
+  const installed = installProject({
+    repository, proposal, env, projectId: 'runtime-selection', runtimes: ['claude', 'codex'],
+  });
+  assert.equal(installed.mutationPerformed, true);
+  const config = JSON.parse(readFileSync(join(root, '.torch', 'torch.yaml'), 'utf8'));
+  assert.deepEqual(Object.keys(config.runtimes).sort(), ['claude', 'codex', 'default']);
+});
+
 test('SCN-config-schema: installed configuration is strict, versioned, and migration-aware', () => {
   const { root, env } = fixture();
   const repository = inspectRepository(root);
