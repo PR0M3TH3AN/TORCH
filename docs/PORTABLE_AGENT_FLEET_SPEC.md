@@ -1607,7 +1607,7 @@ Implementation checkpoint (2026-09-27): a read-only COMBATRIG importer now
 maps the legacy dispatcher to the portable Session Manager and preserves the
 observed area prompts and hashes, branch/worktree names, checks, scarce browser
 capacity, schedule lifetimes, release authority, and backlog inventory. The
-captured report at `reports/combatrig-import-2026-09-27.json` found 33 areas
+captured report at `reports/audit/combatrig-import-2026-09-27.json` found 33 areas
 and 570 backlog records without modifying COMBATRIG. It remains intentionally
 pending: 56 blocking ownership/exclusion gaps affect all 33 areas. The exit
 gate remains open until those owner-reviewed boundaries are resolved and
