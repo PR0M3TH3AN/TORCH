@@ -54,11 +54,15 @@ test('SCN-architecture-decisions: every specification decision has an explicit a
   assert.match(decisions, /MCP over\s+stdio/);
   assert.match(decisions, /exact Git commit and the exact hash/);
   assert.match(decisions, /Project-specific coordination hierarchy[\s\S]*\*\*Status:\*\* gated/);
-  assert.match(decisions, /headcount alone must never trigger an added management layer/);
+  assert.match(decisions, /headcount\s+alone must never trigger an added management layer/);
   const spec = readFileSync(new URL('../../docs/PORTABLE_AGENT_FLEET_SPEC.md', import.meta.url), 'utf8');
   assert.match(spec, /Optional coordination hierarchy/);
   assert.match(spec, /existing single backlog remains the task ledger and queue/);
   assert.match(spec, /COMBATRIG example, not a default organization/);
+  assert.match(spec, /The growth pathway MUST be an explicit, durable lifecycle/);
+  assert.match(spec, /No repeated assessment should create or repeatedly resend the same proposal/);
+  assert.match(spec, /owner-facing organization proposal/);
+  assert.match(spec, /bounded pilot/);
 });
 
 test('SCN-console-readonly: HTTP console serves fixed assets and observes an installed fleet without mutation', async (context) => {

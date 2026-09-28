@@ -122,9 +122,10 @@ The current organization model has one required `session-manager` identity and
 flat implementation domains. TORCH's Fleet-evolution service can propose
 specialist additions, retirements, and domain-boundary changes, but it does not
 yet model Program Directors, Fleet Operations, multiple levels of domain leads,
-or role promotion as durable authority-bearing relationships. Do not represent
-that capability as implemented or encode COMBATRIG's proposed departments as
-the default organization.
+or role promotion as durable authority-bearing relationships. Its current
+read-only assessment does not yet produce owner-facing hierarchy proposals.
+Do not represent that capability as implemented or encode COMBATRIG's proposed
+departments as the default organization.
 
 The target design is an owner-approved, versioned organization graph generated
 from each project's repository and specification. It separates
@@ -137,16 +138,18 @@ program and domain documents are summaries, not task queues.
 
 Before implementation, a follow-up decision and acceptance scenarios must
 define role schemas and permissions, Session Manager compatibility, how the
-Session Architect proposes measured hierarchy changes, owner approval, safe
-promotion/reassignment, active-task and branch preservation, staged
-provisioning, startup/wind-down order, rollback, and hierarchy-aware doctor and
-console views. A proposed lead must own a concrete integrated outcome, and
-headcount alone must never trigger an added management layer.
+Fleet assessment detects sustained coordination pressure and deduplicates
+owner-facing proposals, how the Session Architect compares role changes with
+process or specialist changes, owner approval, safe promotion/reassignment,
+active-task and branch preservation, staged provisioning, pilot measures,
+startup/wind-down order, rollback, and hierarchy-aware doctor and console
+views. A proposed lead must own a concrete integrated outcome, and headcount
+alone must never trigger an added management layer.
 
 ## Consequences
 
 These decisions keep the first usable release local-first and provider-
 independent. They also make current boundaries explicit: repository moves,
-multi-machine control, non-Linux persistent launchers, and published update
-channels, and multi-level organization management are unavailable rather than
-silently approximated.
+multi-machine control, non-Linux persistent launchers, published update
+channels, and multi-level organization management remain unavailable rather
+than silently approximated.

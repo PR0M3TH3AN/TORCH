@@ -226,7 +226,7 @@ test_integrity_note:
     - id: SCN-architecture-decisions
       given: the eleven implementation decisions required by the portable Fleet specification
       when: the repository architecture ledger is inspected
-      then: implemented choices are accepted explicitly, unavailable capabilities including multi-level hierarchy management remain fail-closed gates, and COMBATRIG roles are not treated as TORCH defaults
+      then: implemented choices are accepted explicitly, unavailable capabilities including a measured, deduplicated hierarchy proposal lifecycle remain fail-closed gates, and COMBATRIG roles are not treated as TORCH defaults
     - id: SCN-console-readonly
       given: an installed Fleet without an initialized control-plane database
       when: the observation API and local HTTP console are requested

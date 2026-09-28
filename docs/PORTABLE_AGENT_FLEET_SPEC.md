@@ -882,6 +882,53 @@ limits, affected identities and relationships, expected context or delivery
 benefit, and the costs or risks of adding management. The change SHOULD begin
 as a bounded pilot with review criteria and a way to reverse it.
 
+The growth pathway MUST be an explicit, durable lifecycle:
+
+```text
+observe coordination evidence
+        ↓
+assess whether the cause is structural and recurring
+        ↓
+compare process changes, specialist changes, and coordination-role options
+        ↓
+submit an owner-facing organization proposal
+        ↓
+owner decision → migration plan → bounded pilot
+        ↓
+measure results → adopt, revise, or reverse
+```
+
+The Session Manager SHOULD run the read-only Fleet assessment at startup and
+when recurring coordination friction appears. TORCH SHOULD evaluate evidence
+over a project-configured observation window and require a sustained pattern
+or multiple independent signals; a single large task or temporary incident
+MUST NOT trigger a management proposal. Useful signals include repeated work
+across the same domains, coordination requests and handoffs, time waiting for
+cross-domain decisions, dependency-related blocked time, rework from late
+integration, and the dispatcher repeatedly switching among unrelated areas.
+Where measurements are unavailable, the proposal MUST label the evidence as
+qualitative rather than imply measured improvement.
+
+Before proposing a lead, the Session Manager MUST consider whether a clearer
+interface, direct peer agreement, backlog sequencing, a new implementation
+specialist, or promotion of an existing specialist would address the cause
+with less coordination cost. A hierarchy proposal MUST reach the owner through
+the project's single owner-facing coordination role and include:
+
+- the recurring problem and linked evidence, dates, and observation window;
+- the integrated outcome and candidate role responsibilities;
+- the domains or specialists it would coordinate and its explicit authority
+  limits;
+- alternatives considered, including no change and promotion of an existing
+  identity;
+- expected benefits, added context/meeting/routing cost, and pilot duration;
+- success and stop criteria, baseline measures, and the reversal plan.
+
+No repeated assessment should create or repeatedly resend the same proposal.
+TORCH SHOULD deduplicate against open organization proposals and present only
+material updates to the owner. The owner may approve, reject, or defer it; a
+recommendation alone never changes roles, authority, routing, or sessions.
+
 The Session Manager or a designated organization planner MAY propose a change,
 but MUST NOT activate it unilaterally. The owner approves the intended
 organization. Before activation, TORCH MUST produce a reviewable migration
@@ -892,6 +939,13 @@ recoverable throughout the change. Approval, tracked configuration update,
 session provisioning, and runtime launch are separate steps; runtime launch
 remains an explicit action. Existing specialist-to-specialist communication
 and backlog history MUST survive a hierarchy change.
+
+The pilot MUST start with the smallest affected group and retain a way to
+continue under the prior organization. At the end of its review window, the
+owner-facing role receives a comparison with the baseline using the proposal's
+success criteria. TORCH may recommend adoption, adjustment, or reversal; only
+the owner approves the next organizational change. A successful pilot is not
+permission to add unrelated layers automatically.
 
 On wind-down, coordination roles SHOULD record concise domain or program
 state, while Fleet Operations preserves session and restart state. This

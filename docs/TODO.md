@@ -32,9 +32,12 @@ passed 61/61 with lint, syntax checks, and diff hygiene also passing.
 ## Planned architecture follow-up
 
 - [ ] Implement ADR-011: versioned, project-specific organization graphs and
-  owner-approved hierarchy changes. Add a gated role schema and migration plan
-  before enabling Program Directors, Fleet Operations roles, domain leads, or
-  specialist promotion. Preserve direct peer communication, single backlog,
+  owner-approved hierarchy changes. Extend Fleet assessment to detect
+  sustained coordination pressure, distinguish role needs from process or
+  specialist changes, and create deduplicated proposals for the owner. Then add
+  a gated role schema, impact plan, promotion path, bounded pilot, success/stop
+  measures, and reversal before enabling Program Directors, Fleet Operations
+  roles, or domain leads. Preserve direct peer communication, single backlog,
   implementation ownership, active work, and explicit runtime launch. Do not
   copy COMBATRIG's proposed hierarchy as the default.
 
