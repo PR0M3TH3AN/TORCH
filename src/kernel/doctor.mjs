@@ -9,6 +9,7 @@ import { forgeStatus } from '../forge/service.mjs';
 import { classifyRecoverability } from '../canonical/local.mjs';
 import { createClaudeAdapter } from '../adapters/claude.mjs';
 import { createCodexAdapter } from '../adapters/codex.mjs';
+import { assessBacklogHealth, backlogObservedCommitDistance } from '../backlog/service.mjs';
 
 function parseJsonYaml(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -19,6 +20,7 @@ export function diagnoseProject({ repository, env = process.env, now = () => new
   const configPath = join(trackedRoot, 'torch.yaml');
   const manifestPath = join(trackedRoot, 'install-manifest.json');
   const findings = [];
+  let identityRows = [];
 
   if (!existsSync(configPath)) {
     return { status: 'not-installed', healthy: false, findings: [{ severity: 'error', code: 'CONFIG_MISSING', path: configPath }] };
@@ -78,10 +80,11 @@ export function diagnoseProject({ repository, env = process.env, now = () => new
           LEFT JOIN message_acks a ON a.message_id = m.id AND a.area_id = i.area_id
           WHERE a.message_id IS NULL
         `).get().count;
-        const present = database.prepare(`
+        identityRows = database.prepare(`
           SELECT area_id, state, runtime, runtime_session_id, heartbeat_at
-          FROM identities WHERE state != 'offline' ORDER BY area_id
+          FROM identities ORDER BY area_id
         `).all();
+        const present = identityRows.filter((identity) => identity.state !== 'offline');
         if (unacknowledged > 0) {
           findings.push({ severity: 'warning', code: 'MESSAGE_BACKLOG', unacknowledged });
         }
@@ -167,19 +170,33 @@ export function diagnoseProject({ repository, env = process.env, now = () => new
           try {
             const task = parseJsonYaml(join(backlogRoot, name));
             if (task.schema !== 'torch.dev/backlog-item/v1alpha1' || !task.id || !task.state) throw new Error('invalid task schema');
-            if (!['completed', 'cancelled'].includes(task.state)) {
-              tasks.push({ id: task.id, state: task.state, owner: task.owner, revision: task.revision });
-            }
+            tasks.push(task);
           } catch (error) {
             findings.push({
               severity: 'error', code: 'BACKLOG_TASK_INVALID', path: join(backlogRoot, name), message: error.message,
             });
           }
         }
-        if (tasks.length) findings.push({
-          severity: tasks.some((task) => task.state === 'blocked') ? 'warning' : 'info',
-          code: 'BACKLOG_ACTIVITY', tasks,
+        const activeTasks = tasks.filter((task) => !['completed', 'cancelled'].includes(task.state));
+        if (activeTasks.length) findings.push({
+          severity: activeTasks.some((task) => task.state === 'blocked') ? 'warning' : 'info',
+          code: 'BACKLOG_ACTIVITY', tasks: activeTasks.map((task) => ({
+            id: task.id, state: task.state, owner: task.owner, revision: task.revision,
+          })),
         });
+        try {
+          const roster = parseJsonYaml(join(trackedRoot, 'roster.yaml'));
+          const presenceByArea = new Map(identityRows.map((identity) => [identity.area_id, identity]));
+          const agents = (roster.areas ?? []).map((area) => ({
+            ...area, areaId: area.id, ...(presenceByArea.get(area.id) ?? { state: 'offline' }),
+          }));
+          findings.push(...assessBacklogHealth({
+            tasks, agents, now: now(),
+            commitDistance: (observedAt) => backlogObservedCommitDistance(repository.root, observedAt),
+          }).findings);
+        } catch (error) {
+          findings.push({ severity: 'error', code: 'BACKLOG_HEALTH_INVALID', message: error.message });
+        }
       }
     }
   }

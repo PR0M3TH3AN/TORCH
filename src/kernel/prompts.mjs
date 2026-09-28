@@ -52,11 +52,14 @@ export function renderDomainPrompt(domain) {
     '',
     '## Initial backlog',
     '',
-    '- No task is implied by session creation. Read the tracked backlog and accept only an explicit assignment.',
+    '- No task is implied by session creation. Call `torch_next_backlog_task` for this area before choosing work.',
+    '- A `resume` result is the only current assignment. Continue it before considering any `ready` item.',
+    '- A `ready` result is a candidate, not an assignment; request Session Manager assignment before implementation.',
+    '- An `idle` result is valid. Do not invent filler work.',
     '',
     '## First move',
     '',
-    'Query live identity and ownership, read the assigned backlog item and inbox, then report current repository evidence to the Session Manager.',
+    'Query live identity and ownership, call `torch_next_backlog_task`, read the inbox, then report current repository evidence to the Session Manager.',
     '',
   ].join('\n');
 }

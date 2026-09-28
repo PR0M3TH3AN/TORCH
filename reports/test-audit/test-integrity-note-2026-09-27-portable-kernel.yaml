@@ -85,8 +85,8 @@ test_integrity_note:
       then: each operation observes the same durable control-plane state
     - id: SCN-cli-backlog
       given: an installed fleet with Session Manager and worker worktrees
-      when: public CLI commands create, ready, assign, and list a tracked task
-      then: revisioned backlog state changes in the manager worktree and the assigned owner is visible through the same service
+      when: public CLI commands create, ready, assign, resolve next work, inspect health, and list a tracked task
+      then: revisioned backlog state changes in the manager worktree, next resumes the assignment before ready work, and health reports anomalies without mutation
     - id: SCN-cli-self-host
       given: two isolated candidate artifacts with complete named acceptance evidence
       when: an owner plans, builds, activates, upgrades, and rolls back through the CLI
@@ -121,8 +121,12 @@ test_integrity_note:
       then: provider-specific commands and runtime IDs remain separate, every create and resume launch receives identity-bound TORCH MCP access, the manager starts last, Codex completes idle, and only resident processes are stopped
     - id: SCN-backlog-lifecycle
       given: tracked tasks in the Session Manager worktree with domain owners, dependencies, and an integration lookup
-      when: tasks move through assignment, work, blocking, verification, readiness, landing, and completion
-      then: authority and optimistic revisions are enforced, concurrent locks fail closed, dependencies gate assignment, doctor observes active work, and completion requires the same landed commit
+      when: tasks move through assignment, restart-aware next-work resolution, work, blocking, verification, readiness, landing, and completion
+      then: authority and optimistic revisions are enforced, assignment locks prevent multiple active items per specialist, existing work outranks ready work, health is read-only, dependencies gate assignment, doctor observes active work, and completion requires the same landed commit
+    - id: SCN-backlog-health
+      given: a queue with duplicate active ownership, stale work, resolved blocked dependencies, retired areas, old observation commits, and missing specialist sessions
+      when: backlog health inspects the queue
+      then: every unusual condition is reported with no task mutation or automatic repair
     - id: SCN-candidate-isolation
       given: an inactive candidate in a namespace separate from project and stable runtime state
       when: acceptance is incomplete, complete, or the accepted files are later modified
@@ -309,6 +313,9 @@ test_integrity_note:
       - messages or handoffs silently granting authority
       - workers creating tasks, changing owners, or completing work without a landed matching commit
       - concurrent backlog writers silently overwriting a newer task revision
+      - restarted specialists skipping assigned work for a newer ready item
+      - different task files bypassing the one-active-assignment invariant
+      - backlog health silently rewriting or reassigning anomalous work
       - management backlog files dirtying canonical main instead of the manager worktree
       - repository content redirecting machine-local database writes
       - MCP and CLI drifting onto separate business logic

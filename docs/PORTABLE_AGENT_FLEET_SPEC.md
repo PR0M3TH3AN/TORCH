@@ -1022,7 +1022,27 @@ cancelled
 ```
 
 Items SHOULD identify owner, dependencies, affected domains, acceptance
-criteria, evidence, and current commit when applicable.
+criteria, evidence, the commit where the issue was observed, and current commit
+when applicable.
+
+The queue is singular across Program Director, domain lead, Session Manager,
+and specialist views. Management layers sequence and route this queue; they do
+not create parallel backlogs. For a specialist, next-work resolution MUST:
+
+1. return that specialist's existing active assignment before any ready item;
+2. otherwise return the first eligible ready item in deterministic queue order;
+3. otherwise report the area idle without inventing work.
+
+Assignment MUST fail closed when the specialist already owns another active
+item. This invariant is serialized across different task files, not merely
+protected by per-task revision locks. Blocked work is durable but not runnable;
+it may be reconsidered explicitly when its dependency evidence changes.
+
+Backlog health is read-only and reports exceptional conditions, including
+multiple active assignments, stale assigned work, resolved dependencies on a
+blocked item, missing or retired areas, old observation commits, ready work
+without a live eligible specialist, and active work whose runtime session is
+missing. Health never rewrites or reassigns work automatically.
 
 Owner decisions affecting future work MUST be recorded durably. Chat messages
 alone are insufficient. Project source, tests, approved configuration, and
@@ -1030,11 +1050,12 @@ accepted decision records outrank summaries and generated prompts.
 
 Implementation checkpoint (2026-09-27): backlog items are revisioned JSON
 records in the Session Manager's tracked worktree. The service and equivalent
-CLI/MCP operations enforce transition, owner, dependency, and concurrent-write
-rules; publish assignments and blockers through durable messaging; surface
-active work in doctor; and require a landed integration record at the same
-commit before completion. Keeping management records in the manager worktree
-prevents backlog activity from dirtying canonical main.
+CLI/MCP operations enforce transition, owner, dependency, one-active-item, and
+concurrent-write rules; resolve assigned work before ready work; publish
+assignments and blockers through durable messaging; surface active work and
+health anomalies in doctor; and require a landed integration record at the
+same commit before completion. Keeping management records in the manager
+worktree prevents backlog activity from dirtying canonical main.
 
 ## 18. Checks and evidence
 

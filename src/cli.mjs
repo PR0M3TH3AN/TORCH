@@ -76,8 +76,10 @@ Usage:
   torch coordinate --from <id> --body <text> [--with <id,id>] [--task <id>] [--path <path>] [--json]
   torch handoff --from <id> [--to <id>] (--path <path> | --task <id>) --reason <text> [--json]
   torch backlog list [--state <state>] [--owner <id>] [--json]
+  torch backlog next --area <id> [--json]
+  torch backlog health [--stale-days <n>] [--stale-observed-commits <n>] [--json]
   torch backlog get --task <id> [--json]
-  torch backlog create --area <id> --title <text> --description <text> --accept <text,...> [--priority <priority>] [--domains <id,...>] [--depends <task,...>] [--json]
+  torch backlog create --area <id> --title <text> --description <text> --accept <text,...> [--priority <priority>] [--domains <id,...>] [--depends <task,...>] [--observed-at <sha>] [--json]
   torch backlog transition --task <id> --area <id> --state <state> --revision <n> [--owner <id>] [--evidence <text,...>] [--commit <sha>] [--integration <id>] [--reason <text>] [--note <text>] [--json]
   torch checks list [--json]
   torch checks receipts [--commit <sha>] [--id <check>] [--area <id>] [--json]
@@ -813,6 +815,15 @@ export async function runCli(argv = process.argv.slice(2), {
         if (operation === 'list') print({ tasks: backlog.list({
           state: optionValue(argv, '--state'), owner: optionValue(argv, '--owner'),
         }) }, { json });
+        else if (operation === 'next') print(backlog.next({
+          areaId: optionValue(argv, '--area'),
+        }), { json });
+        else if (operation === 'health') print(backlog.health({
+          staleAfterDays: optionValue(argv, '--stale-days') === undefined
+            ? 7 : Number(optionValue(argv, '--stale-days')),
+          staleObservedCommits: optionValue(argv, '--stale-observed-commits') === undefined
+            ? 50 : Number(optionValue(argv, '--stale-observed-commits')),
+        }), { json });
         else if (operation === 'get') print(backlog.get(optionValue(argv, '--task')), { json });
         else if (operation === 'create') print(backlog.create({
           actorId: optionValue(argv, '--area'), title: optionValue(argv, '--title'),
@@ -820,6 +831,7 @@ export async function runCli(argv = process.argv.slice(2), {
           acceptanceCriteria: commaList(optionValue(argv, '--accept')),
           affectedDomains: commaList(optionValue(argv, '--domains')),
           dependencies: commaList(optionValue(argv, '--depends')),
+          observedAt: optionValue(argv, '--observed-at'),
         }), { json });
         else if (operation === 'transition') print(backlog.transition({
           taskId: optionValue(argv, '--task'), actorId: optionValue(argv, '--area'),

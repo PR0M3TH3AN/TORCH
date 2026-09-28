@@ -274,6 +274,17 @@ test('SCN-cli-backlog: public commands create, transition, assign, and list trac
   }
   assert.equal(task.state, 'assigned');
   assert.equal(task.owner, proposal.domains[0].id);
+  const next = JSON.parse(run(root, [
+    'backlog', 'next', '--area', proposal.domains[0].id, '--json',
+  ]).stdout);
+  assert.equal(next.disposition, 'resume');
+  assert.equal(next.task.id, task.id);
+  assert.equal(next.mutationPerformed, false);
+  const health = JSON.parse(run(root, [
+    'backlog', 'health', '--stale-days', '0', '--json',
+  ]).stdout);
+  assert.equal(health.mutationPerformed, false);
+  assert.equal(health.findings.some((finding) => finding.code === 'BACKLOG_ASSIGNED_STALE'), true);
   const listed = JSON.parse(run(root, ['backlog', 'list', '--state', 'assigned', '--json']).stdout);
   assert.equal(listed.tasks[0].id, task.id);
 });

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import {
   closeSync, existsSync, openSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync, writeSync,
 } from 'node:fs';
@@ -25,6 +26,7 @@ const TRANSITIONS = new Map([
 
 const PRIORITIES = new Set(['urgent', 'high', 'normal', 'low']);
 const WORKER_TRANSITIONS = new Set(['in_progress', 'blocked', 'verification', 'ready_to_integrate']);
+const ACTIVE_ASSIGNMENT_STATES = new Set(['assigned', 'in_progress', 'verification', 'ready_to_integrate']);
 
 function requiredText(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -50,6 +52,137 @@ function taskId(value) {
     throw new TorchError(`Invalid backlog task ID: ${id}`, { code: 'INVALID_BACKLOG_TASK_ID' });
   }
   return id;
+}
+
+function optionalObservedAt(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const observedAt = requiredText(value, 'observedAt');
+  if (!/^[0-9a-f]{7,64}$/i.test(observedAt)) {
+    throw new TorchError('observedAt must be a Git commit SHA', {
+      code: 'INVALID_BACKLOG_INPUT', details: { field: 'observedAt' },
+    });
+  }
+  return observedAt;
+}
+
+function headSha(repositoryRoot) {
+  try {
+    return execFileSync('git', ['-C', repositoryRoot, 'rev-parse', '--short=12', 'HEAD'], {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export function backlogObservedCommitDistance(repositoryRoot, observedAt) {
+  try {
+    const value = execFileSync('git', ['-C', repositoryRoot, 'rev-list', '--count', `${observedAt}..HEAD`], {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return Number.isInteger(Number(value)) ? Number(value) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function assessBacklogHealth({
+  tasks, agents = [], now = new Date(), staleAfterDays = 7, staleObservedCommits = 50,
+  commitDistance = () => null,
+} = {}) {
+  const assessedAt = now instanceof Date ? now : new Date(now);
+  if (!Number.isFinite(assessedAt.getTime())) {
+    throw new TorchError('Backlog health requires a valid assessment time', { code: 'INVALID_BACKLOG_INPUT' });
+  }
+  if (!Number.isInteger(staleAfterDays) || staleAfterDays < 0
+    || !Number.isInteger(staleObservedCommits) || staleObservedCommits < 0) {
+    throw new TorchError('Backlog health thresholds must be non-negative integers', {
+      code: 'INVALID_BACKLOG_INPUT',
+    });
+  }
+  const items = Array.isArray(tasks) ? tasks : [];
+  const agentById = new Map(agents.map((agent) => [agent.areaId ?? agent.area_id, agent]));
+  const taskById = new Map(items.map((task) => [task.id, task]));
+  const findings = [];
+  const activeByOwner = new Map();
+
+  for (const task of items) {
+    if (task.owner && ACTIVE_ASSIGNMENT_STATES.has(task.state)) {
+      const owned = activeByOwner.get(task.owner) ?? [];
+      owned.push(task);
+      activeByOwner.set(task.owner, owned);
+    }
+  }
+  for (const [owner, owned] of activeByOwner) {
+    if (owned.length > 1) findings.push({
+      severity: 'error', code: 'BACKLOG_MULTIPLE_ACTIVE_ASSIGNMENTS', owner,
+      tasks: owned.map((task) => ({ id: task.id, state: task.state })),
+      recommendation: 'Keep one active assignment for this specialist and deliberately requeue the others.',
+    });
+  }
+
+  for (const task of items) {
+    const referencedAreas = [...new Set([task.owner, ...(task.affectedDomains ?? [])].filter(Boolean))];
+    const unknownAreas = referencedAreas.filter((areaId) => !agentById.has(areaId));
+    if (unknownAreas.length) findings.push({
+      severity: 'error', code: 'BACKLOG_AREA_UNKNOWN', taskId: task.id, areas: unknownAreas,
+      recommendation: 'Route the task to a defined Fleet identity or restore the retired identity before assignment.',
+    });
+
+    if (task.state === 'assigned') {
+      const updatedAt = Date.parse(task.updatedAt);
+      const ageDays = Number.isFinite(updatedAt)
+        ? Math.floor(Math.max(0, assessedAt.getTime() - updatedAt) / 86_400_000) : null;
+      if (ageDays === null || ageDays >= staleAfterDays) findings.push({
+        severity: 'warning', code: 'BACKLOG_ASSIGNED_STALE', taskId: task.id, owner: task.owner, ageDays,
+        recommendation: 'Confirm the specialist is still working this assignment before routing more work.',
+      });
+    }
+
+    if (task.owner && ACTIVE_ASSIGNMENT_STATES.has(task.state)) {
+      const agent = agentById.get(task.owner);
+      if (agent && (agent.state === 'offline' || !agent.runtimeSessionId && !agent.runtime_session_id)) findings.push({
+        severity: 'warning', code: 'BACKLOG_ASSIGNED_SESSION_MISSING', taskId: task.id, owner: task.owner,
+        recommendation: 'Resume the owning specialist or explicitly requeue the task; do not silently assign a second item.',
+      });
+    }
+
+    if (task.state === 'blocked' && (task.dependencies ?? []).length > 0
+      && task.dependencies.every((dependency) => taskById.get(dependency)?.state === 'completed')) {
+      findings.push({
+        severity: 'warning', code: 'BACKLOG_BLOCKED_DEPENDENCIES_RESOLVED', taskId: task.id,
+        dependencies: task.dependencies,
+        recommendation: 'Re-check the blocker; all recorded dependencies are now complete.',
+      });
+    }
+
+    if (task.state === 'ready' && (task.affectedDomains ?? []).length > 0) {
+      const defined = task.affectedDomains.map((areaId) => agentById.get(areaId)).filter(Boolean);
+      if (defined.length > 0 && defined.every((agent) => agent.state === 'offline')) findings.push({
+        severity: 'warning', code: 'BACKLOG_READY_NO_LIVE_SPECIALIST', taskId: task.id,
+        areas: defined.map((agent) => agent.areaId ?? agent.area_id),
+        recommendation: 'Start or restore an eligible specialist when this ready work should be dispatched.',
+      });
+    }
+
+    if (task.observedAt) {
+      const distance = commitDistance(task.observedAt);
+      if (distance === null) findings.push({
+        severity: 'warning', code: 'BACKLOG_OBSERVED_COMMIT_MISSING', taskId: task.id, observedAt: task.observedAt,
+        recommendation: 'Re-observe the task against a reachable commit before implementation.',
+      });
+      else if (distance >= staleObservedCommits) findings.push({
+        severity: 'warning', code: 'BACKLOG_OBSERVED_COMMIT_STALE', taskId: task.id,
+        observedAt: task.observedAt, commitsBehind: distance,
+        recommendation: 'Verify the issue still reproduces before changing code.',
+      });
+    }
+  }
+
+  return {
+    schema: 'torch.dev/backlog-health/v1alpha1', assessedAt: assessedAt.toISOString(),
+    healthy: findings.length === 0, findings, mutationPerformed: false,
+  };
 }
 
 function parseTask(path) {
@@ -131,6 +264,26 @@ export class BacklogService {
     }
   }
 
+  #withAssignmentLock(callback) {
+    const path = join(this.controlPlane.stateRoot, 'locks', 'backlog-assignment.lock');
+    let descriptor;
+    try {
+      descriptor = openSync(path, 'wx', 0o600);
+      writeSync(descriptor, `${JSON.stringify({ createdAt: this.clock().toISOString() })}\n`);
+    } catch (error) {
+      if (error.code === 'EEXIST') {
+        throw new TorchError('Another backlog assignment is already being evaluated', {
+          code: 'BACKLOG_ASSIGNMENT_LOCKED', details: { lockPath: path },
+        });
+      }
+      throw error;
+    }
+    try { return callback(); } finally {
+      closeSync(descriptor);
+      unlinkSync(path);
+    }
+  }
+
   get(id) {
     const path = this.#path(id);
     if (!existsSync(path)) throw new TorchError(`Unknown backlog task: ${id}`, { code: 'BACKLOG_TASK_NOT_FOUND' });
@@ -149,9 +302,47 @@ export class BacklogService {
       .sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id));
   }
 
+  next({ areaId } = {}) {
+    const area = this.controlPlane.assertIdentity(areaId);
+    if (area === 'session-manager') {
+      throw new TorchError('Session Manager does not consume the specialist implementation queue', {
+        code: 'BACKLOG_OWNER_INVALID', details: { areaId: area },
+      });
+    }
+    const tasks = this.list();
+    const active = tasks.filter((task) => task.owner === area && ACTIVE_ASSIGNMENT_STATES.has(task.state));
+    if (active.length > 1) {
+      throw new TorchError(`${area} has multiple active backlog assignments`, {
+        code: 'BACKLOG_MULTIPLE_ACTIVE_ASSIGNMENTS',
+        details: { areaId: area, tasks: active.map((task) => ({ id: task.id, state: task.state })) },
+      });
+    }
+    if (active.length === 1) {
+      return {
+        schema: 'torch.dev/backlog-next/v1alpha1', areaId: area, disposition: 'resume',
+        task: active[0], mutationPerformed: false,
+      };
+    }
+    const ready = tasks.find((task) => task.state === 'ready'
+      && (!task.affectedDomains.length || task.affectedDomains.includes(area))
+      && task.dependencies.every((dependency) => tasks.find((item) => item.id === dependency)?.state === 'completed'));
+    return {
+      schema: 'torch.dev/backlog-next/v1alpha1', areaId: area,
+      disposition: ready ? 'ready' : 'idle', task: ready ?? null, mutationPerformed: false,
+    };
+  }
+
+  health({ staleAfterDays = 7, staleObservedCommits = 50, now = this.clock() } = {}) {
+    return assessBacklogHealth({
+      tasks: this.list(), agents: this.controlPlane.listAgents(), now,
+      staleAfterDays, staleObservedCommits,
+      commitDistance: (observedAt) => backlogObservedCommitDistance(this.repositoryRoot, observedAt),
+    });
+  }
+
   create({
     actorId, title, description, priority = 'normal', affectedDomains = [],
-    dependencies = [], acceptanceCriteria,
+    dependencies = [], acceptanceCriteria, observedAt,
   } = {}) {
     this.#assertMutable();
     const actor = this.controlPlane.assertIdentity(actorId);
@@ -175,6 +366,7 @@ export class BacklogService {
       state: 'proposed', owner: null, affectedDomains: domains, dependencies: dependencyIds,
       acceptanceCriteria: textList(acceptanceCriteria, 'acceptanceCriteria', { required: true }),
       evidence: [], commit: null, integrationRequest: null, blockedReason: null,
+      observedAt: optionalObservedAt(observedAt) ?? headSha(this.repositoryRoot),
       createdAt: now, updatedAt: now, revision: 1,
       history: [{ from: null, to: 'proposed', actorId: actor, at: now, note: 'Task created.' }],
     };
@@ -190,7 +382,11 @@ export class BacklogService {
 
   transition(input = {}) {
     this.#assertMutable();
-    return this.#withTaskLock(input.taskId, () => this.#applyTransition(input));
+    return this.#withTaskLock(input.taskId, () => (
+      input.to === 'assigned'
+        ? this.#withAssignmentLock(() => this.#applyTransition(input))
+        : this.#applyTransition(input)
+    ));
   }
 
   #applyTransition({
@@ -242,6 +438,14 @@ export class BacklogService {
             code: 'BACKLOG_DEPENDENCY_INCOMPLETE', details: { dependency },
           });
         }
+      }
+      const existing = this.list().find((candidate) => candidate.id !== task.id
+        && candidate.owner === assigned && ACTIVE_ASSIGNMENT_STATES.has(candidate.state));
+      if (existing) {
+        throw new TorchError(`${assigned} already has active backlog work`, {
+          code: 'BACKLOG_OWNER_BUSY',
+          details: { owner: assigned, taskId: existing.id, state: existing.state },
+        });
       }
     }
     const nextEvidence = [...new Set([...task.evidence, ...textList(evidence, 'evidence')])];

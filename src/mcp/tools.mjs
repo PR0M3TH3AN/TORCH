@@ -29,6 +29,8 @@ export const TORCH_CORE_MCP_TOOL_NAMES = Object.freeze([
 export const TORCH_MCP_TOOL_NAMES = Object.freeze([
   ...TORCH_CORE_MCP_TOOL_NAMES,
   'torch_list_backlog',
+  'torch_next_backlog_task',
+  'torch_backlog_health',
   'torch_get_backlog_task',
   'torch_create_backlog_task',
   'torch_transition_backlog_task',
@@ -199,6 +201,29 @@ export function createTorchToolset(controlPlane, {
       schema: { state: z.string().min(1).optional(), owner: z.string().min(1).optional() },
       invoke: (input) => ({ tasks: backlogService.list(input) }),
     });
+    tools.set('torch_next_backlog_task', {
+      description: 'Resume this specialist\'s active assignment before returning its first eligible ready task. Read-only.',
+      schema: { area_id: z.string().min(1).optional() },
+      invoke: ({ area_id: requestedArea }) => {
+        const bound = controlPlane.assertIdentity(actorId);
+        const areaId = requestedArea ?? bound;
+        if (bound !== 'session-manager' && areaId !== bound) {
+          throw new TorchError('A specialist may only inspect its own next backlog item', {
+            code: 'BACKLOG_AUTHORITY_REQUIRED', details: { actorId: bound, areaId },
+          });
+        }
+        return backlogService.next({ areaId });
+      },
+    });
+    tools.set('torch_backlog_health', {
+      description: 'Report unusual backlog conditions without changing any task.',
+      schema: {
+        stale_after_days: z.number().int().min(0).optional(),
+        stale_observed_commits: z.number().int().min(0).optional(),
+      },
+      invoke: ({ stale_after_days: staleAfterDays, stale_observed_commits: staleObservedCommits }) =>
+        backlogService.health({ staleAfterDays, staleObservedCommits }),
+    });
     tools.set('torch_get_backlog_task', {
       description: 'Read one durable tracked backlog task and its transition history.',
       schema: { task_id: z.string().min(1) },
@@ -212,12 +237,13 @@ export function createTorchToolset(controlPlane, {
         affected_domains: z.array(z.string().min(1)).optional(),
         dependencies: z.array(z.string().min(1)).optional(),
         acceptance_criteria: z.array(z.string().min(1)).min(1),
+        observed_at: z.string().min(1).optional(),
       },
       invoke: ({
         actor_id: actorIdClaim, affected_domains: affectedDomains,
-        acceptance_criteria: acceptanceCriteria, ...input
+        acceptance_criteria: acceptanceCriteria, observed_at: observedAt, ...input
       }) => backlogService.create({
-        ...input, affectedDomains, acceptanceCriteria,
+        ...input, affectedDomains, acceptanceCriteria, observedAt,
         actorId: claimedIdentity(controlPlane, actorId, actorIdClaim, 'actor_id'),
       }),
     });
