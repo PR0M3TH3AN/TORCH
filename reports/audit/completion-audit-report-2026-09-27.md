@@ -3,43 +3,41 @@
 Date: 2026-09-27  
 Branch: `rewrite/portable-agent-fleet`  
 Audited specification: `docs/PORTABLE_AGENT_FLEET_SPEC.md`  
-Latest audited repository commit: `2690d6e`
+Latest audited implementation commit: `d8ab841`
 
 ## Verdict
 
 TORCH has a coherent, scenario-tested local implementation of the portable
 kernel, project-specific fleet design, persistent provider-independent control
-plane, Claude/Codex adapter scaffolding, exact-commit verification, resources, native
+plane, Claude/Codex adapters, exact-commit verification, resources, native
 integration, safe convergence, schedules, context-locality telemetry,
 self-host candidate mechanics, COMBATRIG import, dynamic domain creation,
 retirement and boundary proposals, optional forge migration, a separately
 authorized delivery lifecycle, standalone package qualification, the public
 product surface, and the local Fleet Console.
 
-It is not yet a qualified first usable release. A 2026-09-27 installed-CLI
-contract audit found launch-plan defects that must be repaired before any live
-provider qualification. The remaining release gates are:
+It is not yet a qualified first usable release. The remaining release gates
+require owner-authorized operational qualification:
 
-1. repair and scenario-test the Claude/Codex launch, capture, and resume plans;
-2. owner-authorized installation and live qualification of the implemented
+1. owner-authorized installation and live qualification of the implemented
    persistent user-systemd schedule launcher;
-3. owner-authorized live Claude/Codex coordination and resume evidence;
-4. an installed stable TORCH managing this source checkout;
-5. owner resolution of COMBATRIG's 56 blocking ownership/exclusion gaps,
+2. owner-authorized live Claude/Codex coordination and resume evidence;
+3. an installed stable TORCH managing this source checkout;
+4. owner resolution of COMBATRIG's 56 blocking ownership/exclusion gaps,
    followed by an authorized cutover trial;
-6. package publication and public website deployment.
+5. package publication and public website deployment.
 
 Passing local tests do not close any live/provider/install/deployment gate.
 
 ## Evidence baseline
 
-- `npm test`: **61/61 PASS** against the tree committed as `218ce3f`.
+- `npm test`: **61/61 PASS** against the tree committed as `d8ab841`.
 - `npm run lint`: **PASS**.
 - `npm run check`: **PASS**.
 - `git diff --check`: **PASS**.
-- Focused fleet-evolution and lifecycle scenarios: **7/7 PASS** on the final
-  working tree, including manager proposal, owner approval, activation,
-  retirement, mixed-runtime planning, and durable resume behavior.
+- Focused bootstrap, adapter, and lifecycle scenarios: **8/8 PASS**, including
+  installed-contract command planning, provider-specific ID capture,
+  mixed-runtime planning, and durable resume behavior.
 - No live AI provider was called.
 - Headless Chromium rendered the public surface at desktop and iPhone 13
   viewports. The refined mobile page had zero horizontal overflow; keyboard tab
@@ -61,9 +59,9 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 0. Preserve and specify | Legacy branches `legacy/nostr-torch` and `legacy/development-network-v2`; rewrite branch; canonical spec and scenario inventory | Implemented locally | Owner product-boundary approval is represented by continuing this rewrite; no remote push was performed. |
 | 1. Portable kernel | `src/kernel/`; strict `torch.dev/v1alpha1` validation in `src/kernel/config.mjs`; install/doctor/uninstall/worktree scenarios; ignored tracked state is refused before mutation; ownership-safe overlays preserve unrelated pre-existing `.torch` history; ordinary uninstall safely winds down sessions and removes only unchanged manifest-owned launchers while preserving organization/history; confirmed purge validates local identity and refuses active or unowned state | Implemented locally | A future schema needs an actual migration transform; unknown versions currently fail closed with an explicit migration blocker. |
 | 2. Project decomposition | Repo/spec analysis, architecture graph, pending proposal, Session Architect brief and guarded Claude/Codex planner; one shared renderer gives initial and later-added domains the complete approved ownership, checks, authority, invariants, backlog, and first-move contract; `SCN-domain-collision`, `SCN-spec-fleet-design`, `SCN-ai-fleet-bootstrap`, `SCN-ai-fleet-planning`, `SCN-bootstrap-acceptance` | Implemented locally | Live runtime qualification remains in Stages 3 and 5. |
-| 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; provider session plus managed-worktree ownership verification before stop; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Adapter repair required | Remove the invalid preassigned `--session-id` assumption for `--bg`, capture Claude's manager-assigned background ID, strengthen the scenario, then run a bounded live Claude multi-domain task with owner-approved provider quota. |
+| 3. Claude reference fleet | Control plane, MCP, Claude adapter, identity/presence/messages, manager-assigned background-ID capture, down/resume; wind-down refusal for active work, Git operations, leases, checks/measurements, and landing; provider session plus managed-worktree ownership verification before stop; durable final worker status and tracked resume brief; virtualized lifecycle scenarios | Implemented virtually and aligned to installed CLI | Run a bounded live Claude multi-domain task and resume it with owner-approved provider quota. |
 | 4. Verification and integration | Exact-SHA checks, FIFO resources, guarded convergence, integration queue, main protection, local bare canonical, reversible forge attachment, delivery-state separation, and read-only doctor evidence for drift count/age, Git operations, runtime availability, and recoverability; `SCN-exact-sha-checks`, `SCN-resource-fifo`, `SCN-safe-convergence`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-forge-migration`, `SCN-delivery-lifecycle`, `SCN-bootstrap-acceptance`, `SCN-worktree-bootstrap` | Implemented locally | Real release/deployment adapters and live receipts remain release-scoped operational qualification. |
-| 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP intent, MCP/CLI parity, runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Adapter repair required | Correct Codex option compatibility and resume ordering, correct Claude background-ID capture, add installed-contract scenarios, rerun all gates, then run one authorized live mixed-provider task. |
+| 5. Runtime portability | Claude and Codex capability adapters, mixed plans, invocation-scoped identity-bound MCP on create/resume without global config mutation, parse-compatible safety and resume option ordering, provider-specific runtime-ID capture and durable fallback; `SCN-mixed-runtime`, `SCN-mcp-stdio` | Implemented virtually and aligned to installed CLIs | Run one authorized live mixed Claude/Codex shared-boundary task. |
 | 6. Self-hosting | Clean-commit bounded candidate staging, exclusion of arbitrary untracked files, internal dependency-link validation, mode-aware tree hashing, acceptance receipts, side-by-side versions, conflict-safe stable launcher, atomic activation/reconciliation/rollback; self-host scenarios plus an isolated real-checkout build/activation of `6740f33` | Mechanics implemented and temporarily qualified | Install a stable TORCH in the user location and use it to manage/test/promote a later candidate of this checkout. Persistent installation approval required. |
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
 | 8. Product surface | Redesigned site and dispatch-board story; installed-launcher onboarding; responsive qualification ledger; keyboard-operable command tabs; local read-only Console covering ownership graph, worktree drift, recoverability, acknowledgements, checks, integration, delivery, resources, schedules, decisions, provider health, and context evidence; desktop/mobile Chromium rendering with zero mobile overflow and exercised interactions; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented and visually qualified | Registry publication and public deployment remain open. |
@@ -153,57 +151,51 @@ no real artifact was published and nothing was deployed.
 
 Read-only/local parser probes were run against `codex-cli 0.157.1` and Claude
 Code `2.1.281`. No model turn completed and no provider result was requested.
-The audit changed the next engineering action:
+The audit found two defects and `d8ab841` corrected both:
 
 - Codex accepts `--approve-for-me`, and that option already selects the
-  workspace-write sandbox. Combining it with `--sandbox workspace-write`, as
-  the current create/resume plans do, is rejected as mutually exclusive.
+  workspace-write sandbox. TORCH no longer combines it with the mutually
+  exclusive `--sandbox workspace-write` option.
 - `codex exec resume` does not accept `--cd`, `--sandbox`, or
   `--approve-for-me` after the `resume` subcommand. Repository, safety, and MCP
-  options must precede `exec`; resume-specific options follow `resume`.
+  options must precede `exec`; TORCH now places resume-specific options after
+  `resume`.
 - A parser-only probe confirmed that
   `codex --cd <worktree> --approve-for-me <MCP config> exec resume --json ...`
-  reaches repository trust validation, while the current ordering fails during
-  argument parsing.
+  reaches repository trust validation, while the rejected pre-fix ordering
+  fails during argument parsing.
 - Claude supports `--append-system-prompt-file`, `--bg`, `agents --json`, and
   `stop <id>`. However, Claude explicitly warns that `--bg` manages the
-  session ID and ignores `--session-id`. The current adapter preassigns and
-  records that ignored UUID instead of capturing the background ID printed by
-  Claude.
+  session ID and ignores `--session-id`. TORCH now omits that flag for
+  background creation and accepts only the sole safe ID printed by Claude.
 - A sandboxed Claude background-manager startup probe failed before a session
   launched because it could not bind its local control socket. This is not live
   provider qualification and did not justify retrying outside the sandbox.
 
-The existing virtualized adapter tests mirror the incorrect argument plans, so
-their green result is not sufficient evidence. Correct behavior requires a
-strict test correction: assert parse-compatible command shape and
-manager-assigned runtime-ID capture rather than the obsolete synthetic UUID
-behavior.
+The virtualized adapter, bootstrap, and lifecycle tests were corrected under
+the Test Integrity protocol. They now reject the obsolete command shapes,
+ambiguous Claude output, and synthetic background UUID behavior. This proves
+local command construction, not a completed provider turn.
 
 ## Approval-bound qualification plan
 
 These actions are deliberately not performed by the local build:
 
-1. **Local adapter repair (no quota):** correct the installed CLI contracts and
-   pass focused plus full scenario gates before attempting any provider call.
-2. **Provider quota:** run one bounded Session Architect call, then a small live
+1. **Provider quota:** run one bounded Session Architect call, then a small live
    Claude/Codex fleet task with a fixed budget and no deployment authority.
-3. **Persistent installation:** install the current accepted TORCH version
+2. **Persistent installation:** install the current accepted TORCH version
    under user-local versioned state and let it manage this repository from
    outside the source tree.
-4. **COMBATRIG mutation:** review the generated ownership gaps before creating
+3. **COMBATRIG mutation:** review the generated ownership gaps before creating
    any `.torch` state or worktrees there.
-5. **System scheduler:** install/enable the implemented user service/timer only
+4. **System scheduler:** install/enable the implemented user service/timer only
    with explicit approval, then verify its first real dispatch and reversal.
-6. **Remote/public state:** push branches, publish a package, or deploy the site
+5. **Remote/public state:** push branches, publish a package, or deploy the site
    only under explicit release scope.
 
 ## Next qualification order
 
-1. repair the Claude/Codex plans and add strict installed-contract scenarios;
-2. rerun focused adapter/lifecycle tests, then the complete test/lint/check and
-   diff gates;
-3. owner-authorized bounded Session Architect and live mixed-provider run;
-4. owner-authorized stable self-host and system-scheduler qualification;
-5. owner review of COMBATRIG gaps and a separately authorized cutover trial;
-6. release-scoped package publication and public website deployment.
+1. owner-authorized bounded Session Architect and live mixed-provider run;
+2. owner-authorized stable self-host and system-scheduler qualification;
+3. owner review of COMBATRIG gaps and a separately authorized cutover trial;
+4. release-scoped package publication and public website deployment.

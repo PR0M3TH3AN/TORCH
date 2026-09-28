@@ -6,25 +6,28 @@ state and evidence are in
 
 ## Next safe implementation task
 
-- [ ] Repair the Codex adapter for `codex-cli 0.157.1`:
+- [x] Repair the Codex adapter for `codex-cli 0.157.1`:
   - do not combine `--sandbox workspace-write` with `--approve-for-me`;
   - put repository, approval, and MCP options before `exec` when resuming;
   - put resume-specific options after `exec resume`;
   - retain the worktree as the subprocess working directory and explicit
     command scope.
-- [ ] Repair the Claude adapter for Claude Code `2.1.281`:
+- [x] Repair the Claude adapter for Claude Code `2.1.281`:
   - do not supply or persist a synthetic `--session-id` with `--bg`;
   - mark background creation as requiring runtime-ID capture;
   - parse and validate the manager-assigned ID printed by Claude;
   - retain ownership verification before any stop operation.
-- [ ] Correct `SCN-claude-adapter`, `SCN-codex-adapter`, and
+- [x] Correct `SCN-claude-adapter`, `SCN-codex-adapter`, and
   `SCN-mixed-runtime` with equally strict boundary assertions. Add the required
   Test Integrity Note documenting this as a spec correction plus stronger
   installed-contract coverage.
-- [ ] Run focused adapter/lifecycle scenarios outside the sandbox where their
+- [x] Run focused adapter/lifecycle scenarios outside the sandbox where their
   temporary Git worktrees require it, followed by `npm test`, `npm run lint`,
   `npm run check`, and `git diff --check`.
-- [ ] Refresh the completion audit with the new exact commit and evidence.
+- [x] Refresh the completion audit with the new exact commit and evidence.
+
+Completed in `d8ab841`; focused scenarios passed 8/8 and the complete suite
+passed 61/61 with lint, syntax checks, and diff hygiene also passing.
 
 ## Owner-authorized qualification still required
 
