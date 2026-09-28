@@ -66,6 +66,26 @@ Passing local tests do not close any live/provider/install/deployment gate.
 | 7. COMBATRIG re-import | Read-only portable importer and report preserving 33 areas, 570 backlog records, checks/resources/schedules/release boundaries | Analysis implemented; cutover blocked | Owner must resolve 56 scope/exclusion gaps across all 33 areas, then authorize install/operation. |
 | 8. Product surface | Redesigned site and dispatch-board story; installed-launcher onboarding; responsive qualification ledger; keyboard-operable command tabs; local read-only Console covering ownership graph, worktree drift, recoverability, acknowledgements, checks, integration, delivery, resources, schedules, decisions, provider health, and context evidence; desktop/mobile Chromium rendering with zero mobile overflow and exercised interactions; `SCN-package-distribution` packs and installs the CLI offline in an isolated consumer | Local surface and standalone artifact implemented and visually qualified | Registry publication and public deployment remain open. |
 
+## Required acceptance-configuration audit
+
+| Spec configuration | Evidence | Determination | Missing proof |
+| --- | --- | --- | --- |
+| A. Laptop-only | `SCN-bootstrap-acceptance`, `SCN-native-integration`, `SCN-local-canonical`, `SCN-fleet-fresh-resume`, and `SCN-cli-lifecycle-surface` exercise analysis through integration, restart, and detach without a forge or hosted service. | Implemented and virtualized locally | A real Claude or Codex session must complete the same lifecycle before the first usable release is qualified. |
+| B. Existing local repository | `SCN-existing-repository-preservation`, `SCN-install-trackability`, and purge safety retain history, branches, prior configuration, and untracked bytes. | Proven locally | None beyond the broader live-release gate. |
+| C. Forge-backed | Forge configuration is optional; provider-neutral attach/status/detach logic is covered using a local Git remote. | Implemented locally | A hosted forge is not required for first-release conformance. |
+| D. Local to forge-backed | `SCN-forge-migration` attaches an equivalent remote while preserving identities, worktrees, backlog, decisions, and messages. | Proven locally | None beyond any future forge-provider adapter qualification. |
+| E. Forge-backed to local | `SCN-forge-migration` detaches the remote and continues local operation. | Proven locally | None. |
+| F. Forge outage | `SCN-forge-migration` makes the remote unavailable while local state and operations survive and synchronization risk remains visible. | Proven locally | None. |
+| G. Mixed runtimes | `SCN-mixed-runtime`, `SCN-codex-adapter`, `SCN-claude-adapter`, durable messages, and the real stdio MCP handshake prove a shared provider-independent control plane with corrected installed-CLI plans. | Implemented virtually | One authorized live Claude/Codex shared-boundary change must demonstrate actual coordination. |
+| H. TORCH builds TORCH | Candidate staging, complete acceptance receipts, stable launcher mechanics, activation, rollback, and isolated real-checkout execution are proven. | Mechanics implemented; exit gate open | An installed stable release must manage development, testing, and promotion of a successor from outside this checkout. |
+| I. COMBATRIG compatibility | The read-only import preserves 33 areas, 570 backlog records, prompts, checks, resources, schedules, and authority while refusing 56 unresolved boundary gaps. | Analysis implemented; exit gate open | The owner must resolve boundaries and authorize TORCH installation and operation in COMBATRIG without core special cases. |
+
+The definition-of-first-usable-release sequence therefore remains unproven as
+an end-to-end live lifecycle even though each local mechanism has scenario
+coverage. In particular, passing virtualized runtime scenarios is not evidence
+that a provider session completed real work, and an isolated activated
+candidate is not evidence that installed stable TORCH manages this checkout.
+
 ## Cross-cutting requirements
 
 ### Project-specific startup
