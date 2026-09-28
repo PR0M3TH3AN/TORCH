@@ -102,11 +102,11 @@ test_integrity_note:
     - id: SCN-claude-adapter
       given: a Claude runtime adapter with a virtualized command runner
       when: sessions are planned and runtime state is queried
-      then: command construction is deterministic, capabilities are explicit, planning launches no process, and stop requires matching live session and worktree ownership evidence
+      then: background creation omits the ignored synthetic session flag, captures the sole safe manager-assigned ID, launches no process during planning, and stop requires matching live session and worktree ownership evidence
     - id: SCN-codex-adapter
       given: a Codex runtime adapter with a virtualized command runner and an identity-bound TORCH control plane
       when: create, resume, MCP configuration, runtime-ID capture, and steering are planned or attempted
-      then: no provider call occurs, thread IDs come from JSONL, every message is durable, and unsupported native controls fail explicitly
+      then: no provider call occurs, mutually exclusive safety flags are absent, global options precede exec and resume options follow resume, thread IDs come from JSONL, every message is durable, and unsupported native controls fail explicitly
     - id: SCN-fleet-fresh-resume
       given: approved identities and managed worktrees with a virtualized Claude executor
       when: the fleet starts fresh, winds down safely, and plans its next start
@@ -267,6 +267,7 @@ test_integrity_note:
     - SQLite state after process restart
     - CLI and MCP output over real process boundaries
     - runtime command plans and execution order
+    - installed-CLI-compatible option sets, subcommand ordering, and manager-assigned Claude background IDs
     - runtime stop session identity, reported working directory, and fail-closed ownership mismatch
     - local resume snapshot, tracked resume brief, final worker message, preserved task identity, and presence transitions
     - immutable check receipt commit and result
@@ -312,6 +313,8 @@ test_integrity_note:
       - repository content redirecting machine-local database writes
       - MCP and CLI drifting onto separate business logic
       - launch plans that execute provider commands during preview
+      - virtualized tests blessing commands that the installed provider CLI rejects during parsing
+      - a synthetic Claude UUID being persisted when background mode ignored it
       - stopping a runtime by PID, parentage, or session label without matching managed-worktree evidence
       - a mixed-runtime claim implemented as renamed Claude-only commands
       - runtime sessions launching without their identity-bound TORCH tool surface

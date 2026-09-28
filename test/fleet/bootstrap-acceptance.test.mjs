@@ -76,12 +76,16 @@ test('SCN-bootstrap-acceptance: one installed fixture proves the complete organi
     assert.equal(existsSync(join(worktree.path, '.torch', 'prompts', `${agent.areaId}.md`)), true);
   }
 
-  let runtime = 0;
-  const adapter = createClaudeAdapter({ idFactory: () => `bootstrap-runtime-${++runtime}` });
-  const up = planFleetUp({ repositoryRoot: context.root, controlPlane: control, adapter, fresh: true });
+  const adapter = createClaudeAdapter();
+  const adapters = new Map([['claude', adapter]]);
+  const up = planFleetUp({ repositoryRoot: context.root, controlPlane: control, adapters, fresh: true });
   assert.equal(up.canProceed, true, JSON.stringify(up.blockers));
   assert.equal(up.actions.at(-1).areaId, 'session-manager');
-  const started = startFleet({ plan: up, controlPlane: control, executor: () => ({ status: 0 }) });
+  let runtime = 0;
+  const started = startFleet({
+    plan: up, controlPlane: control, adapters,
+    executor: () => ({ status: 0, stdout: `bootstrap-runtime-${++runtime}\n` }),
+  });
   assert.equal(new Set(started.started.map((entry) => entry.runtimeSessionId)).size, roster.agents.length);
   for (const action of up.actions) {
     assert.match(readFileSync(action.promptFile, 'utf8'), new RegExp(`Area ID: ${action.areaId}|TORCH Session Manager`));

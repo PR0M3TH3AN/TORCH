@@ -113,8 +113,9 @@ export class CodexRuntimeAdapter {
     const id = text(areaId, 'areaId');
     const cwd = text(worktree, 'worktree');
     const args = [
-      'exec', '--json', '--cd', cwd, '--sandbox', 'workspace-write', '--approve-for-me',
+      '--cd', cwd, '--approve-for-me',
       ...mcpArgs(mcp),
+      'exec', '--json',
       ...optionalModelArgs(model),
       `${text(firstMessage, 'firstMessage')}\n\nRead and follow the TORCH domain prompt at ${text(promptFile, 'promptFile')}.`,
     ];
@@ -133,9 +134,10 @@ export class CodexRuntimeAdapter {
     const sessionId = text(runtimeSessionId, 'runtimeSessionId');
     const cwd = text(worktree, 'worktree');
     const args = [
-      'exec', '--json', '--cd', cwd, '--sandbox', 'workspace-write', '--approve-for-me',
+      '--cd', cwd, '--approve-for-me',
       ...mcpArgs(mcp),
-      ...optionalModelArgs(model), 'resume', sessionId, text(message, 'message'),
+      'exec', 'resume', '--json',
+      ...optionalModelArgs(model), sessionId, text(message, 'message'),
     ];
     return {
       adapter: this.name,

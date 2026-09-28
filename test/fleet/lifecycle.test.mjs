@@ -46,9 +46,9 @@ function fleetFixture({ workerRuntime = 'claude' } = {}) {
 test('SCN-fleet-fresh-resume: workers start before manager and stable identities resume captured runtime sessions', () => {
   const fixture = fleetFixture();
   const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
-  let session = 0;
-  const adapter = createClaudeAdapter({ executable: 'claude', idFactory: () => `runtime-${++session}` });
-  const fresh = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter, fresh: true });
+  const adapter = createClaudeAdapter({ executable: 'claude' });
+  const adapters = new Map([['claude', adapter]]);
+  const fresh = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true });
   assert.equal(fresh.actions.at(-1).areaId, 'session-manager');
   assert.equal(fresh.actions.every((action) => action.mode === 'create'), true);
   assert.equal(fresh.actions.every((action) => action.mcp.args.includes(action.areaId)), true);
@@ -58,8 +58,11 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
 
   const launches = [];
   const started = startFleet({
-    plan: fresh, controlPlane: control,
-    executor: (launch) => { launches.push(launch); return { status: 0 }; },
+    plan: fresh, controlPlane: control, adapters,
+    executor: (launch) => {
+      launches.push(launch);
+      return { status: 0, stdout: `runtime-${launches.length}\n` };
+    },
   });
   assert.equal(started.started.at(-1).areaId, 'session-manager');
   assert.equal(launches.length, fresh.actions.length);
@@ -97,13 +100,13 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   }).stateRoot, 'project.json');
   assert.equal(JSON.parse(readFileSync(metadataPath, 'utf8')).detachedAt, detached.detachedAt);
 
-  const resumed = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter, fresh: false });
+  const resumed = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: false });
   assert.equal(resumed.actions.every((action) => action.mode === 'resume'), true);
   assert.deepEqual(
     resumed.actions.map((action) => action.runtimeSessionId),
-    fresh.actions.map((action) => action.runtimeSessionId),
+    started.started.map((action) => action.runtimeSessionId),
   );
-  startFleet({ plan: resumed, controlPlane: control, executor: () => ({ status: 0 }) });
+  startFleet({ plan: resumed, controlPlane: control, adapters, executor: () => ({ status: 0 }) });
   assert.equal(JSON.parse(readFileSync(metadataPath, 'utf8')).detachedAt, null);
   control.close();
 });
@@ -111,8 +114,7 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
 test('SCN-fleet-wind-down-safety: active work blocks runtime shutdown and failed startup prevents manager launch', () => {
   const fixture = fleetFixture();
   const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
-  let session = 0;
-  const adapter = createClaudeAdapter({ idFactory: () => `failure-${++session}` });
+  const adapter = createClaudeAdapter();
   const plan = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter, fresh: true });
   assert.throws(
     () => startFleet({
@@ -148,7 +150,7 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   const fixture = fleetFixture({ workerRuntime: 'codex' });
   const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
   const adapters = new Map([
-    ['claude', createClaudeAdapter({ idFactory: () => 'claude-manager-1' })],
+    ['claude', createClaudeAdapter()],
     ['codex', createCodexAdapter({ executable: 'codex' })],
   ]);
   const plan = planFleetUp({
@@ -157,18 +159,19 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   assert.equal(plan.canProceed, true);
   assert.equal(plan.actions[0].areaId, fixture.worker);
   assert.equal(plan.actions[0].runtime, 'codex');
-  assert.equal(plan.actions[0].launch.args[0], 'exec');
+  assert.equal(plan.actions[0].launch.args.includes('exec'), true);
   assert.equal(plan.actions[0].launch.args.some((arg) => arg.includes('mcp_servers.')), true);
   assert.equal(plan.actions[0].launch.args.some((arg) => arg.includes(fixture.worker)), true);
   assert.equal(plan.actions.at(-1).runtime, 'claude');
   assert.equal(plan.actions.at(-1).launch.args.includes('--mcp-config'), true);
-  assert.equal(plan.actions.at(-1).runtimeSessionId, 'claude-manager-1');
+  assert.equal(plan.actions.at(-1).runtimeSessionId, null);
+  assert.equal(plan.actions.at(-1).requiresRuntimeIdCapture, true);
 
   const started = startFleet({
     plan, controlPlane: control, adapters,
     executor: (launch) => launch.areaId === fixture.worker
       ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-worker-1"}\n' }
-      : { status: 0 },
+      : { status: 0, stdout: 'claude-manager-1\n' },
   });
   assert.deepEqual(started.started.map((item) => item.runtimeSessionId), [
     'codex-worker-1', 'claude-manager-1',

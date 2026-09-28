@@ -42,6 +42,16 @@ function mcpName(areaId) {
   return `torch-${areaId.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '')}`;
 }
 
+function backgroundSessionId(output) {
+  const lines = String(output ?? '').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length !== 1 || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(lines[0])) {
+    throw new TorchError('Claude background launch did not return exactly one safe session ID', {
+      code: 'RUNTIME_ID_NOT_CAPTURED', details: { adapter: 'claude' },
+    });
+  }
+  return lines[0];
+}
+
 export class ClaudeRuntimeAdapter {
   constructor({
     env = process.env,
@@ -96,12 +106,12 @@ export class ClaudeRuntimeAdapter {
   }
 
   createSession({ areaId, title, worktree, promptFile, firstMessage, model = 'opus', background = true, mcp } = {}) {
-    const runtimeSessionId = this.idFactory();
+    const runtimeSessionId = background ? null : this.idFactory();
     const args = [];
     if (background) args.push('--bg');
     args.push(
       '--model', text(model, 'model'),
-      '--session-id', runtimeSessionId,
+      ...(!background ? ['--session-id', runtimeSessionId] : []),
       '-n', `TORCH · ${text(title ?? areaId, 'title')}`,
       '--append-system-prompt-file', text(promptFile, 'promptFile'),
       ...mcpArgs(mcp),
@@ -109,6 +119,7 @@ export class ClaudeRuntimeAdapter {
     if (firstMessage) args.push(text(firstMessage, 'firstMessage'));
     return {
       adapter: this.name, areaId: text(areaId, 'areaId'), runtimeSessionId,
+      requiresRuntimeIdCapture: background,
       launch: commandRecord(this.executable, args, text(worktree, 'worktree')),
     };
   }
@@ -188,8 +199,9 @@ export class ClaudeRuntimeAdapter {
     };
   }
 
-  captureRuntimeId({ areaId, runtimeSessionId } = {}) {
-    return { areaId: text(areaId, 'areaId'), runtimeSessionId: text(runtimeSessionId, 'runtimeSessionId') };
+  captureRuntimeId({ areaId, runtimeSessionId, stdout, output } = {}) {
+    const captured = runtimeSessionId ?? backgroundSessionId(stdout ?? output);
+    return { areaId: text(areaId, 'areaId'), runtimeSessionId: text(captured, 'runtimeSessionId') };
   }
 
   installHooks() {
