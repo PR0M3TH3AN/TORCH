@@ -44,13 +44,15 @@ Normative terms have their usual meanings:
 TORCH turns a Git repository into a persistent, coordinated team of
 domain-specialized AI development sessions.
 
-One human owner primarily works through one Session Manager. The Session
-Manager routes work to persistent domain managers. Each domain manager has a
-stable identity, explicit ownership, a dedicated Git branch and worktree,
-known neighboring domains, required verification, and durable restart state.
-TORCH supplies the control plane that lets these sessions coordinate across
-different agent runtimes without making any one runtime the definition of the
-fleet.
+One human owner primarily works through one configured owner-facing
+coordination role. The initial role is the Session Manager. A larger approved
+organization may place a Program Director between the owner and operational
+coordination, while Fleet Operations and domain leads retain their defined
+responsibilities. Persistent implementation domains have stable identities,
+explicit ownership, dedicated Git branches and worktrees, known neighbors,
+required verification, and durable restart state. TORCH supplies the control
+plane that lets these sessions coordinate across different agent runtimes
+without making any one runtime the definition of the fleet.
 
 The product promise is:
 
@@ -72,9 +74,9 @@ TORCH MUST:
 3. obtain human approval before creating permanent domains or worktrees;
 4. create stable domain identities with explicit `scope` and `notScope`;
 5. give each persistent development domain its own branch and worktree;
-6. provide one primary Session Manager conversation for the human owner;
-7. support direct peer coordination without removing Session Manager
-   authority over priority and ownership;
+6. provide one primary owner-facing coordination conversation;
+7. support direct peer coordination while respecting the authority assigned to
+   each role in the approved organization;
 8. externalize identity, ownership, backlog, decisions, unfinished work, and
    restart instructions so conversation context is not the database;
 9. expose the same organizational tools to Claude, Codex, OpenCode, and future
@@ -88,7 +90,9 @@ TORCH MUST:
 15. manage development of its own successor from a stable installed release;
 16. re-import COMBATRIG without special-case orchestration code;
 17. preserve domain-local context as a focused working set instead of forcing
-    one general session to repeatedly evict and reload unrelated project areas.
+    one general session to repeatedly evict and reload unrelated project areas;
+18. let an owner reshape the coordination hierarchy as a project grows, while
+    keeping the smallest organization that can coordinate its work effectively.
 
 ### 3.1 Context locality and the hot-cache hypothesis
 
@@ -143,7 +147,9 @@ Every conforming implementation MUST preserve these invariants:
 2. Every domain has explicit ownership and explicit exclusions.
 3. Every domain has a stable Fleet identity independent of runtime session ID.
 4. The human has one primary fleet-facing conversation.
-5. The Session Manager controls routing, priority, and ownership rulings.
+5. Configured organizational roles control routing, priority, and ownership
+   rulings only within their approved authority; the Session Manager retains
+   fleet-operations responsibility unless an approved change says otherwise.
 6. Peers may coordinate directly but may not grant themselves authority.
 7. Repository state outranks model memory and chat history.
 8. Live messages are transport, not the sole durable record.
@@ -162,6 +168,8 @@ Every conforming implementation MUST preserve these invariants:
 20. Every installation is exactly reversible within declared safety limits.
 21. Stable TORCH can manage development and release of its successor.
 22. Provider integrations reinforce TORCH policy; they do not define it.
+23. Organizational reporting relationships never silently transfer
+    implementation ownership or grant authority.
 
 ## 6. Terminology
 
@@ -177,9 +185,12 @@ The complete TORCH-managed organization for one project.
 
 **Session Manager**
 
-The persistent dispatcher session that receives owner requests, routes work,
-establishes ownership and ordering, monitors fleet health, and reports useful
-decisions or risks to the owner.
+The initial persistent dispatcher and fleet-operations identity. In the
+starting organization it receives owner requests, routes work, establishes
+ownership and ordering, monitors fleet health, and reports decisions or risks.
+If the owner approves a higher coordination layer, the Session Manager's
+responsibilities may be divided with a Program Director while its operations
+identity remains stable.
 
 **Domain manager**
 
@@ -503,8 +514,12 @@ when repository evidence and project goals justify them.
 without binding TORCH to one model vendor. The brief MUST include the
 deterministic baseline, unassigned components, specification signals,
 unresolved ownership, collision questions, a trust boundary, and the required
-pending-proposal contract. Producing the brief MUST NOT itself call a paid
-provider, execute project content, or approve the resulting organization.
+pending-proposal contract. It MUST also assess whether the smallest useful
+organization is flat or needs coordination roles, identify evidence and
+integrated outcomes for any proposed leads, distinguish coordination from
+code ownership and authority, and preserve direct peer links. Producing the
+brief MUST NOT itself call a paid provider, execute project content, or
+approve the resulting organization.
 
 `torch architect plan` MUST show the selected provider, model, isolation,
 structured-output schema, prompt size, and budget boundary without invoking a
@@ -542,7 +557,9 @@ and coordination requirements.
 
 TORCH presents the proposed organization before mutation. The owner may accept,
 merge, split, rename, add, or remove domains; change ownership; change
-authority; or reject the analysis.
+authority; approve an optional hierarchy and role relationships; or reject the
+analysis. The default is the smallest useful organization, not the largest
+proposal the model can justify.
 
 Permanent identities, branches, worktrees, and sessions are created only from
 an approved proposal.
@@ -722,9 +739,12 @@ required fields MUST fail clearly rather than be silently ignored.
 
 ## 12. Organizational model
 
-### 12.1 Session Manager
+### 12.1 Starting Session Manager
 
-The Session Manager normally does not implement product features. It:
+In the current one-level organization, the Session Manager combines owner
+dispatch with Fleet Operations and normally does not implement product
+features. TORCH may later divide strategic coordination from operations only
+through the approved hierarchy-change process. The starting Session Manager:
 
 1. receives owner requests and preserves their original meaning;
 2. identifies the owning domain or domains;
@@ -787,11 +807,138 @@ Each domain manager receives:
 Domain managers MUST report meaningful state transitions and MUST externalize
 unfinished work. They MUST NOT reinterpret peer messages as owner approval.
 
-### 12.3 Temporary subagents
+### 12.3 Optional coordination hierarchy
+
+TORCH MUST support projects that outgrow direct coordination by one Session
+Manager. A newly initialized project SHOULD begin with the smallest useful
+organization, normally one Session Manager and its persistent specialist
+domains. Additional coordination layers are optional and project-specific;
+TORCH MUST NOT create them from a fixed fleet-size threshold or copy a role
+catalog from another project.
+
+The approved organization MAY include configurable persistent roles such as:
+
+- a **Program Director** for project-wide priorities, milestones, and
+  cross-domain sequencing;
+- **Fleet Operations** for runtime sessions, worktrees, gates, schedules, and
+  fleet health;
+- **Domain Leads** for integration outcomes and dependencies spanning several
+  specialists;
+- independent cross-cutting authorities such as **Art Direction**, QA, or
+  security, whose review authority does not make them implementation owners.
+
+These are examples, not reserved TORCH identities. The project owner and its
+Session Architect decide which roles exist, what each role may decide, and
+which identities fill them. A current specialist MAY be promoted when its
+existing expertise and workload make that a better fit than creating another
+session. A role MAY coordinate several domains, and a specialist MAY have
+consultative links to several roles, while every implementation surface keeps
+one accountable owner.
+
+The organization model MUST distinguish, at minimum:
+
+1. implementation ownership (which identity owns code or another deliverable);
+2. coordination responsibility (which identity sequences work or resolves
+   dependencies across owners);
+3. fleet operations authority (which identity manages session and worktree
+   mechanics);
+4. project priority authority (which identity proposes or sets ordering under
+   owner policy);
+5. independent review or creative authority; and
+6. owner-only decisions.
+
+A reporting or coordination edge MUST NOT imply permission to edit another
+identity's worktree, reassign its work, approve a release, or overrule the
+owner. Direct peer communication remains available. Agents escalate to a lead
+when an interface, dependency, sequencing, or domain-level blocker needs a
+decision; they escalate to program direction when multiple domains or a
+milestone are affected; owner-reserved decisions remain with the owner. Leads
+compress and summarize context; they do not relay every routine message.
+
+### 12.4 Evidence and approval for hierarchy changes
+
+TORCH MUST let the fleet propose and plan organizational changes that add a
+coordination role, promote an existing identity, change which domains a lead
+coordinates, separate or combine management responsibilities, or retire a
+role. The existing single backlog remains the task ledger and queue. Program
+and domain artifacts MAY summarize priorities, integrations, blockers, risks,
+and decisions, but MUST NOT become parallel task backlogs.
+
+A hierarchy change SHOULD be considered when repository and Fleet evidence
+shows recurring coordination cost, for example:
+
+- repeated work spanning the same group of domains;
+- interface or sequencing decisions repeatedly waiting on one dispatcher;
+- blockers or rework caused by dependencies discovered late;
+- sustained cross-domain handoffs or escalation volume;
+- a manager spending substantial effort switching among unrelated technical
+  contexts; or
+- a coherent integrated outcome that currently has no coordination owner.
+
+Headcount alone is insufficient. The proposal MUST state the integrated
+outcome the new or promoted role owns, why existing roles cannot handle it at
+reasonable coordination cost, the evidence and observation window, authority
+limits, affected identities and relationships, expected context or delivery
+benefit, and the costs or risks of adding management. The change SHOULD begin
+as a bounded pilot with review criteria and a way to reverse it.
+
+The Session Manager or a designated organization planner MAY propose a change,
+but MUST NOT activate it unilaterally. The owner approves the intended
+organization. Before activation, TORCH MUST produce a reviewable migration
+plan that accounts for current backlog ownership and dependencies, identities,
+branches and worktrees, prompts, communication links, schedules, checks,
+management artifacts, start/stop order, and authority. Active work MUST remain
+recoverable throughout the change. Approval, tracked configuration update,
+session provisioning, and runtime launch are separate steps; runtime launch
+remains an explicit action. Existing specialist-to-specialist communication
+and backlog history MUST survive a hierarchy change.
+
+On wind-down, coordination roles SHOULD record concise domain or program
+state, while Fleet Operations preserves session and restart state. This
+reporting supplements the backlog and does not replace it.
+
+### 12.5 Temporary subagents
 
 A domain manager MAY use runtime-native subagents for bounded research,
 inspection, testing, or review. Temporary subagents do not receive persistent
 Fleet ownership unless promoted through an approved roster change.
+
+## 12.6 COMBATRIG example, not a default organization
+
+COMBATRIG's proposed shape is a useful example for TORCH's organization
+designer: a Program Director, Fleet Operations, a small number of domain leads,
+specialists, and independent Art Direction. Runtime, World, Production, and
+Narrative/Experience are candidate groups for that project, not built-in TORCH
+domains. A project may promote an existing producer or specialist into a lead
+role instead of creating another session. Horizontal QA, performance, release,
+or creative review may connect to several domains without acquiring their
+implementation ownership.
+
+The example should be adopted incrementally:
+
+1. Add a Program Director if owner-level prioritization and roadmap sequencing
+   overload Fleet Operations; keep the existing Session Manager focused on
+   session, worktree, gate, and fleet-health mechanics.
+2. Pilot a Runtime Lead around the highest-cost repeated dependencies, such as
+   simulation, navigation, AI, vehicles, and infantry.
+3. Add a World Lead when terrain, settlement, interiors, navigation, and
+   destruction repeatedly need coordinated sequencing.
+4. Expand the existing Asset Producer into Production Lead if it can own the
+   broader production outcome. Consider a separate Experience Lead only if
+   Story and Campaign cannot absorb that coordination responsibility.
+
+Keep Art Direction independent as a creative authority. Keep QA,
+performance, browser, release, and infrastructure as horizontal services where
+their work spans domains. Fleet Operations controls actual session start and
+stop order based on approved dependencies. During wind-down, specialists
+report meaningful changes to domain coordination, domain leads summarize
+cross-specialist state to program direction, the Program Director records
+milestone and cross-domain status, and Fleet Operations captures the sessions
+and verifies the shutdown state.
+
+This sequence is an example for COMBATRIG, not a TORCH default. Evaluate
+reduced routing delay, integration rework, blocked time, and management context
+cost against added coordination effort before expanding the hierarchy.
 
 ## 13. Control plane and MCP contract
 
@@ -1763,6 +1910,8 @@ decisions before their implementation stage:
 8. Local canonical-remote naming when a project already has `origin`.
 9. Multi-machine authentication and encryption.
 10. Distribution and update signing.
+11. Organization graph, configurable role authority, hierarchy change
+    proposals, and safe promotion or reassignment of persistent identities.
 
 None of these decisions may weaken the core invariants or make a forge
 mandatory.
@@ -1779,11 +1928,11 @@ torch install --runtime claude
 torch up
 ```
 
-review and approve a proposed organization, assign a real task through one
-Session Manager, observe at least two domain managers coordinate, record
-verification against exact commits, integrate through TORCH policy, stop the
-fleet, resume it without losing identity or unfinished work, and detach it
-without damaging the repository.
+review and approve a proposed organization, assign a real task through its
+owner-facing coordination role, observe at least two domain managers
+coordinate, record verification against exact commits, integrate through TORCH
+policy, stop the fleet, resume it without losing identity or unfinished work,
+and detach it without damaging the repository.
 
 That lifecycle MUST pass with no Nostr relay, no GitHub account, no hosted CI,
 no hosted database, and no project-local copy of the TORCH engine.

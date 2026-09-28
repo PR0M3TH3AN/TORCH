@@ -46,13 +46,19 @@ test('SCN-product-site: public surface explains the portable fleet and separates
 
 test('SCN-architecture-decisions: every specification decision has an explicit accepted or gated boundary', () => {
   const decisions = readFileSync(new URL('../../docs/ARCHITECTURE_DECISIONS.md', import.meta.url), 'utf8');
-  for (let number = 1; number <= 10; number += 1) {
+  for (let number = 1; number <= 11; number += 1) {
     assert.match(decisions, new RegExp(`ADR-${String(number).padStart(3, '0')}:`));
   }
   assert.match(decisions, /Multi-machine security[\s\S]*\*\*Status:\*\* gated/);
   assert.match(decisions, /Distribution and update signing[\s\S]*\*\*Status:\*\* gated/);
   assert.match(decisions, /MCP over\s+stdio/);
   assert.match(decisions, /exact Git commit and the exact hash/);
+  assert.match(decisions, /Project-specific coordination hierarchy[\s\S]*\*\*Status:\*\* gated/);
+  assert.match(decisions, /headcount alone must never trigger an added management layer/);
+  const spec = readFileSync(new URL('../../docs/PORTABLE_AGENT_FLEET_SPEC.md', import.meta.url), 'utf8');
+  assert.match(spec, /Optional coordination hierarchy/);
+  assert.match(spec, /existing single backlog remains the task ledger and queue/);
+  assert.match(spec, /COMBATRIG example, not a default organization/);
 });
 
 test('SCN-console-readonly: HTTP console serves fixed assets and observes an installed fleet without mutation', async (context) => {

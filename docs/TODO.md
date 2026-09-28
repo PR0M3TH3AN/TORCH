@@ -29,6 +29,15 @@ state and evidence are in
 Completed in `d8ab841`; focused scenarios passed 8/8 and the complete suite
 passed 61/61 with lint, syntax checks, and diff hygiene also passing.
 
+## Planned architecture follow-up
+
+- [ ] Implement ADR-011: versioned, project-specific organization graphs and
+  owner-approved hierarchy changes. Add a gated role schema and migration plan
+  before enabling Program Directors, Fleet Operations roles, domain leads, or
+  specialist promotion. Preserve direct peer communication, single backlog,
+  implementation ownership, active work, and explicit runtime launch. Do not
+  copy COMBATRIG's proposed hierarchy as the default.
+
 ## Owner-authorized qualification still required
 
 - [ ] Run a bounded Session Architect call and one live Claude/Codex

@@ -224,9 +224,9 @@ test_integrity_note:
       when: its product story and local-console boundary are inspected
       then: it explains project-derived fleets, exact-commit routing, honest open gates, and measured context claims without obsolete product language, and onboarding uses the installed public launcher rather than source-checkout internals
     - id: SCN-architecture-decisions
-      given: the ten implementation decisions required by the portable Fleet specification
+      given: the eleven implementation decisions required by the portable Fleet specification
       when: the repository architecture ledger is inspected
-      then: implemented choices are accepted explicitly and unavailable security or distribution boundaries remain fail-closed gates
+      then: implemented choices are accepted explicitly, unavailable capabilities including multi-level hierarchy management remain fail-closed gates, and COMBATRIG roles are not treated as TORCH defaults
     - id: SCN-console-readonly
       given: an installed Fleet without an initialized control-plane database
       when: the observation API and local HTTP console are requested

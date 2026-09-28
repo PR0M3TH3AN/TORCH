@@ -114,9 +114,39 @@ follow-up decision selects artifact signing, trusted-key rotation, provenance,
 and offline rollback verification. Local `npm pack` qualification does not
 claim supply-chain authenticity.
 
+## ADR-011: Project-specific coordination hierarchy
+
+**Status:** gated.
+
+The current organization model has one required `session-manager` identity and
+flat implementation domains. TORCH's Fleet-evolution service can propose
+specialist additions, retirements, and domain-boundary changes, but it does not
+yet model Program Directors, Fleet Operations, multiple levels of domain leads,
+or role promotion as durable authority-bearing relationships. Do not represent
+that capability as implemented or encode COMBATRIG's proposed departments as
+the default organization.
+
+The target design is an owner-approved, versioned organization graph generated
+from each project's repository and specification. It separates
+implementation ownership from coordination, fleet operations, program
+priority, and independent review authority. The graph permits optional
+coordination levels, one primary owner-facing role, and direct peer
+communication. Reporting links do not confer worktree access, task
+reassignment, or release authority. One shared backlog remains authoritative;
+program and domain documents are summaries, not task queues.
+
+Before implementation, a follow-up decision and acceptance scenarios must
+define role schemas and permissions, Session Manager compatibility, how the
+Session Architect proposes measured hierarchy changes, owner approval, safe
+promotion/reassignment, active-task and branch preservation, staged
+provisioning, startup/wind-down order, rollback, and hierarchy-aware doctor and
+console views. A proposed lead must own a concrete integrated outcome, and
+headcount alone must never trigger an added management layer.
+
 ## Consequences
 
 These decisions keep the first usable release local-first and provider-
 independent. They also make current boundaries explicit: repository moves,
 multi-machine control, non-Linux persistent launchers, and published update
-channels are unavailable rather than silently approximated.
+channels, and multi-level organization management are unavailable rather than
+silently approximated.
