@@ -2315,6 +2315,38 @@ request but MUST NOT approve it for a different named approver. The owner and
 each AI identity may list only requests they made or are named to approve;
 manager check-in may inspect requests made by its direct reports.
 
+### Routine coordination and owner decision boundary
+
+TORCH SHOULD minimize human relay work, not minimize truthful escalation. Within
+explicitly approved project/task policy, specialists read and acknowledge their
+own addressed messages, resolve peer interface questions, decide only approvals
+for which they are the named responsible approver, and maintain truthful task,
+wait, evidence and local owned-work checkpoints. Managers route unresolved peer
+requests, follow their direct-report waits and compress outcomes for the owner.
+Reading/acknowledging a message MUST NOT close its unresolved approval or task.
+
+Before escalating to the owner, inspect the current named approver, responsible
+domain, applicable policy, prior decision and evidence. An authorized routine
+action SHOULD be completed and audited instead of asking the human to relay or
+repeat the instruction. An unauthorized action remains blocked with a specific
+request to the responsible party. Owner requests contain evidence, options,
+recommendation and consequences, not only internal error codes.
+
+Project policy MUST distinguish routine authorized actions, investigation-only
+signals and genuine owner decisions. Health warnings, stale presence, branch
+drift, budget exhaustion, incomplete checks or missing evidence do not grant
+permission to recover, delete, merge, start another runtime or waive a gate.
+Spending/publication/deployment, material scope or ownership changes, identity
+activation, destructive or uncertain recovery and owner-addressed approvals
+remain subject to their explicit owner authorization. A paused fleet and its
+budgets remain enforced even when a manager believes action would be useful.
+
+Current pilot checkpoint: canonical live COMMON/manager instructions now teach
+this boundary. `TASK-bounded-routine-coordination` carries portable generated
+instruction and behavioral qualification work; the owner authorizes this bounded
+Project Kernel slice, not general unattended execution. Automatic AI wakes remain
+paused pending executor qualification.
+
 Implementation checkpoint (2026-09-28): `planManagerCheckIn` derives direct
 reports from the active organization graph and reports offline/stale/waiting
 identities plus unacknowledged direct-report messages. `queueManagerCheckIn`
