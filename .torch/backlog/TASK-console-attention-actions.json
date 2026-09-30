@@ -1,0 +1,44 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-console-attention-actions",
+  "title": "Make attention findings specific, deduplicated and actionable",
+  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly.",
+  "priority": "high",
+  "affectedDomains": [
+    "owner-console",
+    "project-kernel",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-console-ux-audit"
+  ],
+  "acceptanceCriteria": [
+    "Overview shows exact condition and responsible identity instead of repeated opaque codes",
+    "Duplicate message finding is one actionable card",
+    "Approve/reject appears only for an owner-addressed pending approval and uses current revision/evidence preview and explicit confirmation",
+    "Worktree progress is not falsely presented as a broken repository; unsafe recovery remains visible",
+    "Quick actions route to exact entities and cannot silently merge, acknowledge peers, publish or delete",
+    "Regression covers stale decision, wrong approver, duplicate findings, no available action, failure and refresh while editing"
+  ],
+  "observedAt": "0224abf2e08d",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T22:56:50.255Z",
+  "updatedAt": "2026-09-30T22:56:50.255Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T22:56:50.255Z",
+      "note": "Task created."
+    }
+  ]
+}

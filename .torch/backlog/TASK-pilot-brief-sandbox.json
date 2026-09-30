@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-pilot-brief-sandbox",
+  "title": "Qualify installed agent brief access under real Codex sandbox",
+  "description": "First computer-use audit stopped before browser work: installed torch brief returned ERR_SQLITE_ERROR/database read-only in owner-console session. Same exact installed brief succeeds on host. Diagnose precise persistence/audit/write roots and sandbox expectations; provide least-privilege read/authorized-write handling, not chmod, DB copying, danger-full-access or ignoring the startup guard. Cover live installed worktree startup with a regression and verify same durable identity/session is resumed. This is a real blocker costing the audit turn.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "project-kernel",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Current installed brief succeeds under the documented approved sandbox permission boundary",
+    "Read-only operations do not silently require unapproved global writes",
+    "No weakened guards, world-writable DB, foreign installation state or broad sandbox disablement",
+    "A regression reproduces restricted-write state access and verifies explicit actionable outcome"
+  ],
+  "observedAt": "0224abf2e08d",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T22:56:50.263Z",
+  "updatedAt": "2026-09-30T22:56:50.263Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T22:56:50.263Z",
+      "note": "Task created."
+    }
+  ]
+}

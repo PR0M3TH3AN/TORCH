@@ -1,0 +1,57 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-console-ux-audit",
+  "title": "Audit Console through computer use and design a focused multi-screen workspace",
+  "description": "Real owner feedback: excessive scrolling, everything on one page feels like a generic Bootstrap layout. Clean, clear and functional first. Session Manager must assign existing owner-console web UI specialist. Inspect actual live installed Console http://127.0.0.1:4174/console with computer use, not source-only review. Cover every navigation area, nested operational panels and action flows; read-only on live, explore writes only in isolated demo. Actually view screenshot evidence desktop and mobile, keyboard navigation, navigation position/history, refresh/draft retention, density, scrolling and empty/failure/loading states. Document visited screens and concrete issues with screenshot references. Propose focused routes/views, compact overview, contextual drilldowns and per-agent conversations, conditional pipelines, accessible navigation and honest runtime/approval status. Retain dark mode/TORCH mark. Audit and proposal only; do not rewrite UI before review. Use applicable frontend/browser skills and disclose computer-use capability blockers instead of claiming completion.",
+  "priority": "high",
+  "affectedDomains": [
+    "owner-console",
+    "qa",
+    "session-manager"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Session Manager assigns the existing web UI identity through revisioned backlog transitions",
+    "Actual browser/computer-use navigation and inspected screenshots cover every current area with URL, viewport and interaction notes",
+    "Live project state is not mutated during the audit; interactive mutation flows use isolated demo",
+    "Prioritized usability findings trace to observed screens, not generic recommendations",
+    "Information architecture proposes genuinely separate focused views, not anchor links on another long page",
+    "Desktop/mobile and keyboard/refresh/draft behavior are covered; branding and permission gates preserved",
+    "Report defines measurable implementation acceptance criteria; no implementation or release is implied"
+  ],
+  "observedAt": "ed1f7614d1ea",
+  "feature": null,
+  "milestone": null,
+  "state": "assigned",
+  "owner": "owner-console",
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T22:15:39.356Z",
+  "updatedAt": "2026-09-30T22:20:04.505Z",
+  "revision": 3,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T22:15:39.356Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-09-30T22:19:22.366Z",
+      "note": "Explicit owner message 10cfe10e-a926-4ce2-bcf4-4ac5572c85f9 and refreshed canonical digest fc14f7512c26b6e818a93d33050658c92129347a6e19b7bc157b5a484d015aa4 authorize ONLY this parallel browser-based audit/design proposal. Owner Console has no active assignment (next idle) and a clean worktree. Audit actual read-only live Console with inspected desktop/mobile screenshots; mutations only in isolated demo. Read frontend-design/browser skills; disclose tool blockers. No UI implementation, release, provider starts or automatic-wake changes."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-09-30T22:20:04.505Z",
+      "note": "Owner-approved audit/design-only assignment. Actual computer-use navigation, viewed screenshots and desktop/mobile/keyboard coverage required for every live area; source-only inspection cannot qualify completion. Live state read-only, exploratory writes in isolated demo only. Use required frontend-design/browser skills; publish task-owned new evidence/report, preserve existing QA-owned screenshots and test expectations. Propose focused separate views and measurable acceptance criteria; no UI rewrite. Arbiter alone launches provider; automatic AI wakes paused. Current owner-console worktree clean at f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; canonical current ed1f7614 and brief fc14f7512 take precedence over stale worktree copies."
+    }
+  ]
+}

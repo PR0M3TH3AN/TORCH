@@ -17,15 +17,25 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
-  "commit": null,
+  "state": "verification",
+  "owner": "provider-runtime",
+  "evidence": [
+    "test:f359e781-e79b-4d72-ab0f-5e9ed0c33281",
+    "check:b05d7e37-c8ab-4c53-b70c-55c04889fbde",
+    "lint:6d559b63-87b6-43e5-a181-9caabd2c15f4",
+    "dashboard:214a5830-7238-4188-82bd-eb6e9cd568bc-incomplete-worktree-changed-during-check",
+    "receipt:f359e781-e79b-4d72-ab0f-5e9ed0c33281:test:pass",
+    "receipt:b05d7e37-c8ab-4c53-b70c-55c04889fbde:check:pass",
+    "receipt:6d559b63-87b6-43e5-a181-9caabd2c15f4:lint:pass",
+    "receipt:214a5830-7238-4188-82bd-eb6e9cd568bc:test-dashboard:incomplete:worktree-changed-during-check",
+    "message:541ba9ec-8441-4312-b997-0fb92f373af7:arbiter-independent-QA-request"
+  ],
+  "commit": "ae18a98e2911aa515d0484518013061b05ff6adf",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.606Z",
-  "updatedAt": "2026-09-30T19:30:23.606Z",
-  "revision": 1,
+  "updatedAt": "2026-09-30T22:14:30.800Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -33,6 +43,34 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.606Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-09-30T19:51:22.787Z",
+      "note": "Owner-approved first pilot per canonical instruction digest 70960479baf9024b0912f261ffad1bbbe14d4d42e3811367575ce88a81bb6da1 and owner inbox aa219efb-da53-4d27-b0df-cf8a77808266. Only this slice is approved. Provider Runtime next lookup idle; clean provider branch and canonical HEAD c940a343c35734444386468641cd0ed1f4a2daaa. CLI remains Release-owned; test edits require QA-owner consent; independent review required. Provider launches and integration remain arbiter-controlled."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-09-30T19:51:44.637Z",
+      "note": "Narrow pilot coordination ruling: Provider Runtime owns diagnostic extraction/redaction and lifecycle propagation in src/adapters/** and src/runtime/**. QA retains test/** and *.mjs ownership and independent acceptance; additive behavioral test edits need QA consent first, with no weakened/deleted expectations. Release retains bin/** and top-level src/*; request responsible-owner approval before CLI/shared-file changes. Preserve all work, reference task ID in commits, rerun required local checks on exact commit, report verification evidence. This assignment grants no provider-start or integration authority; all other 33 tasks stay proposed."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "provider-runtime",
+      "at": "2026-09-30T20:34:54.066Z",
+      "note": "Converged candidate with strict startup diagnostics scenario and Test Integrity Note. Dashboard command exited 0 but TORCH receipt remains incomplete because its tracked report generation changes the worktree; outputs archived and restored per owner direction."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-09-30T22:14:30.800Z",
+      "note": "Reconcile finished implementation into independent verification at arbiter request. Three exact-SHA receipts pass; test-dashboard exit0 remains INCOMPLETE due to worktree-changed-during-check. Preserve original receipt/history; generated images were archived/restored under owner direction, not accepted as new baselines. Independent QA acceptance and structured QA consent reconciliation outstanding; current canonical ed1f7614 has advanced beyond candidate. Verification is not readiness to integrate, completion or landing authority. No new implementation is dispatched; automatic AI wakes remain paused."
     }
   ]
 }

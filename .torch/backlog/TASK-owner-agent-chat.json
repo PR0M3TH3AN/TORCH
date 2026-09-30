@@ -1,0 +1,45 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-owner-agent-chat",
+  "title": "Provide threaded owner chat with any activated agent and safe wake-on-message",
+  "description": "Owner is monitoring the live Console and wants to talk directly with Session Manager and domain agents. Current durable request composer neither wakes idle recipients nor provides per-agent conversational threads. Build a provider-neutral conversation view over durable TORCH messages, preserving acknowledgements and task references. Clearly distinguish queued, delivered, running, replied and failed/unknown outcomes. Add explicitly reviewed bounded wake-on-message using the qualified executor; coalesce requests, never duplicate an active native session, respect paused fleet and usage limits, and show offline/credit failures honestly. Do not expose prompts, credentials or hidden reasoning. Newly activated domain identities should become selectable without hardcoded roles.",
+  "priority": "high",
+  "affectedDomains": [
+    "owner-console",
+    "provider-runtime",
+    "project-kernel",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-pilot-executor-outcomes",
+    "TASK-pilot-starting-presence"
+  ],
+  "acceptanceCriteria": [
+    "Owner can open a persistent conversation with Manager or any activated domain and see durable replies after reload",
+    "Queued delivery and runtime execution are visibly distinct; sending never implies a reply or completion",
+    "Reviewed wakes respect budgets, pause state and existing runtime leases; rapid messages cannot launch duplicate sessions",
+    "Provider switch retains TORCH conversation identity and history without reusing foreign native session IDs",
+    "Regression scenarios cover idle/offline recipient, paused fleet, multiple messages, launch failure and a newly activated domain"
+  ],
+  "observedAt": "ed1f7614d1ea",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T22:11:47.344Z",
+  "updatedAt": "2026-09-30T22:11:47.344Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T22:11:47.344Z",
+      "note": "Task created."
+    }
+  ]
+}
