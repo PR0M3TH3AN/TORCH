@@ -15,6 +15,18 @@ function unitQuote(value) {
   return `"${String(value).replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`;
 }
 
+// WorkingDirectory is a scalar path, not an ExecStart-style quoted word.
+// C-escape special path bytes and escape systemd specifiers without adding quotes.
+function unitPath(value) {
+  return [...String(value)].map(character => {
+    if (character === '%') return '%%';
+    if (character.charCodeAt(0) <= 0x20 || character === '\\' || character === '"') {
+      return `\\x${character.charCodeAt(0).toString(16).padStart(2, '0')}`;
+    }
+    return character;
+  }).join('');
+}
+
 function configPath(repositoryRoot) {
   return join(repositoryRoot, '.torch', 'torch.yaml');
 }
@@ -39,7 +51,7 @@ function render({ repositoryRoot, projectId, command, digest, env }) {
     ? `Environment=${unitQuote(`XDG_DATA_HOME=${resolve(env.XDG_DATA_HOME)}`)}\n` : '';
   const service = [
     '[Unit]', `Description=TORCH system schedules for ${projectId}`, '', '[Service]', 'Type=oneshot',
-    `WorkingDirectory=${unitQuote(repositoryRoot)}`, environment.trimEnd(),
+    `WorkingDirectory=${unitPath(repositoryRoot)}`, environment.trimEnd(),
     `ExecStart=${args.map(unitQuote).join(' ')}`, '',
   ].filter((line) => line !== '').join('\n') + '\n';
   const timer = [

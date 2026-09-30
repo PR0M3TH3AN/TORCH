@@ -120,12 +120,13 @@
       "lifetime": "system",
       "trigger": {
         "type": "interval",
-        "seconds": 900
+        "seconds": 3600
       },
       "behavior": "coordination",
       "action": {
         "type": "manager-check-in",
-        "manager_id": "session-manager"
+        "manager_id": "session-manager",
+        "wake": { "enabled": false, "budget_mode": "invocation-count" }
       },
       "required_authority": [
         "owner"
@@ -137,6 +138,7 @@
       "source_of_truth": "active organization direct-report graph"
     }
   ],
+  "runtime_wake_budget": { "max_invocations_per_day": 12 },
   "integration": {
     "provider": "torch",
     "target": "rewrite/portable-agent-fleet",

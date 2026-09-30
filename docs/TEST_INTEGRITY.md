@@ -2268,3 +2268,56 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+# Setup and canonical worktree briefs (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-guided-setup
+      given: "An approved installed project with uncommitted TORCH files"
+      when: "Owner reviews and authorizes setup"
+      then: "Only owned files are committed; registered worktrees exist; no providers start; staged user work blocks setup"
+    - id: SCN-worktree-canonical-brief
+      given: "A registered worktree has older instructions"
+      when: "Its installation root is resolved and a brief requested"
+      then: "Canonical instructions appear; unregistered worktrees, copied installs and stale installation IDs fail closed"
+    - id: SCN-install-restore
+      given: "A normally detached project retains configuration and worktree commits"
+      when: "Owner explicitly restores the install"
+      then: "Binding is reattached without changing profiles, worktree history or launching providers"
+  observable_outcomes:
+    - "Git commits, clean canonical checkout, worktree registrations, brief text and local detach metadata"
+  determinism_controls:
+    - "Isolated temporary Git repositories and XDG state; no provider or network calls"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded success without Git worktrees or commits"
+      - "Accepting copied or unregistered installation state"
+      - "Staging unrelated owner work"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+# First live scheduler pilot: native systemd parser (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-systemd-native-unit
+      given: "A generated dispatcher with a repository path containing spaces, percent and quote characters"
+      when: "The real Linux systemd-analyze parser verifies the emitted service"
+      then: "The service parses successfully and WorkingDirectory remains an absolute scalar path"
+  observable_outcomes:
+    - "Actual native parser exit status and generated unit bytes"
+  determinism_controls:
+    - "Temporary project path alias and unit file; /usr/bin/true command; verify-only, no service activation"
+  anti_cheat_rationale:
+    prevents:
+      - "Mocked systemctl success masking invalid unit syntax"
+      - "Treating quoted ExecStart syntax as valid for scalar WorkingDirectory"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

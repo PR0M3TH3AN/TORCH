@@ -123,6 +123,20 @@
       "area": "qa",
       "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/qa",
       "branch": "torch/qa"
+    },
+    {
+      "type": "systemd-user-unit",
+      "name": "torch-3dc11932-6e3c-42aa-9a8a-ca7b8f818b54-schedules.service",
+      "path": "/home/user/.config/systemd/user/torch-3dc11932-6e3c-42aa-9a8a-ca7b8f818b54-schedules.service",
+      "sha256": "d1f6318f91e7b64847e52e415db52c66b60150b0c809fc1e0acb283d8bc0926c",
+      "configDigest": "4e21d6bf76dbcb983d984af2bf44a199ffb56d65e88a5c5f03cd678f196b329f"
+    },
+    {
+      "type": "systemd-user-unit",
+      "name": "torch-3dc11932-6e3c-42aa-9a8a-ca7b8f818b54-schedules.timer",
+      "path": "/home/user/.config/systemd/user/torch-3dc11932-6e3c-42aa-9a8a-ca7b8f818b54-schedules.timer",
+      "sha256": "7c878a828c3f2a04cc597b12de3702f2dfd2ac6ac8228099ada27c59e00151f0",
+      "configDigest": "4e21d6bf76dbcb983d984af2bf44a199ffb56d65e88a5c5f03cd678f196b329f"
     }
   ]
 }

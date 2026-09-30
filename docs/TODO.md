@@ -1,5 +1,115 @@
 # TORCH remaining work
 
+## Authoritative current handoff (2026-09-30, after alpha.2 reinstall)
+
+TORCH is installed and healthy at `0.1.0-alpha.2`. Setup/restore and all seven
+worktree briefs have been verified. The active organization is Session Manager
+plus six specialists. A first bounded development pilot is now active through
+Session Manager, Provider Runtime and QA; the remaining domains have not started.
+See `reports/audit/first-development-pilot-2026-09-30.md` for current live state.
+The default Git branch remains
+legacy TORCH; the configured development/integration boundary is
+`rewrite/portable-agent-fleet`. No publication or default-branch promotion is
+authorized. Later sections retain historical audit snapshots, including old
+"uncommitted/no launcher" statements; those are superseded by this handoff.
+
+The conversation's unfinished work is now owner-proposed in the **existing
+authoritative backlog in the Session Manager worktree**, not a second TODO queue.
+Use `torch backlog list --json` to see it from any registered checkout. Tasks use
+the `TASK-conversation-` prefix, have acceptance criteria, affected domains and
+dependencies, and remain unassigned for manager triage. See
+`reports/audit/conversation-handoff-2026-09-30.md` for the domain review and index.
+
+### New owner requirements: first work and automatic operations
+
+- [ ] `TASK-conversation-first-work-intake`: init/install/setup offers reviewed
+  TODO/backlog import or asks what the owner wants to begin with; previews and
+  confirms proposed tasks; deduplicates resumes; never activates stale/completed
+  TODOs or launches agents silently.
+- [ ] `TASK-conversation-persistent-operations`: reviewed init/install provisions
+  machine-level scheduler/services automatically, not merely schedule JSON or a
+  separate manual cron-install command. Paused installs remain dormant. Services
+  declare system/session lifetimes, budgets, timezone, restart/missed-run policy,
+  pause/resume and manifest-owned uninstall/restore behavior. This extends the
+  earlier `TASK-conversation-automatic-scheduler` requirement.
+- [ ] `TASK-conversation-event-driven-wakes`: durable deduplicated significant
+  events wake the appropriate manager under budget; periodic checks are the quiet
+  safety net, not repeated usage-consuming busywork.
+- [ ] `TASK-conversation-queue-watchdog`: detect stuck resource queues and
+  disappearing slots, audit removals and stop displaced waiters; never infer
+  browser ownership/termination from a process name or runner death.
+- [ ] `TASK-conversation-nightly-main-tests`: project-declared full canonical
+  suite on an exact frozen commit, resource-aware idle window and evidence-backed
+  regression routing. Do not guess the offending change.
+- [ ] `TASK-conversation-usage-governor`: provider-neutral usage/credit evidence,
+  conservative fallback budgets, graceful wind-down and reviewed reset/restart
+  policy that cannot override manual pause or detach.
+- [ ] `TASK-conversation-idle-worktree-refresh`: scheduled merges into clean,
+  idle, unguarded branches; skip active/dirty/unknown work and preserve conflicts.
+- [ ] `TASK-conversation-queue-planning`: measured test durations, uncertain wait
+  estimates, slowdown visibility, GPU-exclusive resources and approved heavy-run
+  windows; preserve the resource queue's authority.
+- [ ] `TASK-conversation-closure-revert-review`: verified revert/follow-up policy
+  and evidence-backed review of unnamed finished work; never mass-close or reopen
+  tasks based only on untrusted commit trailers.
+- [ ] `TASK-conversation-project-services`: reviewed project-specific landing
+  worker, local dev/Console server, local summary and optional release jobs.
+  No COMBATRIG schedules, Vercel deployment, credentials, LAN exposure or automatic
+  phone notifications are assumed.
+
+These are proposed development tasks, **not implemented automatic init/install**.
+For the first pilot the arbiter explicitly installed an hourly machine manager
+coordination timer and verified real systemd parsing/activation. Automatic AI
+wakes are paused pending the timeout/outcome guard; self-claim remains disabled.
+COMMON.md authorizes only the diagnostics development slice, not broad autonomous
+dispatch. The original 34 proposals remain the handoff; three newly observed
+pilot reliability issues have also been added to the same backlog:
+
+- [ ] `TASK-pilot-starting-presence`: publish guarded startup state before a
+  blocking provider launch and prevent duplicate manual/timer execution.
+- [ ] `TASK-pilot-systemd-rendering`: native scalar-path rendering is fixed and
+  qualified in source; finish active/failed unit evidence and false-success
+  handling instead of equating installed files with an operational timer.
+- [ ] `TASK-pilot-executor-outcomes`: zero exit plus timeout/error/signal cannot
+  produce a successful lifecycle/wake receipt; qualify before automatic wakes.
+- [ ] `TASK-pilot-generated-check-artifacts`: retain exact-commit check artifacts
+  outside the tested tree and safely recover proven generated outputs so a gate
+  does not make the following required gate fail WORKTREE_DIRTY.
+- [ ] `TASK-provider-handover`: after release qualification, checkpoint and safely
+  switch one session then the fleet to reviewed Claude Code/Pi profiles; preserve
+  TORCH identity/tasks/messages but never reuse another harness's native session ID.
+- [ ] `TASK-owner-agent-chat`: persistent per-agent owner conversations for the
+  Manager and every activated domain, durable replies and clear queued/delivered/
+  running/failed outcomes. Reviewed wake-on-message must respect pauses, budgets
+  and runtime leases; qualify executor outcomes and starting presence first.
+
+The owner approved continuing the controlled pilot. Independent QA now has exact
+candidate `ae18a98e2911aa515d0484518013061b05ff6adf` and the Manager has a bounded
+next-slice planning request. The candidate's test/check/lint receipts pass; its
+dashboard receipt remains incomplete because the test writes tracked reports.
+Neither review launch nor controller exit is acceptance or landing evidence.
+There are now 44 owner-intake items, including agent chat, the UI audit, observed
+attention/startup follow-ups and bounded routine-coordination policy.
+
+- [ ] `TASK-console-ux-audit`: Session Manager assigns Owner Console to audit
+  every live dashboard area through actual computer use and inspected screenshots,
+  including desktop/mobile and keyboard/refresh behavior. Owner rejects the long
+  single-page/anchor-navigation layout. Propose focused separate screens, concise
+  overview and contextual drilldowns. Audit/proposal only; no UI rewrite yet.
+- [ ] `TASK-console-attention-actions`: meaningful condition/agent/branch labels,
+  deduplicated findings and contextual quick actions. Owner approve/reject uses
+  existing evidence/revision/preview confirmation; never clear peer messages,
+  merge branches or publish to a remote through a generic warning button.
+- [ ] `TASK-pilot-brief-sandbox`: the first UI audit stopped at a read-only SQLite
+  error while the exact installed brief succeeds on the host. Qualify scoped
+  sandbox access and actionable failure; do not disable sandboxing, change DB
+  permissions, copy state or bypass the authoritative startup brief.
+- [ ] `TASK-bounded-routine-coordination`: live COMMON/manager policy now keeps
+  own-inbox handling, peer questions, named approver decisions and owned ledger
+  maintenance inside the fleet. Project Kernel's approved implementation slice
+  makes this portable in generated instructions and proves authority/wait/pause
+  boundaries with additive scenarios. No general unattended execution is implied.
+
 ## First real self-host run (2026-09-30)
 
 ### Portable production pipelines (new roadmap element)
@@ -37,7 +147,7 @@
   updates, retained previous installs, offline previews and fail-closed errors.
   Four deterministic scenarios added; live download qualification recorded in
   the first-run audit, not implied by mocked installer tests.
-- [ ] Fix `torch brief` invoked from a managed worktree: both live sessions hit
+- [x] Fix `torch brief` invoked from a managed worktree: both live sessions hit
   `LOCAL_STATE_METADATA_MISMATCH`. Resolve canonical project binding with
   checked worktree membership, never weaken root/installation identity checks.
 - [ ] Surface Codex JSON stdout failure events: first Sol launch hid the actual
@@ -45,7 +155,7 @@
 - [ ] Add exact executable/version/model/auth preflight to owner Console and
   setup flow. PATH selected CLI 0.158.0 while the current session used 0.159.2;
   the older child rejected Sol 6.1 and required manual investigation/retry.
-- [ ] Make configuration checkpoint/worktree/manifest handoffs explicit or
+- [x] Make configuration checkpoint/worktree/manifest handoffs explicit or
   guided: generated tracked files and provisioning manifest updates require
   deliberate commits; a healthy doctor does not prove startup readiness.
 - [ ] Isolate irrelevant inherited global MCP servers without removing user
@@ -349,7 +459,7 @@ in `reports/audit/self-host-readiness-2026-09-30.md`. No agent or timer was star
   the collapsed panel; observation never releases a launch lock.
 - [ ] Qualify interrupted-wake recovery against live runtime lifecycle evidence;
   owner attestation is explicit but is not independent proof of termination.
-- [ ] Qualify the updated source as a clean commit before self-host activation;
+- [x] Qualify the updated source as a clean commit before self-host activation;
   older artifact receipts predate these changes. No fleet or timer has started.
 
 Review verification (2026-09-30): full regression suite through isolated
@@ -961,7 +1071,7 @@ COMBATRIG's proposed hierarchy as the default.
   multi-domain coordination/resume scenario with a fixed provider budget.
 - [ ] Install and reverse the user-systemd scheduler, verifying one real
   dispatch and its receipts.
-- [ ] Install an accepted TORCH version in user-local versioned state and use
+- [x] Install an accepted TORCH version in user-local versioned state and use
   its stable launcher to manage this source checkout.
 - [ ] Resolve COMBATRIG's 56 ownership/exclusion blockers, then separately
   authorize an import/cutover trial. Do not mutate COMBATRIG beforehand.

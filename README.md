@@ -292,13 +292,27 @@ Review the evidence in `fleet-proposal.json`, edit its `review.status` to
 node bin/torch.mjs install --proposal fleet-proposal.json --runtime codex --dry-run --json
 node bin/torch.mjs install --proposal fleet-proposal.json --runtime codex --yes --json
 node bin/torch.mjs doctor --json
-node bin/torch.mjs worktrees --dry-run --json
-node bin/torch.mjs worktrees --yes --json
+node bin/torch.mjs setup --dry-run --json
+node bin/torch.mjs setup --yes --json
 node bin/torch.mjs up --fresh --dry-run --json
 ```
 
 Starting or stopping configured runtime sessions is always a separate explicit
 step:
+
+`setup` commits only installation-owned configuration, provisions worktrees,
+and checkpoints their registration. An existing staging area is a blocker;
+unrelated files are never staged. Alternatively, append `--setup` to the
+approved install command. Neither path launches agents.
+
+Normal uninstall retains configuration and history. Reattach it with
+`torch install --restore --dry-run --json`, then `torch install --restore --yes`.
+Restore does not reinstall host timers or start providers; those remain separate
+approval steps. A purge is a different, destructive operation.
+
+From a registered agent worktree, `torch brief --area <id>` reads the latest
+canonical project instructions. Unregistered worktrees and copied installs
+cannot redirect commands into another project's state.
 
 ```bash
 node bin/torch.mjs up --fresh --yes --json
