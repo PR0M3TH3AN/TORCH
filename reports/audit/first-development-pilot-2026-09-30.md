@@ -205,3 +205,34 @@ recovery, **not an installed engine fix**. The permanent executor task must hand
 timeouts, signals, errors, output overflow and uncertain captured identities.
 Automatic wakes remain paused; no remote push, release, installation update or
 default-main promotion has occurred.
+
+## Independent follow-up: completion evidence and review gaps
+
+The first temporary Console probe completed with status 0, no executor error or
+signal, 64 valid protocol records and a final `turn.completed` event. It captured
+141,317 stdout bytes. This proves that diagnostic turn completed, **not that its
+audit task completed**; the audit addendum still records missing computer-use
+coverage. A fresh arbiter browser connection and fresh tab subsequently produced
+an actually viewed single-viewport Overview capture in about four seconds. The
+same Console identity was resumed with that recovery evidence, without duplicate
+launch or a claim that the earlier interruption was caused by output overflow.
+
+QA independently confirmed Kernel's focused 2/2 pass, but rejected full policy
+acceptance because paused execution was only text-matched and manual test reports
+were not durable TORCH check receipts. Kernel was resumed for an additive real
+paused-dispatch boundary scenario. Both tracked lockfiles pin Playwright 1.58.2;
+Kernel's 1.63.0 installation is an environment mismatch, not an intended upgrade.
+
+Work and Integration created candidate
+`f46c713cc9e90697d02e3e29222b3eeb7cd71d99`. Arbiter independently ran its two new
+artifact scenarios: **2/2 PASS**, covering sequential external hashed outputs
+and an exit-zero source mutation remaining incomplete. Full dashboard,
+convergence and independent acceptance remain outstanding.
+
+An early review of Provider Runtime's uncommitted executor draft found remaining
+workflow gaps: status-zero success without terminal evidence, reducing scheduled
+output capacity rather than safely handling screenshot-rich turns, discarding
+initial runtime identity on large output, and insufficient public-boundary tests.
+Specific evidence was routed to Provider Runtime, QA and Session Manager. This
+is in-progress review feedback, not an accepted fix. The manager was resumed to
+follow direct-report waits and task/evidence state; automatic wakes remain paused.
