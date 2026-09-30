@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -16,6 +16,25 @@ import { loadProjectConfig, validateProjectConfig } from '../../src/kernel/confi
 import { CheckService } from '../../src/checks/service.mjs';
 import { IntegrationService } from '../../src/integration/service.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
+
+test('SCN-systemd-native-unit: generated dispatcher is accepted by the real systemd parser', (t) => {
+  if (process.platform !== 'linux') return t.skip('Native systemd qualification is Linux-specific');
+  const context = fixture();
+  const alias = join(mkdtempSync(join(tmpdir(), 'torch-unit-path-')), 'project space % "quoted"');
+  symlinkSync(context.root, alias, 'dir');
+  const launcher = new ScheduleLauncherService({ repositoryRoot: alias, env: context.env, command: ['/usr/bin/true'] });
+  const plan = launcher.plan();
+  const service = plan.files.find(file => file.name.endsWith('.service'));
+  const directory = mkdtempSync(join(tmpdir(), 'torch-systemd-verify-'));
+  const path = join(directory, service.name);
+  writeFileSync(path, service.content);
+  assert.match(service.content, /WorkingDirectory=\//);
+  assert.ok(!service.content.includes('WorkingDirectory="'));
+  assert.ok(service.content.includes('project\\x20space\\x20%%\\x20\\x22quoted\\x22'));
+  const checked = spawnSync('systemd-analyze', ['--user', 'verify', path], { encoding: 'utf8' });
+  assert.equal(checked.error, undefined, checked.error?.message);
+  assert.equal(checked.status, 0, checked.stderr);
+});
 import { createRuntimeAdapterRegistry } from '../../src/adapters/registry.mjs';
 import { planAreaUp } from '../../src/runtime/lifecycle.mjs';
 import { observeProject } from '../../src/observability/snapshot.mjs';

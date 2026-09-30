@@ -4,7 +4,10 @@
 
 TORCH is installed and healthy at `0.1.0-alpha.2`. Setup/restore and all seven
 worktree briefs have been verified. The active organization is Session Manager
-plus six specialists; all providers are offline. The default Git branch remains
+plus six specialists. A first bounded development pilot is now active through
+Session Manager, Provider Runtime and QA; the remaining domains have not started.
+See `reports/audit/first-development-pilot-2026-09-30.md` for current live state.
+The default Git branch remains
 legacy TORCH; the configured development/integration boundary is
 `rewrite/portable-agent-fleet`. No publication or default-branch promotion is
 authorized. Later sections retain historical audit snapshots, including old
@@ -54,10 +57,44 @@ dependencies, and remain unassigned for manager triage. See
   No COMBATRIG schedules, Vercel deployment, credentials, LAN exposure or automatic
   phone notifications are assumed.
 
-These are proposed development tasks, **not implemented automatic setup**. The
-existing 15-minute manager schedule is configured, but no TORCH host timer is
-installed. Common instructions still authorize only the smoke test; development
-activation, self-claim and recurring provider wakes remain separately reviewed.
+These are proposed development tasks, **not implemented automatic init/install**.
+For the first pilot the arbiter explicitly installed an hourly machine manager
+coordination timer and verified real systemd parsing/activation. Automatic AI
+wakes are paused pending the timeout/outcome guard; self-claim remains disabled.
+COMMON.md authorizes only the diagnostics development slice, not broad autonomous
+dispatch. The original 34 proposals remain the handoff; three newly observed
+pilot reliability issues have also been added to the same backlog:
+
+- [ ] `TASK-pilot-starting-presence`: publish guarded startup state before a
+  blocking provider launch and prevent duplicate manual/timer execution.
+- [ ] `TASK-pilot-systemd-rendering`: native scalar-path rendering is fixed and
+  qualified in source; finish active/failed unit evidence and false-success
+  handling instead of equating installed files with an operational timer.
+- [ ] `TASK-pilot-executor-outcomes`: zero exit plus timeout/error/signal cannot
+  produce a successful lifecycle/wake receipt; qualify before automatic wakes.
+- [ ] `TASK-pilot-generated-check-artifacts`: retain exact-commit check artifacts
+  outside the tested tree and safely recover proven generated outputs so a gate
+  does not make the following required gate fail WORKTREE_DIRTY.
+- [ ] `TASK-provider-handover`: after release qualification, checkpoint and safely
+  switch one session then the fleet to reviewed Claude Code/Pi profiles; preserve
+  TORCH identity/tasks/messages but never reuse another harness's native session ID.
+- [ ] `TASK-owner-agent-chat`: persistent per-agent owner conversations for the
+  Manager and every activated domain, durable replies and clear queued/delivered/
+  running/failed outcomes. Reviewed wake-on-message must respect pauses, budgets
+  and runtime leases; qualify executor outcomes and starting presence first.
+
+The owner approved continuing the controlled pilot. Independent QA now has exact
+candidate `ae18a98e2911aa515d0484518013061b05ff6adf` and the Manager has a bounded
+next-slice planning request. The candidate's test/check/lint receipts pass; its
+dashboard receipt remains incomplete because the test writes tracked reports.
+Neither review launch nor controller exit is acceptance or landing evidence.
+There are now 41 owner-intake items, including agent chat and the UI audit.
+
+- [ ] `TASK-console-ux-audit`: Session Manager assigns Owner Console to audit
+  every live dashboard area through actual computer use and inspected screenshots,
+  including desktop/mobile and keyboard/refresh behavior. Owner rejects the long
+  single-page/anchor-navigation layout. Propose focused separate screens, concise
+  overview and contextual drilldowns. Audit/proposal only; no UI rewrite yet.
 
 ## First real self-host run (2026-09-30)
 
