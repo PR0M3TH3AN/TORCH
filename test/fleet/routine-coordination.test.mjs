@@ -13,8 +13,9 @@ import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { planAreaUp, startFleet } from '../../src/runtime/lifecycle.mjs';
+import { ScheduleService } from '../../src/schedules/service.mjs';
 
-function fixture() {
+function fixture({ pausedManagerWake = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-routine-coordination-'));
   execFileSync('git', ['init', '-b', 'main', root]);
   execFileSync('git', ['-C', root, 'config', 'user.email', 'torch-test@example.invalid']);
@@ -27,6 +28,11 @@ function fixture() {
   execFileSync('git', ['-C', root, 'commit', '-m', 'fixture']);
   const repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  if (pausedManagerWake) {
+    const schedule = proposal.schedules.find((entry) => entry.action?.type === 'manager-check-in');
+    assert.ok(schedule, 'fixture must configure the Session Manager check-in schedule');
+    schedule.action = { ...schedule.action, wake: { enabled: false } };
+  }
   proposal.review = {
     status: 'approved', reviewedAt: '2026-09-30T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
   };
@@ -145,6 +151,59 @@ test('SCN-routine-coordination-paused-dispatch: an unapproved public start leave
     assert.equal(control.listApprovals({ actorId: context.worker, status: 'pending' }).some((item) =>
       item.id === ownerWait.id), true, 'the owner wait remains visible after the blocked start');
     assert.equal(control.identity(context.worker).state, 'offline', 'a blocked start cannot report false idle or success');
+  } finally {
+    control.close();
+  }
+});
+
+test('SCN-routine-coordination-paused-schedule-dispatch: configured paused wakes queue attention without a provider invocation', () => {
+  const context = fixture({ pausedManagerWake: true });
+  const at = new Date('2026-09-30T12:00:00Z');
+  let providerWakeCalls = 0;
+  let commandCalls = 0;
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env, clock: () => at });
+  try {
+    const backlog = createBacklogService({ repositoryRoot: context.root, controlPlane: control });
+    const created = backlog.create({ actorId: 'session-manager', title: 'Paused scheduled dispatch',
+      description: 'Keep assigned work and the owner wait visible while wakes are paused.',
+      acceptanceCriteria: ['The paused schedule queues review without a provider invocation.'],
+      affectedDomains: [context.worker] });
+    const ready = backlog.transition({ taskId: created.id, actorId: 'session-manager', to: 'ready',
+      expectedRevision: created.revision });
+    const assigned = backlog.transition({ taskId: ready.id, actorId: 'session-manager', to: 'assigned',
+      owner: context.worker, expectedRevision: ready.revision });
+    control.reportStatus({ areaId: context.worker, state: 'waiting', task: assigned.id,
+      summary: 'Waiting for the owner provider decision.' });
+    const ownerWait = control.requestApproval({ requester: context.worker, approver: 'owner', task: assigned.id,
+      title: 'Owner provider decision', summary: 'Automatic provider execution is paused.' });
+    const schedules = new ScheduleService({
+      repositoryRoot: context.root, controlPlane: control, clock: () => at,
+      executor: () => { commandCalls++; throw new Error('Manager check-in must not invoke a shell command.'); },
+      wakeManager: {
+        plan: () => { providerWakeCalls++; throw new Error('A paused schedule must not plan a provider wake.'); },
+        invoke: () => { providerWakeCalls++; throw new Error('A paused schedule must not invoke a provider.'); },
+      },
+    });
+
+    const plan = schedules.plan({ scheduleId: 'session-manager-check-in', actorId: 'owner', at });
+    assert.equal(plan.wakeEnabled, false, 'the installed schedule must expose an explicit paused wake policy');
+    assert.deepEqual(plan.schedule.action.wake, { enabled: false });
+    const dispatched = schedules.dispatchSystem({ actorId: 'owner', approved: true, at });
+    assert.deepEqual(dispatched.due, ['session-manager-check-in']);
+    assert.equal(dispatched.runs[0].result, 'succeeded');
+    const observed = JSON.parse(dispatched.runs[0].stdout);
+    assert.equal(observed.checkIn.queued, true);
+    assert.equal(observed.wake.attempted, false);
+    assert.equal(observed.wake.reason, 'wake-disabled');
+    assert.equal(providerWakeCalls, 0, 'the public scheduled dispatch cannot plan or invoke a paused provider');
+    assert.equal(commandCalls, 0, 'the typed check-in cannot fall through to a shell command');
+    assert.equal(backlog.get(assigned.id).state, 'assigned', 'the scheduled review cannot complete assigned work');
+    assert.equal(control.listApprovals({ actorId: context.worker, status: 'pending' }).some((item) =>
+      item.id === ownerWait.id), true, 'the owner decision remains a durable wait');
+    assert.equal(control.identity(context.worker).state, 'waiting', 'the worker cannot report false idle or success');
+    assert.equal(control.identity('session-manager').state, 'offline', 'queued review cannot report a manager provider turn');
+    assert.equal(control.readMessages({ recipient: 'session-manager', unacknowledgedOnly: true })
+      .some((message) => message.kind === 'manager-check-in'), true, 'the manager receives durable attention instead of a wake');
   } finally {
     control.close();
   }
