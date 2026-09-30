@@ -189,6 +189,15 @@ review turns and both assigned implementation turns using separate owned
 transient user services. A running service proves an active launch handle, not
 task completion or successful native terminal output.
 
+All three named peer consents subsequently reached **approved revision 2**:
+QA `e198e23b-772f-42d5-89df-5c4891df904f` and
+`649f7e47-8b94-4b02-a1e6-962fde3e24a7`, and Release
+`200dcdba-9337-4e6f-a218-d02c7bda458a`. The responsible peers sent their bounded
+decisions directly to specialists and manager. Actual native Codex processes
+were verified in the Provider Runtime and Work and Integration worktrees;
+the Console subsequently showed both as working. These are successful peer
+coordination outcomes, not completed implementation or independent acceptance.
+
 Owner Console is continuing its actual browser audit through a bounded temporary
 diagnostic launcher. The launcher captures outcome metadata only, checks terminal
 turn evidence and refuses false success. Its larger output buffer is diagnostic
