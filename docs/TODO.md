@@ -72,6 +72,43 @@ pilot reliability issues have also been added to the same backlog:
   handling instead of equating installed files with an operational timer.
 - [ ] `TASK-pilot-executor-outcomes`: zero exit plus timeout/error/signal cannot
   produce a successful lifecycle/wake receipt; qualify before automatic wakes.
+- [ ] `TASK-pilot-generated-check-artifacts`: retain exact-commit check artifacts
+  outside the tested tree and safely recover proven generated outputs so a gate
+  does not make the following required gate fail WORKTREE_DIRTY.
+- [ ] `TASK-provider-handover`: after release qualification, checkpoint and safely
+  switch one session then the fleet to reviewed Claude Code/Pi profiles; preserve
+  TORCH identity/tasks/messages but never reuse another harness's native session ID.
+- [ ] `TASK-owner-agent-chat`: persistent per-agent owner conversations for the
+  Manager and every activated domain, durable replies and clear queued/delivered/
+  running/failed outcomes. Reviewed wake-on-message must respect pauses, budgets
+  and runtime leases; qualify executor outcomes and starting presence first.
+
+The owner approved continuing the controlled pilot. Independent QA now has exact
+candidate `ae18a98e2911aa515d0484518013061b05ff6adf` and the Manager has a bounded
+next-slice planning request. The candidate's test/check/lint receipts pass; its
+dashboard receipt remains incomplete because the test writes tracked reports.
+Neither review launch nor controller exit is acceptance or landing evidence.
+There are now 44 owner-intake items, including agent chat, the UI audit, observed
+attention/startup follow-ups and bounded routine-coordination policy.
+
+- [ ] `TASK-console-ux-audit`: Session Manager assigns Owner Console to audit
+  every live dashboard area through actual computer use and inspected screenshots,
+  including desktop/mobile and keyboard/refresh behavior. Owner rejects the long
+  single-page/anchor-navigation layout. Propose focused separate screens, concise
+  overview and contextual drilldowns. Audit/proposal only; no UI rewrite yet.
+- [ ] `TASK-console-attention-actions`: meaningful condition/agent/branch labels,
+  deduplicated findings and contextual quick actions. Owner approve/reject uses
+  existing evidence/revision/preview confirmation; never clear peer messages,
+  merge branches or publish to a remote through a generic warning button.
+- [ ] `TASK-pilot-brief-sandbox`: the first UI audit stopped at a read-only SQLite
+  error while the exact installed brief succeeds on the host. Qualify scoped
+  sandbox access and actionable failure; do not disable sandboxing, change DB
+  permissions, copy state or bypass the authoritative startup brief.
+- [ ] `TASK-bounded-routine-coordination`: live COMMON/manager policy now keeps
+  own-inbox handling, peer questions, named approver decisions and owned ledger
+  maintenance inside the fleet. Project Kernel's approved implementation slice
+  makes this portable in generated instructions and proves authority/wait/pause
+  boundaries with additive scenarios. No general unattended execution is implied.
 
 ## First real self-host run (2026-09-30)
 
