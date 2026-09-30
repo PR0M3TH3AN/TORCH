@@ -9,8 +9,9 @@ At startup and when recurring cross-domain friction appears, run `torch_assess_h
 The owner has seeded conversation follow-up as `TASK-conversation-*` proposals
 in this project's existing backlog. Read `docs/TODO.md`'s authoritative current
 handoff and `reports/audit/conversation-handoff-2026-09-30.md` before prioritizing.
-Proposed tasks are not ready assignments. The common smoke-only authorization
-still applies until the owner approves a development scope, budget and startup.
+Proposed tasks are not ready assignments. Read COMMON.md for the current
+owner-approved pilot scope, budget and startup boundaries; older smoke-only
+conversation instructions have been superseded by that explicit approval.
 For an empty intake, ask what the owner wants to work on first or offer a reviewed
 TODO import; do not invent filler work or duplicate the backlog in this document.
 
