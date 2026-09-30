@@ -158,3 +158,81 @@ Recovery is `ONE-DISK` for current rewrite HEAD: origin exists, but local
 remote-tracking references do not contain that commit. This is not proof of a
 live remote query. Off-machine synchronization requires an explicit owner
 publication/backup decision; no remote push or default-main promotion occurred.
+
+## Bounded coordination and reliability follow-through
+
+The owner clarified that ordinary peer coordination should not require human
+relay. Live COMMON and Session Manager instructions now require own-inbox review,
+named-approver decisions, durable unresolved waits and direct responsible-peer
+follow-up. Spending, publication, releases, scope/ownership changes, destructive
+recovery and owner-addressed approvals remain reserved. There are 44 backlog
+items; `TASK-bounded-routine-coordination` carries this policy into fresh installs.
+
+Project Kernel committed candidate `d3a679849b0f5e55c2114223a2e56977c318391e`.
+The arbiter independently ran its new routine-coordination test: **2/2 PASS**.
+This covers generated instruction surfaces, acknowledgement not completing work,
+and named-approver enforcement. It does not independently prove paused runtime
+execution or full integration qualification. QA has a review request for that
+coverage gap. Kernel reports test/check/lint evidence, but its dashboard gate is
+blocked: root Playwright is 1.58.2, Kernel's installed dependency is 1.63.0, and
+the latter expects absent `chromium_headless_shell-1243`. QA and manager were
+asked to resolve reproducible setup, not waive assertions or use an unverified
+browser substitution.
+
+Session Manager explicitly blocked the earlier runtime diagnostics task while
+preserving its accepted candidate and incomplete dashboard receipt. It then
+assigned `TASK-pilot-executor-outcomes` to Provider Runtime and
+`TASK-pilot-generated-check-artifacts` to Work and Integration, one active item
+per specialist. Named QA additive-test/output-plumbing consent and Release CLI
+consent were requested through the control plane. The arbiter started their
+review turns and both assigned implementation turns using separate owned
+transient user services. A running service proves an active launch handle, not
+task completion or successful native terminal output.
+
+All three named peer consents subsequently reached **approved revision 2**:
+QA `e198e23b-772f-42d5-89df-5c4891df904f` and
+`649f7e47-8b94-4b02-a1e6-962fde3e24a7`, and Release
+`200dcdba-9337-4e6f-a218-d02c7bda458a`. The responsible peers sent their bounded
+decisions directly to specialists and manager. Actual native Codex processes
+were verified in the Provider Runtime and Work and Integration worktrees;
+the Console subsequently showed both as working. These are successful peer
+coordination outcomes, not completed implementation or independent acceptance.
+
+Owner Console is continuing its actual browser audit through a bounded temporary
+diagnostic launcher. The launcher captures outcome metadata only, checks terminal
+turn evidence and refuses false success. Its larger output buffer is diagnostic
+recovery, **not an installed engine fix**. The permanent executor task must handle
+timeouts, signals, errors, output overflow and uncertain captured identities.
+Automatic wakes remain paused; no remote push, release, installation update or
+default-main promotion has occurred.
+
+## Independent follow-up: completion evidence and review gaps
+
+The first temporary Console probe completed with status 0, no executor error or
+signal, 64 valid protocol records and a final `turn.completed` event. It captured
+141,317 stdout bytes. This proves that diagnostic turn completed, **not that its
+audit task completed**; the audit addendum still records missing computer-use
+coverage. A fresh arbiter browser connection and fresh tab subsequently produced
+an actually viewed single-viewport Overview capture in about four seconds. The
+same Console identity was resumed with that recovery evidence, without duplicate
+launch or a claim that the earlier interruption was caused by output overflow.
+
+QA independently confirmed Kernel's focused 2/2 pass, but rejected full policy
+acceptance because paused execution was only text-matched and manual test reports
+were not durable TORCH check receipts. Kernel was resumed for an additive real
+paused-dispatch boundary scenario. Both tracked lockfiles pin Playwright 1.58.2;
+Kernel's 1.63.0 installation is an environment mismatch, not an intended upgrade.
+
+Work and Integration created candidate
+`f46c713cc9e90697d02e3e29222b3eeb7cd71d99`. Arbiter independently ran its two new
+artifact scenarios: **2/2 PASS**, covering sequential external hashed outputs
+and an exit-zero source mutation remaining incomplete. Full dashboard,
+convergence and independent acceptance remain outstanding.
+
+An early review of Provider Runtime's uncommitted executor draft found remaining
+workflow gaps: status-zero success without terminal evidence, reducing scheduled
+output capacity rather than safely handling screenshot-rich turns, discarding
+initial runtime identity on large output, and insufficient public-boundary tests.
+Specific evidence was routed to Provider Runtime, QA and Session Manager. This
+is in-progress review feedback, not an accepted fix. The manager was resumed to
+follow direct-report waits and task/evidence state; automatic wakes remain paused.
