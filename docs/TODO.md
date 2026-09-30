@@ -4,7 +4,10 @@
 
 TORCH is installed and healthy at `0.1.0-alpha.2`. Setup/restore and all seven
 worktree briefs have been verified. The active organization is Session Manager
-plus six specialists; all providers are offline. The default Git branch remains
+plus six specialists. A first bounded development pilot is now active through
+Session Manager, Provider Runtime and QA; the remaining domains have not started.
+See `reports/audit/first-development-pilot-2026-09-30.md` for current live state.
+The default Git branch remains
 legacy TORCH; the configured development/integration boundary is
 `rewrite/portable-agent-fleet`. No publication or default-branch promotion is
 authorized. Later sections retain historical audit snapshots, including old
@@ -54,10 +57,21 @@ dependencies, and remain unassigned for manager triage. See
   No COMBATRIG schedules, Vercel deployment, credentials, LAN exposure or automatic
   phone notifications are assumed.
 
-These are proposed development tasks, **not implemented automatic setup**. The
-existing 15-minute manager schedule is configured, but no TORCH host timer is
-installed. Common instructions still authorize only the smoke test; development
-activation, self-claim and recurring provider wakes remain separately reviewed.
+These are proposed development tasks, **not implemented automatic init/install**.
+For the first pilot the arbiter explicitly installed an hourly machine manager
+coordination timer and verified real systemd parsing/activation. Automatic AI
+wakes are paused pending the timeout/outcome guard; self-claim remains disabled.
+COMMON.md authorizes only the diagnostics development slice, not broad autonomous
+dispatch. The original 34 proposals remain the handoff; three newly observed
+pilot reliability issues have also been added to the same backlog:
+
+- [ ] `TASK-pilot-starting-presence`: publish guarded startup state before a
+  blocking provider launch and prevent duplicate manual/timer execution.
+- [ ] `TASK-pilot-systemd-rendering`: native scalar-path rendering is fixed and
+  qualified in source; finish active/failed unit evidence and false-success
+  handling instead of equating installed files with an operational timer.
+- [ ] `TASK-pilot-executor-outcomes`: zero exit plus timeout/error/signal cannot
+  produce a successful lifecycle/wake receipt; qualify before automatic wakes.
 
 ## First real self-host run (2026-09-30)
 

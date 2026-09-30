@@ -32,7 +32,10 @@ credentials. Keep pipeline work and Claude/Pi migration queued for later.
 
 Machine manager check-ins are owner-approved hourly with a maximum of 12
 automatic invocations per UTC day in subscription invocation-count mode (not a
-dollar cap). They inspect direct reports/approval waits and report exceptions;
+dollar cap). Automatic AI wake execution is currently PAUSED pending
+TASK-pilot-executor-outcomes qualification; the machine coordination timer still
+queues check-ins. Do not re-enable wakes yourself. They inspect direct
+reports/approval waits and report exceptions;
 they must not launch specialists or expand this slice. Provider-runtime turns are
 launched by the arbiter, not automatically by the manager. Do not change timers
 or budgets yourself. When blocked or finished, record evidence and end the turn;

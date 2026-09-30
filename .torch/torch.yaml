@@ -126,7 +126,7 @@
       "action": {
         "type": "manager-check-in",
         "manager_id": "session-manager",
-        "wake": { "enabled": true, "budget_mode": "invocation-count" }
+        "wake": { "enabled": false, "budget_mode": "invocation-count" }
       },
       "required_authority": [
         "owner"
