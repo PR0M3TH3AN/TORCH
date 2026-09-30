@@ -20,17 +20,19 @@
   "observedAt": "94062020c767",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "ready_to_integrate",
   "owner": "work-integration",
   "evidence": [
-    "f46c713cc9e90697d02e3e29222b3eeb7cd71d99"
+    "f46c713cc9e90697d02e3e29222b3eeb7cd71d99",
+    "QA acceptance a39f2c95-83a5-4cad-8b9b-8ecea0432c7b",
+    "integration request cce22c51-1fa8-4324-8e28-bf8cbfc56165 ready"
   ],
-  "commit": "f46c713cc9e90697d02e3e29222b3eeb7cd71d99",
-  "integrationRequest": null,
+  "commit": "e35046908f741799be9e814cecc6470cf1983b86",
+  "integrationRequest": "cce22c51-1fa8-4324-8e28-bf8cbfc56165",
   "blockedReason": null,
   "createdAt": "2026-09-30T20:31:08.855Z",
-  "updatedAt": "2026-09-30T23:36:29.576Z",
-  "revision": 4,
+  "updatedAt": "2026-09-30T23:47:05.342Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -59,6 +61,20 @@
       "actorId": "work-integration",
       "at": "2026-09-30T23:36:29.576Z",
       "note": "Implemented external artifact isolation/provenance with QA consent 649f7e47; awaiting guarded convergence and independent QA acceptance."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "work-integration",
+      "at": "2026-09-30T23:47:05.093Z",
+      "note": "Independent QA accepted converged candidate and exact candidate-owned receipts."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "work-integration",
+      "at": "2026-09-30T23:47:05.342Z",
+      "note": "Verified candidate linked to serialized integration request; awaiting Session Manager authorization, plan, and bounded local land."
     }
   ]
 }
