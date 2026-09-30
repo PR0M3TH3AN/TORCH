@@ -1,5 +1,64 @@
 # TORCH remaining work
 
+## Authoritative current handoff (2026-09-30, after alpha.2 reinstall)
+
+TORCH is installed and healthy at `0.1.0-alpha.2`. Setup/restore and all seven
+worktree briefs have been verified. The active organization is Session Manager
+plus six specialists; all providers are offline. The default Git branch remains
+legacy TORCH; the configured development/integration boundary is
+`rewrite/portable-agent-fleet`. No publication or default-branch promotion is
+authorized. Later sections retain historical audit snapshots, including old
+"uncommitted/no launcher" statements; those are superseded by this handoff.
+
+The conversation's unfinished work is now owner-proposed in the **existing
+authoritative backlog in the Session Manager worktree**, not a second TODO queue.
+Use `torch backlog list --json` to see it from any registered checkout. Tasks use
+the `TASK-conversation-` prefix, have acceptance criteria, affected domains and
+dependencies, and remain unassigned for manager triage. See
+`reports/audit/conversation-handoff-2026-09-30.md` for the domain review and index.
+
+### New owner requirements: first work and automatic operations
+
+- [ ] `TASK-conversation-first-work-intake`: init/install/setup offers reviewed
+  TODO/backlog import or asks what the owner wants to begin with; previews and
+  confirms proposed tasks; deduplicates resumes; never activates stale/completed
+  TODOs or launches agents silently.
+- [ ] `TASK-conversation-persistent-operations`: reviewed init/install provisions
+  machine-level scheduler/services automatically, not merely schedule JSON or a
+  separate manual cron-install command. Paused installs remain dormant. Services
+  declare system/session lifetimes, budgets, timezone, restart/missed-run policy,
+  pause/resume and manifest-owned uninstall/restore behavior. This extends the
+  earlier `TASK-conversation-automatic-scheduler` requirement.
+- [ ] `TASK-conversation-event-driven-wakes`: durable deduplicated significant
+  events wake the appropriate manager under budget; periodic checks are the quiet
+  safety net, not repeated usage-consuming busywork.
+- [ ] `TASK-conversation-queue-watchdog`: detect stuck resource queues and
+  disappearing slots, audit removals and stop displaced waiters; never infer
+  browser ownership/termination from a process name or runner death.
+- [ ] `TASK-conversation-nightly-main-tests`: project-declared full canonical
+  suite on an exact frozen commit, resource-aware idle window and evidence-backed
+  regression routing. Do not guess the offending change.
+- [ ] `TASK-conversation-usage-governor`: provider-neutral usage/credit evidence,
+  conservative fallback budgets, graceful wind-down and reviewed reset/restart
+  policy that cannot override manual pause or detach.
+- [ ] `TASK-conversation-idle-worktree-refresh`: scheduled merges into clean,
+  idle, unguarded branches; skip active/dirty/unknown work and preserve conflicts.
+- [ ] `TASK-conversation-queue-planning`: measured test durations, uncertain wait
+  estimates, slowdown visibility, GPU-exclusive resources and approved heavy-run
+  windows; preserve the resource queue's authority.
+- [ ] `TASK-conversation-closure-revert-review`: verified revert/follow-up policy
+  and evidence-backed review of unnamed finished work; never mass-close or reopen
+  tasks based only on untrusted commit trailers.
+- [ ] `TASK-conversation-project-services`: reviewed project-specific landing
+  worker, local dev/Console server, local summary and optional release jobs.
+  No COMBATRIG schedules, Vercel deployment, credentials, LAN exposure or automatic
+  phone notifications are assumed.
+
+These are proposed development tasks, **not implemented automatic setup**. The
+existing 15-minute manager schedule is configured, but no TORCH host timer is
+installed. Common instructions still authorize only the smoke test; development
+activation, self-claim and recurring provider wakes remain separately reviewed.
+
 ## First real self-host run (2026-09-30)
 
 ### Portable production pipelines (new roadmap element)
@@ -349,7 +408,7 @@ in `reports/audit/self-host-readiness-2026-09-30.md`. No agent or timer was star
   the collapsed panel; observation never releases a launch lock.
 - [ ] Qualify interrupted-wake recovery against live runtime lifecycle evidence;
   owner attestation is explicit but is not independent proof of termination.
-- [ ] Qualify the updated source as a clean commit before self-host activation;
+- [x] Qualify the updated source as a clean commit before self-host activation;
   older artifact receipts predate these changes. No fleet or timer has started.
 
 Review verification (2026-09-30): full regression suite through isolated
@@ -961,7 +1020,7 @@ COMBATRIG's proposed hierarchy as the default.
   multi-domain coordination/resume scenario with a fixed provider budget.
 - [ ] Install and reverse the user-systemd scheduler, verifying one real
   dispatch and its receipts.
-- [ ] Install an accepted TORCH version in user-local versioned state and use
+- [x] Install an accepted TORCH version in user-local versioned state and use
   its stable launcher to manage this source checkout.
 - [ ] Resolve COMBATRIG's 56 ownership/exclusion blockers, then separately
   authorize an import/cutover trial. Do not mutate COMBATRIG beforehand.

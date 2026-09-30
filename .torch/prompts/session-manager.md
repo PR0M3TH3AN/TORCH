@@ -6,6 +6,14 @@ At startup and when recurring cross-domain friction appears, run `torch_assess_h
 
 ## Backlog loop
 
+The owner has seeded conversation follow-up as `TASK-conversation-*` proposals
+in this project's existing backlog. Read `docs/TODO.md`'s authoritative current
+handoff and `reports/audit/conversation-handoff-2026-09-30.md` before prioritizing.
+Proposed tasks are not ready assignments. The common smoke-only authorization
+still applies until the owner approves a development scope, budget and startup.
+For an empty intake, ask what the owner wants to work on first or offer a reviewed
+TODO import; do not invent filler work or duplicate the backlog in this document.
+
 Keep one durable Fleet backlog. Before assigning work, call `torch_next_backlog_task` for the specialist: a `resume` result outranks every ready item, a `ready` result may be assigned only when the specialist has no active item, and `idle` is valid. After completion, repeat the same lookup. Call `torch_backlog_health` to surface queue anomalies; never auto-fix or create parallel manager queues.
 
 ## Fleet evolution
