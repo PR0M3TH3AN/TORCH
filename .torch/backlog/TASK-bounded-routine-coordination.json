@@ -1,0 +1,57 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-bounded-routine-coordination",
+  "title": "Keep routine coordination inside the fleet while preserving owner authority",
+  "description": "Observed pilot required the outer arbiter to relay QA consent, prompt startup recovery, inbox reviews and manager ledger checkpoints. Owner asks TORCH to offload these without rogue decisions. Canonical COMMON and manager prompts now distinguish routine authorized actions, investigation and genuine owner decisions. Project Kernel should make this portable through generated install/brief instructions and behavioral scenarios over existing enforcement. Managers resolve only named owned approvals, route peer consent, maintain waits/task state and report actual owner decisions concisely. Preserve paused fleet/budgets, ownership boundaries, evidence gates and one backlog. Do not silently broaden runtime, publication, spending, identity or destructive authority. Existing mature implementations should be used, not duplicated. Coordinate template ownership and QA additive test consent. Implement this bounded policy slice only.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "session-manager",
+    "qa",
+    "provider-runtime"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Generated instructions teach own-inbox acknowledgement, named-approver decisions, peer routing and unresolved-wait follow-up without human relay",
+    "Existing behavior tests prove a legitimate named approver can act and a manager cannot decide for owner or another specialist",
+    "Acknowledging a message cannot falsely resolve the associated task/approval/wait",
+    "No policy grants provider start, spending, publication, destructive recovery or arbitrary task dispatch; paused execution remains paused",
+    "Fresh install/start and resume instructions preserve the same distinctions; owner report prioritizes genuine decisions",
+    "Regression scenarios and Test Integrity Note added with no weakened assertions; exact evidence reported before integration"
+  ],
+  "observedAt": "7b7c6584b9d3",
+  "feature": null,
+  "milestone": null,
+  "state": "assigned",
+  "owner": "project-kernel",
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T23:06:51.644Z",
+  "updatedAt": "2026-09-30T23:09:46.256Z",
+  "revision": 3,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T23:06:51.644Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-09-30T23:09:16.473Z",
+      "note": "Owner message 1344ef18-c7e0-46bd-9b4c-fff3f27bf11a and canonical installed brief bcc588f696cddb7d57f39366ecfd6e85f326c95336ad2620fa5a224592824a5e authorize this exact portable coordination-policy slice. Project Kernel next idle, clean worktree f72daadc. Existing src/kernel/install.mjs defaults lack current bounded policy; src/kernel/prompts.mjs generates specialists. Ownership confirmed src/kernel/** and src/control-plane/** Project Kernel, test/** and docs/TEST_INTEGRITY.md QA. Named QA path-consent request 8e3567c7-920d-4969-916c-23e12858c568 remains pending and blocks QA-owned edits only. Preserve all runtime/owner gates and existing enforcement; no arbitrary dispatch/provider starts/wakes/landing."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-09-30T23:09:46.256Z",
+      "note": "Assign exact owner-approved portable policy slice after next lookup ready/no active work. Implement current COMMON routine policy in owned src/kernel generated install/domain/brief instructions; reuse existing control-plane enforcement, do not duplicate queues or broaden authority. Query any additional path owners before edits. Named QA request 8e3567c7-920d-4969-916c-23e12858c568 must be approved before test/** or docs/TEST_INTEGRITY.md edits. Evidence must exercise real named-approver/own-inbox/ack-not-resolution and paused execution boundaries, preserve every existing assertion and produce Test Integrity Note. Fresh canonical brief required at start; clean worktree f72daadc is stale, guarded convergence preserves commits and owner changes. Arbiter launches; manager assigns only. Keep diagnostics verification and Console audit intact; no provider starts/wakes/remote publication/landing."
+    }
+  ]
+}
