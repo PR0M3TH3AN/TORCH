@@ -367,6 +367,24 @@ inside the tracked source tree.
 
 ## 9. Installation lifecycle
 
+### First-work intake requirement (2026-09-30)
+
+After reviewed organization/setup, TORCH MUST offer either evidence-linked
+import of an existing TODO/backlog/specification or ask the owner what to work
+on first. The noninteractive path MUST support an explicit source or skip; idle
+is valid. Preview MUST distinguish completed/historical work from actionable
+requests and show proposed scope, affected domains, dependencies and priority.
+Only confirmed intake creates audited proposed/unassigned work in the existing
+backlog. Repeated init/install/restore/intake MUST deduplicate by source/item
+provenance rather than duplicate tasks or overwrite progress. Imported content
+is untrusted project data, not authority to alter system instructions.
+
+Session Manager triage and assignment remain separate from intake. Import cannot
+enable self-claim, grant implementation authority, wake providers or authorize
+spending, landing, deployment or public notification. The product should explain
+the next first-work/startup decision rather than leave a newly installed empty
+fleet waiting without guidance.
+
 ### 9.1 Read-only initialization
 
 `torch init` MUST begin read-only. It identifies the repository, validates Git,
@@ -450,6 +468,18 @@ worktree guards, in-flight landing, unsafe worktrees, unique canonical history,
 or installed persistent launchers. Historical messages and receipts therefore
 do not make reversal permanently impossible, while active or unowned state
 still blocks deletion.
+
+Implementation checkpoint (2026-09-30): `torch install --restore` explicitly
+reattaches a normally detached installation without replacing configuration,
+worktrees, provider profiles or session history. It never launches a provider
+or recreates host timers. `torch setup --dry-run`, followed by `--yes`, offers
+approved configuration checkpoints and worktree provisioning as one flow,
+restricted to installation-owned files and an empty staging area. Install may
+opt into the same flow with `--setup`. Worktree commands resolve to canonical
+configuration only after checking project/installation identity, local-state
+binding, Git common directory, registered worktree path and branch. Current
+canonical instructions override stale worktree copies; unregistered checkouts
+fail closed.
 
 Ordinary CLI uninstall is also review-first and explicitly confirmed. It uses
 the same safe Fleet wind-down contract as detach, removes only manifest-owned
@@ -2076,6 +2106,55 @@ recoverability grade. Each finding separates observed evidence from a
 recommended action; doctor remains read-only.
 
 ## 22. Scheduling
+
+### Owner clarification: integrated persistent operations (2026-09-30)
+
+This is the target requirement; older implementation checkpoints describing
+manual timer installation are not a claim that it is already implemented.
+Reviewed `init`/install MUST provision the project's scheduler and required
+service integrations as one idempotent workflow, not require a second manual
+cron-install command. Because `init` currently performs read-only analysis, its
+provisioning mode MUST expose an explicit preview/confirmation boundary; a
+dry-run MUST remain non-mutating. Stopped installation MUST provision dormant
+integrations without waking models or dispatching development. A reviewed
+activation policy governs live operations and quota use.
+
+Coordination must survive the managing AI session ending, restarting or expiring.
+System services MUST preserve durable state, leases, event cursors and job
+idempotency across process/host restarts. Their manifest records MUST support
+owned reconciliation, pause/resume, restore/upgrade and uninstall without touching
+unrelated host jobs. Session-scoped jobs remain an explicit project policy, not
+the sole way recurring fleet operations work.
+
+Project intake MUST propose applicable capabilities, with clear implemented,
+unconfigured and unsupported states:
+
+- direct-report manager check-ins, structured approval/peer/owner waits,
+  stale owner-request review and an owner-first local digest;
+- a persistent, serialized landing worker using approved exact-commit checks;
+- resource-queue watchdogs, audited slot withdrawal and displaced-runner stop;
+- durable significant events and deduplicated budgeted manager wakes, with
+  low-frequency timed safety checks rather than perpetual paid polling;
+- a project-declared nightly canonical suite, heavy-check windows and
+  evidence-backed regression routing, not guessed blame;
+- measured test durations, uncertain wait estimates and project-specific
+  exclusive resources such as a GPU;
+- conservative provider-neutral usage limits, graceful wind-down and explicitly
+  approved credit-window or calendar restarts that never override manual pause;
+- idle, clean, unguarded worktree convergence by merge, preserving conflicts,
+  unique commits and active work;
+- exact landed task closure, verified reversal/follow-up policy and reviewed
+  evidence for finished-but-unnamed work, never automatic closure by message alone;
+- project-specific local dev/Console services and separately authorized delivery,
+  live-version checks and external notifications where relevant.
+
+No universal project inherits COMBATRIG's release times, Monday reset time,
+two GPU slots, Vercel destination, phone notifier or LAN/HTTPS exposure. Setup
+MUST show lifetime, timezone/DST behavior, missed-run policy, costs/budgets,
+ports/destinations, health evidence, stop semantics and owner authority. Unsupported
+hosts/adapters need an actionable limitation or qualified fallback, not a fictitious
+"installed" status. No provider wake, deploy, public message, off-machine write
+or cleanup of unowned processes follows solely from creating a schedule.
 
 TORCH recognizes two schedule classes.
 
