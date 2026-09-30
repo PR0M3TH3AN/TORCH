@@ -74,14 +74,15 @@ function pathsOverlap(left, right) {
   return Boolean(a && b && (a.startsWith(`${b}/`) || b.startsWith(`${a}/`)));
 }
 
-function normalizeDomain(input) {
+function normalizeDomain(input, defaultRuntime) {
   const id = requiredText(input?.id, 'domain.id');
   if (!/^[a-z0-9][a-z0-9-]*$/.test(id) || id === 'session-manager') {
     throw new TorchError(`Invalid proposed domain ID: ${id}`, {
       code: 'INVALID_FLEET_CHANGE', details: { field: 'domain.id' },
     });
   }
-  const runtime = requiredText(input.runtime ?? 'claude', 'domain.runtime');
+  const runtime = requiredText(input.runtime === 'default' || input.runtime == null
+    ? defaultRuntime : input.runtime, 'domain.runtime');
   const model = input.model === undefined || input.model === null
     ? null : requiredText(input.model, 'domain.model');
   const branch = input.branch === undefined || input.branch === null
@@ -327,7 +328,8 @@ export class FleetEvolutionService {
         code: 'FLEET_CHANGE_AUTHORITY_REQUIRED', details: { actor },
       });
     }
-    const domain = normalizeDomain(input);
+    const config = loadProjectConfig(this.repositoryRoot);
+    const domain = normalizeDomain(input, config.runtimes.default);
     const agents = this.controlPlane.listAgents();
     if (agents.some((agent) => agent.areaId === domain.id)) {
       throw new TorchError(`Fleet identity already exists: ${domain.id}`, { code: 'FLEET_IDENTITY_EXISTS' });
@@ -343,7 +345,6 @@ export class FleetEvolutionService {
         code: 'FLEET_OWNERSHIP_COLLISION', details: collisions,
       });
     }
-    const config = loadProjectConfig(this.repositoryRoot);
     if (!config.runtimes?.[domain.runtime]) {
       throw new TorchError(`Runtime is not configured for the Fleet: ${domain.runtime}`, {
         code: 'FLEET_RUNTIME_NOT_CONFIGURED', details: { runtime: domain.runtime },
@@ -470,7 +471,7 @@ export class FleetEvolutionService {
         code: 'INVALID_FLEET_CHANGE', details: { field: 'resultDomains' },
       });
     }
-    const resultDomains = resultInput.map(normalizeDomain);
+    const resultDomains = resultInput.map((input) => normalizeDomain(input, config.runtimes.default));
     if ((changeType === 'merge-domains' && resultDomains.length !== 1)
       || (changeType === 'split-domain' && resultDomains.length < 2)) {
       throw new TorchError(`${changeType} has invalid result-domain cardinality`, {

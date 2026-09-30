@@ -18,6 +18,8 @@ task-logs/*.log
 
 # Artifacts and temporary files
 artifacts/
+!src/artifacts/
+!src/artifacts/**
 reports/performance/hits-*.json
 reports/performance/hits-*.txt
 reports/performance/benchmark-*.txt

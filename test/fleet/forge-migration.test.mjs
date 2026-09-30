@@ -18,7 +18,7 @@ function run(root, env, args) {
   return spawnSync(process.execPath, [CLI, ...args], { cwd: root, env, encoding: 'utf8' });
 }
 
-test('SCN-forge-migration: attach, outage, and detach preserve the local Fleet', () => {
+test('SCN-forge-migration / SCN-forge-sync: publish only an owner-confirmed fast-forward and preserve local operation', () => {
   const root = mkdtempSync(join(tmpdir(), 'torch-forge-migration-'));
   const stateHome = mkdtempSync(join(tmpdir(), 'torch-forge-state-'));
   const worktreeParent = mkdtempSync(join(tmpdir(), 'torch-forge-worktrees-'));
@@ -70,6 +70,53 @@ test('SCN-forge-migration: attach, outage, and detach preserve the local Fleet',
   assert.equal(attachedConfig.forge.provider, 'generic-git');
   assert.deepEqual(attachedConfig.repository.canonical, { type: 'remote', remote: 'origin' });
   assert.equal(JSON.parse(run(root, env, ['forge', 'status', '--json']).stdout).synchronized, true);
+
+  const remoteBeforeSync = execFileSync('git', ['--git-dir', forgePath, 'rev-parse', 'refs/heads/main'], { encoding: 'utf8' }).trim();
+  writeFileSync(join(root, 'app.js'), 'export const app = "ready to publish";\n');
+  execFileSync('git', ['-C', root, 'add', 'app.js']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'canonical work ready to publish']);
+  const syncPlan = run(root, env, ['forge', 'sync', 'plan', '--json']);
+  assert.equal(syncPlan.status, 0, syncPlan.stderr || syncPlan.stdout);
+  assert.equal(JSON.parse(syncPlan.stdout).disposition, 'fast-forward-remote');
+  assert.equal(JSON.parse(syncPlan.stdout).remoteCommit, remoteBeforeSync);
+  const unconfirmedSync = run(root, env, ['forge', 'sync', '--json']);
+  assert.notEqual(unconfirmedSync.status, 0);
+  assert.equal(JSON.parse(unconfirmedSync.stdout).error, 'APPROVAL_REQUIRED');
+  assert.equal(execFileSync('git', ['--git-dir', forgePath, 'rev-parse', 'refs/heads/main'], { encoding: 'utf8' }).trim(), remoteBeforeSync);
+
+  const published = run(root, env, ['forge', 'sync', '--yes', '--json']);
+  assert.equal(published.status, 0, published.stderr || published.stdout);
+  assert.equal(JSON.parse(published.stdout).synchronized, true);
+  const localMain = execFileSync('git', ['-C', root, 'rev-parse', 'main'], { encoding: 'utf8' }).trim();
+  assert.equal(execFileSync('git', ['--git-dir', forgePath, 'rev-parse', 'refs/heads/main'], { encoding: 'utf8' }).trim(), localMain);
+  const audit = openControlPlane({ repositoryRoot: root, env });
+  assert.equal(audit.database.prepare(`
+    SELECT actor_id FROM audit_events WHERE operation = 'forge.sync' ORDER BY created_at DESC LIMIT 1
+  `).get().actor_id, 'owner');
+  audit.close();
+
+  const remoteWriter = mkdtempSync(join(tmpdir(), 'torch-forge-side-writer-'));
+  execFileSync('git', ['clone', '--branch', 'main', forgePath, remoteWriter]);
+  execFileSync('git', ['-C', remoteWriter, 'config', 'user.email', 'torch-test@example.invalid']);
+  execFileSync('git', ['-C', remoteWriter, 'config', 'user.name', 'TORCH Remote Writer']);
+  writeFileSync(join(remoteWriter, 'app.js'), 'export const app = "remote advanced";\n');
+  execFileSync('git', ['-C', remoteWriter, 'add', 'app.js']);
+  execFileSync('git', ['-C', remoteWriter, 'commit', '-m', 'remote moved independently']);
+  execFileSync('git', ['-C', remoteWriter, 'push', 'origin', 'main']);
+  const remoteAheadCommit = execFileSync('git', ['-C', remoteWriter, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  const staleRemotePlan = run(root, env, ['forge', 'sync', 'plan', '--json']);
+  assert.notEqual(staleRemotePlan.status, 0);
+  assert.equal(JSON.parse(staleRemotePlan.stdout).blockers[0].code, 'FORGE_SYNC_FETCH_REQUIRED');
+  const fetched = execFileSync('git', ['-C', root, 'fetch', 'origin', 'main'], { encoding: 'utf8' });
+  assert.equal(typeof fetched, 'string');
+  const remoteAheadPlan = run(root, env, ['forge', 'sync', 'plan', '--json']);
+  assert.notEqual(remoteAheadPlan.status, 0);
+  assert.equal(JSON.parse(remoteAheadPlan.stdout).blockers[0].code, 'FORGE_REMOTE_AHEAD');
+  const refused = run(root, env, ['forge', 'sync', '--yes', '--json']);
+  assert.notEqual(refused.status, 0);
+  assert.equal(JSON.parse(refused.stdout).error, 'FORGE_SYNC_BLOCKED');
+  assert.equal(execFileSync('git', ['--git-dir', forgePath, 'rev-parse', 'refs/heads/main'], { encoding: 'utf8' }).trim(), remoteAheadCommit,
+    'remote-ahead history is never force-pushed or rewritten');
 
   renameSync(forgePath, offlinePath);
   const degraded = run(root, env, ['forge', 'status', '--json']);

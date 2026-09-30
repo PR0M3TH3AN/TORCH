@@ -1,17 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["schema", "generatedAt", "repository", "review", "specifications", "domains", "collisions", "checks", "resources", "schedules", "architecture"],
+  "required": ["schema", "generatedAt", "repository", "review", "specifications", "domains", "collisions", "checks", "resources", "schedules", "architecture", "organization_assessment"],
   "properties": {
     "schema": { "const": "torch.dev/domain-proposal/v1alpha1" },
     "generatedAt": { "type": "string", "minLength": 1 },
     "repository": {
       "type": "object",
-      "required": ["root", "initialCommit", "head"],
+      "required": ["root", "initialCommit", "head", "workingTreeFingerprint"],
       "properties": {
         "root": { "type": "string" },
         "initialCommit": { "type": "string" },
-        "head": { "type": "string" }
+        "head": { "type": "string" },
+        "workingTreeFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       },
       "additionalProperties": false
     },
@@ -55,6 +56,67 @@
     "checks": { "type": "array", "items": { "type": "object" } },
     "resources": { "type": "array", "items": { "type": "object" } },
     "schedules": { "type": "array", "items": { "type": "object" } },
+    "runtime_wake_budget": {
+      "type": "object",
+      "required": ["max_invocations_per_day"],
+      "properties": {
+        "max_invocations_per_day": { "type": "integer", "minimum": 1, "maximum": 24 }
+      },
+      "additionalProperties": false
+    },
+    "organization_assessment": {
+      "type": "object",
+      "required": ["shape", "rationale", "evidence", "authority_boundaries", "proposed_coordination_roles", "direct_peer_communication"],
+      "properties": {
+        "shape": { "enum": ["flat", "coordination_roles"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "evidence": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "authority_boundaries": {
+          "type": "object",
+          "required": ["implementation_ownership", "coordination_responsibility", "fleet_operations_authority", "project_priority_authority", "independent_review_authority", "owner_only_decisions"],
+          "properties": {
+            "implementation_ownership": { "type": "string", "minLength": 1 },
+            "coordination_responsibility": { "type": "string", "minLength": 1 },
+            "fleet_operations_authority": { "type": "string", "minLength": 1 },
+            "project_priority_authority": { "type": "string", "minLength": 1 },
+            "independent_review_authority": { "type": "string", "minLength": 1 },
+            "owner_only_decisions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+          },
+          "additionalProperties": false
+        },
+        "proposed_coordination_roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "coordinates_domains", "integrated_outcome", "decision_scope", "owner_escalations", "evidence", "owns_implementation_paths", "has_owner_approval_authority"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+              "title": { "type": "string", "minLength": 1 },
+              "coordinates_domains": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "type": "string" } },
+              "integrated_outcome": { "type": "string", "minLength": 1 },
+              "decision_scope": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+              "owner_escalations": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+              "evidence": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+              "owns_implementation_paths": { "const": false },
+              "has_owner_approval_authority": { "const": false }
+            },
+            "additionalProperties": false
+          }
+        },
+        "direct_peer_communication": { "const": "preserved" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "shape": { "const": "flat" } } },
+          "then": { "properties": { "proposed_coordination_roles": { "maxItems": 0 } } }
+        },
+        {
+          "if": { "properties": { "shape": { "const": "coordination_roles" } } },
+          "then": { "properties": { "proposed_coordination_roles": { "minItems": 1 } } }
+        }
+      ],
+      "additionalProperties": false
+    },
     "architecture": { "type": "object" }
   },
   "additionalProperties": false

@@ -2,9 +2,10 @@ const routeButton = document.querySelector('#route-toggle');
 const steps = [...document.querySelectorAll('.route-step')];
 const readout = document.querySelector('#route-readout');
 const routeMessages = [
-  'Owner intent recorded.', 'Session Manager assigned terrain ownership.',
-  'Terrain and QA coordinate directly.', 'Checks passed for commit 8f6c2e1.',
-  'Authorized fast-forward reached canonical main.',
+  'Project evidence collected; no provider launched.', 'A fleet proposal is ready for owner review.',
+  'Each session can use its selected runtime; peers keep direct links.',
+  'Messages, tasks, status, and evidence share one coordination layer.',
+  'Changes land only through authorized checks and serialized integration.',
 ];
 let routeTimer;
 
@@ -12,7 +13,7 @@ routeButton?.addEventListener('click', () => {
   clearInterval(routeTimer);
   steps.forEach((step) => step.classList.remove('is-active', 'is-complete'));
   routeButton.setAttribute('aria-pressed', 'true');
-  routeButton.textContent = 'Routing…';
+  routeButton.textContent = 'Following the flow…';
   let index = 0;
   const advance = () => {
     steps.forEach((step, stepIndex) => {
@@ -24,7 +25,7 @@ routeButton?.addEventListener('click', () => {
     if (index === steps.length) {
       clearInterval(routeTimer);
       routeButton.setAttribute('aria-pressed', 'false');
-      routeButton.textContent = 'Run again';
+      routeButton.textContent = 'Show it again';
     }
   };
   advance();

@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
+import { BacklogService } from '../backlog/service.mjs';
 
 function git(root, args, { allowFailure = false } = {}) {
   const result = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
@@ -118,22 +119,30 @@ export class IntegrationService {
   list({ state } = {}) {
     const rows = state
       ? this.controlPlane.database.prepare(`
-        SELECT * FROM integration_requests WHERE state = ? ORDER BY created_at, id
+        SELECT * FROM integration_requests WHERE state = ? ORDER BY rowid
       `).all(state)
-      : this.controlPlane.database.prepare('SELECT * FROM integration_requests ORDER BY created_at, id').all();
+      : this.controlPlane.database.prepare('SELECT * FROM integration_requests ORDER BY rowid').all();
     return rows.map(integrationRow);
   }
 
   evaluate(requestId) {
     const request = this.get(requestId);
     if (request.state === 'landed' || request.state === 'superseded') return request;
-    if (request.state === 'landing'
-      && git(this.repositoryRoot, ['rev-parse', request.targetBranch]).stdout === request.sourceCommit) {
+    const targetCommit = git(this.repositoryRoot, ['rev-parse', request.targetBranch]).stdout;
+    if (request.authorizedBy
+      && (this.policy.landing_authority ?? []).includes(request.authorizedBy)
+      && git(this.repositoryRoot, ['merge-base', '--is-ancestor', request.sourceCommit, targetCommit], { allowFailure: true }).status === 0
+      && this.checkService.exactPasses({ commit: request.sourceCommit, requiredChecks: request.requiredChecks })) {
       const landedAt = this.clock().toISOString();
       this.controlPlane.database.prepare(`
         UPDATE integration_requests
         SET state = 'landed', reason = NULL, landed_at = ?, updated_at = ? WHERE id = ?
       `).run(landedAt, landedAt, request.id);
+      this.controlPlane.audit({
+        actorId: request.authorizedBy, operation: 'integration.reconcile-landed',
+        entityType: 'integration-request', entityId: request.id,
+        details: { commit: request.sourceCommit, target: request.targetBranch },
+      });
       return this.get(request.id);
     }
     let state = 'ready';
@@ -147,7 +156,16 @@ export class IntegrationService {
       'merge-base', '--is-ancestor', request.baseTargetCommit, request.sourceCommit,
     ], { allowFailure: true }).status !== 0) {
       state = 'needs_convergence'; reason = 'source-does-not-contain-request-target';
-    } else if (!this.checkService.exactPasses({
+    } else {
+      const targetCommit = git(this.repositoryRoot, ['rev-parse', request.targetBranch]).stdout;
+      if (targetCommit !== request.baseTargetCommit
+        && git(this.repositoryRoot, [
+          'merge-base', '--is-ancestor', targetCommit, request.sourceCommit,
+        ], { allowFailure: true }).status !== 0) {
+        state = 'needs_convergence'; reason = 'target-advanced-since-request';
+      }
+    }
+    if (state === 'ready' && !this.checkService.exactPasses({
       commit: request.sourceCommit, requiredChecks: request.requiredChecks,
     })) {
       state = 'testing'; reason = 'required-exact-sha-checks-missing';
@@ -182,6 +200,15 @@ export class IntegrationService {
     return this.get(request.id);
   }
 
+  firstReadyRequest(actorId) {
+    for (const queued of this.list()) {
+      if (queued.authorizedBy !== actorId) continue;
+      const current = this.evaluate(queued.id);
+      if (current.state === 'ready') return current;
+    }
+    return null;
+  }
+
   planLanding({ requestId, actorId } = {}) {
     const actor = this.controlPlane.assertIdentity(actorId);
     const request = this.evaluate(requestId);
@@ -189,8 +216,17 @@ export class IntegrationService {
     if (!(this.policy.landing_authority ?? []).includes(actor)) blockers.push({ code: 'LANDING_AUTHORITY_REQUIRED' });
     if (request.authorizedBy !== actor) blockers.push({ code: 'REQUEST_NOT_AUTHORIZED_BY_ACTOR' });
     if (request.state !== 'ready') blockers.push({ code: 'INTEGRATION_NOT_READY', state: request.state, reason: request.reason });
+    if (request.state === 'ready') {
+      const firstReady = this.firstReadyRequest(actor);
+      if (firstReady && firstReady.id !== request.id) {
+        blockers.push({ code: 'INTEGRATION_QUEUE_ORDER_REQUIRED', nextRequestId: firstReady.id });
+      }
+    }
     const currentTarget = git(this.repositoryRoot, ['rev-parse', request.targetBranch]).stdout;
-    if (this.policy.require_current_main !== false && currentTarget !== request.baseTargetCommit) {
+    if (this.policy.require_current_main !== false && currentTarget !== request.baseTargetCommit
+      && git(this.repositoryRoot, [
+        'merge-base', '--is-ancestor', currentTarget, request.sourceCommit,
+      ], { allowFailure: true }).status !== 0) {
       blockers.push({ code: 'TARGET_ADVANCED', expected: request.baseTargetCommit, actual: currentTarget });
     }
     const currentBranch = git(this.repositoryRoot, ['branch', '--show-current']).stdout;
@@ -207,38 +243,132 @@ export class IntegrationService {
   }
 
   land({ requestId, actorId } = {}) {
-    const plan = this.planLanding({ requestId, actorId });
-    if (!plan.canProceed) {
-      throw new TorchError('Integration landing refused by main-protection policy', {
-        code: 'INTEGRATION_LANDING_BLOCKED', details: plan.blockers,
-      });
-    }
-    const landingAt = this.clock().toISOString();
-    this.controlPlane.database.prepare(`
-      UPDATE integration_requests SET state = 'landing', reason = NULL, updated_at = ? WHERE id = ?
-    `).run(landingAt, plan.request.id);
-    this.controlPlane.audit({
-      actorId, operation: 'integration.landing-start', entityType: 'integration-request', entityId: plan.request.id,
-      details: { commit: plan.request.sourceCommit, target: plan.request.targetBranch },
-    });
+    const database = this.controlPlane.database;
     try {
-      git(this.repositoryRoot, ['merge', '--ff-only', plan.request.sourceCommit]);
+      database.exec('BEGIN IMMEDIATE');
     } catch (error) {
-      const failedAt = this.clock().toISOString();
-      this.controlPlane.database.prepare(`
-        UPDATE integration_requests SET state = 'blocked', reason = ?, updated_at = ? WHERE id = ?
-      `).run('git-fast-forward-failed', failedAt, plan.request.id);
+      if (/busy|locked/i.test(error.message ?? '')) {
+        throw new TorchError('Another integration or project-state writer holds the landing queue. Retry after it finishes.', {
+          code: 'INTEGRATION_LANDING_BUSY', details: { requestId },
+        });
+      }
       throw error;
     }
-    const landedAt = this.clock().toISOString();
-    this.controlPlane.database.prepare(`
-      UPDATE integration_requests
-      SET state = 'landed', reason = NULL, landed_at = ?, updated_at = ? WHERE id = ?
-    `).run(landedAt, landedAt, plan.request.id);
-    this.controlPlane.audit({
-      actorId, operation: 'integration.land', entityType: 'integration-request', entityId: plan.request.id,
-      details: { commit: plan.request.sourceCommit, target: plan.request.targetBranch },
-    });
-    return this.get(plan.request.id);
+    let transactionFinished = false;
+    try {
+      // This write transaction is the per-project landing mutex. A second
+      // Session Manager process cannot pass the target/ref checks until this
+      // one has either landed or failed.
+      const plan = this.planLanding({ requestId, actorId });
+      if (!plan.canProceed) {
+        throw new TorchError('Integration landing refused by main-protection policy', {
+          code: 'INTEGRATION_LANDING_BLOCKED', details: plan.blockers,
+        });
+      }
+      const landingAt = this.clock().toISOString();
+      database.prepare(`
+        UPDATE integration_requests SET state = 'landing', reason = NULL, updated_at = ? WHERE id = ?
+      `).run(landingAt, plan.request.id);
+      this.controlPlane.audit({
+        actorId, operation: 'integration.landing-start', entityType: 'integration-request', entityId: plan.request.id,
+        details: { commit: plan.request.sourceCommit, target: plan.request.targetBranch },
+      });
+      try {
+        git(this.repositoryRoot, ['merge', '--ff-only', plan.request.sourceCommit]);
+      } catch (error) {
+        const failedAt = this.clock().toISOString();
+        database.prepare(`
+          UPDATE integration_requests SET state = 'blocked', reason = ?, updated_at = ? WHERE id = ?
+        `).run('git-fast-forward-failed', failedAt, plan.request.id);
+        this.controlPlane.audit({
+          actorId, operation: 'integration.landing-failed',
+          entityType: 'integration-request', entityId: plan.request.id,
+          details: { commit: plan.request.sourceCommit, target: plan.request.targetBranch },
+        });
+        database.exec('COMMIT');
+        transactionFinished = true;
+        throw error;
+      }
+      const landedAt = this.clock().toISOString();
+      database.prepare(`
+        UPDATE integration_requests
+        SET state = 'landed', reason = NULL, landed_at = ?, updated_at = ? WHERE id = ?
+      `).run(landedAt, landedAt, plan.request.id);
+      this.controlPlane.audit({
+        actorId, operation: 'integration.land', entityType: 'integration-request', entityId: plan.request.id,
+        details: { commit: plan.request.sourceCommit, target: plan.request.targetBranch },
+      });
+      database.exec('COMMIT');
+      transactionFinished = true;
+      const landed = this.get(plan.request.id);
+      // Closure is a post-landing reconciliation. Never report a successful
+      // Git landing as failed just because its task bookkeeping needs review.
+      try {
+        const { config } = loadFleetDefinition(this.repositoryRoot);
+        if (config.backlog?.activity?.auto_close_after_landing === true) {
+          const backlog = new BacklogService({ repositoryRoot: this.repositoryRoot,
+            controlPlane: this.controlPlane, checkService: this.checkService,
+            integrationLookup: (id) => this.get(id), clock: this.clock });
+          landed.backlogClosure = backlog.reconcileLanded({ integrationRequest: landed.id, actorId, automatic: true });
+        }
+      } catch (error) {
+        landed.backlogClosure = { disposition: 'needs-review', reason: error.code ?? error.message };
+        try {
+          this.controlPlane.audit({ actorId, operation: 'backlog.landed-closure-needs-review',
+            entityType: 'integration-request', entityId: landed.id, details: landed.backlogClosure });
+        } catch (auditError) { landed.backlogClosure.auditError = auditError.code ?? auditError.message; }
+      }
+      return landed;
+    } catch (error) {
+      if (!transactionFinished) database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  drain({ actorId, limit = 50 } = {}) {
+    const actor = this.controlPlane.assertIdentity(actorId);
+    if (!(this.policy.landing_authority ?? []).includes(actor)) {
+      throw new TorchError(`${actor} lacks landing authority`, {
+        code: 'INTEGRATION_AUTHORITY_REQUIRED', details: { allowed: this.policy.landing_authority ?? [] },
+      });
+    }
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+      throw new TorchError('Integration queue drain limit must be between 1 and 500', {
+        code: 'INTEGRATION_DRAIN_LIMIT_INVALID', details: { limit },
+      });
+    }
+    const candidates = this.list().filter((request) => request.authorizedBy === actor
+      && ['ready', 'testing'].includes(request.state)).slice(0, limit);
+    const results = [];
+    for (const candidate of candidates) {
+      const current = this.evaluate(candidate.id);
+      if (current.state !== 'ready') {
+        results.push({ requestId: candidate.id, state: current.state, reason: current.reason, landed: false });
+        continue;
+      }
+      try {
+        const landed = this.land({ requestId: candidate.id, actorId: actor });
+        results.push({ requestId: candidate.id, state: landed.state, landed: landed.state === 'landed',
+          ...(landed.backlogClosure ? { backlogClosure: landed.backlogClosure } : {}) });
+      } catch (error) {
+        if (error.code === 'INTEGRATION_LANDING_BUSY') {
+          results.push({ requestId: candidate.id, state: 'queued', reason: 'another-lander-active', landed: false, retryable: true });
+          break;
+        }
+        if (error.code === 'INTEGRATION_LANDING_BLOCKED') {
+          const refreshed = this.evaluate(candidate.id);
+          results.push({ requestId: candidate.id, state: refreshed.state, reason: refreshed.reason,
+            blockers: error.details, landed: false });
+          continue;
+        }
+        throw error;
+      }
+    }
+    return {
+      actorId: actor, processed: results.length,
+      landed: results.filter((entry) => entry.landed).length,
+      deferred: results.filter((entry) => !entry.landed).length,
+      results, mutationPerformed: results.some((entry) => entry.landed),
+    };
   }
 }

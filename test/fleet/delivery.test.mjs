@@ -56,6 +56,234 @@ function fixture() {
   return { root, env, worker, worktree };
 }
 
+test('SCN-delivery-attempts: approved safe transient retries are bounded, durable and serialized; unknown effects never retry blindly', () => {
+  const context = fixture();
+  configureDelivery({ repositoryRoot: context.root, releaseProvider: 'fixture', deploymentProvider: 'fixture' });
+  const configPath = join(context.root, '.torch', 'torch.yaml');
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  config.delivery.retry = { max_attempts: 3 };
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  let count = 0;
+  const keys = [];
+  let service;
+  const adapter = {
+    name: 'fixture', capabilities: { release: true, deploy: true, verifyLive: true },
+    retrySafety: { release: 'idempotent', deploy: 'idempotent', verifyLive: 'read-only' },
+    release: ({ idempotencyKey }) => {
+      keys.push(idempotencyKey);
+      assert.equal(service.attempts().at(-1).state, 'running');
+      assert.equal(service.planTransition({ deliveryId: item.id, targetState: 'released', actor: 'owner' })
+        .blockers.some((entry) => entry.code === 'DELIVERY_OPERATION_UNRESOLVED'), true);
+      count += 1;
+      return count < 3 ? { status: 'failed', failure: { classification: 'transient', effects: 'not-applied', code: 'NETWORK' } }
+        : { status: 'succeeded', reference: 'fixture-release' };
+    },
+    deploy: () => { throw new Error('Uncertain external outcome'); },
+    verifyLive: () => ({ status: 'succeeded', reference: 'fixture-live' }),
+  };
+  service = new DeliveryService({ repositoryRoot: context.root, controlPlane: control, adapters: new Map([['fixture', adapter]]) });
+  const item = service.create({ sourceArea: context.worker, label: 'Retry boundary', evidence: ['implementation'] });
+  // Fixture setup puts an existing delivery at the release-ready boundary;
+  // the independent lifecycle scenario below proves real checks and landing.
+  control.database.prepare("UPDATE deliveries SET state = 'release-ready' WHERE id = ?").run(item.id);
+  assert.throws(() => service.transition({ deliveryId: item.id, targetState: 'released', actor: 'owner', evidence: ['approval'] }),
+    (error) => error.code === 'APPROVAL_REQUIRED');
+  assert.equal(service.attempts().length, 0);
+  const released = service.transition({ deliveryId: item.id, targetState: 'released', actor: 'owner', evidence: ['approval'], approved: true });
+  assert.equal(released.state, 'released');
+  assert.equal(count, 3);
+  assert.equal(new Set(keys).size, 1);
+  assert.ok(keys[0]);
+  assert.deepEqual(service.attempts().map((entry) => entry.state), ['failed', 'failed', 'succeeded']);
+  assert.equal(service.operations().at(-1).state, 'applied');
+  assert.throws(() => service.transition({ deliveryId: item.id, targetState: 'deployed', actor: 'owner', evidence: ['deploy approval'], approved: true }),
+    (error) => error.code === 'DELIVERY_ADAPTER_FAILED');
+  assert.equal(service.get(item.id).state, 'released');
+  assert.equal(service.attempts().at(-1).state, 'unknown');
+  assert.equal(service.operations().at(-1).state, 'unknown');
+  const uncertain = service.operations().at(-1);
+  assert.equal(service.planSucceededRecovery({ operationId: uncertain.id, actor: 'owner' }).canProceed, false);
+  assert.throws(() => service.recoverNotApplied({ operationId: uncertain.id, actor: context.worker, approved: true,
+    runtimeStopped: true, evidence: ['independent verification'] }), (error) => error.code === 'DELIVERY_AUTHORITY_REQUIRED');
+  assert.throws(() => service.recoverNotApplied({ operationId: uncertain.id, actor: 'owner', approved: true,
+    evidence: ['independent verification'] }), (error) => error.code === 'APPROVAL_REQUIRED');
+  assert.throws(() => service.transition({ deliveryId: item.id, targetState: 'deployed', actor: 'owner', evidence: ['retry'], approved: true }),
+    (error) => error.code === 'DELIVERY_TRANSITION_BLOCKED');
+  assert.equal(service.attempts().length, 4);
+  const snapshot = observeProject({ repositoryRoot: context.root, env: context.env });
+  assert.equal(snapshot.deliveryOperations.some((entry) => entry.state === 'unknown'), true);
+  control.close();
+  const reopened = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const durable = new DeliveryService({ repositoryRoot: context.root, controlPlane: reopened });
+  assert.equal(durable.attempts({ deliveryId: item.id }).length, 4);
+  assert.equal(durable.operations().at(-1).state, 'unknown');
+  reopened.close();
+  const cli = spawnSync(process.execPath, [CLI, 'delivery', 'attempts', '--id', item.id, '--json'], {
+    cwd: context.root, env: context.env, encoding: 'utf8',
+  });
+  assert.equal(cli.status, 0, cli.stderr + cli.stdout);
+  assert.equal(JSON.parse(cli.stdout).attempts.length, 4);
+  const recover = spawnSync(process.execPath, [CLI, 'delivery', 'recover-not-applied', '--operation', uncertain.id,
+    '--by', 'owner', '--yes', '--runtime-stopped', '--evidence', 'Independent provider check confirmed no deployment', '--json'], {
+    cwd: context.root, env: context.env, encoding: 'utf8',
+  });
+  assert.equal(recover.status, 0, recover.stderr + recover.stdout);
+  assert.equal(JSON.parse(recover.stdout).provenance, 'owner-attested-not-applied');
+  const inspected = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const reviewed = new DeliveryService({ repositoryRoot: context.root, controlPlane: inspected });
+  assert.equal(reviewed.operations().at(-1).state, 'reviewed-not-applied');
+  assert.equal(reviewed.attempts().at(-1).state, 'unknown', 'original uncertainty must not be rewritten as independently measured truth');
+  assert.equal(reviewed.get(item.id).state, 'released');
+  inspected.close();
+});
+
+test('SCN-delivery-retry-boundaries: limits, permanent failures, missing safety and changed policy cannot trigger extra external effects', () => {
+  const context = fixture();
+  configureDelivery({ repositoryRoot: context.root, releaseProvider: 'fixture', deploymentProvider: 'fixture' });
+  const path = join(context.root, '.torch', 'torch.yaml');
+  const config = JSON.parse(readFileSync(path, 'utf8'));
+  config.delivery.retry = { max_attempts: 2 };
+  writeFileSync(path, `${JSON.stringify(config, null, 2)}\n`);
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const peerControl = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  let mode = 'transient';
+  let calls = 0;
+  const adapter = {
+    name: 'fixture', capabilities: { release: true, deploy: true, verifyLive: true },
+    retrySafety: { release: 'idempotent' },
+    release: ({ delivery }) => {
+      calls += 1;
+      const peer = new DeliveryService({ repositoryRoot: context.root, controlPlane: peerControl, adapters: new Map([['fixture', adapter]]) });
+      assert.throws(() => peer.transition({ deliveryId: delivery.id, targetState: 'released', actor: 'owner',
+        approved: true, evidence: ['competing caller'] }), (error) => error.code === 'DELIVERY_TRANSITION_BLOCKED');
+      if (mode === 'policy-change') {
+        config.delivery.authority.released = ['session-manager'];
+        writeFileSync(path, `${JSON.stringify(config, null, 2)}\n`);
+      }
+      return { status: 'failed', failure: { classification: mode === 'permanent' ? 'permanent' : 'transient', effects: 'not-applied' } };
+    },
+    deploy: () => ({ status: 'succeeded', reference: 'fixture' }),
+    verifyLive: () => ({ status: 'succeeded', reference: 'fixture' }),
+  };
+  const service = new DeliveryService({ repositoryRoot: context.root, controlPlane: control, adapters: new Map([['fixture', adapter]]) });
+  let lastDeliveryId;
+  for (const [scenario, expected] of [['transient', 2], ['permanent', 1], ['undeclared', 1], ['policy-change', 1]]) {
+    mode = scenario;
+    calls = 0;
+    adapter.retrySafety = scenario === 'undeclared' ? undefined : { release: 'idempotent' };
+    const item = service.create({ sourceArea: context.worker, label: scenario, evidence: ['implementation'] });
+    lastDeliveryId = item.id;
+    control.database.prepare("UPDATE deliveries SET state = 'release-ready' WHERE id = ?").run(item.id);
+    assert.throws(() => service.transition({ deliveryId: item.id, targetState: 'released', actor: 'owner', evidence: ['approved'], approved: true }),
+      (error) => error.code === (scenario === 'policy-change' ? 'DELIVERY_POLICY_CHANGED' : 'DELIVERY_ADAPTER_FAILED'));
+    assert.equal(calls, expected);
+    assert.equal(service.get(item.id).state, 'release-ready');
+    assert.equal(service.operations({ deliveryId: item.id }).at(-1).state, 'failed');
+    assert.equal(service.attempts({ deliveryId: item.id }).length, expected);
+  }
+  assert.equal(service.planTransition({ deliveryId: lastDeliveryId, targetState: 'released', actor: 'owner' })
+    .blockers.some((entry) => entry.code === 'DELIVERY_AUTHORITY_REQUIRED'), true, 'long-lived service must see revoked authority');
+  peerControl.close();
+  control.close();
+});
+
+test('SCN-delivery-succeeded-recovery: interrupted local application reuses durable success once, never re-executes and rejects changed destination or authority', () => {
+  const context = fixture();
+  configureDelivery({ repositoryRoot: context.root, releaseProvider: 'fixture', deploymentProvider: 'fixture' });
+  const configPath = join(context.root, '.torch', 'torch.yaml');
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  let calls = 0;
+  const adapter = {
+    name: 'fixture', capabilities: { release: true, deploy: true, verifyLive: true },
+    release: ({ delivery }) => { calls += 1; return { status: 'succeeded', reference: `release:${delivery.commit}` }; },
+    deploy: () => ({ status: 'succeeded', reference: 'deploy' }),
+    verifyLive: () => ({ status: 'succeeded', reference: 'live' }),
+  };
+  const service = new DeliveryService({ repositoryRoot: context.root, controlPlane: control, adapters: new Map([['fixture', adapter]]) });
+  const item = service.create({ sourceArea: context.worker, label: 'Interrupted success', evidence: ['implementation'] });
+  control.database.prepare("UPDATE deliveries SET state = 'release-ready' WHERE id = ?").run(item.id);
+  const audit = control.audit.bind(control);
+  control.audit = (input) => {
+    if (input.operation === 'delivery.released') throw new Error('Local audit storage interrupted');
+    return audit(input);
+  };
+  assert.throws(() => service.transition({ deliveryId: item.id, targetState: 'released', actor: 'owner',
+    approved: true, evidence: ['release approval'] }), /Local audit storage interrupted/);
+  control.audit = audit;
+  assert.equal(calls, 1);
+  assert.equal(service.get(item.id).state, 'release-ready');
+  const operation = service.operations().at(-1);
+  assert.equal(operation.state, 'succeeded');
+  assert.equal(service.attempts().at(-1).state, 'succeeded');
+  assert.throws(() => service.recoverNotApplied({ operationId: operation.id, actor: 'owner', approved: true,
+    runtimeStopped: true, evidence: ['incorrect not-applied claim'] }), (error) => error.code === 'DELIVERY_RECOVERY_BLOCKED');
+  control.close();
+  const reopened = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const recoveredService = new DeliveryService({ repositoryRoot: context.root, controlPlane: reopened });
+  const input = { operationId: operation.id, actor: 'owner' };
+  assert.equal(recoveredService.planSucceededRecovery(input).canProceed, true, 'saved success needs no executable adapter to reconcile');
+  const savedAdapterHash = reopened.database.prepare('SELECT adapter_config_hash AS hash FROM delivery_operations WHERE id = ?').get(operation.id).hash;
+  assert.match(savedAdapterHash, /^[0-9a-f]{64}$/);
+  reopened.database.exec('ALTER TABLE delivery_operations DROP COLUMN adapter_config_hash');
+  const migrated = new DeliveryService({ repositoryRoot: context.root, controlPlane: reopened });
+  assert.equal(migrated.attempts().length, 1, 'additive migration preserves legacy receipts');
+  assert.equal(migrated.planSucceededRecovery(input).canProceed, true, 'legacy records require the unchanged full policy hash');
+  reopened.database.prepare('UPDATE delivery_operations SET adapter_config_hash = ? WHERE id = ?').run(savedAdapterHash, operation.id);
+  assert.throws(() => recoveredService.reconcileSucceeded({ ...input, approved: true, evidence: ['provider confirms success'] }),
+    (error) => error.code === 'APPROVAL_REQUIRED');
+  assert.throws(() => recoveredService.planSucceededRecovery({ ...input, actor: context.worker }),
+    (error) => error.code === 'DELIVERY_AUTHORITY_REQUIRED');
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  config.delivery.adapters.release.destination = 'different-target';
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  assert.equal(recoveredService.planSucceededRecovery(input).blockers.some((entry) => entry.code === 'DELIVERY_RECOVERY_DESTINATION_CHANGED'), true);
+  assert.throws(() => recoveredService.reconcileSucceeded({ ...input, approved: true, runtimeStopped: true, evidence: ['approval'] }),
+    (error) => error.code === 'DELIVERY_RECOVERY_BLOCKED');
+  delete config.delivery.adapters.release.destination;
+  config.delivery.authority.released = ['session-manager'];
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  assert.equal(recoveredService.planSucceededRecovery(input).blockers.some((entry) => entry.code === 'DELIVERY_AUTHORITY_REQUIRED'), true);
+  config.delivery.authority.released = ['owner'];
+  config.backlog = { ...config.backlog, activity: { stale_days: 4 } };
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  // Crash after the success receipt but before marking its parent successful.
+  reopened.database.prepare("UPDATE delivery_operations SET state = 'running' WHERE id = ?").run(operation.id);
+  assert.equal(recoveredService.planSucceededRecovery(input).canProceed, true, 'unrelated policy changes do not change the external destination');
+  const recoveredAudit = reopened.audit.bind(reopened);
+  reopened.audit = (entry) => {
+    if (entry.operation === 'delivery.owner-reconciled-success') throw new Error('Recovery audit interrupted');
+    return recoveredAudit(entry);
+  };
+  assert.throws(() => recoveredService.reconcileSucceeded({ ...input, approved: true, runtimeStopped: true,
+    evidence: ['provider confirmation'] }), /Recovery audit interrupted/);
+  reopened.audit = recoveredAudit;
+  assert.equal(recoveredService.get(item.id).state, 'release-ready');
+  assert.equal(recoveredService.operations().at(-1).state, 'running');
+  assert.equal(recoveredService.attempts().length, 1);
+  const cli = (extra) => spawnSync(process.execPath, [CLI, 'delivery', 'recover-succeeded', '--operation', operation.id,
+    '--by', 'owner', '--evidence', 'Provider confirms exact published commit', '--json', ...extra], {
+    cwd: context.root, env: context.env, encoding: 'utf8',
+  });
+  const preview = cli(['--dry-run']);
+  assert.equal(preview.status, 0, preview.stderr + preview.stdout);
+  assert.equal(JSON.parse(preview.stdout).mutationPerformed, false);
+  assert.notEqual(cli(['--runtime-stopped']).status, 0);
+  const result = cli(['--runtime-stopped', '--yes']);
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  assert.equal(JSON.parse(result.stdout).executorInvoked, false);
+  assert.equal(recoveredService.get(item.id).state, 'released');
+  assert.equal(recoveredService.get(item.id).adapterReceipts.length, 1);
+  assert.equal(recoveredService.operations().at(-1).state, 'applied');
+  assert.equal(recoveredService.attempts().length, 1);
+  const eventCount = reopened.database.prepare('SELECT COUNT(*) AS count FROM delivery_events WHERE delivery_id = ?').get(item.id).count;
+  const replay = recoveredService.reconcileSucceeded({ ...input, approved: true, runtimeStopped: true, evidence: ['repeat review'] });
+  assert.equal(replay.mutationPerformed, false);
+  assert.equal(reopened.database.prepare('SELECT COUNT(*) AS count FROM delivery_events WHERE delivery_id = ?').get(item.id).count, eventCount);
+  assert.equal(calls, 1);
+  reopened.close();
+});
+
 test('SCN-delivery-lifecycle: delivery authority, evidence, integration, and adapters are distinct gates', () => {
   const context = fixture();
   const control = openControlPlane({ repositoryRoot: context.root, env: context.env });

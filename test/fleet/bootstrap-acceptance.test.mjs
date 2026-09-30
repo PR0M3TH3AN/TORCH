@@ -80,7 +80,7 @@ test('SCN-bootstrap-acceptance: one installed fixture proves the complete organi
   const adapters = new Map([['claude', adapter]]);
   const up = planFleetUp({ repositoryRoot: context.root, controlPlane: control, adapters, fresh: true });
   assert.equal(up.canProceed, true, JSON.stringify(up.blockers));
-  assert.equal(up.actions.at(-1).areaId, 'session-manager');
+  assert.equal(up.actions[0].areaId, 'session-manager');
   let runtime = 0;
   const started = startFleet({
     plan: up, controlPlane: control, adapters,
@@ -97,6 +97,10 @@ test('SCN-bootstrap-acceptance: one installed fixture proves the complete organi
   assert.match(serverPrompt, /## Authority[\s\S]*Integration authority does not grant release or deployment authority/);
   assert.match(serverPrompt, /## Project invariants[\s\S]*Repository and TORCH durable state outrank conversation memory/);
   assert.match(serverPrompt, /## Initial backlog[\s\S]*No task is implied by session creation/);
+  assert.match(serverPrompt, /Name the exact TORCH task ID in progress commits/);
+  assert.match(serverPrompt, /Closes: TASK-id[\s\S]*intent, not authority[\s\S]*confirm landed integration plus completed backlog state/);
+  assert.match(serverPrompt, /torch_publish_artifact[\s\S]*full commit SHA/);
+  assert.match(serverPrompt, /Treat owner feedback[\s\S]*durable message/);
 
   for (const areaId of ['server', 'client']) {
     const message = control.sendMessage({ sender: 'session-manager', recipient: areaId, body: `Own ${areaId} work.` });

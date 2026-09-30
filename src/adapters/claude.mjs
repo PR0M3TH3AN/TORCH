@@ -24,6 +24,31 @@ function text(value, name) {
   return value.trim();
 }
 
+const CLAUDE_EFFORTS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
+const CLAUDE_PERMISSION_MODES = new Set(['default', 'acceptEdits', 'auto', 'manual', 'dontAsk', 'plan']);
+
+function effortArgs(reasoning) {
+  if (reasoning === undefined || reasoning === null || reasoning === '') return [];
+  const effort = text(reasoning, 'reasoning');
+  if (!CLAUDE_EFFORTS.has(effort)) {
+    throw new TorchError(`Unsupported Claude effort level: ${effort}`, {
+      code: 'RUNTIME_PROFILE_INVALID', details: { adapter: 'claude', field: 'reasoning', value: effort },
+    });
+  }
+  return ['--effort', effort];
+}
+
+function launchPolicyArgs(policy = {}) {
+  const entries = Object.entries(policy ?? {});
+  if (entries.some(([field, value]) => field !== 'permissionMode'
+    || typeof value !== 'string' || !CLAUDE_PERMISSION_MODES.has(value))) {
+    throw new TorchError('Claude launch policy is invalid or unsupported', {
+      code: 'RUNTIME_PROFILE_INVALID', details: { adapter: 'claude', launchPolicy: policy },
+    });
+  }
+  return policy.permissionMode === undefined ? [] : ['--permission-mode', policy.permissionMode];
+}
+
 function commandRecord(command, args, cwd) {
   return { command, args, cwd, mutatesRuntime: true };
 }
@@ -66,9 +91,16 @@ export class ClaudeRuntimeAdapter {
     this.executable = executable;
     this.nodeExecutable = nodeExecutable;
     this.idFactory = idFactory;
+    this.configuration = Object.freeze({ model: 'sonnet', background: true });
     this.capabilities = Object.freeze({
       detect: true,
       configure: 'plan-only',
+      modelSelection: true,
+      reasoningSelection: true,
+      perInvocationCostCeiling: Object.freeze({ createSession: Object.freeze([]), resumeSession: Object.freeze([]) }),
+      launchPolicy: Object.freeze({ fields: Object.freeze({
+        permissionMode: Object.freeze([...CLAUDE_PERMISSION_MODES]),
+      }) }),
       createSession: true,
       resumeSession: true,
       sendOrSteer: 'durable-fallback',
@@ -105,12 +137,14 @@ export class ClaudeRuntimeAdapter {
     };
   }
 
-  createSession({ areaId, title, worktree, promptFile, firstMessage, model = 'opus', background = true, mcp } = {}) {
+  createSession({ areaId, title, worktree, promptFile, firstMessage, model = 'sonnet', reasoning, launchPolicy, background = true, mcp } = {}) {
     const runtimeSessionId = background ? null : this.idFactory();
     const args = [];
     if (background) args.push('--bg');
     args.push(
       '--model', text(model, 'model'),
+      ...launchPolicyArgs(launchPolicy),
+      ...effortArgs(reasoning),
       ...(!background ? ['--session-id', runtimeSessionId] : []),
       '-n', `TORCH · ${text(title ?? areaId, 'title')}`,
       '--append-system-prompt-file', text(promptFile, 'promptFile'),
@@ -124,10 +158,14 @@ export class ClaudeRuntimeAdapter {
     };
   }
 
-  resumeSession({ areaId, runtimeSessionId, worktree, model = 'opus', message, background = true, mcp } = {}) {
+  resumeSession({ areaId, runtimeSessionId, worktree, promptFile, model = 'sonnet', reasoning, launchPolicy, message, background = true, mcp } = {}) {
     const args = [];
     if (background) args.push('--bg');
-    args.push('--model', text(model, 'model'), ...mcpArgs(mcp), '--resume', text(runtimeSessionId, 'runtimeSessionId'));
+    args.push(
+      '--model', text(model, 'model'), ...launchPolicyArgs(launchPolicy), ...effortArgs(reasoning),
+      '--append-system-prompt-file', text(promptFile, 'promptFile'), ...mcpArgs(mcp),
+      '--resume', text(runtimeSessionId, 'runtimeSessionId'),
+    );
     if (message) args.push(text(message, 'message'));
     return {
       adapter: this.name, areaId: text(areaId, 'areaId'), runtimeSessionId,

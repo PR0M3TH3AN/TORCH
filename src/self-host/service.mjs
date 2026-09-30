@@ -22,15 +22,31 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'review-install-roster',
   'branches-worktrees',
   'runtime-identities',
+  'runtime-profiles',
+  'console-runtime-profile',
+  'console-schedule-launcher',
+  'runtime-adapters',
+  'runtime-plugin-trust',
+  'organization-graph',
+  'manager-check-ins',
+  'manager-check-in-console',
+  'structured-approvals',
+  'console-owner-approval',
+  'hierarchy-evolution',
+  'hierarchy-cli-review',
   'durable-messaging',
   'ownership-query',
   'unsafe-worktree-detection',
   'backlog-integration',
+  'forge-sync',
   'resource-lifecycle',
+  'candidate-acceptance-isolation',
+  'package-distribution',
   'capture-stop-resume',
   'detach-uninstall',
   'combatrig-compatibility',
   'product-surface',
+  'artifact-review',
   'operations-observability',
 ]);
 
@@ -131,15 +147,20 @@ function gitSourceDescriptor(root) {
   const tracked = new Set(execFileSync('git', ['-C', root, 'ls-files', '-z'], {
     encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
   }).split('\0').filter(Boolean));
+  const excludedUntracked = execFileSync('git', ['-C', root, 'ls-files', '--others', '--exclude-standard', '-z'], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  }).split('\0').filter(Boolean).sort();
   const include = (name, entry) => name === 'node_modules'
     || name.startsWith('node_modules/')
     || tracked.has(name)
     || (entry.isDirectory() && [...tracked].some((path) => path.startsWith(`${name}/`)));
-  return { mode: 'git-commit', commit, include };
+  return { mode: 'git-commit', commit, include, excludedUntracked };
 }
 
 function sourceDescriptor(root) {
-  return gitSourceDescriptor(root) ?? { mode: 'artifact', commit: null, include: () => true };
+  return gitSourceDescriptor(root) ?? {
+    mode: 'artifact', commit: null, include: () => true, excludedUntracked: [],
+  };
 }
 
 function validateReleaseMetadata(root, requestedVersion) {
@@ -226,6 +247,7 @@ export class VersionService {
       digest: treeHash(sourceRoot, records), files: records.length,
       bytes: records.reduce((total, record) => total + record.bytes, 0),
       sourceMode: descriptor.mode, sourceCommit: descriptor.commit,
+      excludedUntracked: descriptor.excludedUntracked,
       compatibility: metadata.release.state,
       conflicts: existsSync(destination) ? [{ code: 'VERSION_ALREADY_INSTALLED', version: metadata.version }] : [],
       mutationPerformed: false,

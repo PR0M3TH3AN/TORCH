@@ -4,6 +4,8 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileS
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
+import { openControlPlane } from '../../src/control-plane/service.mjs';
+import { CANDIDATE_ACCEPTANCE_EVIDENCE } from '../../src/cli.mjs';
 
 const CLI = new URL('../../bin/torch.mjs', import.meta.url).pathname;
 
@@ -35,23 +37,8 @@ function releaseCandidate(root, version) {
   mkdirSync(join(candidateRoot, 'bin'), { recursive: true });
   writeFileSync(join(candidateRoot, 'bin', 'torch.mjs'), '#!/usr/bin/env node\n');
   chmodSync(join(candidateRoot, 'bin', 'torch.mjs'), 0o755);
-  writeFileSync(join(candidateRoot, 'acceptance.mjs'), `console.log(${JSON.stringify([
-    'SCN-init-read-only', 'SCN-cli-domain-review', 'SCN-worktree-bootstrap', 'SCN-mixed-runtime',
-    'SCN-spec-fleet-design', 'SCN-cli-spec-design',
-    'SCN-ai-fleet-bootstrap',
-    'SCN-ai-fleet-planning',
-    'SCN-fleet-evolution', 'SCN-cli-fleet-evolution',
-    'SCN-fleet-boundary-evolution',
-    'SCN-cli-lifecycle-surface',
-    'SCN-forge-migration',
-    'SCN-delivery-lifecycle',
-    'SCN-durable-message', 'SCN-ownership-handoff', 'SCN-worktree-purge-safety',
-    'SCN-backlog-lifecycle', 'SCN-native-integration', 'SCN-resource-fifo',
-    'SCN-fleet-fresh-resume', 'SCN-install-doctor-purge',
-    'SCN-combatrig-import', 'SCN-cli-combatrig-import',
-    'SCN-product-site', 'SCN-console-readonly',
-    'SCN-context-locality', 'SCN-schedule-boundaries', 'SCN-cli-schedules',
-  ].join('\n'))});\n`);
+  const acceptanceMarkers = [...new Set(Object.values(CANDIDATE_ACCEPTANCE_EVIDENCE).flat())];
+  writeFileSync(join(candidateRoot, 'acceptance.mjs'), `console.log(${JSON.stringify(acceptanceMarkers.join('\n'))});\n`);
   writeFileSync(join(candidateRoot, 'package.json'), `${JSON.stringify({
     name: 'torch-agent-fleet', version, bin: { torch: 'bin/torch.mjs' },
     scripts: {
@@ -106,6 +93,29 @@ test('SCN-cli-domain-review: a generated proposal must be approved before instal
   const installed = run(root, ['install', '--proposal', proposalPath, '--yes', '--json']);
   assert.equal(installed.status, 0, installed.stderr || installed.stdout);
   assert.equal(existsSync(join(root, '.torch', 'domain-proposal.approved.json')), true);
+});
+
+test('SCN-cli-install-provider-default: generated roles can install with Codex alone or choose a default from mixed adapters', () => {
+  const root = repo();
+  const proposalPath = join(root, 'fleet-proposal.json');
+  const generated = run(root, ['domains', '--output', proposalPath, '--json']);
+  assert.equal(generated.status, 0, generated.stderr || generated.stdout);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  proposal.review = { status: 'approved', reviewedAt: '2026-09-29T00:00:00Z', reviewedBy: 'fixture-owner', notes: [] };
+  writeFileSync(proposalPath, JSON.stringify(proposal));
+  const codex = run(root, ['install', '--proposal', proposalPath, '--runtime', 'codex', '--dry-run', '--json']);
+  assert.equal(codex.status, 0, codex.stderr || codex.stdout);
+  assert.equal(JSON.parse(codex.stdout).defaultRuntime, 'codex');
+  assert.equal(existsSync(join(root, '.torch')), false);
+  const result = run(root, ['install', '--proposal', proposalPath, '--runtime', 'claude,codex',
+    '--default-runtime', 'codex', '--yes', '--json']);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const config = JSON.parse(readFileSync(join(root, '.torch', 'torch.yaml'), 'utf8'));
+  assert.equal(config.runtimes.default, 'codex');
+  assert.equal(config.session_manager.runtime, 'codex');
+  assert.ok(config.domains.every((domain) => domain.runtime === 'codex'));
+  assert.equal(config.runtimes.codex.model, 'gpt-6-luna');
+  assert.equal(config.runtimes.claude.model, 'sonnet');
 });
 
 test('SCN-cli-lifecycle-surface: runtime selection, selective startup, capture, brief, list, and detach are public', () => {
@@ -173,6 +183,32 @@ test('SCN-cli-lifecycle-surface: runtime selection, selective startup, capture, 
   assert.equal(JSON.parse(unapprovedPurge.stdout).error, 'APPROVAL_REQUIRED');
 });
 
+test('SCN-cli-integration-drain: the FIFO lander requires explicit confirmation and is available as a one-shot command', () => {
+  const root = repo();
+  const proposalPath = join(root, 'fleet-proposal.json');
+  assert.equal(run(root, ['domains', '--output', proposalPath, '--json']).status, 0);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  proposal.review = {
+    status: 'approved', reviewedAt: '2026-09-29T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
+  };
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  const installed = run(root, ['install', '--proposal', proposalPath, '--yes', '--json']);
+  assert.equal(installed.status, 0, installed.stderr || installed.stdout);
+  execFileSync('git', ['-C', root, 'add', '.torch', 'fleet-proposal.json']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'install torch for queue test']);
+
+  const before = execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  const unconfirmed = run(root, ['integrate', 'drain', '--area', 'session-manager', '--json']);
+  assert.equal(unconfirmed.status, 2);
+  assert.equal(JSON.parse(unconfirmed.stdout).error, 'APPROVAL_REQUIRED');
+  assert.equal(execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), before);
+
+  const drained = run(root, ['integrate', 'drain', '--area', 'session-manager', '--yes', '--json']);
+  assert.equal(drained.status, 0, drained.stderr || drained.stdout);
+  assert.equal(JSON.parse(drained.stdout).processed, 0);
+  assert.equal(execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), before);
+});
+
 test('SCN-cli-control-plane: CLI messages, acknowledgements, ownership, and status share durable state', () => {
   const root = repo();
   const proposalPath = join(root, 'fleet-proposal.json');
@@ -204,6 +240,39 @@ test('SCN-cli-control-plane: CLI messages, acknowledgements, ownership, and stat
   assert.equal(status.runtimeSessionId, 'runtime-cli');
   const ownership = JSON.parse(run(root, ['who-owns', '--path', 'README.md', '--json']).stdout);
   assert.equal(ownership.owners.length > 0, true);
+});
+
+test('SCN-cli-owner-approval: owners can review scoped requests and must explicitly confirm decisions', () => {
+  const root = repo();
+  const proposalPath = join(root, 'approval-proposal.json');
+  assert.equal(run(root, ['domains', '--output', proposalPath, '--json']).status, 0);
+  const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
+  proposal.review = { status: 'approved', reviewedAt: '2026-09-28T00:00:00Z', reviewedBy: 'fixture-owner', notes: [] };
+  writeFileSync(proposalPath, `${JSON.stringify(proposal, null, 2)}\n`);
+  assert.equal(run(root, ['install', '--proposal', proposalPath, '--yes', '--json']).status, 0);
+
+  const env = { ...process.env, XDG_DATA_HOME: join(tmpdir(), `${basename(root)}-data`) };
+  const control = openControlPlane({ repositoryRoot: root, env });
+  const request = control.requestApproval({
+    requester: proposal.domains[0].id, approver: 'owner', title: 'Review scope',
+    summary: 'The requested work crosses an approved boundary.', task: 'TASK-OWNER-APPROVAL',
+  });
+  control.close();
+
+  const listed = run(root, ['approvals', 'list', '--area', 'owner', '--json']);
+  assert.equal(listed.status, 0, listed.stderr || listed.stdout);
+  assert.equal(JSON.parse(listed.stdout).approvals[0].id, request.id);
+  const unconfirmed = run(root, [
+    'approvals', 'decide', '--id', request.id, '--by', 'owner', '--decision', 'approved', '--json',
+  ]);
+  assert.equal(unconfirmed.status, 2);
+  assert.equal(JSON.parse(unconfirmed.stdout).error, 'APPROVAL_REQUIRED');
+  const confirmed = run(root, [
+    'approvals', 'decide', '--id', request.id, '--by', 'owner', '--decision', 'approved',
+    '--revision', String(request.revision), '--yes', '--json',
+  ]);
+  assert.equal(confirmed.status, 0, confirmed.stderr || confirmed.stdout);
+  assert.equal(JSON.parse(confirmed.stdout).status, 'approved');
 });
 
 test('SCN-cli-self-host: candidate acceptance, atomic upgrade, and rollback require explicit approval', () => {
@@ -257,10 +326,21 @@ test('SCN-cli-backlog: public commands create, transition, assign, and list trac
   const created = run(root, [
     'backlog', 'create', '--area', 'session-manager', '--title', 'CLI task',
     '--description', 'Exercise public lifecycle.', '--accept', 'Assigned to owner',
-    '--domains', proposal.domains[0].id, '--json',
+    '--domains', proposal.domains[0].id, '--feature', 'World pipeline', '--milestone', 'Alpha', '--json',
   ]);
   assert.equal(created.status, 0, created.stderr || created.stdout);
   let task = JSON.parse(created.stdout);
+  assert.equal(task.feature, 'World pipeline');
+  assert.equal(task.milestone, 'Alpha');
+  const classified = run(root, [
+    'backlog', 'classify', '--task', task.id, '--area', 'session-manager',
+    '--revision', String(task.revision), '--milestone', 'Beta',
+    '--reason', 'Resequence this work to the next checkpoint.', '--json',
+  ]);
+  assert.equal(classified.status, 0, classified.stderr || classified.stdout);
+  task = JSON.parse(classified.stdout);
+  assert.equal(task.feature, 'World pipeline');
+  assert.equal(task.milestone, 'Beta');
   for (const transition of [
     ['ready'],
     ['assigned', '--owner', proposal.domains[0].id],

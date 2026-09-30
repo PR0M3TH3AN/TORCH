@@ -199,12 +199,15 @@ responsibility. A domain manager is staff; temporary subagents are helpers.
 
 **Runtime**
 
-The agent harness used to host a session, such as Claude Code, Codex, or
-OpenCode.
+The agent harness used to host a session, such as Claude Code, Codex, OpenCode,
+Pi, or another locally available agent system. Runtime selection is per
+persistent identity, not one project-wide provider choice.
 
 **Runtime adapter**
 
-The implementation that maps TORCH session operations to one runtime.
+The implementation that maps TORCH session operations to one runtime. Adapters
+may be built in or installed as local plugins, and must report capabilities
+honestly.
 
 **Control plane**
 
@@ -260,9 +263,9 @@ TORCH has four logical layers:
 │ handoffs, status and session registry                   │
 └───────────────┬────────────────┬────────────────────────┘
                 │                │
-        ┌───────▼──────┐ ┌──────▼───────┐  ...
-        │Claude adapter│ │ Codex adapter │
-        └──────────────┘ └──────────────┘
+        ┌───────▼──────┐ ┌──────▼───────┐ ┌────▼─────┐  ...
+        │Claude adapter│ │ Codex adapter │ │Pi adapter│
+        └──────────────┘ └──────────────┘ └──────────┘
 ```
 
 The installed engine MUST expose one internal service layer. The CLI, MCP
@@ -369,6 +372,15 @@ inside the tracked source tree.
 `torch init` MUST begin read-only. It identifies the repository, validates Git,
 detects existing TORCH state, identifies the canonical branch and remotes, and
 reports what analysis would inspect.
+
+Repository analysis MUST inspect the current working tree, including tracked
+modifications and unignored, non-symlink regular files that are not yet tracked;
+Git-ignored files are excluded. It MUST report tracked and untracked file
+coverage separately and MUST NOT execute repository content. An approved domain
+proposal MUST bind the Git history and `HEAD`, external specification hashes,
+and a content fingerprint of the working-tree paths and analysis-relevant source
+and manifest files. Validation immediately before installation MUST recompute
+that fingerprint and reject added, removed, or changed analysis inputs.
 
 It MUST NOT create worktrees, branches, sessions, hooks, remotes, or tracked
 files before approval.
@@ -501,6 +513,15 @@ A proposed domain SHOULD exhibit:
 3. independent verification: meaningful evidence can be produced locally;
 4. persistent expertise: the area benefits from durable specialist context.
 
+Specification language may guide the Session Architect, but generic keyword
+overlap MUST NOT assign a prose-only requirement to an existing implementation
+domain. The deterministic baseline may merge a specification responsibility
+into a repository domain only when that signal cites a concrete path that
+exists inside the analyzed project. Otherwise the signal remains visible for
+architect/owner review. A specification-only project may receive provisional
+responsibility groups, but without repository paths they MUST remain explicitly
+unowned and block installation until ownership is reviewed.
+
 A directory alone is not sufficient justification. Domains such as
 "programming" are too broad; domains such as "button colors" are normally too
 narrow. Small projects may need four domains. Large projects may need twenty
@@ -520,6 +541,19 @@ integrated outcomes for any proposed leads, distinguish coordination from
 code ownership and authority, and preserve direct peer links. Producing the
 brief MUST NOT itself call a paid provider, execute project content, or
 approve the resulting organization.
+
+The Session Architect output MUST include a pending `organization_assessment`
+that chooses `flat` or `coordination_roles`, states its rationale, and cites
+evidence present in the brief. It MUST name proposed coordination roles only
+when the evidence supports an integrated outcome; each role MUST state the
+domains it coordinates, its bounded decision scope, decisions escalated to the
+owner, and evidence. A coordination role MUST NOT receive implementation paths
+or owner-approval authority. The assessment MUST separately describe
+implementation ownership, coordination responsibility, fleet-operations
+authority, project-priority authority, independent-review authority, and
+owner-only decisions. It MUST preserve direct peer communication. These
+recommendations are advisory: persistent role creation or graph changes use the
+separate owner-approved Fleet evolution or hierarchy-pilot flow.
 
 `torch architect plan` MUST show the selected provider, model, isolation,
 structured-output schema, prompt size, and budget boundary without invoking a
@@ -596,6 +630,34 @@ shared paths, exclusions, neighbours, required checks, scarce resources,
 authority limits, project invariants, an explicit empty initial-backlog state,
 and first-move instructions. Runtime prompt composition still combines this
 reviewable domain materialization with the common Fleet rules.
+Generated specialist instructions MUST distinguish domain-specific required
+checks from project-wide integration gates. Every specialist receives the
+exact configured project-gate IDs and command/argument vectors; this visibility
+MUST NOT imply code ownership over those gates or derive a test assignment from
+keyword overlap.
+
+Every start and resume MUST rebuild the effective instruction bundle from the
+current canonical project checkout, not a possibly stale worker worktree copy.
+TORCH records a content digest, supplies the bundle to the selected runtime on
+resume using that adapter's supported mechanism, and makes the digest visible in
+`torch brief --area <identity> --json`. Before taking each new backlog item, an
+identity MUST read the current brief. The latest canonical instructions override
+older conversation history; a restart prompt is a pointer to current policy,
+not a second policy source. The adapter's resume path must fail closed or
+explicitly report when it cannot deliver the current bundle.
+
+Fleet startup order MUST be derived from the active organization graph so
+manager identities launch before their direct reports. Wind-down MUST use the
+reverse identity-level order and deliver each active identity's final status to
+its direct reporting manager identities, rather than routing every report to a
+hard-coded Session Manager. Ordering is computed across roles bound to the same
+persistent identity; if collapsing an acyclic role graph creates an identity
+cycle, or a non-owner manager identity is absent from the roster, startup and
+wind-down plans MUST fail closed. Selective startup preserves the relative
+order of selected identities and may intentionally omit managers. Planning
+these sequences MUST NOT itself start or stop runtimes. Legacy
+`session_manager.start_last: true` values are accepted for compatibility but
+ignored; the organization graph is authoritative.
 
 ### 10.7 Worktree creation
 
@@ -662,7 +724,6 @@ forge:
 session_manager:
   id: session-manager
   runtime: claude
-  start_last: true
   landing_authority: true
 
 git:
@@ -717,6 +778,13 @@ schedules:
     owner: session-manager
     lifetime: session
     every: 60m
+  session-manager-check-in:
+    owner: session-manager
+    lifetime: system
+    every: 15m
+    behavior: coordination
+    action: manager-check-in
+    manager_id: session-manager
 
 release:
   provider: filesystem
@@ -898,16 +966,21 @@ owner decision → migration plan → bounded pilot
 measure results → adopt, revise, or reverse
 ```
 
-The Session Manager SHOULD run the read-only Fleet assessment at startup and
-when recurring coordination friction appears. TORCH SHOULD evaluate evidence
-over a project-configured observation window and require a sustained pattern
-or multiple independent signals; a single large task or temporary incident
-MUST NOT trigger a management proposal. Useful signals include repeated work
-across the same domains, coordination requests and handoffs, time waiting for
-cross-domain decisions, dependency-related blocked time, rework from late
-integration, and the dispatcher repeatedly switching among unrelated areas.
-Where measurements are unavailable, the proposal MUST label the evidence as
-qualitative rather than imply measured improvement.
+The Session Manager SHOULD run the read-only hierarchy assessment at startup
+and when recurring coordination friction appears. Each project MUST configure
+`organization_assessment.observation_window_days` (initial default: 30 days)
+and `organization_assessment.minimum_recurrences` (initial default: 3).
+TORCH MUST evaluate evidence inside that window and require either a sustained
+pattern meeting the recurrence threshold or multiple independent signal types;
+a single large task or temporary incident MUST NOT trigger a management
+proposal. The assessment reports dated backlog tasks spanning the same domains,
+coordination requests, named approvals awaiting the Session Manager, and
+handoffs routed to it. The assessment is advisory and read-only: it never
+creates a proposal or changes the active organization. Before proposing, the
+Session Manager should also inspect qualitative context such as dependency
+rework, late integration, and repeated context switching. Where measurements
+are unavailable, the proposal MUST label the evidence as qualitative rather
+than imply measured improvement.
 
 Before proposing a lead, the Session Manager MUST consider whether a clearer
 interface, direct peer agreement, backlog sequencing, a new implementation
@@ -926,8 +999,15 @@ the project's single owner-facing coordination role and include:
 
 No repeated assessment should create or repeatedly resend the same proposal.
 TORCH SHOULD deduplicate against open organization proposals and present only
-material updates to the owner. The owner may approve, reject, or defer it; a
-recommendation alone never changes roles, authority, routing, or sessions.
+material updates to the owner. An exact retry is idempotent; materially new
+evidence with a later observation-window end MUST revise the existing open
+proposal, preserve its earlier proposal revision, and invalidate any stale
+owner-review preview. A material update without a later evidence window MUST
+be rejected. Once an owner has approved, rejected, or deferred a proposal, a
+later evidence window MAY create a new proposal for the same organization graph;
+a terminal decision MUST NOT suppress future reconsideration. The owner may
+approve, reject, or defer it; a recommendation alone never changes roles,
+authority, routing, or sessions.
 
 The Session Manager or a designated organization planner MAY propose a change,
 but MUST NOT activate it unilaterally. The owner approves the intended
@@ -940,12 +1020,94 @@ session provisioning, and runtime launch are separate steps; runtime launch
 remains an explicit action. Existing specialist-to-specialist communication
 and backlog history MUST survive a hierarchy change.
 
+For a pilot that changes only existing identity relationships, `hierarchy-plan`
+MUST show the fresh graph delta, resulting manager-check-in schedule set,
+obsolete schedule candidates, active work, and timer reconciliation requirement.
+After owner approval, a separate `hierarchy-activate --by owner --yes` action
+or an equivalent owner-confirmed local Console action may apply the approved
+graph and newly required manager schedules to `.torch/torch.yaml`, update the
+ownership manifest, record the pilot, and commit those tracked changes.
+Activation MUST recheck the base commit, graph digest, clean worktree, owner
+identity, active identities, and resulting config schema.
+The Console action MUST preview the exact migration plan, require same-origin
+loopback access, bind confirmation to a short-lived one-use plan digest, and
+refuse stale state before committing; replaying the same confirmation MUST be
+idempotent.
+It MUST preserve existing cadence, leave obsolete schedules for explicit owner
+review, preserve implementation ownership and active identities, and MUST NOT
+create a session, provision a worktree, start a runtime, or change systemd
+state. If an exact-config system timer is already installed, the plan MUST
+report that it becomes stale; the owner separately reviews and runs schedule
+launcher reconciliation after activation. Measuring the pilot, adopting it, or
+reversing it remains a separately reviewed owner action.
+
+Organization proposals MUST reference identities already present in the active
+Fleet roster. A genuinely new persistent identity follows the separate
+owner-approved Fleet-evolution and provisioning path; a hierarchy proposal
+cannot smuggle in a new session or executable.
+
 The pilot MUST start with the smallest affected group and retain a way to
 continue under the prior organization. At the end of its review window, the
 owner-facing role receives a comparison with the baseline using the proposal's
 success criteria. TORCH may recommend adoption, adjustment, or reversal; only
 the owner approves the next organizational change. A successful pilot is not
 permission to add unrelated layers automatically.
+
+Pilot comparisons are recorded through `torch fleet hierarchy-review-pilot
+--proposal <id> --review <json-path> --from session-manager --yes` and read
+through `torch fleet hierarchy-pilot-reviews --proposal <id>`. Reviews MUST
+cover every baseline metric and success/stop criterion exactly once, preserve
+the baseline units, and link evidence for each observation. Each metric is
+explicitly measured, qualitative, or unavailable; values and criterion
+assessments are reviewer-reported evidence, not independently verified facts.
+Review records retain the activation commit and active graph digest, observed
+values beside baseline values, review-window maturity and recommendation.
+Before recommending adoption, the configured pilot duration must elapse, all
+comparisons must be reported as measured, success criteria must be met and no
+stop criterion may be met or unknown. Interim inconclusive/adjustment/reversal
+reviews remain possible. Exact repeated evidence is idempotent and review
+history is durable and audited. Recording a review does not adopt or reverse
+the pilot, change the graph or tracked files, or start a runtime.
+
+The read-only Console projects the latest bounded pilot-review history on each
+hierarchy proposal, displaying baseline and observed values side by side,
+units, evidence classifications, interim/full-window status, criterion
+assessments and references. Reviewer-reported evidence MUST NOT be labelled
+independently verified, and the view MUST distinguish a recommendation from an
+owner conclusion. Reading the snapshot or opening review history MUST NOT
+modify reviews, organizational state, or runtimes.
+
+Owner conclusions use `hierarchy-conclusion-plan --proposal <id> --decision
+<adopt|reverse> --reason <text>` followed by `hierarchy-conclude` with the same
+arguments, `--plan-hash <digest> --by owner --yes`. The plan MUST bind the
+current commit, active graph, owned pilot record, manifest, latest review,
+active work and resulting relationships. A dirty repository, changed graph,
+stale plan hash or missing owned record blocks the change. Adoption requires
+the latest review to support adoption and leaves the active graph unchanged.
+Reversal restores prior relationships from the proposal's base commit as a
+new monotonic graph revision; implementation ownership must still match and
+all referenced identities must exist. It preserves unrelated config, all
+identities, worktrees, backlog history and communication records. Existing
+schedules are retained, with obsolete candidates and any required timer
+reconciliation reported for separate owner review.
+
+The conclusion updates the owned tracked pilot/config/manifest files in a
+scoped commit and records the owner decision in a local audit transaction.
+Failed tracked commits restore the files and index. If the tracked commit
+succeeds but the local transaction is interrupted, the same owner confirmation
+may reconcile the committed, manifest-verified receipt against the current
+graph; it MUST NOT repeat the commit. Confirmed retries are idempotent. Neither
+adoption nor reversal launches/stops a runtime or modifies systemd state.
+
+The local Console exposes the same separate owner conclusions for piloting
+proposals. Preview MUST show the exact conclusion plan, affected work,
+resulting graph, preserved schedules and blockers. Blocked plans receive no
+confirmation token. Same-origin loopback access, short-lived one-use previews,
+target/operation/action/reason binding and fresh plan revalidation are required.
+Confirmation uses the underlying owner-authorized service plan hash; replaying
+the same confirmed request is idempotent, while altered payloads or a token
+from a different operation MUST be rejected. Adoption MUST recheck calendar
+maturity at conclusion time, not merely trust a stored full-window flag.
 
 On wind-down, coordination roles SHOULD record concise domain or program
 state, while Fleet Operations preserves session and restart state. This
@@ -1005,6 +1167,7 @@ The control plane MUST provide provider-independent operations for:
 - durable messages and acknowledgements;
 - coordination requests and handoffs;
 - status, completion, and blocker reports;
+- durable approval requests, scoped visibility, and named-approver decisions;
 - backlog references;
 - resource leases;
 - check and integration state queries.
@@ -1024,6 +1187,9 @@ torch_ack_message
 torch_report_status
 torch_report_complete
 torch_report_blocked
+torch_request_approval
+torch_list_approvals
+torch_decide_approval
 torch_request_coordination
 torch_request_handoff
 ```
@@ -1082,10 +1248,117 @@ turn or polling cycle.
 
 Claude is the first reference adapter because COMBATRIG proves its operating
 model. Codex is the second required adapter and is the portability proof.
-OpenCode and other runtimes follow the same contract.
+OpenCode, Pi, and other runtimes follow the same contract. TORCH policy and
+durable inter-session communication remain provider-independent; runtime-native
+messaging is optional and cannot replace the TORCH control plane.
+
+Every adapter MUST declare `perInvocationCostCeiling` as separate supported
+mode identifiers for `createSession` and `resumeSession`. When a schedule
+requires a maximum USD spend, TORCH passes that amount into the selected exact
+operation and accepts a launch plan only if the adapter returns an enforced
+receipt containing the same amount and declared mode. Missing, mismatched, or
+unsupported declarations/receipts block before invocation and before daily
+budget reservation. Telemetry or an estimated price is not enforcement.
+Adapters must not claim support unless the selected runtime mode itself can
+enforce the limit. The built-in Claude, Codex, and Pi adapters currently
+declare no supported hard-cap modes. They MAY run owner-enabled count-limited
+manager wakes; USD-hard-cap mode remains unavailable until a verified
+enforcement implementation exists. Count-limited mode must never claim a
+dollar spending ceiling.
 
 A single Fleet MAY mix runtimes and models by domain. Git provider choice and
 AI runtime choice are independent.
+
+### 14.1 Per-session runtime and model profiles
+
+Generated proposals MUST use `runtime: "default"` for roles without an explicit
+provider assignment. Installation resolves those roles to its selected default
+adapter. `--runtime codex` MUST permit a Codex-only installation; selecting
+multiple adapters MUST preserve explicit per-identity assignments. The
+`--default-runtime` option selects the inherited adapter independently of the
+available adapter list. Without that option, an explicit Session Manager
+assignment takes precedence, followed by the first selected adapter. With no
+selection or explicit assignment, the existing CLI compatibility default is
+Claude. The dry-run MUST show the resolved default. Pending Session Architect
+designs may name Pi or a custom adapter; installation MUST still validate
+availability and plugin trust before writing project state.
+
+Every persistent identity, including the Session Manager and optional
+coordination roles, MUST be assignable its own owner-approved runtime profile.
+A profile selects a locally available runtime adapter, model identifier,
+reasoning/effort setting when supported, and launch policy. Different sessions
+in one Fleet MAY use different providers and models at the same time—for
+example, Claude, Codex, Pi, or separate model tiers such as `luna` and `astra`.
+These labels are configuration values, not hard-coded TORCH model assumptions.
+
+For a new installation, the built-in defaults SHOULD be Codex
+`gpt-6-luna` at high reasoning effort and Claude `sonnet`. Users MUST be able
+to change runtime defaults and per-identity overrides in the installed project
+configuration without modifying TORCH source or global provider settings.
+Changing a profile MUST NOT start or stop a session.
+
+Launch policy MUST be a nested `launchPolicy` object on a runtime default
+(`runtimes.<adapter>`) and optionally an identity. Identity fields override
+matching defaults; omitted fields inherit. Each adapter MUST declare exact
+supported field/value sets. Nonempty policy on a custom adapter without that
+declaration, unknown values, unsupported fields, unsafe settings, or
+incompatible combinations MUST block doctor and planning before runtime
+execution. `torch profile show` MUST expose effective policy; profile set and
+defaults MUST accept repeated `--launch-policy field=value` and
+`--reset-launch-policy`, require `--yes`, and affect future plans only.
+The local Console MUST offer the same per-identity profile choices through a
+same-origin owner preview and separate confirmation. It MUST show the exact
+current and next-launch profiles, revalidate configuration freshness before
+writing, and audit the owner action. It MUST NOT start, stop, or reconfigure a
+running session. Runtime adapters shown as choices MUST be built-in or
+explicitly user-trusted; an unavailable or changed plugin MUST be visibly
+unavailable rather than silently substituted.
+
+Codex supports `sandbox=read-only|workspace-write|danger-full-access` and
+`approval=on-request|never|approve-for-me`. `approve-for-me` maps to
+`--approve-for-me` and cannot combine with explicit `sandbox`; other approval
+values map to `--ask-for-approval`, and sandbox maps to `--sandbox`. The fresh
+default remains `approve-for-me` (implicitly workspace-write), preserving the
+current invocation. Historical generated flat `sandbox=workspace-write` plus
+`approval=approve-for-me` is recognized as that effective policy and migrated
+to nested form on an owner policy edit; incompatible legacy values fail closed.
+Claude supports only `permissionMode=default|acceptEdits|auto|manual|dontAsk|plan`;
+`bypassPermissions` and danger-skip flags are prohibited. Pi accepts no
+overrides and MUST keep TORCH's fixed `--no-approve`, `--no-extensions`, and
+`--no-context-files` flags.
+
+An installed Fleet MUST detect unavailable adapters before startup and explain
+which identities cannot launch. It MUST NOT silently substitute a provider or
+model. Adapters declare unsupported settings and lifecycle capabilities; TORCH
+uses durable messages, acknowledgements, and resume state when native steering
+is unavailable. A runtime-profile change is tracked and owner-reviewed,
+preserves Fleet identity and backlog, and does not itself launch a process.
+Runtime starts remain explicit actions with configured authorization and
+budget boundaries.
+
+TORCH MUST NOT restrict adapters to a hard-coded vendor list. An explicitly
+installed local plugin may participate when it satisfies the adapter contract
+and can receive TORCH's scoped identity-bound MCP or equivalent control-plane
+endpoint. Plugin installation and executable allowlisting are explicit local
+configuration choices; model proposals cannot add arbitrary executable paths
+or launch commands.
+
+The first local plugin flow uses a user-owned trust store outside the project:
+`$XDG_CONFIG_HOME/torch/runtime-adapters.json` (or `~/.config/torch/` when
+`XDG_CONFIG_HOME` is unset). The initial adapter entrypoint contract is a
+canonical absolute `.cjs` file exporting
+`createTorchRuntimeAdapter({ env })`. `torch runtimes trust` first displays the
+entrypoint path and SHA-256 without executing it; approval must echo that exact
+hash with `--yes --sha256`. A changed entrypoint invalidates the reviewed hash
+and fails closed. Project-tracked configuration may select an adapter already
+trusted by the user, but cannot add, change, or authorize a module. `torch
+runtimes list`, doctor, and profile inspection must not load plugin code.
+Loading a trusted plugin executes it and its imported dependencies with the
+current user's operating-system privileges; the entrypoint hash does not pin
+those dependencies. Install/start/profile-change operations may load the
+selected adapter to validate or plan it, including a dry-run that uses it.
+Revocation affects future registry loads and does not stop an already-running
+process. The user must stop a session separately before revoking its adapter.
 
 ## 15. Session lifecycle
 
@@ -1093,17 +1366,29 @@ AI runtime choice are independent.
 
 `torch up --fresh` creates new runtime conversations while preserving Fleet
 identities. It combines the common prompt, domain prompt, current approved
-configuration, and initial resume instructions. Runtime IDs are captured as
-soon as they are available.
+configuration, and initial resume instructions. The generated instruction
+bundle MUST include the current identity's organization roles,
+responsibilities, authority, reporting line, direct reports, coordination links,
+and implementation ownership from the active organization graph. This
+structured context is metadata, not an authority grant; it is included in the
+instruction digest so changes reach the identity on its next start or resume.
+Runtime IDs are captured as soon as they are available.
 
-The Session Manager starts last so workers and the control plane exist before
-dispatch begins.
+Runtime identities start in parent-before-report order derived from the active
+organization graph, so managers are available before their direct reports.
+Wind-down reverses that order and routes each active identity's final status to
+its direct manager identities. If multiple roles mapped to one persistent
+identity create an identity-level cycle, TORCH blocks the plan rather than
+guessing. Planning remains read-only; actual runtime startup still requires the
+explicit owner-approved launch operation.
 
 ### 15.2 Resume
 
 Normal `torch up` resumes known runtime sessions when safe. If a conversation
 cannot be resumed, TORCH creates a replacement runtime session for the same
-Fleet identity and supplies durable state. Loss of a conversation MUST NOT
+Fleet identity and supplies durable state. The current organization metadata is
+recomputed from canonical project configuration on each resume; stale generated
+or worktree prompt copies MUST NOT override it. Loss of a conversation MUST NOT
 erase ownership or unfinished work.
 
 ### 15.3 Presence
@@ -1224,7 +1509,16 @@ cancelled
 
 Items SHOULD identify owner, dependencies, affected domains, acceptance
 criteria, evidence, the commit where the issue was observed, and current commit
-when applicable.
+when applicable. A task MAY also carry free-text `feature` and `milestone`
+labels, each bounded to 120 characters. These labels group existing work for
+program visibility; they do not create a second ticket, initiative registry, or
+queue.
+
+The Session Manager MAY set those labels when creating work or classify an
+existing item using its current revision, with a reason recorded in task-local
+classification history and the project audit stream. Classification MUST NOT
+change task state, assignment, evidence, or dependencies. Specialists cannot
+change initiative labels. Labels may be explicitly cleared.
 
 The queue is singular across Program Director, domain lead, Session Manager,
 and specialist views. Management layers sequence and route this queue; they do
@@ -1239,11 +1533,83 @@ item. This invariant is serialized across different task files, not merely
 protected by per-task revision locks. Blocked work is durable but not runnable;
 it may be reconsidered explicitly when its dependency evidence changes.
 
+### Policy-controlled specialist self-claim
+
+Manager assignment remains the default. An owner-reviewed project configuration
+MAY enable `backlog.self_claim: { enabled: true, areas: [...] }` for explicit
+specialist identities. Omitted policy and new installations are disabled.
+Coordination/manager roles do not gain implementation ownership through this
+policy. Current canonical configuration, not a conversation or cached service
+copy, determines eligibility on each request.
+
+`backlog claim-next --dry-run` / `torch_plan_backlog_claim` previews eligibility.
+`backlog claim-next --yes` / `torch_claim_next_backlog_task` resolves existing
+active work first without mutation, then atomically selects and assigns one
+eligible ready item. Selection honors priority (urgent, high, normal, low), then
+creation time and task ID. It MUST NOT select proposed, blocked, dependency-gated,
+unrouted work or work reserved for another owner. Self-claim requires the caller
+to be explicitly listed in both project policy and the task's affected domains.
+General unrouted requests remain manager-routed work; no filler is invented.
+
+Before a new assignment, verify the managed specialist worktree is present,
+clean and on its mapped branch, with no active Git operation, check/measurement/
+pin guard, prepared/running check, unreleased resource, waiting resource request,
+unfinished integration request or pending named approval for that identity.
+Blocked plans return concrete reasons and do not change work or release waits.
+An existing assignment remains resumable even if permission to claim new work
+has since been revoked; this is observation, not a new grant of authority.
+
+Manager assignment, self-claim and all transitions into active assignment
+states share the same project-wide assignment lock and task revision checks.
+A blocked item MUST NOT reactivate as a second active task while its owner has
+other active work. Lock contention fails closed; it never steals a stale lock.
+Claim history and audit identify the actual specialist, not a fabricated
+manager identity. Self-claim does not send acknowledgement-only assignment
+messages to itself or authorize completion, release, deployment or ownership
+changes. The existing evidence and landed-commit completion rules remain.
+
+After an item is finished and its work/tests/integration are settled, specialists
+re-read current instructions and resolve their next item. Routine progress is
+recorded in commits, tasks and durable status. Escalate decisions outside scope,
+cross-domain conflicts, owner-sensitive approvals, main regressions and at-risk
+work. Direct specialist communication remains available.
+
 Backlog health is read-only and reports exceptional conditions, including
 multiple active assignments, stale assigned work, resolved dependencies on a
 blocked item, missing or retired areas, old observation commits, ready work
 without a live eligible specialist, and active work whose runtime session is
 missing. Health never rewrites or reassigns work automatically.
+
+### Commit-linked activity
+
+Read-only activity observation scans canonical and managed local branch history
+within approved `backlog.activity.stale_days` and `max_commits` limits (defaults
+3 days and 1000 commits). Exact task IDs in commit messages link activity to
+the single authoritative backlog. Metadata-only task edits MUST NOT refresh
+the commit-activity clock. Owner-originated requests sort first; blocked work
+is identified as expected waiting, not silently revived. Completed/cancelled
+items are excluded from stale findings. Missing branches or truncated coverage
+MUST yield unknown absence of activity, not a false assertion of neglect.
+Future-dated commits do not count as current progress. These observations are
+Git-reported metadata, not independent evidence of meaningful implementation.
+
+Standalone `Closes: TASK-id[, TASK-id...]` trailers express completion intent,
+never authority. Activity observation never mutates task state. Approved
+`backlog.activity.auto_close_after_landing` enables post-landing reconciliation
+of trailers from the exact submitted tip; default is disabled. Reconciliation
+MUST require matching project/target landed integration evidence and canonical
+ancestry, current approved required checks, specialist ownership, exact task
+commit, task evidence and `ready_to_integrate` state. It uses the normal
+revision-checked completion transition under a task lock. Unknown or mismatched
+items stay open; exact already-completed items are unchanged on replay.
+
+Fleet Operations can preview and explicitly reconcile a landed request through
+CLI/MCP after interruption. Automatic reconciliation failures MUST NOT reverse
+or misreport a successful Git landing; they surface `needs-review` and a
+durable audit when available. Partial completion is retryable per task, not an
+atomic transaction across all mentioned items. A commit message alone MUST NOT
+close a task or authorize deployment. Daily reviews and dashboard surfacing
+remain separate pending work; observation installs no timer.
 
 Owner decisions affecting future work MUST be recorded durably. Chat messages
 alone are insufficient. Project source, tests, approved configuration, and
@@ -1283,7 +1649,110 @@ Projects SHOULD retain scenario-level checks at meaningful system boundaries.
 Fleet infrastructure itself MUST have acceptance tests that demonstrate both
 success and failure behavior.
 
+### Frozen inputs for queued checks
+
+A project MAY declare `snapshot: { paths: [...], source_commit_file: "..." }`
+on a check. Paths are explicit repository-relative inputs, including ignored
+generated build files when appropriate. The project writes the full source
+commit SHA to the marker as part of its build. The marker MUST match the clean
+source worktree commit and MUST be included in the captured inputs. This is
+project-declared provenance, not independent proof that its builder is correct.
+
+`checks prepare` / `torch_prepare_check` captures inputs before the specialist
+requests a scarce-resource slot. Copies use reflinks when supported or ordinary
+independent copies; they MUST NOT hardlink mutable build files. Captured files
+are hashed, input files are read-only, and source/copy changes during capture
+fail closed. Symlinks, traversal, Git metadata, and nonregular inputs are
+rejected. Frozen state lives outside the worktree in TORCH-owned local state.
+
+After preparation, acquire the configured resources through the existing FIFO
+resource service, then run `checks run-prepared` / `torch_run_prepared_check`.
+The run MUST verify captured content, unchanged approved check policy, bound
+identity and active resource leases. It executes from the captured input root;
+later specialist commits do not invalidate that historical subject. A passing
+receipt applies only to the captured SHA and policy, never a later worktree
+tip. A changed snapshot, lost lease or failed executor yields nonpassing
+evidence. Output-writing checks should put their outputs outside the declared
+input paths. This mechanism is input isolation, not a process sandbox: approved
+commands must use their captured working directory instead of absolute live
+build paths or an unrelated existing server.
+
+Preparation and run claim are durable. Completed/cancelled runs remove only
+the exact owned input copy while retaining its manifest/digest and receipt.
+An interrupted `running` record is not automatically rerun or cancelled:
+unknown process state requires operational inspection. Resource acquisition
+and release remain explicit operations; preparing/cancelling a check does not
+steal, release or cancel an independently held resource. No background runner
+or persistent timer is implied by preparing inputs.
+
+Interrupted prepared checks MUST remain non-runnable until explicitly resolved;
+age, a missing heartbeat or an observation timeout is not stopped-executor proof.
+The runner identity is recorded before measurement. Linux PID start/boot identity
+can distinguish reused PIDs; other process observations remain conservative.
+Recorded live runners MUST block recovery. Missing, foreign-host or legacy runner
+metadata is unknown, not independent evidence that executors stopped.
+
+`torch checks recovery-plan --prepared <id>` is an owner-only read-only preview.
+`torch checks recover-prepared --prepared <id> --executors-stopped --evidence
+<text> --yes` requires explicit owner evidence covering the runner and all child
+executors. It records terminal `abandoned` state plus an audit atomically, never
+creates a receipt, never resumes execution and never releases resource leases.
+Cleanup follows only for the exact owned snapshot; ownership mismatch leaves
+cleanup pending and explicit repeat recovery can retry without duplicate audit.
+The owner attestation is not an automatic descendant sensor. Future measurements
+require newly prepared inputs and independent lease handling.
+Cleanup outcomes MUST persist for observation. Interrupted outcome persistence
+retains pending rather than claiming completion. The Console MUST retain abandoned
+check visibility with completed/pending/unconfirmed cleanup labels; missing or
+unreadable legacy metadata stays unconfirmed. Projection MUST omit private input
+paths, owner evidence and process IDs, and MUST NOT probe files, recover checks,
+or imply independently verified descendant termination. Replay updates cleanup
+outcome without repeating the original owner-authority audit.
+
+Frozen receipts MUST link to a finished prepared operation before exact-pass
+qualification. Receipt persistence alone after a partial/crashed run is not enough.
+
+### Project-defined test conditions
+
+A check MAY declare a `conditions` policy with a shell-free probe command,
+arguments, bounded `timeout_seconds` (default 30, maximum 300), and nonempty
+unique `required` conditions of `{ id, equals }`. Expected values are literal
+strings, booleans, finite numbers or null; no coercion is permitted. TORCH does
+not hardcode game-specific switches, GPU, clock or visibility rules.
+
+The probe MUST return one bounded JSON object with schema
+`torch.dev/check-conditions/v1alpha1`, a `subject` naming its actual full commit,
+and a `conditions` object. For frozen inputs, `subject.inputDigest` MUST match
+the captured digest. TORCH provides `TORCH_CHECK_COMMIT` and
+`TORCH_CHECK_INPUT_DIGEST` to both probes and measurement commands as expected subject metadata. A project
+probe MUST observe the tested build/runtime, not simply echo expectations.
+
+A report MAY include a `runtimeId` (nonblank string, at most 256 characters).
+If preflight supplies one, postflight MUST supply the same identity; a missing or
+changed identity invalidates even otherwise healthy conditions. Supplied malformed
+identities invalidate preflight. Projects SHOULD use an identity generated by the
+actual tested runtime, not a constant derived from its build. Legacy reports with
+no identity in either probe remain supported but do not prove runtime continuity.
+
+TORCH probes after resource acquisition and before measurement execution. A
+failed, missing, oversized, malformed, mismatched-subject or mismatched-condition
+report MUST prevent measurements from starting and produce an incomplete
+receipt, not a product-test failure. It probes again after execution; an invalid
+postflight MUST invalidate a green measurement. The harness is responsible for
+observing the same page/runtime used for measurements and for detecting
+condition changes during the measurement interval; endpoint probes cannot prove
+that conditions remained stable at every instant.
+
+The retained output places a `TORCH_CHECK_CONDITIONS` JSON diagnostic before
+measurement output and a postflight line after it. Before/after reports, reasons,
+policy and subject identity are retained in the receipt and artifact. Evidence
+is explicitly `project-reported`, not independently verified sensor truth.
+Exact-pass qualification requires valid before/after condition evidence and
+matching policy, not merely exit zero. Legacy checks remain supported without
+this optional policy; this is not a claim that they observe test conditions.
+
 ## 19. Shared-resource coordination
+
 
 Resources such as browsers, GPUs, ports, databases, devices, API quotas, and
 deployment accounts are declared with capacity and policy.
@@ -1340,6 +1809,36 @@ Before landing, TORCH MUST verify:
 
 Fleet policy MUST be enforceable without provider branch protection. A forge
 adapter MAY mirror the same policy as defense in depth.
+
+The canonical branch is single-writer. Specialist identities MUST NOT push
+their branches directly to the canonical branch or its remote; all landings go
+through TORCH's integration authority. The final target re-check and
+fast-forward MUST be serialized across TORCH processes with a project-scoped
+lock/transaction. Authorized requests MUST be drainable in durable insertion
+order by one landing-authority invocation; direct specialist pushes remain
+prohibited. The FIFO drain MUST re-evaluate each request against the latest
+target after every landing. A candidate that omits a newly landed canonical
+commit MUST move to `needs_convergence` and remain unlanded until its owner
+converges and reruns exact-commit checks. The drain may continue to other
+independently ready requests; it MUST NOT weaken checks or reassign the stale
+candidate. A direct `integrate land` request MUST also respect the same FIFO
+position and cannot skip an earlier ready request. `torch integrate drain` is
+an explicit main-mutating operation and requires confirmation. This one-shot
+processor is not itself a daemon or timer. A project MAY define a typed
+`integration-drain` system schedule, but it MUST be periodic, owner-authorized,
+use a configured landing-authority identity, and run no more often than once
+per minute. It processes only requests already authorized by that identity and
+whose exact required checks still pass. The schedule is mutating: it does
+nothing until the owner separately installs the exact-config system timer, and
+removing the timer does not revoke per-request audit history. An absent or
+uninstalled schedule leaves integration manual. The scheduled drain MUST NOT
+perform convergence, push branches/remotes, weaken check requirements, or
+invoke an AI provider. A concurrent contender must fail closed or wait, then
+recompute its plan against
+the new target and rerun exact-commit checks after convergence. A lost race
+never justifies weakening checks. TORCH cannot prevent a user or agent with
+independent forge credentials from bypassing its local queue; hosted branch
+protection or credential isolation is defense in depth when available.
 
 ## 21. Doctor and observability
 
@@ -1433,7 +1932,185 @@ definitions in TORCH, suppresses duplicate minute runs, and refuses to run
 after tracked configuration changes because its command is bound to the exact
 configuration digest. Unit files are recorded in the installation ownership
 manifest and removal refuses changed files. Installing that persistent
-launcher on a real machine remains an explicit owner action.
+launcher on a real machine remains an explicit owner action. When a reviewed
+configuration change changes its digest, `torch schedules launcher
+plan-reconcile` previews the exact owned-unit refresh and `reconcile --yes`
+updates only unchanged TORCH-owned units, reloads the user systemd manager, and
+updates the ownership manifest. Modified, missing, or mismatched units block
+reconciliation; a failed reload restores the previous unit contents and
+manifest. This refresh does not alter the timer cadence or start an AI runtime.
+
+Manager check-ins are a required schedule capability. Each manager-level
+identity MUST have a configurable cadence and a scope derived from its direct
+reports in the active organization graph (not a hard-coded list of agent
+names). Interval-based manager check-ins MUST be at least 60 seconds apart;
+cron schedules retain their minute-level resolution. A check-in observes
+durable status, current task, unacknowledged
+coordination/blocker/handoff messages, and explicit approval-wait records when
+available; ambiguous `waiting` summaries are surfaced as unclassified rather
+than guessed. It prepares a concise, durable check-in request for that manager
+with affected identities, evidence, and the next useful action. Check-ins MUST
+not grant approval, reassign work, alter a backlog item, or create a new agent.
+If the manager is offline, the check-in remains queued for resume. Waking a
+runtime to consume the check-in is an adapter-mediated provider invocation.
+It MUST be disabled by default and, if enabled by the owner in the reviewed
+schedule, MUST select an explicit budget policy and a durable project-wide
+maximum invocation count shared across all manager schedules per UTC day.
+`action.wake.budget_mode: invocation-count` supports subscription and local
+runtimes and bounds the number of invocations, not dollar spending.
+`action.wake.budget_mode: usd-hard-cap` additionally requires a positive
+`action.wake.max_usd_per_invocation` and an adapter-enforced USD ceiling for the
+exact create/resume mode. Legacy configurations providing the positive USD
+ceiling without a mode retain USD-hard-cap behavior. An enabled wake without
+either policy is invalid. Count mode cannot specify a USD ceiling.
+TORCH MUST skip a wake when the manager is already active,
+preflight the exact configured identity and any required ceiling, reserve the daily count
+atomically only after that preflight, and invoke using the same prepared plan,
+adapter, and profile. A failed or unavailable adapter MUST leave the durable
+check-in queued and report the failed wake. A missing or mismatched hard-cap
+receipt in USD-hard-cap mode MUST fail closed before reservation/invocation. The daily invocation
+count and per-invocation USD ceiling are independent safeguards; neither
+replaces the other. The portable base behavior is durable delivery, not silent
+provider use. The owner configures the shared cap through
+`runtime_wake_budget.max_invocations_per_day`. Timer installation remains a
+separate owner-approved operation.
+
+Adapters MUST NOT claim a hard cost ceiling for subscription or account-based
+usage unless the underlying runtime provides an enforceable limit. The current
+built-in Claude, Codex, and Pi adapters declare no hard-cap-capable launch
+modes; their USD-hard-cap scheduled wakes are rejected during preflight and
+check-ins remain queued. Explicit count-limited wakes can use their ordinary
+configured launch/resume modes. Pi still requires an explicit provider/model.
+
+When adapter preflight was unavailable, a later timer tick MUST be able to wake
+the existing pending check-in without creating a duplicate message. Each
+message has at most one reserved invocation; retries must not silently repeat
+a possibly executed provider call. Reservation MUST atomically reject another
+in-flight wake for the same manager, and recheck current manager state before
+invoking. Unknown or interrupted reserved invocations remain visible for
+operational recovery rather than being cleared based on age alone.
+
+`torch schedules wakes [--manager <id>]` provides read-only reservation
+inspection, including outcome, message, manager state and whether a reservation
+blocks another wake. Recovery uses `torch schedules recover-wake --reservation
+<id> --runtime-stopped --note <evidence> --yes`. Only the configured owner may
+recover an interrupted `reserved` record, and the manager must be offline.
+The owner MUST first inspect and stop any associated runtime outside this
+command; an offline heartbeat alone is not process proof. TORCH records this
+as an operator attestation, not verified runtime termination. Recovery is
+atomic and audited, retains the budget charge and same-message replay guard,
+and neither acknowledges the check-in nor launches a provider. A fresh check-in
+can wake only through the ordinary schedule after the owner handles the old
+message. Age, message acknowledgement, and routine timer ticks never recover
+unknown launches automatically.
+
+The read-only project snapshot MUST expose initialized manager launch records
+and the total number of blocking unknown launches, or explicitly report that
+records are unavailable. A bounded history prioritizes blocking reservations.
+The Console surfaces them in owner attention and schedule operations with
+manager, schedule, message, reservation and presence details. Navigation to
+these details opens any collapsed ancestor panel. Observation MUST NOT clear,
+acknowledge, recover or retry a reservation, and offline presence MUST NOT be
+presented as independent runtime termination evidence.
+
+When TORCH proposes an organization graph, it MUST derive a check-in schedule
+for every non-owner identity with direct reports. Existing schedules and their
+configured cadence are preserved; a newly required manager receives a
+15-minute owner-authorized system coordination schedule in the proposal. A
+hierarchy-change plan MUST show schedule additions and obsolete schedule
+candidates. Obsolete timer definitions are not removed automatically, and a
+proposed schedule is not an installed timer: activation must preserve the
+separate owner approval and installation boundary. One project timer may
+dispatch multiple manager schedules; each schedule queues work only for its
+own manager and direct-report set.
+The owner-facing hierarchy review preview MUST show that same schedule delta,
+label timer installation as unverified, and state that changes to the tracked
+configuration require separate reconciliation of any exact-config timer
+launcher before it is trusted. The owner can inspect and explicitly apply that
+refresh through the launcher reconciliation commands; hierarchy planning and
+activation MUST NOT silently change user systemd state. Showing a schedule MUST NOT imply that a
+manager runtime will be awakened; provider invocation requires its own
+explicitly enabled budget and policy.
+
+Every generated start/resume instruction bundle for an identity with direct
+reports MUST explain its manager-check-in responsibility: inspect durable
+check-in messages, refresh current state through the identity-bound
+`torch_plan_manager_check_in` tool, act only within the manager's authority,
+and route approval requests to their named approver. Specialist-only bundles
+MUST NOT imply manager authority. Rebuilding the bundle from the current
+organization graph ensures a promoted identity receives these instructions on
+its next start or resume, without silently changing a running session.
+
+Approval waits MUST be represented as durable structured requests rather than
+inferred from presence summaries or free-text messages. A request names its
+requester, exactly one approver (a configured owner or active Fleet identity),
+optional task and evidence references, a bounded title and summary, state,
+revision, and decision metadata. Only the named approver may decide it. A
+decision is revision-checked, audited, and durably returned to the requester.
+An owner decision requires the explicit owner CLI confirmation path; AI
+identities cannot claim or decide as the owner. A manager check-in includes
+pending requests made by direct reports and classifies the wait target as that
+manager, another AI identity, or the owner. Managers may route or escalate a
+request but MUST NOT approve it for a different named approver. The owner and
+each AI identity may list only requests they made or are named to approve;
+manager check-in may inspect requests made by its direct reports.
+
+Implementation checkpoint (2026-09-28): `planManagerCheckIn` derives direct
+reports from the active organization graph and reports offline/stale/waiting
+identities plus unacknowledged direct-report messages. `queueManagerCheckIn`
+creates at most one unacknowledged self-directed manager-check-in message, does
+not queue when no attention is needed, and never invokes a runtime. Formal
+approval requests now persist in SQLite, are identity-scoped, notify named AI
+approvers, and allow only the named approver to record an audited,
+revision-checked decision. Owner decisions require explicit CLI confirmation.
+Check-in plans include direct-report approval waits classified by target.
+Queued check-ins include a capture timestamp and explicitly identify their
+findings as a potentially stale snapshot. Before taking action, the manager
+MUST refresh direct-report presence, unacknowledged messages, and structured
+approval waits from current durable state through the read-only,
+identity-bound `torch_plan_manager_check_in` MCP tool. The tool derives scope
+from the active organization graph, accepts no caller-selected manager ID, and
+grants no decision authority; named approvers remain the only identities that
+may decide their requests. Pending-message deduplication therefore cannot make
+a later approval or blocker invisible to the manager's fresh check-in.
+A manager-check-in action MAY opt into `stale_work` review bounds:
+`stale_days` (1–365), `max_commits` (1–10000) and `max_items` (1–100), defaulting
+to approved backlog activity bounds and 30 items. An owner-approved daily cron
+schedule can deliver this review; cron evaluates host-local time. No such review
+schedule or host timer is installed automatically.
+
+Reviews MUST use the authoritative existing backlog, prioritize owner requests,
+scope assigned tasks to direct reports, and reserve unassigned intake for Fleet
+Operations. Blocked items MUST remain marked as expected waiting; incomplete
+Git coverage is unknown, not evidence of neglected work. Output MUST be bounded
+and MUST NOT modify task state, ownership, approvals or completion evidence.
+Stale reviews deduplicate separately from routine check-ins so an outstanding
+routine message cannot swallow the daily review. Before acting, managers refresh
+`torch_plan_manager_check_in` with `stale_work_review: true` and the stated bounds.
+Revival, deferral, dependency resolution and evidenced closure remain explicit
+decisions through the existing task/approval mechanisms. Optional runtime wakes
+retain existing owner approval and budget guards; inbox delivery alone never
+starts an AI session.
+New deterministic proposals derive 15-minute schedules for each manager
+identity with direct reports. Hierarchy pilot plans now show missing manager
+schedule additions and obsolete schedule candidates without applying either.
+Configuration validation requires every configured manager to have its own
+typed schedule. The typed coordination action is handled by `ScheduleService`
+and dispatched by the existing owner-approved system timer. The timer only
+queues a durable check-in; it does not wake a live AI runtime. Applying a
+hierarchy change and reconciling installed timer state remain separate gates.
+The local Console includes Flow watch for managers, direct reports, approval
+targets, and configured cadence; it explicitly reports timer installation as
+unverified. Snapshot observation remains read-only. For a pending request whose
+named approver is the owner, the Console MAY offer a same-origin loopback
+preview-and-confirm decision control. Preview MUST show the request revision,
+requester, evidence, selected decision, note, and exact effect. Confirmation
+MUST re-check the named approver and request revision, use the existing audited
+`decideApproval` transaction, and notify the requester exactly once; stale or
+replayed requests MUST NOT apply a second decision. The owner Console MUST NOT
+decide requests assigned to a manager or peer AI, and MUST make that boundary
+visible. Explicit adapter-mediated runtime wake with a per-project budget
+remains separate and disabled by default.
 
 ## 23. Repository and forge operating modes
 
@@ -1476,6 +2153,21 @@ browsing. Each capability is independently optional.
 Valid configurations include GitHub for mirroring while TORCH remains the
 integration and check provider, or GitHub Actions for checks while TORCH keeps
 its own backlog and integration queue.
+
+Publishing the already-landed local canonical branch is a separate owner-only
+operation; it is not part of specialist integration or the scheduled
+integration drain. `torch forge sync plan` MUST be read-only, and
+`torch forge sync --yes` MUST require explicit confirmation, verify that the
+configured forge remote is still the canonical remote, and publish only the
+current canonical commit. The operation MUST use a normal fast-forward-only
+Git push, MUST NOT force-push, and MUST record the owner, exact commit, remote,
+branch, and observed result in the local audit log. A remote-ahead or divergent
+branch MUST block publication; TORCH MUST NOT fetch-and-merge, overwrite, or
+silently select one history. The owner must first fetch and explicitly
+converge the canonical branch, then rerun any required checks invalidated by
+that convergence. A push race MUST fail without rewriting the remote. Forge
+unavailability MUST leave local integration and coordination operational;
+publication can be retried after service returns.
 
 ### 23.3 Degraded operation
 
@@ -1523,7 +2215,151 @@ default. The CLI and read-only Fleet observation surface are implemented and
 scenario-tested with a virtual adapter; no live release or deployment was
 performed.
 
+### 24.1 Durable delivery attempts and bounded retries
+
+Before external execution, TORCH persists a per-delivery unresolved operation
+reservation and a running attempt. Independent callers MUST NOT overlap that
+delivery's effects. Each attempt records operation, exact commit, provider,
+ordinal, timestamps, result and structured receipt. Failed attempts persist
+without advancing delivery state. Successful receipt application, delivery
+state, lifecycle event and audit are committed together; if local application
+fails after external success, the unresolved successful operation prevents
+duplicate execution. Console observation includes bounded recent operations
+and attempts; detailed receipts are available through CLI.
+
+Approved `delivery.retry.max_attempts` is 1–5, default 1. Retry requires both an
+adapter declaration of `retrySafety[operation]` (`idempotent` or `read-only`)
+and a structured failed receipt reporting transient classification and effects
+`not-applied`. All bounded attempts share one idempotency key. Adapters must
+actually honor their safety declaration/key and omit secrets from receipts;
+TORCH does not independently prove provider-side behavior. Permanent failures,
+undeclared safety, unknown effects, thrown exceptions and malformed receipts
+MUST NOT auto-retry. Fresh canonical policy is checked before execution and
+every retry; changed policy stops further effects. Existing authority/evidence
+and high-impact owner-approval gates still apply. This boundary is synchronous;
+Promise-returning adapters are unsupported and treated as uncertain.
+
+Unresolved interrupted/unknown execution remains blocked for review. Only the
+owner, after confirming the executor is stopped and independently verifying no
+external effect, may explicitly attest `not-applied` with evidence. This clears
+the reservation without executing anything or advancing lifecycle state, and
+preserves the original uncertain attempt plus owner-attested provenance.
+Do not use this for succeeded operations. Saved successful receipts whose
+local lifecycle application failed have a separate owner-only preview and
+explicit executor-stopped reconciliation path. It MUST invoke no adapter,
+require the exact delivery commit/from-state/next-state and latest successful
+receipt, check current owner authority and unchanged destination configuration,
+and commit lifecycle/event/audit/operation application atomically once. A running
+parent with a durably saved successful latest attempt can be reconciled after
+the owner confirms its executor stopped; unknown/failed receipts cannot.
+Replays are unchanged and partial local recovery rolls back without losing the
+receipt. Destination hashes are additive metadata; older records without them
+require the complete original policy hash. Unrelated configuration changes do
+not invalidate newer destination-bound records. Saved adapter success and owner
+review are reported provenance, not independent live deployment verification.
+Actual provider adapters/idempotency qualification, canonical fetch retry and
+dashboard details remain open.
+No configured provider name alone installs or executes an adapter.
+
 ## 25. Security and trust boundaries
+
+### Owner-first digest checkpoint (2026-09-30)
+
+TORCH provides read-only Markdown/JSON owner digest generation over a configurable
+rolling UTC window (1–168 hours, default 24) with bounded section results
+(1–100 items, default 30). Owner approval waits come first, followed by unresolved
+delivery review, latest deployment operation, receipt-reported shipping, landed
+work, completed tasks, structured approval decisions, blockers and neglected
+owner requests. Implemented or landed work MUST NOT be relabelled as shipped.
+Missing tables and truncated source/results MUST be explicit; incomplete managed
+Git history cannot prove neglected requests. Project text is escaped for Markdown.
+Database reads share a transaction; tracked worktree/Git state remains a bounded
+observation, not an atomic repository snapshot or independent live verification.
+
+Approved publication persists an immutable local report plus audit atomically.
+Owner publication requires explicit approval; Fleet Operations automatic
+publication requires current `owner_digest.enabled` policy. A typed
+`owner-digest` system coordination schedule requires owner authority and one
+attempt, honors policy revocation and wakes no agent or external command.
+No timer is installed by configuration or report publication. Latest reports
+are available through CLI, console snapshot and read-only `/api/digest` JSON.
+Unstructured decision documents are not time-indexed and cannot be presented
+as complete recent management calls. The actual Console and isolated demo share
+a read-only owner briefing renderer and navigation anchor. It shows saved
+publication time/window, owner attention first, delivery uncertainty, distinct
+recorded shipping/landing/completion, expandable decisions/blockers and coverage.
+Unpublished, stale, future-clock and unavailable/truncated evidence are explicit.
+Project strings are escaped as text; report Markdown is never interpreted as
+trusted HTML. A saved report is not silently rewritten after a live approval
+changes. Mobile anchors clear sticky navigation, and expanded evidence fits the
+viewport. Explicit external notification adapters and installed-cadence
+qualification remain pending. Local publication MUST NOT imply public release or external
+delivery. The authoritative backlog remains unchanged by reporting.
+
+Check-evidence dashboard checkpoint (2026-09-30): the Console and isolated
+demo share an escaped, expandable view of exact-commit receipts, captured-input
+digests/copy strategy, invalidation reasons and project-reported pre/post
+condition observations. Project-scoped read-only database projection supports
+legacy receipts without condition columns; malformed or absent evidence is
+explicit. Preparation records remain visible without assuming a recorded
+running state proves a live process. No automatic retry or recovery authority
+is introduced. History is bounded to the latest 40 receipts and preparations;
+linked captured-input evidence is resolved independently of the preparation
+display limit. Local filesystem paths and per-file inventories are not exposed
+by this view. Actual GPU/browser qualification remains a separate gate.
+
+Activity dashboard checkpoint (2026-09-30): read-only snapshots reuse managed
+Git commit observation with approved project stale-day/scan bounds. Task creation
+time and originating owner identity are preserved in the projection. The shared
+Console/demo Activity review groups stale work separately from unknown activity,
+puts owner requests first and retains expected blocked-wait context. Neglected
+owner requests surface in the attention list. Commit closure mentions are intent,
+not completion evidence; metadata edits do not reset inactivity. Observation
+neither creates a second queue nor changes task state. A configured daily review
+and non-disruptive live refresh still need implementation/qualification.
+
+Canonical fetch checkpoint (2026-09-30): `torch forge fetch plan` resolves the
+configured canonical branch, then owner-confirmed `forge fetch --yes` imports
+that exact commit's objects without moving branches, updating FETCH_HEAD,
+recursing into submodules or publishing remotely. Default attempt limit is three,
+explicitly bounded to one through five. Only narrowly recognized transient
+transport failures are retried; authentication, configuration, certificate and
+unclassified failures stop. Head discovery itself fails closed without retry.
+Each attempt is reserved durably before execution; sanitized results survive
+reopening and are available through `forge fetch status` and local snapshots.
+Destination URL hashes and canonical policy are checked before each attempt;
+execution uses the resolved URL, not a subsequently mutable remote alias.
+Terminal state and owner audit persist atomically. Raw errors/URLs are not
+stored. A running record after interruption is unconfirmed executor state, not
+proof of a live fetch. Object presence plus Git exit status is local import
+evidence, never shipping evidence or release/deploy permission. Real remote
+classification and dashboard outcome presentation remain qualification work.
+
+Operation-outcome dashboard follow-up (2026-09-30): the actual Console and
+isolated demo now expose the latest 20 fetch operations, 40 delivery operations
+and 80 delivery attempts with explicit coverage bounds. Read-only project-scoped
+projection retains safe receipt status/classification/effects and recognized
+TORCH error categories, not arbitrary references, raw errors or credential-bearing
+metadata. Malformed receipts remain unavailable. Unknown/running/pending-success
+operations surface in owner attention; views never authorize retries or recovery.
+Object import success is distinct from deployment; adapter success is distinct
+from independently verified live release state. Real adapters remain unqualified.
+
+Live dashboard refresh checkpoint (2026-09-30): snapshots refresh every 15
+seconds while visible, with an owner pause/resume control and a ten-second read
+deadline. Hidden tabs do not poll; pagehide tears down the timer and persisted
+pageshow restores it without duplicating intervals. Requests are single-flight;
+background ticks coalesce and cannot starve slow reads, while explicit newer
+requests discard older responses. Failed reads leave existing evidence visible.
+Snapshot rendering protects edited or focused controls and active preview DOM,
+updates unrelated evidence and preserves matching expanded detail sections.
+The refresh status explicitly warns that retained panels may show older state.
+Successful actions release only their own editor; unrelated drafts remain.
+Manual refresh uses the same protection. No preview is silently reissued,
+confirmed or persisted; existing server-side plan/revision/token checks remain
+authoritative. Polling neither wakes agents nor installs host timers. Controlled
+clock/browser lifecycle regression is local evidence; installed-fleet and native
+background/back-cache qualification remain separate work.
 
 TORCH MUST:
 
@@ -1568,7 +2404,9 @@ the live development fleet.
 For a Git source checkout, candidate staging MUST bind the artifact to the
 exact clean tracked commit. It may include the installed dependency tree needed
 to execute acceptance, but MUST exclude arbitrary untracked files and reject
-modified tracked input. Artifact-local relative dependency links are permitted;
+modified tracked input. Candidate plans MUST list non-ignored untracked paths
+that will be excluded, so review makes the exact candidate boundary visible;
+ignored local files remain excluded without being listed. Artifact-local relative dependency links are permitted;
 links that escape the candidate root are refused. Non-Git inputs are treated as
 already-prepared release artifacts and every contained entry is inventoried.
 
@@ -1585,6 +2423,11 @@ Candidate acceptance includes:
 - acquire and release resources;
 - capture, stop, and resume;
 - detach and uninstall cleanly.
+
+If a candidate check fails, its acceptance report MUST include bounded stdout
+and stderr excerpts for failed checks while omitting log copies from successful
+checks. A nonzero check without its actionable diagnostics is not sufficient
+candidate evidence.
 
 ### 26.3 Atomic upgrade and rollback
 
@@ -1659,6 +2502,121 @@ The operational console SHOULD expose:
 The console is an operational view over the same core service, not a separate
 source of truth.
 
+The owner-facing console SHOULD open with a project pulse and an explicit
+attention queue, then provide project-aware views over the authoritative
+backlog, persistent identities, durable inter-session communications, evidence,
+integration, and release gates. Kanban lanes are projections of backlog states;
+they MUST NOT create another queue. The roster and enabled capabilities drive
+navigation and grouping; the interface MUST NOT assume COMBATRIG departments or
+another project's role names.
+
+The organization view SHOULD also show the exact manager-aware startup order
+and reverse wind-down order derived from the approved reporting graph. It MUST
+use the same ordering policy as runtime lifecycle planning, expose missing
+identity or reporting-cycle blockers, and remain a read-only preview; it MUST
+NOT start or stop sessions or infer live presence from the planned order.
+
+The console SHOULD let an owner filter the backlog by project-observed task,
+owner, state, priority, domain, feature, and milestone values, then save, update,
+select, or delete named views. Saved views are presentation preferences stored in browser-local
+storage under a stable project identity; they MUST NOT write to the repository,
+control plane, or task records. Unavailable browser storage MUST leave the
+backlog usable and explain that views could not be saved. Saved view data MUST
+be schema-validated and bounded, and malformed preferences MUST fail closed to
+the unfiltered authoritative backlog.
+
+The Console SHOULD summarize each explicitly labeled feature and milestone
+from its linked backlog task states, including completion, active work, review,
+and blockers. Canceled tasks MUST be visible but excluded from completion
+denominators. The summary MUST disclose that it is a task-state projection;
+checks, integration, release, deployment, and live verification remain separate
+gates and MUST NOT be inferred from a percentage or completed task count. Work
+without labels remains ungrouped; the Console MUST NOT infer or invent feature
+names from file paths or domain titles.
+
+The local Console MAY let the project owner change a backlog task's priority.
+Such an action MUST be restricted to same-origin loopback requests, require an
+explicit reason, bind a short-lived single-use preview to the exact task,
+revision, old/new priority, and reason, and require a separate confirmation.
+Applying it MUST re-check the task revision and record an audit/history event.
+It MUST NOT change task state, owner, dependencies, evidence, or integration
+gates. Stale, expired, replayed, cross-origin, and malformed requests MUST
+fail without mutation. This narrow control does not grant general backlog,
+identity, lifecycle, or provider-launch access.
+
+Screenshots and review artifacts MUST carry task, identity/session, and commit
+provenance. Owner comments and annotations MUST route through the responsible
+identity or become durable backlog work; the UI MUST NOT expose private model
+chain-of-thought. Test receipts, integration, release readiness, deployment,
+and live verification are separate evidence states. The console MUST label
+stale or unavailable data rather than presenting it as current.
+
+The initial local artifact catalog stores bounded PNG, JPEG, WebP, or GIF image
+bytes in private external project state, not in the repository. A publisher
+MUST own the referenced backlog task, use a managed identity worktree, provide
+the full commit SHA and stable identity, and have the active runtime session ID
+captured when available. TORCH MUST reject path traversal and symbolic links,
+record a content digest, and verify that digest before serving an image. Owner
+feedback MUST preview the artifact, task, responsible identity, commit, and
+durable-message effect; only the configured owner may confirm it. Feedback is
+stored in the durable message stream rather than a parallel comment ledger.
+
+The observation endpoint remains GET-only. The local Console may expose a
+narrow owner feedback action: a same-origin loopback preview issues a
+single-use token bound to the exact message effect, and confirmation must
+recompute and match that preview within five minutes. Cross-origin requests,
+stale previews, expired tokens, and replayed confirmations MUST fail without
+creating a message. This is not general write access to the Fleet.
+
+Other owner controls MUST preview the target, effects, evidence, and authority
+required before invoking a separately authorized control-plane operation. A
+dashboard button MUST NOT itself bypass authorization for runtime launch, task
+reassignment, worktree removal, canonical integration, release, deployment,
+or spending. Preserve the read-only observation API and test UI preview and
+API authorization separately.
+
+The owner Console MAY accept or reject Fleet-evolution proposals and may
+approve a hierarchy proposal for bounded-pilot planning, defer it, or reject
+it. These actions MUST update the existing durable proposal records rather
+than create a dashboard-only queue. Each action MUST use a same-origin loopback
+preview and a short-lived, single-use confirmation bound to the exact proposal,
+decision, reason, active organization graph, and repository head. Confirmation
+MUST recompute that scope and fail closed if it changed. Approving a Fleet
+change authorizes only a later activation review; it MUST NOT provision an
+identity, create or remove worktrees, or start a runtime. Approving a hierarchy
+proposal authorizes planning only; it MUST NOT activate the proposed graph or
+start/create identities. A distinct owner-confirmed CLI activation requires a
+fresh plan and commits only the approved graph, derived check-in schedules,
+install-manifest hashes, and pilot record; it still MUST NOT provision or launch
+identities or modify user systemd state. Timer reconciliation is a separate
+owner-confirmed command. Decisions MUST retain their durable audit trail.
+
+The owner Console MAY also expose persistent schedule-timer setup and refresh.
+It MUST distinguish configured schedules from TORCH-owned unit files and MUST
+state that file ownership/digest does not verify the timer's live systemd
+state. Before installation or reconciliation it MUST show every affected
+system schedule, its trigger, behavior, action, wake policy, unit paths, and
+configuration digest. Only a same-origin loopback preview followed by a
+single-use, five-minute confirmation bound to the exact action and current
+configuration may write units, reload systemd, or enable/start the timer.
+Confirmation MUST recheck exact unit ownership and refuse stale, modified,
+missing, or mismatched units. The operation MUST record owner audit evidence.
+Starting the timer may dispatch configured due system schedules; it MUST NOT
+silently enable provider wake, weaken action authority, or start a Fleet
+identity directly.
+
+The owner Console MAY also let the owner send a bounded request to one
+identity in the approved Fleet roster, optionally linked to an existing active
+backlog item. It MUST preview the exact recipient, message, task reference,
+owner authority, active organization, and repository head before confirmation.
+Confirmation MUST recompute that scope and use a short-lived single-use token;
+stale, expired, replayed, cross-origin, and malformed requests MUST fail
+without writing. A confirmed request is one ordinary durable inbox message in
+the existing conversation stream, with owner identity and audit provenance.
+It MUST NOT create or change a task, transfer ownership, change presence, wake
+or start a runtime, or expand the recipient's authority. The request remains
+subject to the agent's scope and all existing approval gates.
+
 ### 27.3 Public website
 
 The public website MUST be redesigned around the new product. It MUST NOT
@@ -1680,6 +2638,16 @@ owner request
 The site SHOULD separate product explanation and documentation from the local
 Fleet Console. A distinctive routing or dispatch-board visualization should
 demonstrate the system more clearly than a wall of feature cards.
+
+The dashboard demo MUST open the actual Fleet Console in a separate browser
+tab, using the same markup, renderer, and controls with sample project data.
+Its link label is `View dashboard demo`; browser-tab behavior does not belong
+in the visible label or page title. Sample actions MUST stay in the visitor's
+tab and MUST NOT contact live project APIs or start agents, timers, or provider
+invocations. The demo MUST label its sample workspace, support reset, and
+demonstrate project work, agents, direct communication, review artifacts,
+owner decisions, and runtime profiles. A separate miniature dashboard is not
+an acceptable substitute for the product interface.
 
 Recommended product language:
 
@@ -1742,10 +2710,18 @@ unresolved path ownership; a separate repository fixture continues to prove
 code-derived architecture and collision boundaries. Both paths remain
 read-only until an approved install.
 
+Repository analysis also includes unignored working-tree source files and binds
+proposals to a recomputed working-tree fingerprint. Drift in tracked or
+untracked analysis inputs invalidates approval even when `HEAD` has not moved.
+
 `torch bootstrap` now emits the provider-independent Session Architect brief.
 Its scenario proves that a mixed code/spec project exposes omitted components
 and unmatched goals for AI reasoning, forbids copying COMBATRIG or a generic
-catalog, and preserves owner-only approval without mutating the project.
+catalog, and preserves owner-only approval without mutating the project. The
+brief also requires an evidence-backed flat-versus-coordination assessment;
+proposal validation requires integrated outcomes and authority boundaries for
+any lead, and rejects implementation or owner-approval grants while preserving
+direct peer communication (`SCN-architect-organization-assessment`).
 
 `torch architect plan`, `validate`, and explicitly authorized `run` now carry
 that brief through isolated Claude or Codex planning and semantic validation.
@@ -1803,6 +2779,15 @@ the automated suite intentionally incurs no provider usage.
 - atomic upgrade and rollback;
 - TORCH's own approved roster and worktrees.
 
+Candidate acceptance MUST run with a disposable HOME, TMPDIR, and XDG data,
+config, cache, state, and runtime directories that are distinct from the active
+installation/version store. The candidate gates MUST use this isolated
+environment for test, lint, and syntax subprocesses, then remove it after they
+finish. They MUST NOT inherit a user or candidate-install XDG data directory as
+test state; doing so can make tests share or mutate the installation under
+qualification. The acceptance receipt MUST include regression coverage for
+this isolation boundary.
+
 Exit gate: stable TORCH manages development, testing, and promotion of its
 successor in local-only mode.
 
@@ -1834,6 +2819,16 @@ and 570 backlog records without modifying COMBATRIG. It remains intentionally
 pending: 56 blocking ownership/exclusion gaps affect all 33 areas. The exit
 gate remains open until those owner-reviewed boundaries are resolved and
 COMBATRIG is safely installed and operated through portable TORCH.
+
+The importer also provides an assessment-only backlog migration view. It MUST
+report legacy-area counts and unmapped area IDs, preserve the distinction
+between an area and a free-form `assignedTo` display name, and MUST NOT create
+Torch tasks or infer a runtime identity. Legacy `done` is not sufficient to
+mark a Torch item `completed`: the target state requires commit evidence and a
+verifiable landed integration request. The view MUST identify manager-area
+items and malformed or absent `observedAt` values without silently dropping
+them. Backlog task creation and state transfer require a separate reviewed
+migration; until then the original queue remains the source of truth.
 
 ### Stage 8: Product surface
 

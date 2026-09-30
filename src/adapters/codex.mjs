@@ -1,7 +1,7 @@
 import { accessSync, constants, existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
-import { unsupportedCapability, validateRuntimeAdapter } from './runtime.mjs';
+import { profileCapabilityIssues, unsupportedCapability, validateRuntimeAdapter } from './runtime.mjs';
 
 function findExecutable(name, env = process.env) {
   for (const directory of (env.PATH ?? '').split(delimiter).filter(Boolean)) {
@@ -47,6 +47,28 @@ function mcpName(areaId) {
   return `torch-${areaId.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '')}`;
 }
 
+function launchPolicyArgs(policy = {}) {
+  const issues = profileCapabilityIssues({ name: 'codex', capabilities: {
+    launchPolicy: {
+      fields: {
+        sandbox: ['read-only', 'workspace-write', 'danger-full-access'],
+        approval: ['approve-for-me', 'on-request', 'never'],
+      },
+      conflicts: [{ field: 'approval', value: 'approve-for-me', with: 'sandbox' }],
+    },
+  } }, { launchPolicy: policy });
+  if (issues.length) {
+    throw new TorchError('Codex launch policy is invalid or unsupported', {
+      code: 'RUNTIME_PROFILE_INVALID', details: { adapter: 'codex', issues },
+    });
+  }
+  const args = [];
+  if (policy.sandbox !== undefined) args.push('--sandbox', policy.sandbox);
+  if (policy.approval === 'approve-for-me') args.push('--approve-for-me');
+  else if (policy.approval !== undefined) args.push('--ask-for-approval', policy.approval);
+  return args;
+}
+
 function parseJsonLines(output) {
   const records = [];
   for (const line of String(output ?? '').split('\n').map((value) => value.trim()).filter(Boolean)) {
@@ -67,9 +89,25 @@ export class CodexRuntimeAdapter {
     this.runner = runner;
     this.executable = executable;
     this.nodeExecutable = nodeExecutable;
+    this.configuration = Object.freeze({
+      model: 'gpt-6-luna', reasoning: 'high',
+      launchPolicy: Object.freeze({ approval: 'approve-for-me' }),
+    });
     this.capabilities = Object.freeze({
       detect: true,
       configure: 'plan-only',
+      modelSelection: true,
+      reasoningSelection: true,
+      perInvocationCostCeiling: Object.freeze({ createSession: Object.freeze([]), resumeSession: Object.freeze([]) }),
+      launchPolicy: Object.freeze({
+        fields: Object.freeze({
+          sandbox: Object.freeze(['read-only', 'workspace-write', 'danger-full-access']),
+          approval: Object.freeze(['approve-for-me', 'on-request', 'never']),
+        }),
+        conflicts: Object.freeze([
+          Object.freeze({ field: 'approval', value: 'approve-for-me', with: 'sandbox' }),
+        ]),
+      }),
       createSession: true,
       resumeSession: true,
       sendOrSteer: 'native-with-durable-fallback',
@@ -109,14 +147,15 @@ export class CodexRuntimeAdapter {
     };
   }
 
-  createSession({ areaId, worktree, promptFile, firstMessage, model, mcp } = {}) {
+  createSession({ areaId, worktree, promptFile, firstMessage, model, reasoning, launchPolicy, mcp } = {}) {
     const id = text(areaId, 'areaId');
     const cwd = text(worktree, 'worktree');
     const args = [
-      '--cd', cwd, '--approve-for-me',
+      '--cd', cwd, ...launchPolicyArgs(launchPolicy ?? this.configuration.launchPolicy),
       ...mcpArgs(mcp),
+      ...((reasoning ?? this.configuration.reasoning) ? ['-c', `model_reasoning_effort=${JSON.stringify(text(reasoning ?? this.configuration.reasoning, 'reasoning'))}`] : []),
       'exec', '--json',
-      ...optionalModelArgs(model),
+      ...optionalModelArgs(model ?? this.configuration.model),
       `${text(firstMessage, 'firstMessage')}\n\nRead and follow the TORCH domain prompt at ${text(promptFile, 'promptFile')}.`,
     ];
     return {
@@ -129,15 +168,19 @@ export class CodexRuntimeAdapter {
     };
   }
 
-  resumeSession({ areaId, runtimeSessionId, worktree, message, model, mcp } = {}) {
+  resumeSession({ areaId, runtimeSessionId, worktree, message, instructionText, instructionDigest, model, reasoning, launchPolicy, mcp } = {}) {
     const id = text(areaId, 'areaId');
     const sessionId = text(runtimeSessionId, 'runtimeSessionId');
     const cwd = text(worktree, 'worktree');
+    const currentInstructions = instructionText
+      ? `\n\nAUTHORITATIVE CURRENT TORCH INSTRUCTIONS (sha256 ${text(instructionDigest, 'instructionDigest')}; replace stale briefing or conversation memory):\n${text(instructionText, 'instructionText')}`
+      : '';
     const args = [
-      '--cd', cwd, '--approve-for-me',
+      '--cd', cwd, ...launchPolicyArgs(launchPolicy ?? this.configuration.launchPolicy),
       ...mcpArgs(mcp),
+      ...((reasoning ?? this.configuration.reasoning) ? ['-c', `model_reasoning_effort=${JSON.stringify(text(reasoning ?? this.configuration.reasoning, 'reasoning'))}`] : []),
       'exec', 'resume', '--json',
-      ...optionalModelArgs(model), sessionId, text(message, 'message'),
+      ...optionalModelArgs(model ?? this.configuration.model), sessionId, `${text(message, 'message')}${currentInstructions}`,
     ];
     return {
       adapter: this.name,

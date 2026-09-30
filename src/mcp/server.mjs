@@ -10,6 +10,8 @@ import { createTorchMcpServer } from './tools.mjs';
 import { ContextTelemetryService } from '../telemetry/context.mjs';
 import { ScheduleService } from '../schedules/service.mjs';
 import { FleetEvolutionService } from '../evolution/service.mjs';
+import { HierarchyEvolutionService } from '../evolution/hierarchy.mjs';
+import { ArtifactService } from '../artifacts/service.mjs';
 
 function optionValue(argv, name) {
   const direct = argv.find((argument) => argument.startsWith(`${name}=`));
@@ -26,14 +28,16 @@ const resourceService = new ResourceService({ repositoryRoot, controlPlane });
 const checkService = new CheckService({ repositoryRoot, controlPlane, resourceService });
 const integrationService = new IntegrationService({ repositoryRoot, controlPlane, checkService });
 const backlogService = new BacklogService({
-  repositoryRoot, controlPlane, integrationLookup: (requestId) => integrationService.get(requestId),
+  repositoryRoot, controlPlane, checkService, integrationLookup: (requestId) => integrationService.get(requestId),
 });
 const contextTelemetryService = new ContextTelemetryService({ controlPlane });
 const scheduleService = new ScheduleService({ repositoryRoot, controlPlane });
 const evolutionService = new FleetEvolutionService({ repositoryRoot, controlPlane });
+const hierarchyService = new HierarchyEvolutionService({ repositoryRoot, controlPlane });
+const artifactService = new ArtifactService({ repositoryRoot, controlPlane, backlogService });
 const handle = serveStdio(() => createTorchMcpServer(controlPlane, {
-  actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
-  evolutionService,
+  actorId, repositoryRoot, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
+  evolutionService, hierarchyService, artifactService,
 }), {
   onerror: (error) => console.error(`TORCH MCP: ${error.message}`),
 });

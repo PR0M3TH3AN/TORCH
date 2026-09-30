@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { TorchError } from '../kernel/errors.mjs';
+import { workingTreeFingerprint } from '../kernel/git.mjs';
+import { validateSpecificationEvidence } from '../kernel/specifications.mjs';
+import { primaryOwnershipProblems } from '../kernel/domains.mjs';
 
 const PROVIDERS = new Set(['claude', 'codex']);
 
@@ -101,6 +104,13 @@ function requireStringArray(value, label, problems, { nonempty = false } = {}) {
   return value;
 }
 
+function rejectUnknownFields(value, allowed, label, problems) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+  for (const field of Object.keys(value)) {
+    if (!allowed.includes(field)) problems.push(`${label} has unsupported field: ${field}`);
+  }
+}
+
 export function createArchitectPrompt(brief) {
   if (brief?.schema !== 'torch.dev/fleet-design-brief/v1alpha1') {
     throw new TorchError('Unsupported Fleet design brief', { code: 'INVALID_ARCHITECT_BRIEF' });
@@ -161,8 +171,16 @@ export function validateArchitectProposal({ brief, proposal } = {}) {
   }
   const expectedRepository = {
     root: brief?.project?.root, initialCommit: brief?.project?.initialCommit, head: brief?.project?.head,
+    workingTreeFingerprint: brief?.project?.workingTreeFingerprint,
   };
   if (!same(proposal?.repository, expectedRepository)) problems.push('proposal changed its repository binding');
+  if (brief?.project?.root && brief?.project?.workingTreeFingerprint
+    && workingTreeFingerprint(brief.project.root) !== brief.project.workingTreeFingerprint) {
+    problems.push('repository working tree changed after the design brief was generated');
+  }
+  problems.push(...validateSpecificationEvidence(
+    brief?.reconnaissance?.specifications ?? [], brief?.project?.root,
+  ));
   if (!same(proposal?.specifications ?? [], brief?.baseline?.specifications ?? [])) {
     problems.push('proposal changed specification provenance');
   }
@@ -173,6 +191,7 @@ export function validateArchitectProposal({ brief, proposal } = {}) {
   const knownResources = new Set((brief?.baseline?.resources ?? []).map((resource) => resource.id));
   const ids = new Set();
   if (!Array.isArray(proposal?.domains) || proposal.domains.length === 0) problems.push('proposal has no domains');
+  problems.push(...primaryOwnershipProblems(proposal?.domains));
   for (const [index, domain] of (proposal?.domains ?? []).entries()) {
     const label = `domains[${index}]`;
     if (typeof domain.id !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(domain.id) || ids.has(domain.id)) {
@@ -181,7 +200,11 @@ export function validateArchitectProposal({ brief, proposal } = {}) {
     ids.add(domain.id);
     if (typeof domain.title !== 'string' || !domain.title.trim()) problems.push(`${label} has no title`);
     if (typeof domain.kind !== 'string' || !domain.kind.trim()) problems.push(`${label} has no kind`);
-    if (!['claude', 'codex'].includes(domain.runtime)) problems.push(`${label} has an unsupported runtime`);
+    // A pending design may name an adapter; approved installation checks its
+    // availability and plugin trust. Designing a role never executes it.
+    if (typeof domain.runtime !== 'string' || !/^[a-z][a-z0-9-]*$/.test(domain.runtime)) {
+      problems.push(`${label} has an invalid runtime identifier`);
+    }
     requireStringArray(domain.scope, `${label}.scope`, problems, { nonempty: true });
     requireStringArray(domain.not_scope, `${label}.not_scope`, problems);
     const owned = requireStringArray(domain.owned_paths, `${label}.owned_paths`, problems);
@@ -202,6 +225,104 @@ export function validateArchitectProposal({ brief, proposal } = {}) {
   for (const domain of proposal?.domains ?? []) {
     for (const neighbour of domain.neighbours ?? []) {
       if (!ids.has(neighbour)) problems.push(`${domain.id} names unknown neighbour: ${neighbour}`);
+    }
+  }
+  const organizationAssessment = proposal?.organization_assessment;
+  const assessmentShapes = new Set(['flat', 'coordination_roles']);
+  if (!organizationAssessment || typeof organizationAssessment !== 'object' || Array.isArray(organizationAssessment)) {
+    problems.push('proposal has no organization_assessment');
+  } else {
+    rejectUnknownFields(organizationAssessment, [
+      'shape', 'rationale', 'evidence', 'authority_boundaries',
+      'proposed_coordination_roles', 'direct_peer_communication',
+    ], 'organization_assessment', problems);
+    if (!assessmentShapes.has(organizationAssessment.shape)) {
+      problems.push('organization_assessment must choose flat or coordination_roles');
+    }
+    if (typeof organizationAssessment.rationale !== 'string' || !organizationAssessment.rationale.trim()) {
+      problems.push('organization_assessment has no rationale');
+    }
+    const authorityBoundaries = organizationAssessment.authority_boundaries;
+    const authorityFields = [
+      'implementation_ownership', 'coordination_responsibility', 'fleet_operations_authority',
+      'project_priority_authority', 'independent_review_authority',
+    ];
+    if (!authorityBoundaries || typeof authorityBoundaries !== 'object' || Array.isArray(authorityBoundaries)) {
+      problems.push('organization_assessment has no authority_boundaries');
+    } else {
+      rejectUnknownFields(authorityBoundaries, [
+        ...authorityFields, 'owner_only_decisions',
+      ], 'organization_assessment.authority_boundaries', problems);
+      for (const field of authorityFields) {
+        if (typeof authorityBoundaries[field] !== 'string' || !authorityBoundaries[field].trim()) {
+          problems.push(`organization_assessment.authority_boundaries.${field} is required`);
+        }
+      }
+      requireStringArray(
+        authorityBoundaries.owner_only_decisions,
+        'organization_assessment.authority_boundaries.owner_only_decisions',
+        problems,
+        { nonempty: true },
+      );
+    }
+    const assessmentEvidence = requireStringArray(
+      organizationAssessment.evidence, 'organization_assessment.evidence', problems, { nonempty: true },
+    );
+    for (const citation of assessmentEvidence) {
+      if (!evidence.has(citation)) problems.push(`organization_assessment cited unknown evidence: ${citation}`);
+    }
+    if (organizationAssessment.direct_peer_communication !== 'preserved') {
+      problems.push('organization_assessment must preserve direct peer communication');
+    }
+    const roles = organizationAssessment.proposed_coordination_roles;
+    if (!Array.isArray(roles)) {
+      problems.push('organization_assessment.proposed_coordination_roles must be an array');
+    } else {
+      if (organizationAssessment.shape === 'flat' && roles.length !== 0) {
+        problems.push('flat organization_assessment cannot propose coordination roles');
+      }
+      if (organizationAssessment.shape === 'coordination_roles' && roles.length === 0) {
+        problems.push('coordination_roles assessment must name at least one justified lead');
+      }
+      const roleIds = new Set();
+      for (const [index, role] of roles.entries()) {
+        const label = `organization_assessment.proposed_coordination_roles[${index}]`;
+        rejectUnknownFields(role, [
+          'id', 'title', 'coordinates_domains', 'integrated_outcome', 'decision_scope',
+          'owner_escalations', 'evidence', 'owns_implementation_paths',
+          'has_owner_approval_authority',
+        ], label, problems);
+        if (typeof role?.id !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(role.id) || roleIds.has(role.id)) {
+          problems.push(`${label} has an invalid or duplicate id`);
+        }
+        if (role?.id) roleIds.add(role.id);
+        if (typeof role?.title !== 'string' || !role.title.trim()) problems.push(`${label} has no title`);
+        const coordinated = requireStringArray(
+          role?.coordinates_domains, `${label}.coordinates_domains`, problems, { nonempty: true },
+        );
+        if (coordinated.length < 2) problems.push(`${label} must coordinate at least two existing domains`);
+        if (new Set(coordinated).size !== coordinated.length) {
+          problems.push(`${label} has duplicate domain references`);
+        }
+        for (const domainId of coordinated) {
+          if (!ids.has(domainId)) problems.push(`${label} names unknown domain: ${domainId}`);
+        }
+        if (typeof role?.integrated_outcome !== 'string' || !role.integrated_outcome.trim()) {
+          problems.push(`${label} has no integrated outcome`);
+        }
+        requireStringArray(role?.decision_scope, `${label}.decision_scope`, problems, { nonempty: true });
+        requireStringArray(role?.owner_escalations, `${label}.owner_escalations`, problems, { nonempty: true });
+        const roleEvidence = requireStringArray(role?.evidence, `${label}.evidence`, problems, { nonempty: true });
+        for (const citation of roleEvidence) {
+          if (!evidence.has(citation)) problems.push(`${label} cited unknown evidence: ${citation}`);
+        }
+        if (role?.owns_implementation_paths !== false) {
+          problems.push(`${label} must not receive implementation ownership`);
+        }
+        if (role?.has_owner_approval_authority !== false) {
+          problems.push(`${label} must not receive owner-approval authority`);
+        }
+      }
     }
   }
   for (const collision of proposal?.collisions ?? []) {

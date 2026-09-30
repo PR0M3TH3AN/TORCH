@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -97,8 +97,13 @@ export class ScheduleLauncherService {
     };
   }
 
-  install() {
+  install({ expectedDigest } = {}) {
     const plan = this.plan();
+    if (expectedDigest && plan.digest !== expectedDigest) {
+      throw new TorchError('System schedule configuration changed after review', {
+        code: 'SCHEDULE_LAUNCHER_PLAN_STALE', details: { expected: expectedDigest, actual: plan.digest },
+      });
+    }
     if (!plan.canProceed) throw new TorchError('System schedule launcher installation is blocked', {
       code: 'SCHEDULE_LAUNCHER_BLOCKED', details: plan.blockers,
     });
@@ -129,6 +134,99 @@ export class ScheduleLauncherService {
     }
   }
 
+  planReconcile() {
+    const config = loadProjectConfig(this.repositoryRoot);
+    const manifest = readInstallManifest(this.repositoryRoot);
+    const installed = (manifest.external ?? []).filter((entry) => entry.type === 'systemd-user-unit');
+    const digest = scheduleConfigDigest(this.repositoryRoot);
+    const rendered = render({
+      repositoryRoot: this.repositoryRoot, projectId: manifest.projectId,
+      command: this.command, digest, env: this.env,
+    });
+    const blockers = [];
+    if (!config.schedules.some((schedule) => schedule.lifetime === 'system')) {
+      blockers.push({ code: 'NO_SYSTEM_SCHEDULES' });
+    }
+    if (!installed.length) blockers.push({ code: 'LAUNCHER_NOT_INSTALLED' });
+    for (const file of rendered.files) {
+      const record = installed.find((entry) => entry.name === file.name && resolve(entry.path) === resolve(file.path));
+      if (!record) {
+        blockers.push({ code: 'LAUNCHER_OWNERSHIP_MISMATCH', path: file.path });
+        continue;
+      }
+      if (!existsSync(file.path)) {
+        blockers.push({ code: 'LAUNCHER_FILE_MISSING', path: file.path });
+      } else if (sha256(readFileSync(file.path)) !== record.sha256) {
+        blockers.push({ code: 'LAUNCHER_FILE_MODIFIED', path: file.path });
+      }
+    }
+    for (const record of installed) {
+      if (!rendered.files.some((file) => file.name === record.name && resolve(file.path) === resolve(record.path))) {
+        blockers.push({ code: 'LAUNCHER_OWNERSHIP_MISMATCH', path: record.path });
+      }
+    }
+    const updates = rendered.files.map((file) => ({
+      name: file.name, path: file.path,
+      changed: !existsSync(file.path) || readFileSync(file.path, 'utf8') !== file.content,
+    }));
+    const stale = installed.some((entry) => entry.configDigest !== digest);
+    return {
+      action: 'reconcile-system-schedule-launcher', projectId: manifest.projectId,
+      digest, currentConfigDigest: digest,
+      installedConfigDigests: [...new Set(installed.map((entry) => entry.configDigest))],
+      systemSchedules: config.schedules.filter((schedule) => schedule.lifetime === 'system').map((schedule) => schedule.id),
+      ...rendered, updates, stale,
+      blockers, canProceed: blockers.length === 0,
+      mutationPerformed: false,
+    };
+  }
+
+  reconcile({ expectedDigest } = {}) {
+    const plan = this.planReconcile();
+    if (expectedDigest && plan.digest !== expectedDigest) {
+      throw new TorchError('System schedule configuration changed after review', {
+        code: 'SCHEDULE_LAUNCHER_PLAN_STALE', details: { expected: expectedDigest, actual: plan.digest },
+      });
+    }
+    if (!plan.canProceed) throw new TorchError('System schedule launcher reconciliation is blocked', {
+      code: 'SCHEDULE_LAUNCHER_RECONCILE_BLOCKED', details: plan.blockers,
+    });
+    if (!plan.stale && !plan.updates.some((entry) => entry.changed)) {
+      return { ...plan, changed: false, mutationPerformed: false };
+    }
+    const manifest = readInstallManifest(this.repositoryRoot);
+    const originalManifest = structuredClone(manifest);
+    const previous = new Map(plan.files.map((file) => [file.path, readFileSync(file.path, 'utf8')]));
+    try {
+      for (const file of plan.files) {
+        const temporary = `${file.path}.tmp-${process.pid}-${randomUUID()}`;
+        writeFileSync(temporary, file.content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+        renameSync(temporary, file.path);
+      }
+      for (const record of manifest.external ?? []) {
+        if (record.type !== 'systemd-user-unit') continue;
+        const replacement = plan.files.find((file) => file.name === record.name && resolve(file.path) === resolve(record.path));
+        record.sha256 = sha256(replacement.content);
+        record.configDigest = plan.digest;
+      }
+      writeInstallManifest(this.repositoryRoot, manifest);
+      runSystemctl(this.executor, ['daemon-reload']);
+      runSystemctl(this.executor, ['enable', '--now', plan.timerName]);
+      return { ...plan, changed: true, mutationPerformed: true, requiresCommit: ['.torch/install-manifest.json'] };
+    } catch (error) {
+      for (const [path, content] of previous) {
+        try {
+          const temporary = `${path}.rollback-${process.pid}-${randomUUID()}`;
+          writeFileSync(temporary, content, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+          renameSync(temporary, path);
+        } catch { /* preserve the original failure; status will expose drift */ }
+      }
+      writeInstallManifest(this.repositoryRoot, originalManifest);
+      try { runSystemctl(this.executor, ['daemon-reload']); } catch { /* best-effort restore the loaded units */ }
+      throw error;
+    }
+  }
+
   status() {
     const manifest = readInstallManifest(this.repositoryRoot);
     const units = (manifest.external ?? []).filter((entry) => entry.type === 'systemd-user-unit');
@@ -136,7 +234,8 @@ export class ScheduleLauncherService {
       installed: units.length > 0,
       units: units.map((entry) => ({ ...entry, exists: existsSync(entry.path) })),
       currentConfigDigest: scheduleConfigDigest(this.repositoryRoot),
-      stale: units.some((entry) => entry.configDigest !== scheduleConfigDigest(this.repositoryRoot)),
+      stale: units.some((entry) => entry.configDigest !== scheduleConfigDigest(this.repositoryRoot)
+        || !existsSync(entry.path) || sha256(readFileSync(entry.path)) !== entry.sha256),
       mutationPerformed: false,
     };
   }

@@ -7,15 +7,19 @@ import { inspectManagedWorktree } from './worktree-state.mjs';
 import { validateProjectConfig } from './config.mjs';
 import { forgeStatus } from '../forge/service.mjs';
 import { classifyRecoverability } from '../canonical/local.mjs';
-import { createClaudeAdapter } from '../adapters/claude.mjs';
-import { createCodexAdapter } from '../adapters/codex.mjs';
+import { createRuntimeAdapterRegistry } from '../adapters/registry.mjs';
+import { profileCapabilityIssues, resolveLaunchPolicy } from '../adapters/runtime.mjs';
 import { assessBacklogHealth, backlogObservedCommitDistance } from '../backlog/service.mjs';
+import { organizationGraphFromConfig } from './organization.mjs';
 
 function parseJsonYaml(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
-export function diagnoseProject({ repository, env = process.env, now = () => new Date() }) {
+export function diagnoseProject({
+  repository, env = process.env, now = () => new Date(),
+  runtimeRegistry = createRuntimeAdapterRegistry({ env }),
+}) {
   const trackedRoot = join(repository.root, '.torch');
   const configPath = join(trackedRoot, 'torch.yaml');
   const manifestPath = join(trackedRoot, 'install-manifest.json');
@@ -39,6 +43,26 @@ export function diagnoseProject({ repository, env = process.env, now = () => new
   }
 
   if (manifest) {
+    if (config) {
+      try {
+        const graph = organizationGraphFromConfig(config);
+        const activeIdentities = new Set([
+          'owner', 'session-manager', ...(config.domains ?? []).map((domain) => domain.id),
+        ]);
+        const missing = [...new Set(graph.roles
+          .map((role) => role.identity_id)
+          .filter((identity) => !activeIdentities.has(identity)))];
+        if (missing.length) findings.push({
+          severity: 'error', code: 'ORGANIZATION_IDENTITY_MISSING', identities: missing,
+          recommendation: 'Review the approved organization graph against the active Fleet roster; role references do not create identities.',
+        });
+      } catch (error) {
+        findings.push({
+          severity: 'error', code: 'ORGANIZATION_GRAPH_INVALID',
+          message: error.message, details: error.details,
+        });
+      }
+    }
     for (const record of manifest.created ?? []) {
       const path = join(repository.root, record.path);
       if (!existsSync(path)) findings.push({ severity: 'error', code: 'OWNED_FILE_MISSING', path: record.path });
@@ -220,13 +244,24 @@ export function diagnoseProject({ repository, env = process.env, now = () => new
     findings.push({ severity: 'error', code: 'RECOVERABILITY_INVALID', message: error.message });
   }
   if (config?.runtimes) {
-    const adapters = new Map([
-      ['claude', createClaudeAdapter({ env })],
-      ['codex', createCodexAdapter({ env })],
-    ]);
+    const adapters = runtimeRegistry;
+    for (const pluginError of adapters.pluginErrors ?? []) findings.push({
+      severity: 'warning', code: pluginError.code, runtime: pluginError.name,
+      message: pluginError.message, details: pluginError.details,
+      recommendation: 'Review the user-local runtime plugin trust record and the exact adapter module before retrying.',
+    });
     for (const runtime of Object.keys(config.runtimes).filter((name) => name !== 'default')) {
       const adapter = adapters.get(runtime);
       if (!adapter) {
+        const trustedPlugin = adapters.trustedPlugins?.find((plugin) => plugin.name === runtime);
+        if (trustedPlugin?.status === 'trusted') {
+          findings.push({
+            severity: 'info', code: 'RUNTIME_ADAPTER_TRUSTED_NOT_LOADED', runtime,
+            modulePath: trustedPlugin.modulePath, sha256: trustedPlugin.sha256,
+            recommendation: 'The user-local entrypoint hash is trusted. Doctor did not execute it; validate the adapter only in an explicit runtime operation.',
+          });
+          continue;
+        }
         findings.push({
           severity: 'warning', code: 'RUNTIME_ADAPTER_UNKNOWN', runtime,
           recommendation: 'Install or configure a TORCH runtime adapter before starting this identity.',
@@ -240,6 +275,29 @@ export function diagnoseProject({ repository, env = process.env, now = () => new
         runtime, executable: detection.executable,
         recommendation: detection.available ? 'No action required.'
           : `Install ${runtime} or change the approved runtime assignment before startup.`,
+      });
+    }
+    const assigned = [
+      { id: 'session-manager', ...config.session_manager },
+      ...config.domains,
+    ];
+    for (const area of assigned) {
+      const runtime = area.runtime ?? config.runtimes.default;
+      const adapter = adapters.get(runtime);
+      if (!adapter) continue;
+      const profile = {
+        model: area.model ?? config.runtimes[runtime]?.model ?? adapter.configuration?.model ?? null,
+        reasoning: area.reasoning ?? config.runtimes[runtime]?.reasoning ?? adapter.configuration?.reasoning ?? null,
+        launchPolicy: resolveLaunchPolicy({
+          runtime, adapterDefaults: adapter.configuration,
+          runtimeConfig: config.runtimes[runtime], identity: area,
+        }),
+      };
+      const unsupported = profileCapabilityIssues(adapter, profile);
+      if (unsupported.length) findings.push({
+        severity: 'error', code: 'RUNTIME_PROFILE_UNSUPPORTED', areaId: area.id,
+        runtime, adapter: adapter.name, profile, capabilities: unsupported,
+        recommendation: 'Assign a model/reasoning profile supported by this identity runtime adapter.',
       });
     }
   }

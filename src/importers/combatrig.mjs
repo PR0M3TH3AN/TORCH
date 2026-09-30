@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
+import { workingTreeFingerprint } from '../kernel/git.mjs';
 
 function json(path, code) {
   try { return JSON.parse(readFileSync(path, 'utf8')); } catch (error) {
@@ -37,20 +38,71 @@ function listedWorktrees(root) {
   return records;
 }
 
-function backlogInventory(root) {
+function backlogInventory(root, areaMap = new Map()) {
   const directory = join(root, 'docs', 'agents', 'backlog');
-  if (!existsSync(directory)) return { total: 0, byStatus: {}, invalid: [], examples: [] };
+  if (!existsSync(directory)) return {
+    total: 0, byStatus: {}, byArea: {}, invalid: [], examples: [],
+    migration: {
+      mode: 'assessment-only', unmappedAreas: [], sessionManagerAreaItems: 0,
+      assignedItems: 0, freeformAssigneeLabels: 0, legacyDoneItems: 0,
+      observedAtMissing: 0, observedAtInvalid: 0, canImportAutomatically: false,
+    },
+  };
   const byStatus = {};
+  const byArea = {};
+  const unmappedAreas = {};
   const invalid = [];
   const examples = [];
+  let sessionManagerAreaItems = 0;
+  let assignedItems = 0;
+  let freeformAssigneeLabels = 0;
+  let legacyDoneItems = 0;
+  let observedAtMissing = 0;
+  let observedAtInvalid = 0;
   for (const name of readdirSync(directory).filter((entry) => entry.endsWith('.json')).sort()) {
     try {
       const item = json(join(directory, name), 'COMBATRIG_BACKLOG_INVALID');
-      byStatus[item.status ?? 'unknown'] = (byStatus[item.status ?? 'unknown'] ?? 0) + 1;
+      const status = item.status ?? 'unknown';
+      const area = typeof item.area === 'string' && item.area.trim() ? item.area.trim() : '(missing)';
+      byStatus[status] = (byStatus[status] ?? 0) + 1;
+      byArea[area] = (byArea[area] ?? 0) + 1;
+      if (!areaMap.has(area)) unmappedAreas[area] = (unmappedAreas[area] ?? 0) + 1;
+      if (areaMap.get(area) === 'session-manager') sessionManagerAreaItems += 1;
+      if (status === 'assigned') {
+        assignedItems += 1;
+        if (typeof item.assignedTo === 'string' && item.assignedTo.trim()) freeformAssigneeLabels += 1;
+      }
+      if (status === 'done') legacyDoneItems += 1;
+      if (item.observedAt === undefined || item.observedAt === null || item.observedAt === '') {
+        observedAtMissing += 1;
+      } else if (typeof item.observedAt !== 'string' || !/^[0-9a-f]{7,64}$/i.test(item.observedAt)) {
+        observedAtInvalid += 1;
+      }
       if (examples.length < 8) examples.push({ id: item.id ?? name.slice(0, -5), area: item.area ?? null, status: item.status ?? null });
     } catch { invalid.push(name); }
   }
-  return { total: Object.values(byStatus).reduce((sum, count) => sum + count, 0), byStatus, invalid, examples };
+  return {
+    total: Object.values(byStatus).reduce((sum, count) => sum + count, 0), byStatus, byArea, invalid, examples,
+    migration: {
+      mode: 'assessment-only',
+      statusCorrespondence: {
+        open: { target: 'ready' },
+        assigned: { target: 'assigned', ownerResolution: 'review legacy area and free-form assignedTo; no identity is inferred' },
+        blocked: { target: 'blocked', requires: 'owner-reviewed blocked reason' },
+        done: { target: 'completed', requires: ['commit', 'evidence', 'landed integration request'] },
+      },
+      unmappedAreas: Object.entries(unmappedAreas).sort(([left], [right]) => left.localeCompare(right))
+        .map(([area, count]) => ({ area, count })),
+      sessionManagerAreaItems,
+      assignedItems,
+      freeformAssigneeLabels,
+      legacyDoneItems,
+      observedAtMissing,
+      observedAtInvalid,
+      canImportAutomatically: false,
+      note: 'This report does not create Torch backlog tasks, transfer ownership, or mark legacy work verified.',
+    },
+  };
 }
 
 function packageChecks(root) {
@@ -158,7 +210,10 @@ export function analyzeCombatrigFleet({ repository } = {}) {
   return {
     schema: 'torch.dev/domain-proposal/v1alpha1',
     generatedAt: new Date().toISOString(),
-    repository: { root, initialCommit: repository.initialCommit, head: repository.head },
+    repository: {
+      root, initialCommit: repository.initialCommit, head: repository.head,
+      workingTreeFingerprint: workingTreeFingerprint(root),
+    },
     review: {
       status: 'pending', reviewedAt: null, reviewedBy: null,
       notes: ['Imported from COMBATRIG portable fleet. Resolve every blocking migration gap before approval.'],
@@ -183,7 +238,7 @@ export function analyzeCombatrigFleet({ repository } = {}) {
     compatibility: {
       source: 'combatrig-portable-fleet', sourceRoster: 'docs/agents/roster.json',
       areas: { total: converted.length, domains: domains.length, managerLegacyId: manager?.legacy_id ?? null },
-      backlog: backlogInventory(root),
+      backlog: backlogInventory(root, idMap),
       checkCatalog: checks.catalog,
       schedules,
       release: { provider: 'custom-command', authority: 'owner', command: 'tools/dev/release.sh' },

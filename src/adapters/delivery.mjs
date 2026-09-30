@@ -14,6 +14,10 @@ export function validateDeliveryAdapter(adapter) {
         code: 'INVALID_DELIVERY_ADAPTER', details: { operation },
       });
     }
+    const safety = adapter.retrySafety?.[operation];
+    if (safety !== undefined && !['never', 'idempotent', 'read-only'].includes(safety)) {
+      throw new TorchError('Invalid delivery retry safety declaration', { code: 'INVALID_DELIVERY_ADAPTER', details: { operation } });
+    }
   }
   return adapter;
 }

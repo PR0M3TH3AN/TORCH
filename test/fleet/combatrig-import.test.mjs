@@ -46,6 +46,12 @@ function fixture() {
   writeFileSync(join(root, 'docs', 'agents', 'backlog', 'anim-1.json'), JSON.stringify({
     id: 'anim-1', area: 'animation', status: 'done', title: 'Animation task',
   }));
+  writeFileSync(join(root, 'docs', 'agents', 'backlog', 'mgr-1.json'), JSON.stringify({
+    id: 'mgr-1', area: 'ai-sessions', status: 'assigned', assignedTo: 'Legacy dispatcher', title: 'Manager task',
+  }));
+  writeFileSync(join(root, 'docs', 'agents', 'backlog', 'retired-1.json'), JSON.stringify({
+    id: 'retired-1', area: 'retired-domain', status: 'open', title: 'Retired area task',
+  }));
   writeFileSync(join(root, 'package.json'), `${JSON.stringify({
     name: 'combatrig-fixture', scripts: {
       'test:sessions': 'node sessions.mjs', build: 'node build.mjs', test: 'node all.mjs', 'test:terrain': 'node terrain.mjs',
@@ -69,7 +75,17 @@ test('SCN-combatrig-import: legacy fleet evidence converts without mutation and 
   assert.equal(proposal.session_manager.legacy_id, 'ai-sessions');
   assert.deepEqual(proposal.domains.map((domain) => domain.id), ['terrain', 'animation']);
   assert.equal(proposal.resources[0].capacity, 2);
-  assert.deepEqual(proposal.compatibility.backlog.byStatus, { done: 1, assigned: 1 });
+  assert.deepEqual(proposal.compatibility.backlog.byStatus, { done: 1, assigned: 2, open: 1 });
+  assert.equal(proposal.compatibility.backlog.migration.mode, 'assessment-only');
+  assert.deepEqual(proposal.compatibility.backlog.migration.unmappedAreas, [{ area: 'retired-domain', count: 1 }]);
+  assert.equal(proposal.compatibility.backlog.migration.sessionManagerAreaItems, 1);
+  assert.equal(proposal.compatibility.backlog.migration.freeformAssigneeLabels, 1);
+  assert.equal(proposal.compatibility.backlog.migration.legacyDoneItems, 1);
+  assert.equal(proposal.compatibility.backlog.migration.canImportAutomatically, false);
+  assert.match(proposal.compatibility.backlog.migration.note, /does not create Torch backlog tasks/);
+  assert.deepEqual(proposal.compatibility.backlog.byArea, {
+    terrain: 1, animation: 1, 'ai-sessions': 1, 'retired-domain': 1,
+  });
   assert.equal(proposal.compatibility.schedules.every((schedule) => schedule.detected), true);
   assert.equal(proposal.compatibility.readyForApproval, false);
   assert.equal(proposal.compatibility.migrationGaps.some((gap) =>

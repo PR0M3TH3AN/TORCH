@@ -21,6 +21,12 @@ test('SCN-package-distribution: the npm artifact installs offline and runs outsi
       .trim().split('\n').map((path) => path.replace(/^package\//, ''));
     assert.equal(packagedPaths.includes('bin/torch.mjs'), true);
     assert.equal(packagedPaths.includes('src/cli.mjs'), true);
+    assert.equal(packagedPaths.includes('src/adapters/pi.mjs'), true);
+    assert.equal(packagedPaths.includes('src/adapters/pi/extension.mjs'), true);
+    assert.equal(packagedPaths.includes('src/adapters/plugins.mjs'), true);
+    assert.equal(packagedPaths.includes('node_modules/@modelcontextprotocol/server/package.json'), true);
+    assert.equal(packagedPaths.includes('node_modules/typebox/package.json'), true);
+    assert.equal(packagedPaths.includes('node_modules/zod/package.json'), true);
     assert.equal(packagedPaths.includes('docs/PORTABLE_AGENT_FLEET_SPEC.md'), true);
     assert.equal(packagedPaths.includes('docs/ARCHITECTURE_DECISIONS.md'), true);
     assert.equal(packagedPaths.some((path) => path.startsWith('test/')), false);
@@ -37,6 +43,16 @@ test('SCN-package-distribution: the npm artifact installs offline and runs outsi
     const binary = join(installRoot, 'node_modules', '.bin', 'torch');
     const help = execFileSync(binary, ['--help'], { cwd: installRoot, encoding: 'utf8' });
     assert.match(help, /TORCH — portable agent fleet/);
+    const piAdapter = execFileSync(process.execPath, [
+      '--input-type=module', '-e',
+      "import { createPiAdapter } from 'torch-agent-fleet/adapters/pi'; process.stdout.write(createPiAdapter().name)",
+    ], { cwd: installRoot, encoding: 'utf8' });
+    assert.equal(piAdapter, 'pi');
+    const pluginTrustApi = execFileSync(process.execPath, [
+      '--input-type=module', '-e',
+      "import { RUNTIME_PLUGIN_TRUST_SCHEMA } from 'torch-agent-fleet/adapters/plugins'; process.stdout.write(RUNTIME_PLUGIN_TRUST_SCHEMA)",
+    ], { cwd: installRoot, encoding: 'utf8' });
+    assert.equal(pluginTrustApi, 'torch.dev/runtime-plugin-trust/v1alpha1');
 
     const project = join(temporary, 'project');
     mkdirSync(project);

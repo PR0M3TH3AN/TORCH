@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560">
+  <rect width="960" height="560" fill="#101a22"/>
+  <g font-family="sans-serif" fill="#e8eef3">
+    <text x="40" y="55" font-size="23">Northstar</text><text x="700" y="55" font-size="14" fill="#9bb0c0">Project home · Wireframe</text>
+    <path d="M30 80H930" stroke="#344654"/>
+    <rect x="30" y="105" width="175" height="410" rx="8" fill="#172530"/>
+    <text x="50" y="150" font-size="17">Workspace</text><text x="50" y="199" font-size="15" fill="#f4b15b">Overview</text>
+    <text x="50" y="244" font-size="15">Active work</text><text x="50" y="289" font-size="15">Reviews</text><text x="50" y="334" font-size="15">Activity</text>
+    <text x="235" y="140" font-size="28">Your project, taking shape.</text>
+    <text x="235" y="175" font-size="15" fill="#9bb0c0">Public beta · Current milestone</text>
+    <rect x="235" y="205" width="420" height="280" rx="8" fill="#172530"/>
+    <text x="255" y="240" font-size="19">Active work</text>
+    <text x="255" y="295" font-size="16">Build the activity feed</text><text x="255" y="320" font-size="14" fill="#9bb0c0">Services · In progress</text>
+    <path d="M255 345H635" stroke="#344654"/>
+    <text x="255" y="390" font-size="16">Verify offline recovery</text><text x="255" y="415" font-size="14" fill="#9bb0c0">Quality · In review</text>
+    <rect x="680" y="205" width="250" height="280" rx="8" fill="#24313a"/>
+    <text x="700" y="240" font-size="19">Needs your review</text>
+    <text x="700" y="293" font-size="16">Project home layout</text><text x="700" y="321" font-size="14" fill="#9bb0c0">Interface is waiting on you</text>
+    <rect x="700" y="360" width="175" height="44" rx="6" fill="#f4b15b"/><text x="718" y="388" font-size="15" fill="#101a22">Review proposal</text>
+    <text x="235" y="530" font-size="13" fill="#9bb0c0">Illustrative design artifact · Demo data</text>
+  </g>
+</svg>

@@ -7,6 +7,8 @@ import { loadProjectConfig } from '../kernel/config.mjs';
 import { readInstallManifest, writeInstallManifest } from '../kernel/install.mjs';
 import { fileHash } from '../kernel/files.mjs';
 import { validateDeliveryAdapter } from '../adapters/delivery.mjs';
+import { initializeDeliveryAttempts, unresolvedDeliveryOperation, deliveryAttempts,
+  deliveryOperations, executeDeliveryOperation, deliveryAdapterConfigHash } from './attempts.mjs';
 
 export const DELIVERY_STATES = Object.freeze([
   'implemented', 'verified', 'integrated', 'release-ready', 'released', 'deployed', 'live-verified',
@@ -163,6 +165,89 @@ export class DeliveryService {
     this.worktrees = new Map((this.manifest.external ?? [])
       .filter((entry) => entry.type === 'worktree').map((entry) => [entry.area, entry]));
     initialize(this.database);
+    initializeDeliveryAttempts(this.database);
+  }
+
+  attempts({ deliveryId } = {}) { return deliveryAttempts(this.database, deliveryId); }
+  operations({ deliveryId } = {}) { return deliveryOperations(this.database, deliveryId); }
+
+  planSucceededRecovery({ operationId, actor } = {}) {
+    if (actor !== 'owner') throw new TorchError('Only the owner may reconcile external success', { code: 'DELIVERY_AUTHORITY_REQUIRED' });
+    const operation = this.database.prepare('SELECT * FROM delivery_operations WHERE id = ?').get(text(operationId, 'operationId'));
+    if (!operation) throw new TorchError('Unknown delivery operation', { code: 'DELIVERY_RECOVERY_BLOCKED' });
+    const delivery = this.get(operation.delivery_id);
+    const config = loadProjectConfig(this.repositoryRoot);
+    const blockers = [];
+    const unchanged = operation.state === 'applied' && delivery.commit === operation.commit_sha
+      && DELIVERY_STATES.indexOf(delivery.state) >= DELIVERY_STATES.indexOf(operation.target_state);
+    const requirement = adapterRequirement(config, operation.target_state);
+    const attempt = this.database.prepare('SELECT * FROM delivery_attempts WHERE operation_id = ? ORDER BY ordinal DESC LIMIT 1').get(operation.id);
+    let receipt = null;
+    try { receipt = JSON.parse(attempt?.receipt_json ?? 'null'); } catch { /* Invalid persisted evidence fails closed below. */ }
+    if (!unchanged) {
+      if (!['running', 'succeeded'].includes(operation.state) || !attempt || attempt.state !== 'succeeded'
+        || receipt?.status !== 'succeeded' || typeof receipt.reference !== 'string' || !receipt.reference.trim()
+        || (receipt.commit && receipt.commit !== delivery.commit)) blockers.push({ code: 'DELIVERY_SUCCESS_RECEIPT_REQUIRED' });
+      if (delivery.commit !== operation.commit_sha || delivery.state !== operation.from_state
+        || DELIVERY_STATES[DELIVERY_STATES.indexOf(delivery.state) + 1] !== operation.target_state) {
+        blockers.push({ code: 'DELIVERY_STATE_CONFLICT' });
+      }
+      const authority = config.delivery.authority[operation.target_state.replaceAll('-', '_')] ?? [];
+      if (!authority.includes('owner')) blockers.push({ code: 'DELIVERY_AUTHORITY_REQUIRED' });
+      const sameDestination = requirement && requirement.provider === operation.provider && requirement.operation === operation.operation
+        && (operation.adapter_config_hash ? deliveryAdapterConfigHash(config.delivery.adapters[requirement.slot]) === operation.adapter_config_hash
+          : fileHash(configurationPaths(this.repositoryRoot).config) === operation.policy_hash);
+      if (!sameDestination) blockers.push({ code: 'DELIVERY_RECOVERY_DESTINATION_CHANGED' });
+    }
+    return { action: 'reconcile-succeeded-delivery', operationId: operation.id, deliveryId: delivery.id,
+      commit: delivery.commit, from: delivery.state, to: operation.target_state, actor: 'owner',
+      adapter: requirement, receipt, unchanged, blockers, canProceed: !blockers.length,
+      mutationPerformed: false, executorInvoked: false };
+  }
+
+  reconcileSucceeded({ operationId, actor, approved = false, runtimeStopped = false, evidence } = {}) {
+    if (actor !== 'owner') throw new TorchError('Only the owner may reconcile external success', { code: 'DELIVERY_AUTHORITY_REQUIRED' });
+    if (!approved || !runtimeStopped) throw new TorchError('Success recovery requires approval and a stopped executor', { code: 'APPROVAL_REQUIRED' });
+    const proof = textList(evidence, 'evidence');
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const plan = this.planSucceededRecovery({ operationId, actor });
+      if (!plan.canProceed) throw new TorchError('Saved external success cannot be reconciled safely', { code: 'DELIVERY_RECOVERY_BLOCKED', details: plan.blockers });
+      if (!plan.unchanged) {
+        const operation = this.database.prepare('SELECT evidence_json FROM delivery_operations WHERE id = ?').get(operationId);
+        this.#applyTransition({ plan, delivery: this.get(plan.deliveryId),
+          evidenceList: [...new Set([...JSON.parse(operation.evidence_json), ...proof])],
+          receipt: plan.receipt, operationId, approved });
+        this.controlPlane.audit({ actorId: 'session-manager', operation: 'delivery.owner-reconciled-success',
+          entityType: 'delivery-operation', entityId: operationId,
+          details: { approvedBy: 'owner', runtimeStopped, evidence: proof, provenance: 'saved-adapter-receipt-owner-reviewed' } });
+      }
+      this.database.exec('COMMIT');
+      return { ...plan, delivery: this.get(plan.deliveryId), mutationPerformed: !plan.unchanged, executorInvoked: false };
+    } catch (error) { this.database.exec('ROLLBACK'); throw error; }
+  }
+
+  recoverNotApplied({ operationId, actor, approved = false, runtimeStopped = false, evidence } = {}) {
+    if (actor !== 'owner') throw new TorchError('Only the owner can attest an uncertain delivery outcome', { code: 'DELIVERY_AUTHORITY_REQUIRED' });
+    if (!approved || !runtimeStopped) throw new TorchError('Recovery requires approval and confirmation that the executor is stopped', {
+      code: 'APPROVAL_REQUIRED',
+    });
+    const proof = textList(evidence, 'evidence');
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const operation = this.database.prepare('SELECT * FROM delivery_operations WHERE id = ?').get(text(operationId, 'operationId'));
+      if (!operation || !['unknown', 'running'].includes(operation.state)) throw new TorchError('Only uncertain operations may be attested not applied', {
+        code: 'DELIVERY_RECOVERY_BLOCKED',
+      });
+      this.database.prepare("UPDATE delivery_operations SET state = 'reviewed-not-applied', updated_at = ?, evidence_json = ? WHERE id = ?")
+        .run(this.clock().toISOString(), JSON.stringify([...JSON.parse(operation.evidence_json), ...proof]), operation.id);
+      this.controlPlane.audit({ actorId: 'session-manager', operation: 'delivery.owner-reviewed-not-applied',
+        entityType: 'delivery-operation', entityId: operation.id,
+        details: { approvedBy: 'owner', runtimeStopped, evidence: proof, provenance: 'owner-attested-not-applied' } });
+      this.database.exec('COMMIT');
+      return { operationId: operation.id, state: 'reviewed-not-applied', provenance: 'owner-attested-not-applied',
+        deliveryStateChanged: false, executorInvoked: false };
+    } catch (error) { this.database.exec('ROLLBACK'); throw error; }
   }
 
   list({ state } = {}) {
@@ -221,6 +306,8 @@ export class DeliveryService {
   }
 
   planTransition({ deliveryId, targetState, actor } = {}) {
+    const policyHash = fileHash(configurationPaths(this.repositoryRoot).config);
+    this.config = loadProjectConfig(this.repositoryRoot);
     const delivery = this.get(deliveryId);
     const target = text(targetState, 'targetState');
     const currentIndex = DELIVERY_STATES.indexOf(delivery.state);
@@ -235,6 +322,8 @@ export class DeliveryService {
     const configuredAuthority = this.config.delivery.authority[authorityKey] ?? [];
     const authorizedActors = configuredAuthority.map((entry) => entry === '$source' ? delivery.sourceArea : entry);
     const blockers = [];
+    const pending = unresolvedDeliveryOperation(this.database, delivery.id);
+    if (pending) blockers.push({ code: 'DELIVERY_OPERATION_UNRESOLVED', operationId: pending.id, state: pending.state });
     if (!authorizedActors.includes(principal)) blockers.push({ code: 'DELIVERY_AUTHORITY_REQUIRED', actor: principal, allowed: authorizedActors });
     if (target === 'verified') {
       const requiredChecks = this.config.integration.required_checks;
@@ -265,12 +354,14 @@ export class DeliveryService {
         }
       }
     }
+    if (fileHash(configurationPaths(this.repositoryRoot).config) !== policyHash) blockers.push({ code: 'DELIVERY_POLICY_CHANGED' });
     return {
       action: 'delivery-transition', deliveryId: delivery.id, from: delivery.state, to: target,
       actor: principal, authority: authorizedActors, adapter: requirement ? {
         slot: requirement.slot, provider: requirement.provider, operation: requirement.operation,
       } : null,
-      requiresApproval: HIGH_IMPACT_STATES.has(target), blockers,
+      requiresApproval: HIGH_IMPACT_STATES.has(target), policyHash,
+      adapterConfigHash: requirement ? deliveryAdapterConfigHash(this.config.delivery.adapters[requirement.slot]) : null, blockers,
       canProceed: blockers.length === 0, mutationPerformed: false,
     };
   }
@@ -286,13 +377,22 @@ export class DeliveryService {
     const evidenceList = textList(evidence, 'evidence');
     const delivery = this.get(deliveryId);
     let receipt = null;
+    let operationId = null;
     if (plan.adapter) {
       const adapter = this.adapters.get(plan.adapter.provider);
-      receipt = adapter[plan.adapter.operation]({ delivery, evidence: evidenceList });
-      if (!receipt || receipt.status !== 'succeeded') throw new TorchError('Delivery adapter did not return a successful receipt', {
-        code: 'DELIVERY_ADAPTER_FAILED', details: { adapter: plan.adapter, receipt },
-      });
+      ({ receipt, operationId } = executeDeliveryOperation({ database: this.database,
+        repositoryRoot: this.repositoryRoot, plan, delivery, adapter, evidence: evidenceList,
+        clock: this.clock, idFactory: this.idFactory, maxAttempts: this.config.delivery.retry?.max_attempts ?? 1 }));
     }
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      this.#applyTransition({ plan, delivery, evidenceList, receipt, operationId, approved });
+      this.database.exec('COMMIT');
+    } catch (error) { this.database.exec('ROLLBACK'); throw error; }
+    return this.get(delivery.id);
+  }
+
+  #applyTransition({ plan, delivery, evidenceList, receipt, operationId, approved }) {
     const now = this.clock().toISOString();
     const receipts = [...delivery.adapterReceipts, ...(receipt ? [{ ...receipt, operation: plan.adapter.operation }] : [])];
     const allEvidence = [...new Set([...delivery.evidence, ...evidenceList])];
@@ -312,6 +412,7 @@ export class DeliveryService {
       operation: `delivery.${plan.to}`, entityType: 'delivery', entityId: delivery.id,
       details: { commit: delivery.commit, approved, adapter: plan.adapter },
     });
-    return this.get(delivery.id);
+    if (operationId) this.database.prepare("UPDATE delivery_operations SET state = 'applied', updated_at = ? WHERE id = ?")
+      .run(now, operationId);
   }
 }

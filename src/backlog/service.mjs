@@ -3,9 +3,12 @@ import { execFileSync } from 'node:child_process';
 import {
   closeSync, existsSync, openSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync, writeSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
+import { loadFleetDefinition } from '../kernel/worktrees.mjs';
+import { organizationGraphFromConfig } from '../kernel/organization.mjs';
+import { commitTaskReferences, observeTaskActivity } from './activity.mjs';
 
 export const BACKLOG_STATES = Object.freeze([
   'proposed', 'ready', 'assigned', 'in_progress', 'blocked',
@@ -27,6 +30,12 @@ const TRANSITIONS = new Map([
 const PRIORITIES = new Set(['urgent', 'high', 'normal', 'low']);
 const WORKER_TRANSITIONS = new Set(['in_progress', 'blocked', 'verification', 'ready_to_integrate']);
 const ACTIVE_ASSIGNMENT_STATES = new Set(['assigned', 'in_progress', 'verification', 'ready_to_integrate']);
+const PRIORITY_ORDER = { urgent: 0, high: 1, normal: 2, low: 3 };
+
+function queueOrder(left, right) {
+  return (PRIORITY_ORDER[left.priority ?? 'normal'] - PRIORITY_ORDER[right.priority ?? 'normal'])
+    || left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id);
+}
 
 function requiredText(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -63,6 +72,41 @@ function optionalObservedAt(value) {
     });
   }
   return observedAt;
+}
+
+function optionalInitiativeLabel(value, name) {
+  if (value === undefined || value === null) return null;
+  const label = requiredText(value, name);
+  if (label.length > 120) {
+    throw new TorchError(`${name} must be at most 120 characters`, {
+      code: 'INVALID_BACKLOG_INPUT', details: { field: name },
+    });
+  }
+  return label;
+}
+
+function normalizeCreateFields({
+  title, description, priority = 'normal', affectedDomains = [], dependencies = [],
+  acceptanceCriteria, observedAt, feature, milestone,
+} = {}, { controlPlane, repositoryRoot, getTask }) {
+  if (!PRIORITIES.has(priority)) {
+    throw new TorchError(`Invalid backlog priority: ${priority}`, { code: 'INVALID_BACKLOG_PRIORITY' });
+  }
+  const domains = textList(affectedDomains, 'affectedDomains');
+  domains.forEach((areaId) => controlPlane.assertIdentity(areaId));
+  const dependencyIds = textList(dependencies, 'dependencies');
+  dependencyIds.forEach((id) => getTask(taskId(id)));
+  return {
+    title: requiredText(title, 'title'),
+    description: requiredText(description, 'description'),
+    priority,
+    affectedDomains: domains,
+    dependencies: dependencyIds,
+    acceptanceCriteria: textList(acceptanceCriteria, 'acceptanceCriteria', { required: true }),
+    observedAt: optionalObservedAt(observedAt) ?? headSha(repositoryRoot),
+    feature: feature === '' ? null : optionalInitiativeLabel(feature, 'feature'),
+    milestone: milestone === '' ? null : optionalInitiativeLabel(milestone, 'milestone'),
+  };
 }
 
 function headSha(repositoryRoot) {
@@ -210,12 +254,13 @@ function atomicTask(path, task) {
 
 export class BacklogService {
   constructor({
-    repositoryRoot, controlPlane, integrationLookup = null,
+    repositoryRoot, controlPlane, integrationLookup = null, checkService = null,
     clock = () => new Date(), idFactory = randomUUID,
   } = {}) {
     this.repositoryRoot = repositoryRoot;
     this.controlPlane = controlPlane;
     this.integrationLookup = integrationLookup;
+    this.checkService = checkService;
     this.clock = clock;
     this.idFactory = idFactory;
     const manifest = readInstallManifest(repositoryRoot);
@@ -323,9 +368,11 @@ export class BacklogService {
         task: active[0], mutationPerformed: false,
       };
     }
-    const ready = tasks.find((task) => task.state === 'ready'
+    const ready = tasks.filter((task) => task.state === 'ready'
+      && (!task.owner || task.owner === area)
       && (!task.affectedDomains.length || task.affectedDomains.includes(area))
-      && task.dependencies.every((dependency) => tasks.find((item) => item.id === dependency)?.state === 'completed'));
+      && task.dependencies.every((dependency) => tasks.find((item) => item.id === dependency)?.state === 'completed'))
+      .sort(queueOrder)[0];
     return {
       schema: 'torch.dev/backlog-next/v1alpha1', areaId: area,
       disposition: ready ? 'ready' : 'idle', task: ready ?? null, mutationPerformed: false,
@@ -333,16 +380,202 @@ export class BacklogService {
   }
 
   health({ staleAfterDays = 7, staleObservedCommits = 50, now = this.clock() } = {}) {
-    return assessBacklogHealth({
+    const result = assessBacklogHealth({
       tasks: this.list(), agents: this.controlPlane.listAgents(), now,
       staleAfterDays, staleObservedCommits,
       commitDistance: (observedAt) => backlogObservedCommitDistance(this.repositoryRoot, observedAt),
     });
+    try {
+      result.activity = this.activity({ now });
+      result.findings.push(...result.activity.stale.map((task) => ({
+        severity: 'warning', code: 'BACKLOG_TASK_NO_RECENT_COMMIT', taskId: task.taskId,
+        ownerRequested: task.ownerRequested, ageDays: task.ageDays, state: task.state,
+        recommendation: 'Review linked work and acceptance; revive, close with evidence, or record the real wait. No automatic repair.',
+      })));
+    } catch (error) {
+      result.activity = { available: false, reason: error.code ?? error.message };
+      result.findings.push({ severity: 'warning', code: 'BACKLOG_ACTIVITY_UNAVAILABLE', reason: result.activity.reason,
+        recommendation: 'Restore managed branch observation before treating absence of commits as evidence.' });
+    }
+    result.healthy = result.findings.length === 0;
+    return result;
+  }
+
+  activity({ staleDays, maxCommits, now = this.clock() } = {}) {
+    const { config } = loadFleetDefinition(this.repositoryRoot);
+    const manifest = readInstallManifest(this.repositoryRoot);
+    return observeTaskActivity({
+      repositoryRoot: this.repositoryRoot, tasks: this.list(), now,
+      staleDays: staleDays ?? config.backlog?.activity?.stale_days ?? 3,
+      maxCommits: maxCommits ?? config.backlog?.activity?.max_commits ?? 1000,
+      branches: [config.project.main_branch, ...(manifest.external ?? [])
+        .filter((entry) => entry.type === 'worktree').map((entry) => entry.branch)],
+    });
+  }
+
+  planLandedClosure({ integrationRequest, actorId } = {}) {
+    const actor = this.controlPlane.assertIdentity(actorId);
+    if (actor !== 'session-manager') throw new TorchError('Only Fleet Operations may reconcile landed task closure', {
+      code: 'BACKLOG_AUTHORITY_REQUIRED',
+    });
+    const { config } = loadFleetDefinition(this.repositoryRoot);
+    const request = this.integrationLookup?.(integrationRequest);
+    const blockers = [];
+    const target = config.integration?.target ?? config.project.main_branch;
+    if (!request || request.state !== 'landed' || request.projectId !== this.controlPlane.projectId
+      || request.targetBranch !== target || !/^[0-9a-f]{40,64}$/.test(request.sourceCommit ?? '')) {
+      blockers.push('matching-landed-integration-required');
+    }
+    const sourceArea = config.domains.find((area) => area.id === request?.sourceArea);
+    if (!sourceArea) blockers.push('current-source-area-required');
+    const requiredChecks = [...new Set([
+      ...(config.integration?.required_checks ?? []), ...(request?.requiredChecks ?? []),
+      ...(sourceArea?.required_checks ?? []),
+    ])];
+    if (!this.checkService || !request || !this.checkService.exactPasses({ commit: request.sourceCommit, requiredChecks })) {
+      blockers.push('current-check-evidence-required');
+    }
+    let closes = [];
+    if (!blockers.length) {
+      try {
+        execFileSync('git', ['-C', this.repositoryRoot, 'merge-base', '--is-ancestor', request.sourceCommit,
+          `refs/heads/${target}`], { stdio: 'pipe' });
+        const message = execFileSync('git', ['-C', this.repositoryRoot, 'show', '-s', '--format=%B', request.sourceCommit], {
+          encoding: 'utf8', maxBuffer: 1024 * 1024,
+        });
+        closes = commitTaskReferences(message).closes;
+      } catch { blockers.push('canonical-ancestry-or-message-unavailable'); }
+    }
+    const tasks = this.list();
+    const candidates = closes.map((taskId) => {
+      const task = tasks.find((item) => item.id === taskId);
+      const reasons = [];
+      const unchanged = task?.state === 'completed' && task.commit === request.sourceCommit
+        && task.integrationRequest === request.id;
+      if (!task) reasons.push('unknown-task');
+      else if (!unchanged) {
+        if (task.state !== 'ready_to_integrate') reasons.push('task-not-ready-to-integrate');
+        if (task.owner !== request.sourceArea) reasons.push('source-owner-mismatch');
+        if (task.commit !== request.sourceCommit) reasons.push('task-commit-mismatch');
+        if (!task.evidence.length) reasons.push('task-evidence-required');
+      }
+      return { taskId, revision: task?.revision ?? null, disposition: unchanged ? 'unchanged' : reasons.length ? 'blocked' : 'close', reasons };
+    });
+    return { schema: 'torch.dev/landed-task-closure/v1alpha1', integrationRequest,
+      automaticEnabled: config.backlog?.activity?.auto_close_after_landing === true,
+      canProceed: !blockers.length, blockers, candidates, mutationPerformed: false };
+  }
+
+  reconcileLanded({ integrationRequest, actorId, approved = false, automatic = false } = {}) {
+    this.#assertMutable();
+    const initial = this.planLandedClosure({ integrationRequest, actorId });
+    if (!approved && !(automatic && initial.automaticEnabled)) throw new TorchError('Landed closure requires explicit approval or approved automatic policy', {
+      code: 'APPROVAL_REQUIRED',
+    });
+    if (!initial.canProceed) throw new TorchError('Landed task closure evidence is incomplete', {
+      code: 'BACKLOG_CLOSURE_BLOCKED', details: initial.blockers,
+    });
+    const results = initial.candidates.map((candidate) => this.#withTaskLock(candidate.taskId, () => {
+      const fresh = this.planLandedClosure({ integrationRequest, actorId });
+      if (!fresh.canProceed || (automatic && !fresh.automaticEnabled)) throw new TorchError('Closure policy or evidence changed', {
+        code: 'BACKLOG_CLOSURE_BLOCKED', details: fresh.blockers,
+      });
+      const current = fresh.candidates.find((item) => item.taskId === candidate.taskId);
+      if (!current || current.disposition !== 'close') return current ?? { ...candidate, disposition: 'blocked', reasons: ['intent-changed'] };
+      const task = this.#applyTransition({ taskId: current.taskId, actorId, to: 'completed',
+        expectedRevision: current.revision, integrationRequest, note: 'Exact landed Closes intent reconciled with current checks.' });
+      return { ...current, disposition: 'completed', revision: task.revision };
+    }));
+    return { ...initial, results, mutationPerformed: results.some((item) => item.disposition === 'completed') };
+  }
+
+  planClaim({ areaId } = {}) {
+    const area = this.controlPlane.assertIdentity(areaId);
+    const { config } = loadFleetDefinition(this.repositoryRoot);
+    const graph = organizationGraphFromConfig(config);
+    if (!graph.roles.some((role) => role.identity_id === area && role.kind === 'specialist'
+      && role.authority.includes('own-implementation'))) {
+      throw new TorchError('Only implementation specialists may self-claim work', { code: 'BACKLOG_OWNER_INVALID' });
+    }
+    const current = this.next({ areaId: area });
+    if (current.disposition === 'resume') return {
+      ...current, action: 'claim-next', canProceed: true, blockers: [], policyRequired: false,
+    };
+    const tasks = this.list();
+    const candidate = tasks.filter((task) => task.state === 'ready'
+      && (!task.owner || task.owner === area) && task.affectedDomains.includes(area)
+      && task.dependencies.every((dependency) => tasks.find((item) => item.id === dependency)?.state === 'completed'))
+      .sort(queueOrder)[0];
+    const blockers = [];
+    const policy = config.backlog?.self_claim;
+    if (!policy?.enabled || !policy.areas.includes(area)) blockers.push({ code: 'BACKLOG_SELF_CLAIM_DISABLED' });
+    if (!this.managerWorktreeAvailable) blockers.push({ code: 'BACKLOG_WORKTREE_MISSING' });
+    const manifest = readInstallManifest(this.repositoryRoot);
+    const worktree = (manifest.external ?? []).find((entry) => entry.type === 'worktree' && entry.area === area);
+    let commit = null;
+    if (!worktree?.path || !existsSync(worktree.path)) blockers.push({ code: 'WORKTREE_MISSING' });
+    else {
+      const git = (args) => execFileSync('git', ['-C', worktree.path, ...args], {
+        encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+      }).trim();
+      commit = git(['rev-parse', 'HEAD']);
+      if (git(['branch', '--show-current']) !== worktree.branch) blockers.push({ code: 'WORKTREE_BRANCH_CHANGED' });
+      const entries = git(['status', '--porcelain=v1', '--untracked-files=all']).split('\n').filter(Boolean);
+      if (entries.length) blockers.push({ code: 'WORKTREE_DIRTY', entries });
+      for (const operation of ['MERGE_HEAD', 'CHERRY_PICK_HEAD', 'rebase-merge', 'rebase-apply', 'BISECT_LOG']) {
+        if (existsSync(resolve(worktree.path, git(['rev-parse', '--git-path', operation])))) {
+          blockers.push({ code: 'WORKTREE_GIT_OPERATION', operation });
+        }
+      }
+    }
+    const database = this.controlPlane.database;
+    const unusual = (table, condition, code) => {
+      if (!database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table)) return;
+      const pending = database.prepare(`SELECT id FROM ${table} WHERE project_id = ? AND ${condition}`)
+        .all(this.controlPlane.projectId, area);
+      if (pending.length) blockers.push({ code, ids: pending.map((row) => row.id) });
+    };
+    unusual('worktree_guards', 'area_id = ? AND released_at IS NULL', 'WORKTREE_GUARD_ACTIVE');
+    unusual('prepared_checks', "area_id = ? AND state IN ('prepared', 'running')", 'CHECKS_PENDING');
+    unusual('integration_requests', "source_area = ? AND state NOT IN ('landed', 'superseded')", 'INTEGRATION_PENDING');
+    // Resource tables predate project_id columns. Their database is project-scoped.
+    for (const [table, condition, code] of [
+      ['resource_leases', 'released_at IS NULL', 'RESOURCE_HELD'],
+      ['resource_requests', "state = 'waiting'", 'RESOURCE_WAITING'],
+    ]) {
+      if (database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table)) {
+        const pending = database.prepare(`SELECT id FROM ${table} WHERE area_id = ? AND ${condition}`).all(area);
+        if (pending.length) blockers.push({ code, ids: pending.map((row) => row.id) });
+      }
+    }
+    const approvals = this.controlPlane.listApprovals({ actorId: area, status: 'pending' });
+    if (approvals.length) blockers.push({ code: 'APPROVAL_PENDING', ids: approvals.map((approval) => approval.id) });
+    return {
+      schema: 'torch.dev/backlog-claim-plan/v1alpha1', action: 'claim-next', areaId: area,
+      disposition: blockers.length ? 'blocked' : candidate ? 'ready' : 'idle',
+      task: candidate ?? null, commit, blockers, canProceed: blockers.length === 0,
+      mutationPerformed: false, policyRequired: true,
+      policy: { enabled: Boolean(policy?.enabled), areas: policy?.areas ?? [] },
+    };
+  }
+
+  claimNext({ areaId } = {}) {
+    this.#assertMutable();
+    return this.#withAssignmentLock(() => {
+      const plan = this.planClaim({ areaId });
+      if (!plan.canProceed || plan.disposition !== 'ready') return plan;
+      return this.#withTaskLock(plan.task.id, () => {
+        const updated = this.#applyTransition({
+          taskId: plan.task.id, actorId: plan.areaId, owner: plan.areaId,
+          to: 'assigned', expectedRevision: plan.task.revision, note: 'Claimed under approved self-claim policy.',
+        }, { selfClaim: true });
+        return { ...plan, disposition: 'claimed', task: updated, mutationPerformed: true };
+      });
+    });
   }
 
   create({
-    actorId, title, description, priority = 'normal', affectedDomains = [],
-    dependencies = [], acceptanceCriteria, observedAt,
+    actorId, ...input
   } = {}) {
     this.#assertMutable();
     const actor = this.controlPlane.assertIdentity(actorId);
@@ -351,48 +584,179 @@ export class BacklogService {
         code: 'BACKLOG_AUTHORITY_REQUIRED', details: { actorId: actor },
       });
     }
-    if (!PRIORITIES.has(priority)) {
-      throw new TorchError(`Invalid backlog priority: ${priority}`, { code: 'INVALID_BACKLOG_PRIORITY' });
-    }
-    const domains = textList(affectedDomains, 'affectedDomains');
-    domains.forEach((areaId) => this.controlPlane.assertIdentity(areaId));
-    const dependencyIds = textList(dependencies, 'dependencies');
-    dependencyIds.forEach((id) => this.get(id));
+    const fields = normalizeCreateFields(input, {
+      controlPlane: this.controlPlane, repositoryRoot: this.repositoryRoot, getTask: (id) => this.get(id),
+    });
+    return this.#writeTask(fields, actor);
+  }
+
+  planOwnerCreate({ actorId, ...input } = {}) {
+    this.#assertMutable();
+    this.controlPlane.assertOwnerActor(actorId);
+    const fields = normalizeCreateFields(input, {
+      controlPlane: this.controlPlane, repositoryRoot: this.repositoryRoot, getTask: (id) => this.get(id),
+    });
+    return {
+      schema: 'torch.dev/backlog-create-plan/v1alpha1',
+      task: { ...fields, state: 'proposed', owner: null },
+      authority: 'Project owner may propose new work; the Session Manager retains triage and assignment authority.',
+      effect: 'Create one proposed, unassigned backlog task. It will not be assigned, dispatched, or start a session.',
+      mutationPerformed: false,
+    };
+  }
+
+  createOwner({ actorId, ...input } = {}) {
+    this.#assertMutable();
+    const actor = this.controlPlane.assertOwnerActor(actorId);
+    const fields = normalizeCreateFields(input, {
+      controlPlane: this.controlPlane, repositoryRoot: this.repositoryRoot, getTask: (id) => this.get(id),
+    });
+    return this.#writeTask(fields, actor, { ownerAction: true });
+  }
+
+  #writeTask(fields, actor, { ownerAction = false } = {}) {
     const now = this.clock().toISOString();
     const task = {
       schema: 'torch.dev/backlog-item/v1alpha1',
-      id: taskId(`TASK-${this.idFactory()}`), title: requiredText(title, 'title'),
-      description: requiredText(description, 'description'), priority,
-      state: 'proposed', owner: null, affectedDomains: domains, dependencies: dependencyIds,
-      acceptanceCriteria: textList(acceptanceCriteria, 'acceptanceCriteria', { required: true }),
+      id: taskId(`TASK-${this.idFactory()}`), ...fields,
+      state: 'proposed', owner: null,
       evidence: [], commit: null, integrationRequest: null, blockedReason: null,
-      observedAt: optionalObservedAt(observedAt) ?? headSha(this.repositoryRoot),
       createdAt: now, updatedAt: now, revision: 1,
       history: [{ from: null, to: 'proposed', actorId: actor, at: now, note: 'Task created.' }],
     };
     const path = this.#path(task.id);
     if (existsSync(path)) throw new TorchError(`Backlog task already exists: ${task.id}`, { code: 'BACKLOG_TASK_EXISTS' });
     atomicTask(path, task);
-    this.controlPlane.audit({
+    const audit = {
       actorId: actor, operation: 'backlog.create', entityType: 'backlog-task', entityId: task.id,
-      details: { state: task.state, priority },
-    });
+      details: { state: task.state, priority: task.priority, affectedDomains: task.affectedDomains },
+    };
+    if (ownerAction) this.controlPlane.auditOwnerAction(audit);
+    else this.controlPlane.audit(audit);
     return task;
+  }
+
+  classify({
+    taskId: id, actorId, expectedRevision, feature, milestone,
+    clearFeature = false, clearMilestone = false, reason,
+  } = {}) {
+    this.#assertMutable();
+    return this.#withTaskLock(id, () => {
+      const actor = this.controlPlane.assertIdentity(actorId);
+      if (actor !== 'session-manager') {
+        throw new TorchError('Only the Session Manager may classify backlog work by feature or milestone', {
+          code: 'BACKLOG_AUTHORITY_REQUIRED', details: { actorId: actor },
+        });
+      }
+      if (typeof clearFeature !== 'boolean' || typeof clearMilestone !== 'boolean'
+        || clearFeature && feature !== undefined || clearMilestone && milestone !== undefined) {
+        throw new TorchError('Choose either a new initiative label or its explicit clear action', {
+          code: 'INVALID_BACKLOG_CLASSIFICATION',
+        });
+      }
+      const hasFeature = feature !== undefined || clearFeature;
+      const hasMilestone = milestone !== undefined || clearMilestone;
+      if (!hasFeature && !hasMilestone) {
+        throw new TorchError('Classifying backlog work requires --feature or --milestone', {
+          code: 'INVALID_BACKLOG_CLASSIFICATION',
+        });
+      }
+      const task = this.get(id);
+      if (!Number.isInteger(expectedRevision) || expectedRevision !== task.revision) {
+        throw new TorchError('Backlog task changed since it was read', {
+          code: 'BACKLOG_REVISION_CONFLICT', details: { expectedRevision, actualRevision: task.revision },
+        });
+      }
+      const nextFeature = clearFeature ? null
+        : (feature !== undefined ? optionalInitiativeLabel(feature, 'feature') : task.feature ?? null);
+      const nextMilestone = clearMilestone ? null
+        : (milestone !== undefined ? optionalInitiativeLabel(milestone, 'milestone') : task.milestone ?? null);
+      if (nextFeature === (task.feature ?? null) && nextMilestone === (task.milestone ?? null)) {
+        return { ...task, mutationPerformed: false, disposition: 'unchanged' };
+      }
+      const now = this.clock().toISOString();
+      const record = {
+        actorId: actor, at: now, reason: requiredText(reason, 'reason'),
+        from: { feature: task.feature ?? null, milestone: task.milestone ?? null },
+        to: { feature: nextFeature, milestone: nextMilestone },
+      };
+      const updated = {
+        ...task, feature: nextFeature, milestone: nextMilestone,
+        updatedAt: now, revision: task.revision + 1,
+        classificationHistory: [...(task.classificationHistory ?? []), record],
+      };
+      atomicTask(this.#path(task.id), updated);
+      this.controlPlane.audit({
+        actorId: actor, operation: 'backlog.classify', entityType: 'backlog-task', entityId: task.id,
+        details: { revision: updated.revision, feature: nextFeature, milestone: nextMilestone },
+      });
+      return { ...updated, mutationPerformed: true, disposition: 'classified' };
+    });
+  }
+
+  planPriorityChange({ taskId: id, actorId, expectedRevision, priority, reason } = {}) {
+    this.#assertMutable();
+    this.controlPlane.assertOwnerActor(actorId);
+    if (!PRIORITIES.has(priority)) {
+      throw new TorchError(`Invalid backlog priority: ${priority}`, { code: 'INVALID_BACKLOG_PRIORITY' });
+    }
+    const task = this.get(id);
+    if (!Number.isInteger(expectedRevision) || expectedRevision !== task.revision) {
+      throw new TorchError('Backlog task changed since it was read', {
+        code: 'BACKLOG_REVISION_CONFLICT', details: { expectedRevision, actualRevision: task.revision },
+      });
+    }
+    return {
+      schema: 'torch.dev/backlog-priority-plan/v1alpha1', mutationPerformed: false,
+      taskId: task.id, title: task.title, revision: task.revision,
+      from: task.priority ?? 'normal', to: priority, reason: requiredText(reason, 'reason'),
+      effect: 'Change only this task priority. State, owner, evidence, dependencies, and queue history stay unchanged.',
+    };
+  }
+
+  setPriority({ taskId: id, actorId, expectedRevision, priority, reason } = {}) {
+    this.#assertMutable();
+    return this.#withTaskLock(id, () => {
+      const actor = this.controlPlane.assertOwnerActor(actorId);
+      if (!PRIORITIES.has(priority)) {
+        throw new TorchError(`Invalid backlog priority: ${priority}`, { code: 'INVALID_BACKLOG_PRIORITY' });
+      }
+      const task = this.get(id);
+      if (!Number.isInteger(expectedRevision) || expectedRevision !== task.revision) {
+        throw new TorchError('Backlog task changed since it was read', {
+          code: 'BACKLOG_REVISION_CONFLICT', details: { expectedRevision, actualRevision: task.revision },
+        });
+      }
+      const note = requiredText(reason, 'reason');
+      if ((task.priority ?? 'normal') === priority) {
+        return { ...task, mutationPerformed: false, disposition: 'unchanged' };
+      }
+      const now = this.clock().toISOString();
+      const updated = {
+        ...task, priority, updatedAt: now, revision: task.revision + 1,
+        priorityHistory: [...(task.priorityHistory ?? []), {
+          actorId: actor, at: now, reason: note, from: task.priority ?? 'normal', to: priority,
+        }],
+      };
+      atomicTask(this.#path(task.id), updated);
+      this.controlPlane.auditOwnerAction({
+        actorId: actor, operation: 'backlog.priority', entityType: 'backlog-task', entityId: task.id,
+        details: { revision: updated.revision, from: task.priority ?? 'normal', to: priority },
+      });
+      return { ...updated, mutationPerformed: true, disposition: 'reprioritized' };
+    });
   }
 
   transition(input = {}) {
     this.#assertMutable();
-    return this.#withTaskLock(input.taskId, () => (
-      input.to === 'assigned'
-        ? this.#withAssignmentLock(() => this.#applyTransition(input))
-        : this.#applyTransition(input)
-    ));
+    const apply = () => this.#withTaskLock(input.taskId, () => this.#applyTransition(input));
+    return ACTIVE_ASSIGNMENT_STATES.has(input.to) ? this.#withAssignmentLock(apply) : apply();
   }
 
   #applyTransition({
     taskId: id, actorId, to, expectedRevision, owner, evidence = [], commit,
     integrationRequest, blockedReason, note,
-  } = {}) {
+  } = {}, { selfClaim = false } = {}) {
     const actor = this.controlPlane.assertIdentity(actorId);
     const target = requiredText(to, 'to');
     if (!BACKLOG_STATES.includes(target)) {
@@ -409,7 +773,11 @@ export class BacklogService {
         code: 'BACKLOG_TRANSITION_INVALID', details: { from: task.state, to: target },
       });
     }
-    if (actor !== 'session-manager' && (actor !== task.owner || !WORKER_TRANSITIONS.has(target))) {
+    if (selfClaim && (target !== 'assigned' || actor !== owner || task.state !== 'ready'
+      || !task.affectedDomains.includes(actor))) {
+      throw new TorchError('Self-claim is restricted to routed ready work for this specialist', { code: 'BACKLOG_AUTHORITY_REQUIRED' });
+    }
+    if (actor !== 'session-manager' && !selfClaim && (actor !== task.owner || !WORKER_TRANSITIONS.has(target))) {
       throw new TorchError(`${actor} may not transition ${task.id} to ${target}`, {
         code: 'BACKLOG_AUTHORITY_REQUIRED', details: { actorId: actor, owner: task.owner, to: target },
       });
@@ -439,12 +807,14 @@ export class BacklogService {
           });
         }
       }
+    }
+    if (ACTIVE_ASSIGNMENT_STATES.has(target) && nextOwner) {
       const existing = this.list().find((candidate) => candidate.id !== task.id
-        && candidate.owner === assigned && ACTIVE_ASSIGNMENT_STATES.has(candidate.state));
+        && candidate.owner === nextOwner && ACTIVE_ASSIGNMENT_STATES.has(candidate.state));
       if (existing) {
-        throw new TorchError(`${assigned} already has active backlog work`, {
+        throw new TorchError(`${nextOwner} already has active backlog work`, {
           code: 'BACKLOG_OWNER_BUSY',
-          details: { owner: assigned, taskId: existing.id, state: existing.state },
+          details: { owner: nextOwner, taskId: existing.id, state: existing.state },
         });
       }
     }
@@ -488,10 +858,10 @@ export class BacklogService {
     };
     atomicTask(this.#path(task.id), updated);
     this.controlPlane.audit({
-      actorId: actor, operation: 'backlog.transition', entityType: 'backlog-task', entityId: task.id,
+      actorId: actor, operation: selfClaim ? 'backlog.self-claim' : 'backlog.transition', entityType: 'backlog-task', entityId: task.id,
       details: { from: task.state, to: target, revision: updated.revision },
     });
-    if (target === 'assigned') {
+    if (target === 'assigned' && !selfClaim) {
       this.controlPlane.sendMessage({
         sender: actor, recipient: updated.owner,
         body: `Assigned ${updated.id}: ${updated.title}`,

@@ -219,6 +219,37 @@ test('SCN-install-runtime-selection: approved runtime choices are explicit and c
   assert.deepEqual(Object.keys(config.runtimes).sort(), ['claude', 'codex', 'default']);
 });
 
+test('SCN-install-provider-inheritance: generated roles inherit the selected provider and explicit mixed assignments survive', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const proposal = approvedProposal(repository);
+  assert.ok(proposal.domains.every((domain) => domain.runtime === 'default'));
+  const plan = planInstall({ repository, proposal, env, runtimes: ['codex'] });
+  assert.equal(plan.defaultRuntime, 'codex');
+  assert.deepEqual(plan.runtimes, ['codex']);
+  assert.equal(plan.mutationPerformed, false);
+  assert.equal(existsSync(join(root, '.torch')), false);
+  installProject({ repository, proposal, env, runtimes: ['codex'], projectId: 'codex-only' });
+  const config = JSON.parse(readFileSync(join(root, '.torch', 'torch.yaml'), 'utf8'));
+  assert.equal(config.runtimes.default, 'codex');
+  assert.equal(config.session_manager.runtime, 'codex');
+  assert.ok(config.domains.every((domain) => domain.runtime === 'codex'));
+  assert.equal(config.runtimes.codex.model, 'gpt-6-luna');
+  assert.equal(config.runtimes.codex.reasoning, 'high');
+
+  const mixed = fixture();
+  const mixedRepo = inspectRepository(mixed.root);
+  const mixedProposal = approvedProposal(mixedRepo);
+  mixedProposal.domains[0].runtime = 'claude';
+  installProject({ repository: mixedRepo, proposal: mixedProposal, env: mixed.env,
+    runtimes: ['claude', 'codex'], defaultRuntime: 'codex', projectId: 'mixed-selection' });
+  const mixedConfig = JSON.parse(readFileSync(join(mixed.root, '.torch', 'torch.yaml'), 'utf8'));
+  assert.equal(mixedConfig.runtimes.default, 'codex');
+  assert.equal(mixedConfig.session_manager.runtime, 'codex');
+  assert.equal(mixedConfig.domains[0].runtime, 'claude');
+  assert.equal(mixedConfig.runtimes.claude.model, 'sonnet');
+});
+
 test('SCN-canonical-reversal: owned local canonical state reverses only after unique commits are safe', () => {
   const { root, env } = fixture();
   const externalEnv = { ...env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-canonical-reversal-state-')) };

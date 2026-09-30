@@ -4,41 +4,295 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>TORCH Fleet Console</title>
+  <meta name="theme-color" content="#101a22">
+  <title>TORCH Local Fleet Console</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/svg+xml" href="/torch-mark.svg">
+  <script src="/work-views.js" defer></script>
+  <script src="/work-progress.js" defer></script>
+  <script src="/owner-digest.js" defer></script>
+  <script src="/check-evidence.js" defer></script>
+  <script src="/task-activity.js" defer></script>
+  <script src="/operation-outcomes.js" defer></script>
+  <script src="/live-refresh.js" defer></script>
+  <script src="/demo.js" defer></script>
   <script src="/console.js" defer></script>
 </head>
 <body class="console-body">
-  <a class="skip-link" href="#console-main">Skip to fleet status</a>
+  <aside id="demo-banner" class="console-demo-banner" aria-label="Demo workspace" hidden>
+    <div><strong>Demo workspace</strong><span>Sample project · Changes stay in this tab</span></div>
+    <button id="reset-demo" type="button">Reset demo</button>
+  </aside>
+  <a class="skip-link" href="#overview">Skip to project overview</a>
   <header class="masthead console-nav">
-    <a class="wordmark" href="/"><span class="mark">T</span> TORCH</a>
-    <p>Local Fleet Console</p>
-    <button id="refresh-console" type="button">Refresh snapshot</button>
+    <a class="wordmark" href="/" aria-label="TORCH home"><img src="/torch-mark.svg" alt="" width="34" height="34"> TORCH</a>
+    <div class="console-project"><strong id="project-name">Loading project…</strong><span id="project-branch">Reading repository</span></div>
+    <div class="console-tools"><span id="snapshot-time">Waiting for snapshot</span><button id="refresh-console" type="button">Refresh</button><button id="toggle-live-refresh" type="button" aria-pressed="false">Pause updates</button></div>
   </header>
-  <main id="console-main" class="console-shell" aria-live="polite">
-    <section class="console-summary">
-      <div><p>Project</p><strong id="project-name">Loading…</strong></div>
-      <div><p>Commit</p><strong id="project-commit">—</strong></div>
-      <div><p>Fleet health</p><strong id="fleet-health">Observing</strong></div>
-      <div><p>Context locality</p><strong id="context-state">Unmeasured</strong></div>
-    </section>
-    <p class="console-error" id="console-error" hidden></p>
-    <section class="console-grid">
-      <article class="console-panel agents-panel"><div class="panel-heading"><h1>Fleet</h1><span id="agent-count">0 identities</span></div><div id="agent-list" class="agent-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Ownership</h2><span>Domain graph</span></div><div id="ownership-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Worktrees</h2><span id="recoverability-state">Recoverability</span></div><div id="worktree-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Backlog</h2><span id="task-count">0 active</span></div><div id="task-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Fleet changes</h2><span id="change-count">0 pending</span></div><div id="change-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Integration</h2><span>Exact commits</span></div><div id="integration-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Delivery</h2><span>Release is not deploy</span></div><div id="delivery-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Checks</h2><span>Exact receipts</span></div><div id="check-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Resources</h2><span>FIFO leases</span></div><div id="resource-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Schedules</h2><span>Declared lifetimes</span></div><div id="schedule-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Providers</h2><span>Capability health</span></div><div id="provider-list" class="console-list"></div></article>
-      <article class="console-panel messages-panel"><div class="panel-heading"><h2>Messages</h2><span id="message-count">0 queued</span></div><div id="message-list" class="console-list"></div></article>
-      <article class="console-panel"><div class="panel-heading"><h2>Decisions</h2><span>Tracked truth</span></div><div id="decision-list" class="console-list"></div></article>
-      <article class="console-panel context-panel"><div class="panel-heading"><h2>Context locality</h2><span>Measured, never assumed</span></div><div id="context-detail" class="context-detail"></div></article>
-    </section>
+  <main id="console-main" class="console-layout">
+    <nav class="console-rail" aria-label="Project views">
+      <a href="#overview">Overview</a>
+      <a href="#owner-briefing">Briefing</a>
+      <a href="#flow-watch">Flow watch</a>
+      <a href="#work">Work</a>
+      <a href="#initiative-progress">Progress</a>
+      <a href="#fleet">Fleet</a>
+      <a href="#communications">Conversations</a>
+      <a href="#organization">Organization</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#delivery">Release gates</a>
+      <p class="rail-note">Local project view<br><span id="project-commit">—</span></p>
+    </nav>
+
+    <div class="console-workspace">
+      <p class="console-error" id="console-error" role="alert" hidden></p>
+      <p id="live-refresh-status" role="status" aria-live="polite">Waiting for the first snapshot.</p>
+
+      <section id="overview" class="pulse-zone" aria-labelledby="pulse-title">
+        <div class="pulse-main">
+          <div class="pulse-heading"><div><p class="section-kicker">Project pulse</p><h1 id="pulse-title">Work in motion</h1></div><span id="fleet-health" class="health-flag">Observing</span></div>
+          <p id="project-summary" class="pulse-summary">TORCH is gathering the latest repository and fleet evidence.</p>
+          <div class="pulse-readouts" aria-label="Project state">
+            <div><span>Repository</span><strong id="project-dirty">—</strong></div>
+            <div><span>Fleet</span><strong id="agent-count">0 identities</strong></div>
+            <div><span>Context</span><strong id="context-state">Unmeasured</strong></div>
+            <div><span>Recoverability</span><strong id="recoverability-state">Unknown</strong></div>
+          </div>
+        </div>
+        <aside class="attention-panel" aria-labelledby="attention-title">
+          <div class="panel-heading"><h2 id="attention-title">Needs your attention</h2><span id="attention-count">0 items</span></div>
+          <div id="attention-list" class="attention-list"></div>
+        </aside>
+      </section>
+
+      <section id="owner-briefing" class="console-section owner-briefing" aria-labelledby="owner-briefing-title">
+        <div class="section-heading"><h2 id="owner-briefing-title">Owner briefing</h2><span>Published evidence</span></div>
+        <div id="owner-briefing-content"><p>Reading the latest local publication…</p></div>
+      </section>
+
+      <section id="flow-watch" class="console-section flow-watch-section" aria-labelledby="flow-watch-title">
+        <div class="section-heading"><div><p class="section-kicker">Approvals and reporting lines</p><h2 id="flow-watch-title">Flow watch</h2></div><span>Owner decisions gated</span></div>
+        <p class="flow-watch-note">See which teams need attention and who owns each decision. A configured cadence does not confirm that a system timer is installed.</p>
+        <div class="flow-watch-grid">
+          <article class="flow-column" aria-labelledby="manager-checkins-title">
+            <div class="panel-heading"><h3 id="manager-checkins-title">Manager check-ins</h3><span id="manager-checkin-count">Not available</span></div>
+            <div id="manager-checkin-list" class="manager-checkin-list" aria-live="polite"></div>
+          </article>
+          <article class="flow-column approvals-column" aria-labelledby="approval-requests-title">
+            <div class="panel-heading"><h3 id="approval-requests-title">Open approvals</h3><span id="approval-request-count">Not available</span></div>
+            <div id="approval-request-list" class="approval-request-list" aria-live="polite"></div>
+            <p class="flow-watch-footnote">Only the named approver can decide. Owner-addressed requests have a review-and-confirm flow; requests assigned to an AI stay with that AI.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="work" class="board-section" aria-labelledby="work-title">
+        <div class="section-heading"><div><p class="section-kicker">Authoritative backlog</p><h2 id="work-title">Work board</h2></div><span id="task-count">0 active</span></div>
+        <div class="work-view-tools" role="group" aria-label="Backlog views and filters">
+          <div class="work-filter-row">
+            <label class="saved-view-picker" for="work-view-select">Saved view
+              <select id="work-view-select" aria-label="Choose a saved backlog view"><option value="">All active work</option></select>
+            </label>
+            <label class="work-filter search-filter" for="work-view-search">Find work
+              <input id="work-view-search" type="search" maxlength="120" autocomplete="off" placeholder="Task, owner, or phrase">
+            </label>
+            <label class="work-filter" for="work-view-owner">Owner
+              <select id="work-view-owner"><option value="">Anyone</option></select>
+            </label>
+            <label class="work-filter" for="work-view-state">State
+              <select id="work-view-state"><option value="">Any state</option></select>
+            </label>
+            <label class="work-filter" for="work-view-priority">Priority
+              <select id="work-view-priority"><option value="">Any priority</option></select>
+            </label>
+            <label class="work-filter" for="work-view-domain">Domain
+              <select id="work-view-domain"><option value="">Any domain</option></select>
+            </label>
+            <label class="work-filter" for="work-view-feature">Feature
+              <select id="work-view-feature"><option value="">Any feature</option></select>
+            </label>
+            <label class="work-filter" for="work-view-milestone">Milestone
+              <select id="work-view-milestone"><option value="">Any milestone</option></select>
+            </label>
+            <button id="work-view-clear" class="quiet-action" type="button">Clear filters</button>
+          </div>
+          <div class="saved-view-actions">
+            <label for="work-view-name">View name
+              <input id="work-view-name" type="text" maxlength="64" autocomplete="off" placeholder="e.g. World work at risk">
+            </label>
+            <button id="work-view-save" type="button">Save as view</button>
+            <button id="work-view-update" class="quiet-action" type="button" hidden>Update selected</button>
+            <button id="work-view-delete" class="quiet-action" type="button" hidden>Delete selected</button>
+            <span class="view-storage-note">Saved in this browser for this project; filters never change tasks.</span>
+          </div>
+          <p id="work-view-status" class="work-view-status" role="status" aria-live="polite"></p>
+          <p class="owner-control-note">New work remains proposed and unassigned until the Session Manager triages it. Priority changes never reassign a task or advance its state.</p>
+          <p id="work-view-summary" class="work-view-summary" aria-live="polite">Loading backlog views…</p>
+        </div>
+        <details class="task-create-panel">
+          <summary>Create a task proposal</summary>
+          <p class="owner-control-note">Describe the outcome and any domain suggestions. The Session Manager still owns triage and assignment; this form never starts an agent.</p>
+          <form id="task-create-form" class="task-create-form">
+            <fieldset data-task-create-fields>
+              <label>Task title<input name="title" maxlength="200" required autocomplete="off" placeholder="A clear outcome to deliver"></label>
+              <label>Description<textarea name="description" maxlength="2000" required rows="3" placeholder="Context and the problem to solve"></textarea></label>
+              <div class="task-create-grid">
+                <label>Priority<select name="priority"><option value="urgent">Urgent</option><option value="high">High</option><option value="normal" selected>Normal</option><option value="low">Low</option></select></label>
+                <label>Feature<input name="feature" maxlength="120" autocomplete="off" placeholder="Optional label"></label>
+                <label>Milestone<input name="milestone" maxlength="120" autocomplete="off" placeholder="Optional label"></label>
+              </div>
+              <div class="task-create-grid task-create-routing">
+                <label>Suggested domains<select name="affectedDomains" multiple size="4" aria-describedby="task-create-route-note"></select></label>
+                <label>Depends on<select name="dependencies" multiple size="4"></select></label>
+              </div>
+              <p id="task-create-route-note" class="owner-control-note">These are routing hints, not assignments. Leave empty for Session Manager triage.</p>
+              <label>Acceptance criteria<textarea name="acceptanceCriteria" maxlength="1800" required rows="3" placeholder="One verifiable result per line"></textarea></label>
+              <button type="submit">Review task proposal</button>
+            </fieldset>
+            <p class="task-create-status" role="status" aria-live="polite"></p>
+            <div class="task-create-preview" data-task-create-preview hidden></div>
+          </form>
+        </details>
+        <div id="backlog-board" class="backlog-board" aria-label="Backlog tasks by status"></div>
+        <details class="check-evidence" id="activity-review"><summary>Activity review</summary><div id="activity-review-content"></div></details>
+        <p id="priority-action-status" class="priority-action-status" role="status" aria-live="polite" hidden></p>
+        <p id="task-create-action-status" class="priority-action-status" role="status" aria-live="polite" hidden></p>
+      </section>
+
+      <section id="initiative-progress" class="console-section initiative-section" aria-labelledby="initiative-title">
+        <div class="section-heading"><div><p class="section-kicker">Derived from the single backlog</p><h2 id="initiative-title">Feature and milestone progress</h2></div><span>Task states only · gates remain separate</span></div>
+        <p class="initiative-note">Progress is calculated from each linked task's current state. It does not mean checks passed, integration landed, or a release is ready.</p>
+        <div id="initiative-rollup" class="initiative-rollup" aria-live="polite"></div>
+      </section>
+
+      <section id="fleet" class="console-section fleet-section" aria-labelledby="fleet-title">
+        <div class="section-heading"><div><p class="section-kicker">Persistent identities</p><h2 id="fleet-title">Fleet and ownership</h2></div><span id="agent-health-note">Session state from latest observation</span></div>
+        <div class="fleet-columns">
+          <article class="work-surface"><div class="panel-heading"><h3>Sessions</h3><span>One context per identity</span></div><div id="agent-list" class="agent-list"></div>
+            <details class="runtime-profile-tools">
+              <summary>Change a next-launch profile</summary>
+              <p>Choose which local agent and model an identity will use next time it starts. Running sessions are not changed or restarted.</p>
+              <form id="runtime-profile-form" data-runtime-profile>
+                <div class="runtime-profile-fields">
+                  <label for="runtime-profile-area">Identity<select id="runtime-profile-area" name="areaId" required disabled><option value="">Loading identities…</option></select></label>
+                  <label for="runtime-profile-runtime">Agent<select id="runtime-profile-runtime" name="runtime" required disabled><option value="">Loading available agents…</option></select></label>
+                  <label for="runtime-profile-model">Model<input id="runtime-profile-model" name="model" maxlength="180" autocomplete="off" disabled placeholder="For example, gpt-6-luna or sonnet"></label>
+                  <label for="runtime-profile-reasoning">Reasoning<input id="runtime-profile-reasoning" name="reasoning" list="runtime-profile-reasoning-levels" maxlength="40" autocomplete="off" disabled placeholder="Use adapter default"></label>
+                  <datalist id="runtime-profile-reasoning-levels"><option value="low"><option value="medium"><option value="high"><option value="xhigh"><option value="max"><option value="ultra"></datalist>
+                </div>
+                <div class="runtime-profile-actions"><button type="button" data-runtime-profile-preview disabled>Review profile change</button><p class="runtime-profile-status" role="status" aria-live="polite">Install a reviewed Fleet before changing profiles.</p></div>
+                <section class="runtime-profile-preview" data-runtime-profile-review aria-live="polite" hidden>
+                  <div class="runtime-profile-comparison"><div><span>Current</span><strong data-profile-before>—</strong></div><span class="profile-shift" aria-hidden="true">to</span><div><span>Next launch</span><strong data-profile-after>—</strong></div></div>
+                  <p data-profile-effect></p>
+                  <div class="runtime-profile-actions"><button type="button" data-runtime-profile-confirm hidden>Confirm profile change</button><button type="button" class="quiet-action" data-runtime-profile-edit hidden>Edit profile</button></div>
+                </section>
+              </form>
+            </details>
+            <p id="runtime-profile-action-status" class="runtime-profile-action-status" role="status" aria-live="polite" hidden></p>
+          </article>
+          <article class="work-surface"><div class="panel-heading"><h3>Ownership</h3><span>Implementation stays with specialists</span></div><div id="ownership-list" class="console-list"></div></article>
+        </div>
+      </section>
+
+      <section id="organization" class="console-section organization-section" aria-labelledby="organization-title">
+        <div class="section-heading"><div><p class="section-kicker">Current approved structure</p><h2 id="organization-title">Organization map</h2></div><span id="organization-revision">No active graph</span></div>
+        <div id="organization-map" class="organization-map" aria-live="polite"></div>
+        <div id="organization-lifecycle" class="organization-lifecycle" aria-live="polite"></div>
+      </section>
+
+      <section id="organization-proposals" class="console-section" aria-labelledby="proposal-title">
+        <div class="section-heading"><div><p class="section-kicker">Owner review</p><h2 id="proposal-title">Organization proposals</h2></div><span id="change-count">0 pending</span></div>
+        <p id="organization-action-status" class="organization-action-status" role="status" aria-live="polite" hidden></p>
+        <div id="change-list" class="console-list"></div>
+      </section>
+
+      <section id="communications" class="console-section communication-section" aria-labelledby="communications-title">
+        <div class="section-heading"><div><p class="section-kicker">Durable coordination</p><h2 id="communications-title">Conversations</h2></div><span id="message-count">0 unacknowledged</span></div>
+        <details class="owner-request-composer">
+          <summary>Request work from an agent</summary>
+          <p>This adds one durable inbox message. It will not create a task, change ownership, or wake/start the agent.</p>
+          <form id="owner-request-form" data-owner-request>
+            <div class="owner-request-fields">
+              <label for="owner-request-recipient">Send to
+                <select id="owner-request-recipient" name="recipient" required disabled><option value="">Loading Fleet identities…</option></select>
+              </label>
+              <label for="owner-request-task">Link an existing task <span>(optional)</span>
+                <select id="owner-request-task" name="taskId" disabled><option value="">No task reference</option></select>
+              </label>
+            </div>
+            <label for="owner-request-body">What should this agent look at?
+              <textarea id="owner-request-body" name="body" maxlength="4000" rows="4" required disabled placeholder="Describe the request and any boundary or evidence that matters."></textarea>
+            </label>
+            <div class="owner-request-actions">
+              <button type="button" data-owner-request-preview disabled>Preview request</button>
+              <p class="owner-request-status" role="status" aria-live="polite">Install a reviewed Fleet before sending owner requests.</p>
+            </div>
+            <section class="owner-request-preview" data-owner-request-review aria-live="polite" hidden>
+              <h3 data-owner-request-title></h3>
+              <p data-owner-request-effect></p>
+              <blockquote data-owner-request-exact></blockquote>
+              <div class="owner-request-actions">
+                <button type="button" data-owner-request-confirm hidden>Send durable request</button>
+                <button type="button" class="quiet-action" data-owner-request-edit hidden>Edit request</button>
+              </div>
+            </section>
+          </form>
+        </details>
+        <p id="owner-request-action-status" class="owner-request-action-status" role="status" aria-live="polite" hidden></p>
+        <div id="message-list" class="conversation-stream"></div>
+      </section>
+
+      <section id="evidence" class="console-section evidence-section" aria-labelledby="evidence-title">
+        <div class="section-heading"><div><p class="section-kicker">Provenance first</p><h2 id="evidence-title">Evidence and review</h2></div><span>Exact commit receipts</span></div>
+        <div class="evidence-columns">
+          <article class="work-surface"><div class="panel-heading"><h3>Checks</h3><span>Passes are commit-bound</span></div><div id="check-list" class="console-list"></div></article>
+          <article class="work-surface review-gallery"><div class="panel-heading"><h3>Screenshots and artifacts</h3><span>Provenance-linked review</span></div><p class="gallery-note">Images are copied into private local project state and checked against their recorded digest when opened. Feedback is previewed with its identity, task, and commit before you choose to send it.</p><p id="feedback-action-status" class="feedback-action-status" aria-live="polite" hidden></p><div id="artifact-list" class="artifact-list"></div></article>
+        </div>
+      </section>
+
+      <section id="delivery" class="console-section delivery-section" aria-labelledby="delivery-title">
+        <div class="section-heading"><div><p class="section-kicker">Separate authority gates</p><h2 id="delivery-title">Integration and release</h2></div><span>Integration is not deployment</span></div>
+        <div class="delivery-columns">
+          <article class="work-surface"><div class="panel-heading"><h3>Integration</h3><span>FIFO queue · source commit</span></div><div id="integration-list" class="console-list"></div></article>
+          <article class="work-surface"><div class="panel-heading"><h3>Delivery</h3><span>Release readiness</span></div><div id="delivery-list" class="console-list"></div></article>
+        </div>
+        <div id="operation-outcomes"></div>
+      </section>
+
+      <details class="console-section more-details">
+        <summary>Operations, resources, and decisions</summary>
+        <div class="operations-grid">
+          <article class="work-surface"><div class="panel-heading"><h3>Worktrees</h3><span>Branches and recoverability</span></div><div id="worktree-list" class="console-list"></div></article>
+          <article class="work-surface"><div class="panel-heading"><h3>Resources</h3><span>Shared capacity</span></div><div id="resource-list" class="console-list"></div></article>
+          <article class="work-surface schedule-surface"><div class="panel-heading"><h3>Schedules</h3><span>Declared lifetimes</span></div><div id="schedule-list" class="console-list"></div>
+            <section id="manager-wakes" aria-labelledby="manager-wakes-title">
+              <div class="panel-heading"><h4 id="manager-wakes-title">Manager launches</h4><span id="manager-wake-count">Not available</span></div>
+              <p>Unknown launches block another scheduled wake. Offline presence does not prove that the agent process stopped.</p>
+              <div id="manager-wake-list" class="console-list"></div>
+            </section>
+            <details class="schedule-launcher-tools" data-schedule-launcher>
+              <summary>Manage the persistent timer</summary>
+              <p>This timer runs configured system schedules, not AI sessions by itself. Review the schedules and exact unit files before setup. A schedule with provider wake enabled may invoke its selected local agent.</p>
+              <div class="schedule-launcher-state" id="schedule-launcher-state" role="status">Loading installed timer state…</div>
+              <button type="button" data-schedule-launcher-preview disabled>Review timer setup</button>
+              <p class="schedule-launcher-status" data-schedule-launcher-status role="status" aria-live="polite"></p>
+              <section class="schedule-launcher-preview" data-schedule-launcher-review aria-live="polite" hidden>
+                <h4 data-schedule-launcher-title></h4>
+                <p data-schedule-launcher-effect></p>
+                <div data-schedule-launcher-schedules></div>
+                <div data-schedule-launcher-files></div>
+                <div class="schedule-launcher-actions"><button type="button" data-schedule-launcher-confirm hidden>Install and start timer</button><button type="button" class="quiet-action" data-schedule-launcher-edit hidden>Edit review</button></div>
+              </section>
+              <p id="schedule-launcher-action-status" class="schedule-launcher-action-status" role="status" aria-live="polite" hidden></p>
+            </details>
+          </article>
+          <article class="work-surface"><div class="panel-heading"><h3>Providers</h3><span>Configured capabilities</span></div><div id="provider-list" class="console-list"></div></article>
+          <article class="work-surface"><div class="panel-heading"><h3>Decisions</h3><span>Tracked project truth</span></div><div id="decision-list" class="decision-list"></div></article>
+          <article class="work-surface"><div class="panel-heading"><h3>Context locality</h3><span>Measured, never assumed</span></div><div id="context-detail" class="context-detail"></div></article>
+        </div>
+      </details>
+      <footer class="console-footer"><span>TORCH observes local project state. It does not expose private model reasoning.</span><span id="snapshot-provenance">Read-only snapshot</span></footer>
+    </div>
   </main>
 </body>
 </html>

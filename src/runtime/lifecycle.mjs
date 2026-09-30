@@ -5,7 +5,12 @@ import { fileURLToPath } from 'node:url';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
-import { validateRuntimeAdapter } from '../adapters/runtime.mjs';
+import { organizationGraphFromConfig } from '../kernel/organization.mjs';
+import { sha256 } from '../kernel/files.mjs';
+import {
+  costCeilingPlanIssues, profileCapabilityIssues, resolveLaunchPolicy, validateRuntimeAdapter,
+} from '../adapters/runtime.mjs';
+import { hierarchyOrder } from './hierarchy-order.mjs';
 
 const MCP_ENTRY = fileURLToPath(new URL('../mcp/server.mjs', import.meta.url));
 
@@ -21,13 +26,7 @@ function worktreesByArea(manifest) {
     .map((entry) => [entry.area, entry]));
 }
 
-function orderedAreas(roster) {
-  return [...roster.areas.filter((area) => area.id !== 'session-manager'),
-    ...roster.areas.filter((area) => area.id === 'session-manager')];
-}
-
-function selectedAreas(roster, only, blockers) {
-  const ordered = orderedAreas(roster);
+function selectedAreas(roster, only, blockers, ordered = roster.areas) {
   if (only === undefined) return ordered;
   const selected = Array.isArray(only)
     ? [...new Set(only.map((id) => typeof id === 'string' ? id.trim() : '').filter(Boolean))]
@@ -53,29 +52,118 @@ function adapterMap({ adapter, adapters } = {}) {
 
 function configuredRuntime(area, config) {
   if (area.id === 'session-manager') {
-    return area.runtime ?? config.session_manager?.runtime ?? config.runtimes?.default;
+    return config.session_manager?.runtime ?? area.runtime ?? config.runtimes?.default;
   }
-  return area.runtime ?? config.domains?.find((domain) => domain.id === area.id)?.runtime
+  return config.domains?.find((domain) => domain.id === area.id)?.runtime ?? area.runtime
     ?? config.runtimes?.default;
 }
 
-function promptPaths(stateRoot, worktree, areaId) {
+function configuredProfile(area, config, runtime) {
+  const runtimeConfig = config.runtimes?.[runtime] ?? {};
+  const configured = area.id === 'session-manager'
+    ? config.session_manager : config.domains?.find((domain) => domain.id === area.id);
+  const launchPolicy = resolveLaunchPolicy({
+    runtime, adapterDefaults: {}, runtimeConfig, identity: configured,
+  });
   return {
-    common: join(worktree.path, '.torch', 'prompts', 'COMMON.md'),
-    area: join(worktree.path, '.torch', 'prompts', `${areaId}.md`),
-    combined: join(stateRoot, 'sessions', 'prompts', `${areaId}.md`),
+    model: configured?.model ?? area.model
+      ?? runtimeConfig.model ?? null,
+    reasoning: configured?.reasoning ?? area.reasoning
+      ?? runtimeConfig.reasoning ?? null,
+    launchPolicy,
   };
 }
 
-function startupMessage(areaId, fresh) {
+function organizationContext(config, areaId) {
+  const graph = organizationGraphFromConfig(config);
+  const rolesById = new Map(graph.roles.map((role) => [role.id, role]));
+  const ownRoles = graph.roles.filter((role) => role.identity_id === areaId);
+  const ownRoleIds = new Set(ownRoles.map((role) => role.id));
+  const summarizeRole = (role) => ({
+    roleId: role.id, title: role.title, kind: role.kind,
+    responsibilities: role.responsibilities, authority: role.authority,
+    reportsTo: role.reports_to.map((roleId) => rolesById.get(roleId)?.title ?? roleId),
+  });
+  const directReports = new Map();
+  for (const role of graph.roles) {
+    if (role.identity_id === areaId || !role.reports_to.some((parent) => ownRoleIds.has(parent))) continue;
+    directReports.set(role.identity_id, summarizeRole(role));
+  }
+  const related = (field) => [...new Map(ownRoles.flatMap((role) => role[field]
+    .map((roleId) => rolesById.get(roleId)).filter(Boolean)
+    .filter((role) => role.identity_id !== areaId)
+    .map((role) => [role.identity_id, { identityId: role.identity_id, title: role.title }]))).values()]
+    .sort((left, right) => left.identityId.localeCompare(right.identityId));
+  return {
+    schema: graph.schema, revision: graph.revision, identityId: areaId,
+    roles: ownRoles.map(summarizeRole),
+    directReports: [...directReports.entries()].sort(([left], [right]) => left.localeCompare(right))
+      .map(([identityId, role]) => ({ identityId, ...role })),
+    coordinates: related('coordinates'), consultsWith: related('consults_with'),
+    implementationOwnership: graph.implementation_owners
+      .filter((owner) => owner.identity_id === areaId),
+  };
+}
+
+function managerCheckInInstructions(organization) {
+  if (!organization.directReports.length) return [];
+  return [
+    '## Scheduled manager check-ins',
+    '',
+    'Your active organization role has direct reports. TORCH queues a durable self-directed `manager-check-in` message on the configured schedule; the wake snapshot may be stale, and a currently active session may receive the message only in its durable inbox.',
+    '- At startup/resume, after seeing a `manager-check-in` message, and at the start of each new coordination cycle, read your inbox and call `torch_plan_manager_check_in` to refresh direct-report presence, blockers, messages, handoffs, and structured approval waits from current durable state.',
+    '- Follow up on each finding within your coordination authority. For a pending approval, decide only when you are the named approver; route owner- or peer-owned approvals to that approver and never decide for them.',
+    '- A check-in is observational: it does not assign work, transfer ownership, approve a request, create an identity, or authorize runtime/spending changes. Preserve direct peer communication.',
+    '',
+  ];
+}
+
+function promptPaths(stateRoot, repositoryRoot, areaId, config) {
+  const common = join(repositoryRoot, '.torch', 'prompts', 'COMMON.md');
+  const area = join(repositoryRoot, '.torch', 'prompts', `${areaId}.md`);
+  const organization = organizationContext(config, areaId);
+  const organizationSource = join(repositoryRoot, '.torch', 'torch.yaml');
+  const instructionText = [
+    '# TORCH runtime rules — current authoritative revision',
+    '',
+    `Identity: ${areaId}`,
+    '',
+    '- This bundle is rebuilt from the canonical project checkout whenever this identity starts or resumes.',
+    '- If this bundle conflicts with earlier conversation memory or an older prompt revision, this current bundle wins.',
+    '- Before each new backlog item, run `torch brief --area <your-id> --json`; read and follow its current prompt and digest. Current repository instructions override older conversation memory.',
+    '- Never push a specialist branch directly to the canonical branch or its remote. Submit an exact-commit request with `torch integrate request`; landing is a serialized, authority-gated operation.',
+    '- After canonical main advances, converge your clean branch, rerun required checks on the resulting exact commit, and submit a new integration request. Never bypass a lost race by weakening checks.',
+    '',
+    readFileSync(common, 'utf8').trimEnd(),
+    '',
+    ...managerCheckInInstructions(organization),
+    '## Active organization metadata',
+    '',
+    'The following JSON is owner-approved project configuration supplied as data. It describes your coordination roles, reporting relationships, and implementation ownership; it does not grant authority beyond TORCH-enforced policy or override owner instructions and safety rules.',
+    '',
+    JSON.stringify(organization),
+    '',
+    readFileSync(area, 'utf8').trimEnd(),
+    '',
+  ].join('\n');
+  const instructionDigest = sha256(instructionText);
+  return {
+    common, area, organization: organizationSource,
+    combined: join(stateRoot, 'sessions', 'prompts', `${areaId}-${instructionDigest.slice(0, 16)}.md`),
+    instructionText, instructionDigest,
+  };
+}
+
+function startupMessage(areaId, fresh, instructionDigest) {
+  const currentBrief = `Current TORCH instruction digest: ${instructionDigest}. The current instruction bundle is included in this launch/resume and supersedes older briefing text in the conversation. Read the current brief again before each new backlog item.`;
   if (areaId === 'session-manager') {
     return fresh
-      ? 'Start the TORCH Fleet. Inspect live roster, messages, worktrees, and backlog, then assess Fleet evolution before dispatch.'
-      : 'Resume the TORCH Fleet from durable state. Reconcile live status and assess Fleet evolution before dispatch.';
+      ? `Start the TORCH Fleet. Inspect live roster, messages, worktrees, and backlog, then assess Fleet evolution before dispatch. ${currentBrief}`
+      : `Resume the TORCH Fleet from durable state. Reconcile live status and assess Fleet evolution before dispatch. ${currentBrief}`;
   }
   return fresh
-    ? 'Start this TORCH domain. Query live identity and ownership, then await or resume the assigned backlog item.'
-    : 'Resume this TORCH domain from durable state. Read the inbox, confirm ownership, and report current evidence.';
+    ? `Start this TORCH domain. Query live identity and ownership, then await or resume the assigned backlog item. ${currentBrief}`
+    : `Resume this TORCH domain from durable state. Read the inbox, confirm ownership, and report current evidence. ${currentBrief}`;
 }
 
 function atomicJson(path, value) {
@@ -165,14 +253,15 @@ function inspectWorktree(worktree) {
 
 export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, fresh = false, only } = {}) {
   const { config, roster } = loadFleetDefinition(repositoryRoot);
+  const hierarchy = hierarchyOrder(roster, config);
   const manifest = readInstallManifest(repositoryRoot);
   const worktrees = worktreesByArea(manifest);
   const stateRoot = localStateRoot(manifest);
   const runtimes = adapterMap({ adapter, adapters });
-  const blockers = [];
+  const blockers = [...hierarchy.blockers];
   const actions = [];
 
-  for (const area of selectedAreas(roster, only, blockers)) {
+  for (const area of selectedAreas(roster, only, blockers, hierarchy.areas)) {
     const worktree = worktrees.get(area.id);
     if (!worktree) {
       blockers.push({ areaId: area.id, code: 'WORKTREE_MISSING' });
@@ -194,51 +283,75 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
     const identity = controlPlane.identity(area.id);
     const runtimeIntegration = runtimeAdapter.configure({
       repositoryRoot, areaId: area.id, mcpEntry: MCP_ENTRY,
+      projectId: manifest.projectId, stateRoot,
     });
-    if (runtimeIntegration?.mutationPerformed !== false || !runtimeIntegration?.mcp) {
+    if (runtimeIntegration?.mutationPerformed !== false
+      || !(runtimeIntegration?.mcp || runtimeIntegration?.integration)) {
       blockers.push({
         areaId: area.id, code: 'RUNTIME_CONFIGURATION_INVALID', runtime,
       });
       continue;
     }
-    const prompts = promptPaths(stateRoot, worktree, area.id);
+    const prompts = promptPaths(stateRoot, repositoryRoot, area.id, config);
+    const profile = configuredProfile(area, config, runtime);
+    const unsupported = profileCapabilityIssues(runtimeAdapter, profile);
+    if (unsupported.length) {
+      blockers.push({
+        areaId: area.id, code: 'RUNTIME_PROFILE_UNSUPPORTED', runtime,
+        adapter: runtimeAdapter.name, profile, capabilities: unsupported,
+      });
+      continue;
+    }
     const runtimeConfig = config.runtimes?.[runtime] ?? {};
-    const model = area.model ?? runtimeConfig.model;
+    const { model, reasoning, launchPolicy } = profile;
     const background = runtimeConfig.background ?? true;
     const shouldResume = !fresh && identity.runtime === runtime && Boolean(identity.runtimeSessionId);
     const runtimePlan = shouldResume
       ? runtimeAdapter.resumeSession({
         areaId: area.id, runtimeSessionId: identity.runtimeSessionId, worktree: worktree.path,
-        model, background, message: startupMessage(area.id, false), mcp: runtimeIntegration.mcp,
+        model, reasoning, launchPolicy, background,
+        message: startupMessage(area.id, false, prompts.instructionDigest),
+        promptFile: prompts.combined, instructionText: prompts.instructionText,
+        instructionDigest: prompts.instructionDigest, mcp: runtimeIntegration.mcp,
+        integration: runtimeIntegration.integration,
       })
       : runtimeAdapter.createSession({
         areaId: area.id, title: area.title, worktree: worktree.path, promptFile: prompts.combined,
-        firstMessage: startupMessage(area.id, true), model, background, mcp: runtimeIntegration.mcp,
+        firstMessage: startupMessage(area.id, true, prompts.instructionDigest),
+        model, reasoning, launchPolicy, background, mcp: runtimeIntegration.mcp,
+        integration: runtimeIntegration.integration,
       });
     actions.push({
       areaId: area.id, title: area.title, mode: shouldResume ? 'resume' : 'create',
+      managerIds: [...(hierarchy.managersByIdentity.get(area.id) ?? [])],
       runtime: runtimeAdapter.name, runtimeSessionId: runtimePlan.runtimeSessionId,
+      profile,
       requiresRuntimeIdCapture: runtimePlan.requiresRuntimeIdCapture ?? false,
       completionState: runtimePlan.completionState ?? 'starting',
       worktree: worktree.path, branch: worktree.branch, promptFile: prompts.combined,
-      promptSources: [prompts.common, prompts.area], mcp: runtimeIntegration.mcp,
+      promptSources: [prompts.common, prompts.area, prompts.organization], instructionText: prompts.instructionText,
+      instructionDigest: prompts.instructionDigest, mcp: runtimeIntegration.mcp ?? null,
+      integration: runtimeIntegration.integration ?? null,
       launch: runtimePlan.launch,
     });
   }
 
   return {
     action: 'fleet-up', projectId: manifest.projectId, stateRoot, fresh,
-    only: only ?? null, actions, blockers,
+    only: only ?? null, startupOrder: actions.map((action) => action.areaId), actions, blockers,
     canProceed: blockers.length === 0, mutationPerformed: false,
   };
 }
 
-export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adapters, fresh = false } = {}) {
+export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adapters, fresh = false, maxCostUsd } = {}) {
   const { config, roster } = loadFleetDefinition(repositoryRoot);
   const manifest = readInstallManifest(repositoryRoot);
   const worktree = worktreesByArea(manifest).get(areaId);
   const area = roster.areas.find((candidate) => candidate.id === areaId);
   const blockers = [];
+  if (maxCostUsd !== undefined && (!Number.isFinite(maxCostUsd) || maxCostUsd <= 0)) {
+    blockers.push({ areaId, code: 'RUNTIME_COST_CEILING_INVALID', maxUsd: maxCostUsd });
+  }
   if (!area) blockers.push({ areaId, code: 'FLEET_IDENTITY_MISSING' });
   if (!worktree) blockers.push({ areaId, code: 'WORKTREE_MISSING' });
   if (blockers.length) {
@@ -264,35 +377,81 @@ export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adap
   const identity = controlPlane.identity(area.id);
   const runtimeIntegration = runtimeAdapter.configure({
     repositoryRoot, areaId: area.id, mcpEntry: MCP_ENTRY,
+    projectId: manifest.projectId, stateRoot: localStateRoot(manifest),
   });
-  if (runtimeIntegration?.mutationPerformed !== false || !runtimeIntegration?.mcp) {
+  if (runtimeIntegration?.mutationPerformed !== false
+    || !(runtimeIntegration?.mcp || runtimeIntegration?.integration)) {
     return {
       action: 'area-up', projectId: manifest.projectId, areaId, fresh,
       actions: [], blockers: [{ areaId, code: 'RUNTIME_CONFIGURATION_INVALID', runtime }],
       canProceed: false, mutationPerformed: false,
     };
   }
-  const prompts = promptPaths(localStateRoot(manifest), worktree, area.id);
+  const prompts = promptPaths(localStateRoot(manifest), repositoryRoot, area.id, config);
+  const profile = configuredProfile(area, config, runtime);
+  const unsupported = profileCapabilityIssues(runtimeAdapter, profile);
+  if (unsupported.length) {
+    return {
+      action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+      actions: [], blockers: [{
+        areaId: area.id, code: 'RUNTIME_PROFILE_UNSUPPORTED', runtime,
+        adapter: runtimeAdapter.name, profile, capabilities: unsupported,
+      }], canProceed: false, mutationPerformed: false,
+    };
+  }
   const runtimeConfig = config.runtimes?.[runtime] ?? {};
-  const model = area.model ?? runtimeConfig.model;
+  const { model, reasoning, launchPolicy } = profile;
   const background = runtimeConfig.background ?? true;
   const shouldResume = !fresh && identity.runtime === runtime && Boolean(identity.runtimeSessionId);
+  const operation = shouldResume ? 'resumeSession' : 'createSession';
+  const declaredCostModes = runtimeAdapter.capabilities.perInvocationCostCeiling[operation];
+  if (maxCostUsd !== undefined && declaredCostModes.length === 0) {
+    return {
+      action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+      actions: [], blockers: [{
+        areaId, code: 'RUNTIME_COST_CEILING_UNSUPPORTED', runtime: runtimeAdapter.name,
+        operation, maxUsd: maxCostUsd, background,
+      }], canProceed: false, mutationPerformed: false,
+    };
+  }
   const runtimePlan = shouldResume
     ? runtimeAdapter.resumeSession({
       areaId: area.id, runtimeSessionId: identity.runtimeSessionId, worktree: worktree.path,
-      model, background, message: startupMessage(area.id, false), mcp: runtimeIntegration.mcp,
-    })
+      model, reasoning, launchPolicy, background,
+      message: startupMessage(area.id, false, prompts.instructionDigest),
+      promptFile: prompts.combined, instructionText: prompts.instructionText,
+      instructionDigest: prompts.instructionDigest, mcp: runtimeIntegration.mcp,
+        integration: runtimeIntegration.integration,
+        ...(maxCostUsd === undefined ? {} : { maxCostUsd }),
+      })
     : runtimeAdapter.createSession({
       areaId: area.id, title: area.title, worktree: worktree.path, promptFile: prompts.combined,
-      firstMessage: startupMessage(area.id, true), model, background, mcp: runtimeIntegration.mcp,
-    });
+      firstMessage: startupMessage(area.id, true, prompts.instructionDigest),
+      model, reasoning, launchPolicy, background, mcp: runtimeIntegration.mcp,
+        integration: runtimeIntegration.integration,
+        ...(maxCostUsd === undefined ? {} : { maxCostUsd }),
+      });
+  if (maxCostUsd !== undefined) {
+    const ceilingIssues = costCeilingPlanIssues(runtimeAdapter, operation, maxCostUsd, runtimePlan);
+    if (ceilingIssues.length) {
+      return {
+        action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+        actions: [], blockers: ceilingIssues.map((issue) => ({ areaId, ...issue, background })),
+        canProceed: false, mutationPerformed: false,
+      };
+    }
+  }
   const action = {
     areaId: area.id, title: area.title, mode: shouldResume ? 'resume' : 'create',
     runtime: runtimeAdapter.name, runtimeSessionId: runtimePlan.runtimeSessionId,
+    profile,
+    ...(maxCostUsd === undefined ? {} : { costCeiling: runtimePlan.costCeiling }),
     requiresRuntimeIdCapture: runtimePlan.requiresRuntimeIdCapture ?? false,
     completionState: runtimePlan.completionState ?? 'starting',
     worktree: worktree.path, branch: worktree.branch, promptFile: prompts.combined,
-    promptSources: [prompts.common, prompts.area], mcp: runtimeIntegration.mcp,
+    promptSources: [prompts.common, prompts.area, prompts.organization], instructionText: prompts.instructionText,
+    instructionDigest: prompts.instructionDigest, mcp: runtimeIntegration.mcp ?? null,
+    integration: runtimeIntegration.integration ?? null,
     launch: runtimePlan.launch,
   };
   return {
@@ -302,9 +461,8 @@ export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adap
 }
 
 function writeCombinedPrompt(action) {
-  const content = action.promptSources.map((path) => readFileSync(path, 'utf8').trimEnd()).join('\n\n');
   mkdirSync(dirname(action.promptFile), { recursive: true });
-  writeFileSync(action.promptFile, `${content}\n`, { encoding: 'utf8', mode: 0o600 });
+  writeFileSync(action.promptFile, action.instructionText, { encoding: 'utf8', mode: 0o600 });
 }
 
 export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
@@ -322,7 +480,7 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   const runtimes = adapterMap({ adapters });
   for (const action of plan.actions) {
     controlPlane.assertIdentity(action.areaId);
-    if (action.mode === 'create') writeCombinedPrompt(action);
+    writeCombinedPrompt(action);
     const result = executor({ ...action.launch, areaId: action.areaId, runtimeSessionId: action.runtimeSessionId });
     if (result?.status !== undefined && result.status !== 0) {
       controlPlane.reportStatus({
@@ -378,7 +536,8 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
 }
 
 export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
-  const { roster } = loadFleetDefinition(repositoryRoot);
+  const { config, roster } = loadFleetDefinition(repositoryRoot);
+  const hierarchy = hierarchyOrder(roster, config);
   const manifest = readInstallManifest(repositoryRoot);
   const worktrees = worktreesByArea(manifest);
   const runtimes = adapterMap({ adapters });
@@ -387,11 +546,12 @@ export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
   const hasTable = (name) => Boolean(database.prepare(
     "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
   ).get(name));
-  const actions = orderedAreas(roster).map((area) => {
+  const actions = [...hierarchy.areas].reverse().map((area) => {
     const identity = controlPlane.identity(area.id);
     const worktree = worktrees.get(area.id);
     return {
       areaId: area.id, state: identity.state, runtime: identity.runtime,
+      managerIds: [...(hierarchy.managersByIdentity.get(area.id) ?? [])],
       runtimeSessionId: identity.runtimeSessionId, currentTask: identity.currentTask,
       requiresRuntimeStop: identity.runtimeSessionId
         ? runtimes.get(identity.runtime)?.capabilities.stopSession !== false
@@ -402,9 +562,9 @@ export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
       worktree: worktree ? inspectWorktree(worktree) : null,
     };
   });
-  const blockers = actions
+  const blockers = [...hierarchy.blockers, ...actions
     .filter((action) => ['starting', 'working', 'stopping'].includes(action.state))
-    .map((action) => ({ areaId: action.areaId, state: action.state, code: 'ACTIVE_SESSION' }));
+    .map((action) => ({ areaId: action.areaId, state: action.state, code: 'ACTIVE_SESSION' }))];
   blockers.push(...actions
     .filter((action) => action.runtimeAdapterMissing)
     .map((action) => ({ areaId: action.areaId, runtime: action.runtime, code: 'RUNTIME_ADAPTER_MISSING' })));
@@ -435,6 +595,7 @@ export function planFleetDown({ repositoryRoot, controlPlane, adapters } = {}) {
   return {
     action: 'fleet-down', projectId: manifest.projectId, stateRoot: localStateRoot(manifest),
     resumeBriefPath: managerWorktree ? join(managerWorktree.path, '.torch', 'RESUME-BRIEF.md') : null,
+    shutdownOrder: actions.map((action) => action.areaId),
     actions, blockers, canProceed: blockers.length === 0, mutationPerformed: false,
   };
 }
@@ -452,14 +613,16 @@ export function stopFleet({ plan, controlPlane, stopRuntime, now = () => new Dat
   }
   const stopped = [];
   for (const action of plan.actions) {
-    if (action.areaId !== 'session-manager' && action.state !== 'offline') {
-      controlPlane.sendMessage({
-        sender: action.areaId, recipient: 'session-manager',
-        body: `Final status: ${action.state}. ${action.worktree
-          ? `Branch ${action.worktree.branch} at ${action.worktree.commit}; ${action.worktree.dirtyEntries.length} dirty entries.`
-          : 'No managed worktree.'}`,
-        references: { commit: action.worktree?.commit },
-      });
+    if (action.state !== 'offline') {
+      for (const managerId of action.managerIds ?? []) {
+        controlPlane.sendMessage({
+          sender: action.areaId, recipient: managerId,
+          body: `Final status: ${action.state}. ${action.worktree
+            ? `Branch ${action.worktree.branch} at ${action.worktree.commit}; ${action.worktree.dirtyEntries.length} dirty entries.`
+            : 'No managed worktree.'}`,
+          references: { commit: action.worktree?.commit },
+        });
+      }
     }
     if (!action.runtimeSessionId || action.state === 'offline' || action.requiresRuntimeStop === false) {
       if (action.state !== 'offline') {
@@ -509,23 +672,23 @@ export function captureFleet({ repositoryRoot, controlPlane, now = () => new Dat
 }
 
 export function createFleetBrief({ repositoryRoot, controlPlane, areaId } = {}) {
-  const { roster } = loadFleetDefinition(repositoryRoot);
+  const { config, roster } = loadFleetDefinition(repositoryRoot);
+  const manifest = readInstallManifest(repositoryRoot);
   const selected = areaId
     ? roster.areas.filter((area) => area.id === areaId)
-    : orderedAreas(roster);
+    : hierarchyOrder(roster, config).areas;
   if (!selected.length) {
     throw new TorchError(`Unknown Fleet identity: ${areaId}`, { code: 'UNKNOWN_FLEET_IDENTITY' });
   }
-  const commonPath = join(repositoryRoot, '.torch', 'prompts', 'COMMON.md');
-  const common = readFileSync(commonPath, 'utf8').trimEnd();
   return {
     schema: 'torch.dev/fleet-brief/v1alpha1', mutationPerformed: false,
     areas: selected.map((area) => {
-      const promptPath = join(repositoryRoot, '.torch', 'prompts', `${area.id}.md`);
+      const prompts = promptPaths(localStateRoot(manifest), repositoryRoot, area.id, config);
       return {
         areaId: area.id, title: area.title, identity: controlPlane.identity(area.id),
-        promptSources: [commonPath, promptPath],
-        prompt: `${common}\n\n${readFileSync(promptPath, 'utf8').trimEnd()}\n`,
+        promptSources: [prompts.common, prompts.area, prompts.organization],
+        instructionDigest: prompts.instructionDigest,
+        prompt: prompts.instructionText,
       };
     }),
   };

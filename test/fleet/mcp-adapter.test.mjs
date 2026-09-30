@@ -62,6 +62,39 @@ test('SCN-mcp-parity: every specified MCP tool exists and invokes the same durab
   control.close();
 });
 
+test('SCN-approval-request: named AI approver receives a durable request and only that approver can decide', () => {
+  const context = fixture();
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  const requester = createTorchToolset(control, { actorId: context.worker });
+  const request = requester.get('torch_request_approval').invoke({
+    approver: 'session-manager', title: 'Review API boundary', summary: 'Confirm this interface before implementation.',
+    task: 'TASK-APPROVAL', evidence: 'docs/api.md',
+  });
+  assert.equal(request.status, 'pending');
+  assert.equal(requester.get('torch_list_approvals').invoke({}).approvals[0].id, request.id);
+  assert.throws(
+    () => requester.get('torch_decide_approval').invoke({ approval_id: request.id, decision: 'approved' }),
+    (error) => error.code === 'APPROVER_AUTHORITY_REQUIRED',
+  );
+  const manager = createTorchToolset(control, { actorId: 'session-manager' });
+  const decided = manager.get('torch_decide_approval').invoke({
+    approval_id: request.id, decision: 'approved', expected_revision: request.revision, note: 'Contract reviewed.',
+  });
+  assert.equal(decided.status, 'approved');
+  assert.equal(decided.decidedBy, 'session-manager');
+  assert.equal(control.readMessages({ recipient: context.worker }).some((message) =>
+    message.kind === 'approval-decision' && message.references.task === 'TASK-APPROVAL'), true);
+  assert.throws(
+    () => manager.get('torch_decide_approval').invoke({ approval_id: request.id, decision: 'rejected' }),
+    (error) => error.code === 'APPROVAL_NOT_PENDING',
+  );
+  assert.throws(
+    () => requester.get('torch_list_approvals').invoke({ actor_id: 'owner' }),
+    (error) => error.code === 'UNKNOWN_FLEET_IDENTITY',
+  );
+  control.close();
+});
+
 test('SCN-claude-adapter: planning is deterministic, capabilities are honest, and no process launches without authority', () => {
   const context = fixture();
   const calls = [];
@@ -147,6 +180,10 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
     executable: '/opt/codex/bin/codex',
     runner: (command, args) => { calls.push({ command, args }); return { status: 1, stderr: 'not attached' }; },
   });
+  assert.deepEqual(adapter.configuration, {
+    model: 'gpt-6-luna', reasoning: 'high',
+    launchPolicy: { approval: 'approve-for-me' },
+  });
   const configuration = adapter.configure({
     repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER,
   });
@@ -165,6 +202,10 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
   assert.deepEqual(launch.launch.args.slice(0, 3), ['--cd', '/tmp/codex-core', '--approve-for-me']);
   assert.equal(launch.launch.args.includes('--sandbox'), false);
   assert.equal(launch.launch.args.indexOf('--approve-for-me') < launch.launch.args.indexOf('exec'), true);
+  assert.equal(launch.launch.args.includes('--model'), true);
+  assert.equal(launch.launch.args.includes('gpt-test'), true);
+  assert.equal(launch.launch.args.includes('model_reasoning_effort="high"'), true);
+  assert.equal(launch.launch.args.indexOf('model_reasoning_effort="high"') < launch.launch.args.indexOf('exec'), true);
   assert.deepEqual(launch.launch.args.slice(launch.launch.args.indexOf('exec'), launch.launch.args.indexOf('exec') + 2), [
     'exec', '--json',
   ]);
@@ -186,6 +227,7 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
   assert.equal(resumed.launch.args.indexOf('exec') < resumed.launch.args.indexOf('resume'), true);
   assert.equal(resumed.launch.args.indexOf('resume') < resumed.launch.args.indexOf('--json'), true);
   assert.equal(resumed.launch.args.includes('codex-thread-123'), true);
+  assert.equal(resumed.launch.args.includes('model_reasoning_effort="high"'), true);
   assert.equal(resumed.launch.args.some((arg) => arg.includes(MCP_SERVER)), true);
 
   const delivery = adapter.sendOrSteer({

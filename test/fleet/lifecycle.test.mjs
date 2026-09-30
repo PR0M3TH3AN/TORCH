@@ -11,13 +11,14 @@ import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
+import { defaultManagerCheckInSchedule, organizationGraphFromConfig } from '../../src/kernel/organization.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { ResourceService } from '../../src/resources/service.mjs';
 import {
-  detachFleet, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
+  createFleetBrief, detachFleet, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
 } from '../../src/runtime/lifecycle.mjs';
 
-function fleetFixture({ workerRuntime = 'claude' } = {}) {
+function fleetFixture({ workerRuntime = 'claude', hierarchy = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-lifecycle-'));
   execFileSync('git', ['init', '-b', 'main', root]);
   execFileSync('git', ['-C', root, 'config', 'user.email', 'torch-test@example.invalid']);
@@ -27,6 +28,12 @@ function fleetFixture({ workerRuntime = 'claude' } = {}) {
   execFileSync('git', ['-C', root, 'commit', '-m', 'fixture']);
   let repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  if (hierarchy) proposal.domains.push({
+    id: 'runtime-lead', title: 'Runtime Lead', kind: 'cross-cutting',
+    scope: ['coordinate runtime integration across specialists'], not_scope: [],
+    owned_paths: ['docs/**'], shared_paths: [], neighbours: [], required_checks: [], resources: [],
+    runtime: 'claude', evidence: ['app.js'],
+  });
   proposal.domains[0].runtime = workerRuntime;
   proposal.domains[0].resources = ['browser'];
   proposal.resources = [{ id: 'browser', capacity: 1, queue: 'fifo', max_hold_seconds: 300 }];
@@ -35,25 +42,60 @@ function fleetFixture({ workerRuntime = 'claude' } = {}) {
   };
   const env = { ...process.env, XDG_DATA_HOME: join(tmpdir(), `${basename(root)}-state`) };
   installProject({ repository, proposal, env, projectId: 'lifecycle-fixture' });
+  if (hierarchy) {
+    const configPath = join(root, '.torch', 'torch.yaml');
+    const config = JSON.parse(readFileSync(configPath, 'utf8'));
+    config.organization = {
+      schema: 'torch.dev/organization/v1alpha1', revision: 1, owner_facing_role: 'session-manager',
+      roles: [
+        {
+          id: 'owner', title: 'Project Owner', kind: 'owner', identity_id: 'owner',
+          responsibilities: ['Own project direction.'], authority: ['approve-organization', 'approve-release'],
+          coordinates: [], reports_to: [], consults_with: [],
+        },
+        {
+          id: 'session-manager', title: 'Session Manager', kind: 'owner-facing', identity_id: 'session-manager',
+          responsibilities: ['Operate the fleet.'], authority: ['receive-owner-requests', 'operate-fleet'],
+          coordinates: ['runtime-lead'], reports_to: [], consults_with: [],
+        },
+        {
+          id: 'runtime-lead', title: 'Runtime Lead', kind: 'domain-coordination', identity_id: 'runtime-lead',
+          responsibilities: ['Coordinate runtime integration.'], authority: ['coordinate-domains'],
+          coordinates: proposal.domains.filter((domain) => domain.id !== 'runtime-lead').map((domain) => domain.id),
+          reports_to: ['session-manager'], consults_with: [],
+        },
+        ...proposal.domains.filter((domain) => domain.id !== 'runtime-lead').map((domain) => ({
+          id: domain.id, title: domain.title, kind: 'specialist', identity_id: domain.id,
+          responsibilities: domain.scope, authority: ['own-implementation'], coordinates: [],
+          reports_to: ['runtime-lead'], consults_with: [],
+        })),
+      ],
+      implementation_owners: [],
+    };
+    config.schedules.push(defaultManagerCheckInSchedule('runtime-lead'));
+    writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  }
   execFileSync('git', ['-C', root, 'add', '.torch']);
   execFileSync('git', ['-C', root, 'commit', '-m', 'install torch']);
   repository = inspectRepository(root);
   const worktreeParent = join(tmpdir(), `${basename(root)}-worktrees`);
   createWorktrees({ repository, parentOverride: worktreeParent });
-  return { root, env, worker: proposal.domains[0].id };
+  return { root, env, worker: proposal.domains[0].id, middleManager: hierarchy ? 'runtime-lead' : null };
 }
 
-test('SCN-fleet-fresh-resume: workers start before manager and stable identities resume captured runtime sessions', () => {
+test('SCN-fleet-fresh-resume: identities resume captured runtime sessions and wind down safely', () => {
   const fixture = fleetFixture();
   const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
   const adapter = createClaudeAdapter({ executable: 'claude' });
   const adapters = new Map([['claude', adapter]]);
   const fresh = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true });
-  assert.equal(fresh.actions.at(-1).areaId, 'session-manager');
+  assert.equal(fresh.actions[0].areaId, 'session-manager');
+  assert.equal(fresh.actions[1].managerIds.includes('session-manager'), true);
   assert.equal(fresh.actions.every((action) => action.mode === 'create'), true);
   assert.equal(fresh.actions.every((action) => action.mcp.args.includes(action.areaId)), true);
   assert.equal(fresh.actions.every((action) => action.launch.args.includes('--mcp-config')), true);
-  assert.match(fresh.actions.at(-1).launch.args.join(' '), /assess Fleet evolution/);
+  assert.match(fresh.actions[0].launch.args.join(' '), /assess Fleet evolution/);
+  assert.deepEqual(fresh.startupOrder, fresh.actions.map((action) => action.areaId));
   assert.equal(fresh.mutationPerformed, false);
 
   const launches = [];
@@ -64,7 +106,7 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
       return { status: 0, stdout: `runtime-${launches.length}\n` };
     },
   });
-  assert.equal(started.started.at(-1).areaId, 'session-manager');
+  assert.equal(started.started[0].areaId, 'session-manager');
   assert.equal(launches.length, fresh.actions.length);
   assert.equal(control.identity(fixture.worker).runtimeSessionId.startsWith('runtime-'), true);
   assert.equal(existsSync(fresh.actions[0].promptFile), true);
@@ -111,18 +153,135 @@ test('SCN-fleet-fresh-resume: workers start before manager and stable identities
   control.close();
 });
 
-test('SCN-fleet-wind-down-safety: active work blocks runtime shutdown and failed startup prevents manager launch', () => {
+test('SCN-hierarchy-aware-start-stop: managers start before reports and shutdown status routes bottom-up', () => {
+  const fixture = fleetFixture({ hierarchy: true });
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const adapter = createClaudeAdapter({ executable: 'claude' });
+  const adapters = new Map([['claude', adapter]]);
+  const up = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true });
+  assert.equal(up.canProceed, true, JSON.stringify(up.blockers));
+  assert.deepEqual(up.startupOrder, ['session-manager', 'runtime-lead', fixture.worker]);
+  assert.deepEqual(up.actions.find((action) => action.areaId === fixture.worker).managerIds, ['runtime-lead']);
+  assert.deepEqual(up.actions.find((action) => action.areaId === 'runtime-lead').managerIds, ['session-manager']);
+  const middleManager = up.actions.find((action) => action.areaId === 'runtime-lead');
+  const specialist = up.actions.find((action) => action.areaId === fixture.worker);
+  assert.match(middleManager.instructionText, /Scheduled manager check-ins/);
+  assert.match(middleManager.instructionText, /torch_plan_manager_check_in/);
+  assert.match(middleManager.instructionText, /only when you are the named approver/);
+  assert.doesNotMatch(specialist.instructionText, /Scheduled manager check-ins/);
+
+  const launches = [];
+  const started = startFleet({
+    plan: up, controlPlane: control, adapters,
+    executor: (launch) => ({ status: 0, stdout: `session-${launches.push(launch)}\n` }),
+  });
+  assert.deepEqual(started.started.map((action) => action.areaId), up.startupOrder);
+  for (const areaId of ['session-manager', 'runtime-lead', fixture.worker]) {
+    control.reportStatus({ areaId, state: 'idle', summary: 'Ready for wind-down.' });
+  }
+
+  const down = planFleetDown({ repositoryRoot: fixture.root, controlPlane: control, adapters });
+  assert.equal(down.canProceed, true, JSON.stringify(down.blockers));
+  assert.deepEqual(down.shutdownOrder, [fixture.worker, 'runtime-lead', 'session-manager']);
+  const stopped = stopFleet({
+    plan: down, controlPlane: control, stopRuntime: () => ({ stopped: true }),
+  });
+  assert.deepEqual(stopped.stopped.map((action) => action.areaId), down.shutdownOrder);
+  assert.equal(control.readMessages({ recipient: 'runtime-lead' }).some((message) =>
+    message.sender === fixture.worker && message.body.startsWith('Final status:')), true);
+  assert.equal(control.readMessages({ recipient: 'session-manager' }).some((message) =>
+    message.sender === 'runtime-lead' && message.body.startsWith('Final status:')), true);
+  control.close();
+});
+
+test('SCN-hierarchy-startup-cycle: identity-level reporting cycles block launch and shutdown plans', () => {
+  const fixture = fleetFixture({ hierarchy: true });
+  const configPath = join(fixture.root, '.torch', 'torch.yaml');
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  config.organization.roles.push({
+    id: 'session-manager-secondary', title: 'Session Manager Operations', kind: 'fleet-operations',
+    identity_id: 'session-manager', responsibilities: ['Coordinate reporting handoffs.'],
+    authority: ['operate-fleet'], coordinates: [], reports_to: ['runtime-lead'], consults_with: [],
+  });
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const up = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter: createClaudeAdapter(), fresh: true });
+  assert.equal(up.canProceed, false);
+  assert.equal(up.blockers.some((blocker) => blocker.code === 'FLEET_STARTUP_IDENTITY_CYCLE'), true);
+  let launched = false;
+  assert.throws(() => startFleet({
+    plan: up, controlPlane: control, executor: () => { launched = true; return { status: 0 }; },
+  }), (error) => error.code === 'FLEET_NOT_READY_TO_START');
+  assert.equal(launched, false);
+  const down = planFleetDown({ repositoryRoot: fixture.root, controlPlane: control });
+  assert.equal(down.canProceed, false);
+  assert.equal(down.blockers.some((blocker) => blocker.code === 'FLEET_STARTUP_IDENTITY_CYCLE'), true);
+  control.close();
+});
+
+test('SCN-current-instructions-on-resume: an offline identity receives current canonical rules, not stale worktree copies', () => {
+  const fixture = fleetFixture();
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const adapter = createClaudeAdapter();
+  const adapters = new Map([['claude', adapter]]);
+  const initial = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true });
+  const initialManager = initial.actions.find((action) => action.areaId === 'session-manager');
+  assert.match(initialManager.instructionText, /Active organization metadata/);
+  assert.match(initialManager.instructionText, new RegExp(`"identityId":"${fixture.worker}"`));
+  assert.match(initialManager.instructionText, /"directReports":\[/);
+  startFleet({ plan: initial, controlPlane: control, adapters, executor: () => ({ status: 0, stdout: 'session-id\n' }) });
+  const initialWorker = initial.actions.find((action) => action.areaId === fixture.worker);
+  const workerPath = initialWorker.worktree;
+  const canonicalCommon = join(fixture.root, '.torch', 'prompts', 'COMMON.md');
+  const canonicalArea = join(fixture.root, '.torch', 'prompts', `${fixture.worker}.md`);
+  writeFileSync(canonicalCommon, '# Current rules\n\nNever land two changes in parallel.\n');
+  writeFileSync(canonicalArea, '# Current ownership\n\nResume the active task from the canonical brief.\n');
+  writeFileSync(join(workerPath, '.torch', 'prompts', 'COMMON.md'), '# Stale worktree copy\n\nOld landing wording.\n');
+  writeFileSync(join(workerPath, '.torch', 'prompts', `${fixture.worker}.md`), '# Stale domain copy\n\nOld task instruction.\n');
+
+  const configPath = join(fixture.root, '.torch', 'torch.yaml');
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  const graph = organizationGraphFromConfig(config);
+  graph.revision += 1;
+  graph.roles.find((role) => role.kind === 'specialist' && role.identity_id === fixture.worker)
+    .responsibilities = ['Use the revised management handoff contract.'];
+  config.organization = graph;
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const resumed = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: false });
+  const worker = resumed.actions.find((action) => action.areaId === fixture.worker);
+  assert.notEqual(worker.instructionDigest, initialWorker.instructionDigest);
+  assert.match(worker.instructionText, /Use the revised management handoff contract/);
+  assert.match(worker.instructionText, /Never land two changes in parallel/);
+  assert.match(worker.instructionText, /Resume the active task from the canonical brief/);
+  assert.doesNotMatch(worker.instructionText, /Stale worktree copy|Old task instruction/);
+  assert.ok(worker.launch.args.includes('--append-system-prompt-file'));
+  assert.ok(worker.launch.args.includes(worker.promptFile));
+  const brief = createFleetBrief({ repositoryRoot: fixture.root, controlPlane: control, areaId: fixture.worker }).areas[0];
+  assert.equal(brief.instructionDigest, worker.instructionDigest);
+  assert.match(brief.prompt, /TORCH runtime rules/);
+
+  startFleet({ plan: resumed, controlPlane: control, adapters, executor: () => ({ status: 0 }) });
+  assert.equal(readFileSync(worker.promptFile, 'utf8'), worker.instructionText);
+  assert.equal(control.identity(fixture.worker).runtimeSessionId, 'session-id');
+  control.close();
+});
+
+test('SCN-fleet-wind-down-safety: active work blocks shutdown and a manager remains available after partial startup', () => {
   const fixture = fleetFixture();
   const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
   const adapter = createClaudeAdapter();
   const plan = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapter, fresh: true });
   assert.throws(
     () => startFleet({
-      plan, controlPlane: control,
-      executor: (launch) => ({ status: launch.areaId === fixture.worker ? 1 : 0, stderr: 'launch failed' }),
+      plan, controlPlane: control, adapters: new Map([['claude', adapter]]),
+      executor: (launch) => launch.areaId === fixture.worker
+        ? { status: 1, stderr: 'launch failed' }
+        : { status: 0, stdout: 'manager-session\n' },
     }),
     (error) => error.code === 'FLEET_START_FAILED'
-      && control.identity('session-manager').state === 'offline',
+      && error.details.started.some((action) => action.areaId === 'session-manager')
+      && control.identity('session-manager').runtimeSessionId === 'manager-session',
   );
   control.reportStatus({ areaId: fixture.worker, state: 'working', summary: 'Unfinished change.' });
   const resources = new ResourceService({ repositoryRoot: fixture.root, controlPlane: control });
@@ -157,15 +316,17 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
     repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true,
   });
   assert.equal(plan.canProceed, true);
-  assert.equal(plan.actions[0].areaId, fixture.worker);
-  assert.equal(plan.actions[0].runtime, 'codex');
-  assert.equal(plan.actions[0].launch.args.includes('exec'), true);
-  assert.equal(plan.actions[0].launch.args.some((arg) => arg.includes('mcp_servers.')), true);
-  assert.equal(plan.actions[0].launch.args.some((arg) => arg.includes(fixture.worker)), true);
-  assert.equal(plan.actions.at(-1).runtime, 'claude');
-  assert.equal(plan.actions.at(-1).launch.args.includes('--mcp-config'), true);
-  assert.equal(plan.actions.at(-1).runtimeSessionId, null);
-  assert.equal(plan.actions.at(-1).requiresRuntimeIdCapture, true);
+  const workerAction = plan.actions.find((action) => action.areaId === fixture.worker);
+  const managerAction = plan.actions.find((action) => action.areaId === 'session-manager');
+  assert.equal(plan.actions[0].areaId, 'session-manager');
+  assert.equal(workerAction.runtime, 'codex');
+  assert.equal(workerAction.launch.args.includes('exec'), true);
+  assert.equal(workerAction.launch.args.some((arg) => arg.includes('mcp_servers.')), true);
+  assert.equal(workerAction.launch.args.some((arg) => arg.includes(fixture.worker)), true);
+  assert.equal(managerAction.runtime, 'claude');
+  assert.equal(managerAction.launch.args.includes('--mcp-config'), true);
+  assert.equal(managerAction.runtimeSessionId, null);
+  assert.equal(managerAction.requiresRuntimeIdCapture, true);
 
   const started = startFleet({
     plan, controlPlane: control, adapters,
@@ -174,12 +335,19 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
       : { status: 0, stdout: 'claude-manager-1\n' },
   });
   assert.deepEqual(started.started.map((item) => item.runtimeSessionId), [
-    'codex-worker-1', 'claude-manager-1',
+    'claude-manager-1', 'codex-worker-1',
   ]);
   assert.equal(control.identity(fixture.worker).runtime, 'codex');
   assert.equal(control.identity(fixture.worker).state, 'idle');
   assert.equal(control.identity('session-manager').runtime, 'claude');
   assert.equal(control.identity('session-manager').state, 'starting');
+
+  const resumed = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: false });
+  const codexResume = resumed.actions.find((action) => action.areaId === fixture.worker);
+  assert.equal(codexResume.mode, 'resume');
+  assert.match(codexResume.launch.args.at(-1), /AUTHORITATIVE CURRENT TORCH INSTRUCTIONS/);
+  assert.match(codexResume.launch.args.at(-1), new RegExp(codexResume.instructionDigest));
+  assert.match(codexResume.launch.args.at(-1), /Never push a specialist branch directly/);
 
   control.reportStatus({ areaId: 'session-manager', state: 'idle', summary: 'Ready to stop.' });
   const down = planFleetDown({ repositoryRoot: fixture.root, controlPlane: control, adapters });

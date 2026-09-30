@@ -3,19 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="TORCH turns one Git repository into a coordinated team of persistent AI engineering specialists.">
-  <title>TORCH — one repository, a coordinated AI engineering team</title>
+  <meta name="description" content="TORCH studies your project, proposes a fit-for-purpose AI fleet, and coordinates sessions across Codex, Claude, Pi, and other local runtimes.">
+  <meta name="theme-color" content="#101a22">
+  <title>TORCH — an AI fleet shaped by your project</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/svg+xml" href="/torch-mark.svg">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="masthead">
-    <a class="wordmark" href="/" aria-label="TORCH home"><span class="mark">T</span> TORCH</a>
+    <a class="wordmark" href="/" aria-label="TORCH home"><img src="/torch-mark.svg" alt="" width="38" height="38"> TORCH</a>
     <nav aria-label="Primary">
-      <a href="#system">System</a>
+      <a href="#system">How it works</a>
+      <a href="/console.html?demo=1" target="_blank" rel="noopener">View dashboard demo</a>
       <a href="#evidence">Evidence</a>
-      <a href="#start">Start</a>
+      <a href="#start">Get started</a>
       <a href="/console">Fleet Console</a>
     </nav>
   </header>
@@ -23,92 +26,92 @@
   <main id="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="status-line"><span></span> Portable fleet alpha</p>
-        <h1 id="hero-title">One repository.<br>A coordinated AI engineering team.</h1>
-        <p class="lede">TORCH studies your code and project specification, proposes durable areas of responsibility, and gives each specialist its own branch, worktree, context, and route back to main.</p>
+        <p class="status-line"><span></span> A project-aware AI fleet</p>
+        <h1 id="hero-title">An AI team shaped by your project.</h1>
+        <p class="lede">TORCH studies your repository and goals, then proposes the sessions your work needs. Choose Codex, Claude, Pi, or another local runtime for each role—and keep the team coordinated as the project changes.</p>
         <div class="hero-actions">
-          <a class="primary-action" href="#start">Design a fleet</a>
+          <a class="primary-action" href="#start">See how to start</a>
           <a class="text-action" href="https://github.com/PR0M3TH3AN/TORCH">Read the source</a>
         </div>
       </div>
 
-      <div class="dispatch" aria-label="Interactive TORCH routing board">
+      <div class="dispatch" aria-label="Interactive TORCH workflow">
         <div class="dispatch-head">
-          <p>Example fleet · Request CR-184</p>
-          <button id="route-toggle" type="button" aria-pressed="false">Run the route</button>
+          <p>From project brief to checked work</p>
+          <button id="route-toggle" type="button" aria-pressed="false">Show the flow</button>
         </div>
         <ol class="route" id="route">
-          <li class="route-step is-ready" data-step="0"><span class="node">A</span><div><strong>Owner request</strong><small>Change terrain streaming without weakening frame checks.</small></div></li>
-          <li class="route-step" data-step="1"><span class="node">S</span><div><strong>Session Manager</strong><small>Routes ownership and establishes acceptance.</small></div></li>
-          <li class="route-step split" data-step="2"><span class="node">T</span><div><strong>Terrain specialist</strong><small>Works in its persistent domain context.</small></div><span class="peer">QA peer</span></li>
-          <li class="route-step" data-step="3"><span class="node">✓</span><div><strong>Exact-commit checks</strong><small>Receipts bind evidence to the measured SHA.</small></div></li>
-          <li class="route-step" data-step="4"><span class="node">M</span><div><strong>Controlled main</strong><small>Authorized fast-forward after convergence.</small></div></li>
+          <li class="route-step is-ready" data-step="0"><span class="node">P</span><div><strong>Project + specification</strong><small>TORCH maps code, tests, constraints, and stated goals.</small></div></li>
+          <li class="route-step" data-step="1"><span class="node">T</span><div><strong>Proposed team</strong><small>You review domains, responsibilities, and reporting lines.</small></div></li>
+          <li class="route-step split" data-step="2"><span class="node">AI</span><div><strong>Your runtime for each session</strong><small>Codex, Claude, Pi, or a trusted local adapter.</small></div><span class="peer">Direct peer links</span></li>
+          <li class="route-step" data-step="3"><span class="node">↔</span><div><strong>Shared coordination</strong><small>Sessions exchange messages, status, tasks, and evidence.</small></div></li>
+          <li class="route-step" data-step="4"><span class="node">✓</span><div><strong>Checked integration</strong><small>Work converges through an authorized, serialized path.</small></div></li>
         </ol>
-        <p class="route-readout" id="route-readout" aria-live="polite">Ready at owner request.</p>
+        <p class="route-readout" id="route-readout" aria-live="polite">Start with the repository. The proposed fleet stays yours to shape.</p>
       </div>
     </section>
 
     <section class="principle-strip" aria-label="TORCH principles">
-      <p>Git required</p><p>GitHub optional</p><p>Provider independent</p><p>Local first</p><p>Human approved</p>
+      <p>Built around your repo</p><p>Codex · Claude · Pi</p><p>Choose per session</p><p>Local-first control</p><p>Owner-shaped fleet</p>
     </section>
 
     <section class="system-section" id="system">
       <div class="section-intro">
-        <h2>The project decides the team.</h2>
-        <p>TORCH does not install a catalog of generic agents. It reads the repository and the specifications you select, then produces a pending organization for you to split, merge, rename, or reject.</p>
+        <h2>The project shapes the organization.</h2>
+        <p>TORCH does not start from a fixed roster. It studies the repository and specifications you choose, then proposes a team you can split, merge, rename, or reject before anything is installed.</p>
       </div>
       <div class="blueprint">
         <article>
-          <span class="blueprint-index">Input</span>
-          <h3>Code and intent</h3>
-          <p>Architecture, tests, operations, scarce resources, and external Markdown specifications become evidence—not instructions to execute.</p>
+          <span class="blueprint-index">Understand</span>
+          <h3>Read the real project</h3>
+          <p>Architecture, tests, working practices, shared files, and your selected specifications become evidence for a proposed fleet.</p>
         </article>
         <article>
-          <span class="blueprint-index">Design</span>
-          <h3>Explicit boundaries</h3>
-          <p>Every domain receives scope, exclusions, owned paths, neighbors, checks, runtime policy, and collision rules.</p>
+          <span class="blueprint-index">Coordinate</span>
+          <h3>Give each session a lane</h3>
+          <p>Roles get explicit scope, exclusions, neighbors, checks, and worktree boundaries. Each session can use the runtime and model that fit its job.</p>
         </article>
         <article>
-          <span class="blueprint-index">Operate</span>
-          <h3>Persistent specialists</h3>
-          <p>Stable identities survive runtime sessions. When a durable new boundary emerges, the manager can propose another specialist—but only owner approval wires it into the Fleet.</p>
+          <span class="blueprint-index">Grow</span>
+          <h3>Change shape when needed</h3>
+          <p>As coordination grows, TORCH can recommend a lead or new specialist when there is real integration work to own. You review the evidence and approve every organization change.</p>
         </article>
       </div>
     </section>
 
     <section class="context-section">
       <div class="context-diagram" aria-hidden="true">
-        <div class="wide-context">general session<div class="churn"></div><div class="churn second"></div><div class="churn third"></div></div>
+        <div class="wide-context">one roaming session<div class="churn"></div><div class="churn second"></div><div class="churn third"></div></div>
         <div class="versus">versus</div>
-        <div class="focused-context"><span>terrain</span><span>runtime</span><span>verification</span></div>
+        <div class="focused-context"><span>domain context</span><span>peer coordination</span><span>project evidence</span></div>
       </div>
       <div>
-        <h2>Keep useful context hot.</h2>
-        <p>A specialist can retain the working set for one coherent area instead of repeatedly loading unrelated project history. TORCH measures cache reads, cache creation, compactions, resumed prompt size, cost, and verified outcomes before calling that an efficiency win.</p>
-        <p class="truth-note">Context savings are a measured hypothesis, not a marketing claim.</p>
+        <h2>Keep the right context close to the work.</h2>
+        <p>Each long-lived session can focus on a coherent part of the project, while durable messages and shared records connect it to the rest of the fleet. The aim is less context thrash—not a set of agents trapped in silos.</p>
+        <p class="truth-note">Lower cache and context costs are a hypothesis TORCH still needs to measure.</p>
       </div>
     </section>
 
     <section class="evidence-section" id="evidence">
       <div class="section-intro">
-        <h2>Proof has a commit.</h2>
-        <p>TORCH distinguishes implementation from qualification. Green output without the right scenario, authority, and SHA is not proof.</p>
+        <h2>Trust comes from evidence.</h2>
+        <p>TORCH tracks what passed, what is still a live gate, and which exact change the evidence covers. A working local scenario is not the same as a qualified production fleet.</p>
       </div>
       <div class="ledger" role="table" aria-label="Current TORCH qualification ledger">
         <div class="ledger-row ledger-head" role="row"><span role="columnheader">Capability</span><span role="columnheader">Current evidence</span><span role="columnheader">State</span></div>
-        <div class="ledger-row" role="row"><span data-label="Capability">Portable kernel and reversal</span><span data-label="Evidence">Scenario tested</span><strong class="proven" data-label="State">Proven locally</strong></div>
-        <div class="ledger-row" role="row"><span data-label="Capability">Durable control plane and backlog</span><span data-label="Evidence">SQLite + tracked tasks</span><strong class="proven" data-label="State">Proven locally</strong></div>
-        <div class="ledger-row" role="row"><span data-label="Capability">Checks, resources, integration</span><span data-label="Evidence">Exact-SHA lifecycle</span><strong class="proven" data-label="State">Proven locally</strong></div>
-        <div class="ledger-row" role="row"><span data-label="Capability">Claude and Codex coordination</span><span data-label="Evidence">Virtualized adapters</span><strong class="pending" data-label="State">Live gate open</strong></div>
-        <div class="ledger-row" role="row"><span data-label="Capability">Self-managed successor</span><span data-label="Evidence">Isolated build + activation</span><strong class="pending" data-label="State">Stable boot open</strong></div>
-        <div class="ledger-row" role="row"><span data-label="Capability">COMBATRIG migration</span><span data-label="Evidence">33 areas, 570 tasks inventoried</span><strong class="pending" data-label="State">Boundaries open</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Project analysis and fleet design</span><span data-label="Evidence">Repository/spec scenarios</span><strong class="proven" data-label="State">Proven locally</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Shared messages, status, and tasks</span><span data-label="Evidence">Durable local control plane</span><strong class="proven" data-label="State">Proven locally</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Safe checks and integration</span><span data-label="Evidence">Exact-commit, serialized flow</span><strong class="proven" data-label="State">Proven locally</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">Codex, Claude, Pi, and local adapters</span><span data-label="Evidence">Adapter and coordination scenarios</span><strong class="pending" data-label="State">Live provider gate open</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">TORCH managing its own repository</span><span data-label="Evidence">Isolated candidate checks</span><strong class="pending" data-label="State">Clean install gate open</strong></div>
+        <div class="ledger-row" role="row"><span data-label="Capability">COMBATRIG import</span><span data-label="Evidence">Read-only inventory; ownership review needed</span><strong class="pending" data-label="State">Migration gated</strong></div>
       </div>
     </section>
 
     <section class="start-section" id="start">
       <div>
-        <h2>Start with the work you actually have.</h2>
-        <p>Point TORCH at a Git repository, a product specification, or both. Bootstrap gives your Session Architect AI a bounded evidence brief; installation waits for your reviewed proposal.</p>
+        <h2>Start with the project you already have.</h2>
+        <p>Point TORCH at a Git repository and, if useful, a product specification. It prepares an evidence brief for a fleet proposal; installing or starting the team waits for your review and approval.</p>
       </div>
       <div class="command-panel">
         <div class="command-tabs" role="tablist" aria-label="Startup input">
@@ -127,7 +130,7 @@
 
   <footer>
     <p><strong>TORCH</strong> is an open, local-first agent fleet for Git projects.</p>
-    <div><a href="https://github.com/PR0M3TH3AN/TORCH">GitHub</a><a href="/console">Local console</a><a href="https://github.com/PR0M3TH3AN/TORCH/blob/main/docs/PORTABLE_AGENT_FLEET_SPEC.md">Specification</a></div>
+    <div><a href="https://github.com/PR0M3TH3AN/TORCH">GitHub</a><a href="/console">Local console</a><a href="https://github.com/PR0M3TH3AN/TORCH/blob/main/docs/PORTABLE_AGENT_FLEET_SPEC.md">How TORCH works</a></div>
   </footer>
 </body>
 </html>

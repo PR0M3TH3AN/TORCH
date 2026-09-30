@@ -2,12 +2,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { TorchError } from './errors.mjs';
+import { organizationGraphFromConfig, organizationGraphSchema } from './organization.mjs';
 
 export const PROJECT_CONFIG_SCHEMA = 'torch.dev/v1alpha1';
 
 const text = z.string().trim().min(1);
 const id = text.regex(/^[a-z0-9][a-z0-9-]*$/);
 const textList = z.array(text);
+const launchPolicy = z.record(z.string().regex(/^[a-z][A-Za-z0-9]*$/), text).optional();
 
 const domain = z.object({
   id,
@@ -22,6 +24,8 @@ const domain = z.object({
   resources: textList,
   runtime: text,
   model: text.nullable().optional(),
+  reasoning: text.nullable().optional(),
+  launchPolicy,
   branch: text.nullable().optional(),
   worktree_name: text.regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).nullable().optional(),
 }).strict();
@@ -33,6 +37,21 @@ const check = z.object({
   args: textList.optional(),
   source: z.record(z.string(), z.unknown()).optional(),
   resources: textList.optional(),
+  snapshot: z.object({
+    paths: textList.min(1),
+    source_commit_file: text,
+  }).strict().optional(),
+  conditions: z.object({
+    command: text,
+    args: textList.optional(),
+    timeout_seconds: z.number().int().positive().max(300).optional(),
+    required: z.array(z.object({
+      id,
+      equals: z.union([z.string(), z.boolean(), z.number().finite(), z.null()]),
+    }).strict()).min(1).refine((requirements) =>
+      new Set(requirements.map((requirement) => requirement.id)).size === requirements.length,
+    'Condition IDs must be unique'),
+  }).strict().optional(),
 }).strict();
 
 const resource = z.object({
@@ -53,8 +72,28 @@ const schedule = z.object({
     z.object({ type: z.literal('interval'), seconds: z.number().int().positive() }).strict(),
     z.object({ type: z.literal('cron'), expression: text }).strict(),
   ]),
-  behavior: z.enum(['read-only', 'mutating']),
-  action: z.object({ type: z.literal('command'), command: text, args: textList }).strict(),
+  behavior: z.enum(['read-only', 'coordination', 'mutating']),
+  action: z.discriminatedUnion('type', [
+    z.object({ type: z.literal('command'), command: text, args: textList }).strict(),
+    z.object({
+      type: z.literal('manager-check-in'), manager_id: id,
+      stale_work: z.object({
+        stale_days: z.number().int().min(1).max(365).optional(),
+        max_commits: z.number().int().min(1).max(10_000).optional(),
+        max_items: z.number().int().min(1).max(100).optional(),
+      }).strict().optional(),
+      wake: z.object({
+        enabled: z.boolean(),
+        budget_mode: z.enum(['invocation-count', 'usd-hard-cap']).optional(),
+        max_usd_per_invocation: z.number().finite().positive().optional(),
+      }).strict().optional(),
+    }).strict(),
+    z.object({
+      type: z.literal('integration-drain'), landing_authority_id: id,
+      limit: z.number().int().min(1).max(500).optional(),
+    }).strict(),
+    z.object({ type: z.literal('owner-digest') }).strict(),
+  ]),
   required_authority: textList.min(1),
   retry: z.object({ max_attempts: z.number().int().min(1).max(10) }).strict().optional(),
   failure_recipient: text.optional(),
@@ -89,8 +128,19 @@ export const projectConfigSchema = z.object({
     message: 'runtimes.default must name a configured runtime',
   }),
   checks: z.array(check),
+  backlog: z.object({
+    self_claim: z.object({ enabled: z.boolean(), areas: textList }).strict().optional(),
+    activity: z.object({
+      stale_days: z.number().int().min(1).max(365).optional(),
+      max_commits: z.number().int().min(1).max(10_000).optional(),
+      auto_close_after_landing: z.boolean().optional(),
+    }).strict().optional(),
+  }).strict().optional(),
   resources: z.array(resource),
   schedules: z.array(schedule),
+  runtime_wake_budget: z.object({
+    max_invocations_per_day: z.number().int().min(1).max(24),
+  }).strict().optional(),
   integration: z.object({
     provider: text,
     target: text,
@@ -99,6 +149,7 @@ export const projectConfigSchema = z.object({
     landing_authority: textList.min(1),
   }).strict(),
   delivery: z.object({
+    retry: z.object({ max_attempts: z.number().int().min(1).max(5) }).strict().optional(),
     authority: z.object({
       implemented: textList.min(1),
       verified: textList.min(1),
@@ -113,14 +164,26 @@ export const projectConfigSchema = z.object({
       deployment: z.object({ provider: text }).passthrough(),
     }).strict(),
   }).strict(),
+  owner_digest: z.object({ enabled: z.boolean(), window_hours: z.number().int().min(1).max(168).optional(),
+    max_items: z.number().int().min(1).max(100).optional() }).strict().optional(),
   session_manager: z.object({
     id: z.literal('session-manager'),
     runtime: text,
-    start_last: z.literal(true),
+    model: text.nullable().optional(),
+    reasoning: text.nullable().optional(),
+    launchPolicy,
+    // Older installations carried this launch-order hint. Current lifecycle
+    // ordering is derived from the organization graph; retain only for reads.
+    start_last: z.literal(true).optional(),
     branch: text.nullable().optional(),
     worktree_name: text.regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).nullable().optional(),
   }).strict(),
   domains: z.array(domain).min(1),
+  organization: organizationGraphSchema.optional(),
+  organization_assessment: z.object({
+    observation_window_days: z.number().int().min(7).max(365),
+    minimum_recurrences: z.number().int().min(3).max(10),
+  }).strict().optional(),
   retired_domains: z.array(z.object({
     id,
     title: text,
@@ -130,12 +193,141 @@ export const projectConfigSchema = z.object({
   }).strict()).optional(),
 }).strict().superRefine((config, context) => {
   const runtimeNames = new Set(Object.keys(config.runtimes).filter((name) => name !== 'default'));
+  const scheduleIds = new Set();
+  const identityIds = new Set(['session-manager', ...config.domains.map((entry) => entry.id)]);
+  for (const [index, area] of (config.backlog?.self_claim?.areas ?? []).entries()) {
+    if (area === 'session-manager' || !identityIds.has(area)) context.addIssue({
+      code: 'custom', path: ['backlog', 'self_claim', 'areas', index],
+      message: 'self-claim allowlist must name a defined specialist identity',
+    });
+  }
+  for (const [index, entry] of config.schedules.entries()) {
+    if (scheduleIds.has(entry.id)) {
+      context.addIssue({ code: 'custom', path: ['schedules', index, 'id'], message: `duplicate schedule id: ${entry.id}` });
+    }
+    scheduleIds.add(entry.id);
+    if (entry.action.type === 'manager-check-in') {
+      if (entry.behavior !== 'coordination' || entry.lifetime !== 'system'
+        || !entry.required_authority.includes('owner')) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index],
+          message: 'manager check-in must be an owner-authorized system coordination schedule',
+        });
+      }
+      if (entry.trigger.type === 'interval' && entry.trigger.seconds < 60) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'trigger', 'seconds'],
+          message: 'manager check-in intervals must be at least 60 seconds',
+        });
+      }
+      if (!identityIds.has(entry.action.manager_id)) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'action', 'manager_id'],
+          message: `manager check-in references unknown identity: ${entry.action.manager_id}`,
+        });
+      }
+      const wake = entry.action.wake;
+      const mode = wake?.budget_mode ?? (wake?.max_usd_per_invocation !== undefined ? 'usd-hard-cap' : null);
+      if (wake?.enabled === true && mode === null) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'action', 'wake', 'budget_mode'],
+          message: 'enabled manager runtime wakes require an explicit invocation-count policy or a positive per-invocation USD ceiling',
+        });
+      }
+      if (mode === 'usd-hard-cap' && !(Number.isFinite(wake.max_usd_per_invocation)
+        && wake.max_usd_per_invocation > 0)) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'action', 'wake', 'max_usd_per_invocation'],
+          message: 'enabled manager runtime wakes require a positive per-invocation USD ceiling',
+        });
+      }
+      if (mode === 'invocation-count' && wake?.max_usd_per_invocation !== undefined) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'action', 'wake', 'max_usd_per_invocation'],
+          message: 'invocation-count mode cannot promise a USD ceiling; select usd-hard-cap instead',
+        });
+      }
+    } else if (entry.action.type === 'integration-drain') {
+      if (entry.behavior !== 'mutating' || entry.lifetime !== 'system'
+        || !['interval', 'cron'].includes(entry.trigger.type)
+        || !entry.required_authority.includes('owner')) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index],
+          message: 'integration drain must be an owner-authorized periodic system mutation schedule',
+        });
+      }
+      if (!identityIds.has(entry.action.landing_authority_id)) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'action', 'landing_authority_id'],
+          message: `integration drain references unknown identity: ${entry.action.landing_authority_id}`,
+        });
+      }
+      if (!config.integration.landing_authority.includes(entry.action.landing_authority_id)) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'action', 'landing_authority_id'],
+          message: `integration drain identity lacks configured landing authority: ${entry.action.landing_authority_id}`,
+        });
+      }
+      if (entry.trigger.type === 'interval' && entry.trigger.seconds < 60) {
+        context.addIssue({
+          code: 'custom', path: ['schedules', index, 'trigger', 'seconds'],
+          message: 'integration-drain intervals must be at least 60 seconds',
+        });
+      }
+    } else if (entry.action.type === 'owner-digest') {
+      if (entry.behavior !== 'coordination' || entry.lifetime !== 'system'
+        || !entry.required_authority.includes('owner') || (entry.retry?.max_attempts ?? 1) !== 1) {
+        context.addIssue({ code: 'custom', path: ['schedules', index],
+          message: 'owner digest must be an owner-authorized system coordination schedule without automatic retry' });
+      }
+    } else if (entry.behavior === 'coordination') {
+      context.addIssue({
+        code: 'custom', path: ['schedules', index, 'behavior'],
+        message: 'coordination behavior is reserved for the typed manager-check-in action',
+      });
+    }
+  }
+  const managerRoleIds = new Set(config.organization
+    ? config.organization.roles.flatMap((role) => role.reports_to)
+    : []);
+  const scheduledManagers = new Set(config.schedules
+    .filter((entry) => entry.action.type === 'manager-check-in')
+    .map((entry) => entry.action.manager_id));
+  for (const managerIdentity of new Set(organizationGraphFromConfig(config).roles
+    .filter((role) => managerRoleIds.has(role.id) && role.kind !== 'owner')
+    .map((role) => role.identity_id))) {
+    if (!scheduledManagers.has(managerIdentity)) {
+      context.addIssue({
+        code: 'custom', path: ['schedules'],
+        message: `manager identity ${managerIdentity} has direct reports but no manager-check-in schedule`,
+      });
+    }
+  }
+  const wakeEnabled = config.schedules.some((entry) =>
+    entry.action.type === 'manager-check-in' && entry.action.wake?.enabled === true);
+  if (wakeEnabled && !config.runtime_wake_budget) {
+    context.addIssue({
+      code: 'custom', path: ['runtime_wake_budget'],
+      message: 'enabled manager runtime wakes require a project-wide daily invocation budget',
+    });
+  }
   if (!runtimeNames.has(config.runtimes.default)) {
     context.addIssue({ code: 'custom', path: ['runtimes', 'default'], message: 'default runtime is not configured' });
   }
   for (const [index, entry] of config.domains.entries()) {
     if (!runtimeNames.has(entry.runtime)) {
       context.addIssue({ code: 'custom', path: ['domains', index, 'runtime'], message: 'domain runtime is not configured' });
+    }
+  }
+  for (const [runtime, profile] of Object.entries(config.runtimes)) {
+    if (runtime === 'default' || !profile || typeof profile !== 'object' || Array.isArray(profile)) continue;
+    if (profile.launchPolicy !== undefined) {
+      const result = launchPolicy.safeParse(profile.launchPolicy);
+      if (!result.success) {
+        for (const issue of result.error.issues) context.addIssue({
+          ...issue, path: ['runtimes', runtime, 'launchPolicy', ...issue.path],
+        });
+      }
     }
   }
 });

@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { posix } from 'node:path';
+import { join, posix } from 'node:path';
 import { TorchError } from './errors.mjs';
+import { organizationGraphFromConfig, planManagerCheckInSchedules } from './organization.mjs';
+import { workingTreeFingerprint } from './git.mjs';
 import { validateSpecificationEvidence } from './specifications.mjs';
 
 const SOURCE_ROOTS = new Set(['src', 'app', 'apps', 'server', 'client', 'lib', 'packages', 'services']);
@@ -138,7 +140,7 @@ function domainFromComponent(component) {
     neighbours: [],
     required_checks: [],
     resources: [],
-    runtime: 'claude',
+    runtime: 'default',
     evidence: component.evidence,
   };
 }
@@ -163,10 +165,22 @@ function specDomain(signal, specification) {
       : [`responsibilities described by ${specification.path}:${signal.line}`],
     not_scope: [],
     owned_paths: signal.pathReferences,
-    shared_paths: [], neighbours: [], required_checks: [], resources: [], runtime: 'claude',
+    shared_paths: [], neighbours: [], required_checks: [], resources: [], runtime: 'default',
     evidence: [`${specification.path}:${signal.line}`],
     design_status: signal.pathReferences.length ? 'evidence-backed' : 'needs-owner-path-review',
   };
+}
+
+function hasProjectPathEvidence(signal, repositoryRoot) {
+  return signal.pathReferences.some((reference) => {
+    const value = reference.replaceAll('\\', '/').replace(/^\.\//, '');
+    if (!value || value.startsWith('/') || value.startsWith('~') || value.startsWith('$')
+      || /^[a-z][a-z0-9+.-]*:\/\//i.test(value)) return false;
+    const normalized = posix.normalize(value);
+    if (normalized === '..' || normalized.startsWith('../')) return false;
+    const prefix = normalized.replace(/[?*{\x5b].*$/, '').replace(/\/+$/, '');
+    return Boolean(prefix && existsSync(join(repositoryRoot, ...prefix.split('/'))));
+  });
 }
 
 export function proposeDomains({ repository, analysis }) {
@@ -181,32 +195,22 @@ export function proposeDomains({ repository, analysis }) {
     specification.domainSignals.map((signal) => ({ signal, specification })));
 
   for (const { signal, specification } of signals) {
+    const grounded = hasProjectPathEvidence(signal, repository.root);
     const candidate = domains
       .map((domain) => ({ domain, score: overlap(`${domain.id} ${domain.title} ${domain.owned_paths.join(' ')}`, `${signal.title} ${signal.pathReferences.join(' ')}`) }))
       .sort((a, b) => b.score - a.score)[0];
-    if (candidate?.score > 0) {
+    if (candidate?.score > 0 && grounded) {
       for (const responsibility of signal.responsibilities) {
         if (!candidate.domain.scope.includes(responsibility)) candidate.domain.scope.push(responsibility);
       }
       candidate.domain.evidence.push(`${specification.path}:${signal.line}`);
       continue;
     }
-    if (signal.level <= 3 && (signal.pathReferences.length || specFirst)) {
+    if (signal.level <= 3 && (grounded || specFirst)) {
       const proposed = specDomain(signal, specification);
       if (!domains.some((domain) => domain.id === proposed.id)) domains.push(proposed);
     }
   }
-  if (!domains.length) {
-    domains.push({
-      id: 'core', title: 'Core project', kind: 'development',
-      scope: ['initial project implementation and architecture'],
-      not_scope: [], owned_paths: ['**'], shared_paths: [], neighbours: [], required_checks: [],
-      resources: [],
-      runtime: 'claude',
-      evidence: analysis.inventory.manifests,
-    });
-  }
-
   if (analysis.inventory.testFileCount >= 2) {
     domains.push({
       id: 'qa', title: 'Quality and integration', kind: 'cross-cutting',
@@ -215,7 +219,7 @@ export function proposeDomains({ repository, analysis }) {
       owned_paths: ['test/**', 'tests/**', 'e2e/**'], shared_paths: [], neighbours: [],
       required_checks: [], evidence: graph.verificationSurfaces.slice(0, 12),
       resources: [],
-      runtime: 'claude',
+      runtime: 'default',
     });
   }
   if (graph.operationalSurfaces.some((path) => /deploy|release/i.test(path))) {
@@ -226,8 +230,21 @@ export function proposeDomains({ repository, analysis }) {
       owned_paths: graph.operationalSurfaces.filter((path) => /deploy|release|workflow/i.test(path)).slice(0, 20),
       shared_paths: [], neighbours: [], required_checks: [],
       resources: [],
-      runtime: 'claude',
+      runtime: 'default',
       evidence: graph.operationalSurfaces.slice(0, 12),
+    });
+  }
+
+  // Evidence-backed horizontal specialists count as a real initial organization.
+  // A catch-all Core owner must not precede and overlap QA/release domains.
+  if (!domains.length) {
+    domains.push({
+      id: 'core', title: 'Core project', kind: 'development',
+      scope: ['initial project implementation and architecture'],
+      not_scope: [], owned_paths: ['**'], shared_paths: [], neighbours: [], required_checks: [],
+      resources: [],
+      runtime: 'default',
+      evidence: analysis.inventory.manifests,
     });
   }
 
@@ -295,13 +312,21 @@ export function proposeDomains({ repository, analysis }) {
     domain.not_scope.push(...domains
       .filter((other) => other.id !== domain.id && other.owned_paths.length)
       .map((other) => `${other.title} owns ${other.owned_paths.join(', ')}`));
-    domain.shared_paths = graph.sharedSurfaces.slice(0, 40);
+    const componentKeys = graph.components
+      .filter((component) => domain.owned_paths.some((path) => component.paths.includes(path)))
+      .map((component) => component.key);
+    domain.shared_paths = [...new Set(graph.dependencies
+      .filter((edge) => componentKeys.includes(edge.from) && SHARED_PATTERN.test(edge.to))
+      .map((edge) => edge.targetEvidence))].sort();
   }
 
   return {
     schema: 'torch.dev/domain-proposal/v1alpha1',
     generatedAt: new Date().toISOString(),
-    repository: { root: repository.root, initialCommit: repository.initialCommit, head: repository.head },
+    repository: {
+      root: repository.root, initialCommit: repository.initialCommit, head: repository.head,
+      workingTreeFingerprint: analysis.repository.workingTreeFingerprint,
+    },
     review: { status: 'pending', reviewedAt: null, reviewedBy: null, notes: [] },
     specifications: specifications.map((specification) => ({
       path: specification.path,
@@ -318,9 +343,34 @@ export function proposeDomains({ repository, analysis }) {
     resources: analysis.inventory.scarceResources.map((id) => ({
       id, capacity: 1, queue: 'fifo', max_hold_seconds: 3600,
     })),
-    schedules: [],
+    schedules: planManagerCheckInSchedules({
+      graph: organizationGraphFromConfig({ domains }),
+    }).schedules,
     architecture: graph,
   };
+}
+
+// Reject provable claim collisions even for planned files that do not exist yet.
+// This intentionally does not pretend to solve arbitrary glob intersection.
+export function primaryOwnershipProblems(domains = []) {
+  const claims = (Array.isArray(domains) ? domains : []).flatMap((domain) =>
+    (Array.isArray(domain?.owned_paths) ? domain.owned_paths : [])
+      .filter((path) => typeof path === 'string' && path.trim())
+      .map((path) => ({ id: domain.id, path: path.replaceAll('\\', '/').replace(/^\.\//, '') })));
+  const problems = new Set();
+  const contains = (parent, child) => parent === '**'
+    || (parent.endsWith('/**') && !/[?*[]/.test(parent.slice(0, -3))
+      && child.startsWith(`${parent.slice(0, -3)}/`));
+  for (let left = 0; left < claims.length; left += 1) {
+    for (let right = left + 1; right < claims.length; right += 1) {
+      const a = claims[left];
+      const b = claims[right];
+      if (a.id !== b.id && (a.path === b.path || contains(a.path, b.path) || contains(b.path, a.path))) {
+        problems.add(`primary ownership overlaps: ${a.id} (${a.path}) and ${b.id} (${b.path})`);
+      }
+    }
+  }
+  return [...problems];
 }
 
 export function validateApprovedProposal({ proposal, repository }) {
@@ -329,7 +379,14 @@ export function validateApprovedProposal({ proposal, repository }) {
   if (proposal?.review?.status !== 'approved') problems.push('proposal review status is not approved');
   if (proposal?.repository?.initialCommit !== repository.initialCommit) problems.push('proposal belongs to a different Git history');
   if (proposal?.repository?.head !== repository.head) problems.push('proposal is stale because HEAD changed');
+  const currentFingerprint = workingTreeFingerprint(repository.root);
+  if (!proposal?.repository?.workingTreeFingerprint) {
+    problems.push('proposal has no repository working-tree fingerprint');
+  } else if (proposal.repository.workingTreeFingerprint !== currentFingerprint) {
+    problems.push('proposal is stale because the repository working tree changed');
+  }
   if (!Array.isArray(proposal?.domains) || proposal.domains.length === 0) problems.push('proposal has no domains');
+  problems.push(...primaryOwnershipProblems(proposal?.domains));
   problems.push(...validateSpecificationEvidence(proposal?.specifications ?? [], repository.root));
   const ids = new Set();
   for (const domain of proposal?.domains ?? []) {
@@ -341,6 +398,10 @@ export function validateApprovedProposal({ proposal, repository }) {
     if (!domain.owned_paths?.length) problems.push(`domain ${domain.id} has no owned paths`);
     if (domain.runtime !== undefined && (typeof domain.runtime !== 'string' || !domain.runtime.trim())) {
       problems.push(`domain ${domain.id} has an invalid runtime`);
+    }
+    if (domain.reasoning !== undefined && domain.reasoning !== null
+      && (typeof domain.reasoning !== 'string' || !domain.reasoning.trim())) {
+      problems.push(`domain ${domain.id} has an invalid reasoning profile`);
     }
     if (domain.worktree_name !== undefined && domain.worktree_name !== null
       && !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(domain.worktree_name)) {
@@ -367,8 +428,23 @@ export function validateApprovedProposal({ proposal, repository }) {
     if (!collision.resolution?.strategy) problems.push(`collision ${collision.domains?.join('/')} has no resolution`);
   }
   for (const schedule of proposal?.schedules ?? []) {
+    const managerCheckInAction = schedule.action?.type === 'manager-check-in';
+    const integrationDrainAction = schedule.action?.type === 'integration-drain';
+    const actionValid = managerCheckInAction
+      ? schedule.behavior === 'coordination' && schedule.lifetime === 'system'
+        && typeof schedule.action.manager_id === 'string'
+        && schedule.required_authority?.includes('owner')
+      : integrationDrainAction
+        ? schedule.behavior === 'mutating' && schedule.lifetime === 'system'
+          && ['interval', 'cron'].includes(schedule.trigger?.type)
+          && (schedule.trigger?.type !== 'interval' || schedule.trigger.seconds >= 60)
+          && typeof schedule.action.landing_authority_id === 'string'
+          && schedule.required_authority?.includes('owner')
+        : schedule.action?.type === 'command' && typeof schedule.action.command === 'string'
+          && Array.isArray(schedule.action.args) && schedule.behavior !== 'coordination';
     if (!schedule.id || !['system', 'session'].includes(schedule.lifetime)
-      || !['read-only', 'mutating'].includes(schedule.behavior)
+      || !['read-only', 'coordination', 'mutating'].includes(schedule.behavior)
+      || !actionValid
       || !schedule.owner || !schedule.trigger || !schedule.action
       || !schedule.required_authority?.length || !schedule.source_of_truth) {
       problems.push(`schedule ${schedule.id ?? '<missing>'} is incomplete`);

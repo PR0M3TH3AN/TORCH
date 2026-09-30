@@ -17,7 +17,29 @@ import { observeProject } from '../../src/observability/snapshot.mjs';
 
 const CLI = new URL('../../bin/torch.mjs', import.meta.url).pathname;
 
-function fixture({ boundary = false } = {}) {
+test('SCN-domain-runtime-inheritance: new domain proposals follow a Codex-only Fleet default', () => {
+  const context = fixture({ runtimes: ['codex'] });
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  try {
+    const evolution = new FleetEvolutionService({ repositoryRoot: context.root, controlPlane: control });
+    const count = control.listAgents().length;
+    for (const [id, runtime] of [['payments', undefined], ['support', 'default']]) {
+      const change = evolution.proposeDomain({ proposer: 'session-manager',
+        domain: { id, title: id, scope: ['Recurring specialist work'], not_scope: ['Fleet operations'],
+          owned_paths: ['src/' + id + '/**'], ...(runtime === undefined ? {} : { runtime }) },
+        rationale: 'Recurring work needs a coherent owner.',
+        expectedBenefit: { summary: 'Retain domain context', recurringWork: 'Several milestones',
+          contextLocality: 'Stable specialist context', coordinationCost: 'One peer interface' },
+        evidence: ['app.js'],
+      });
+      assert.equal(change.domain.runtime, 'codex');
+      assert.equal(change.state, 'proposed');
+    }
+    assert.equal(control.listAgents().length, count, 'proposing does not create sessions');
+  } finally { control.close(); }
+});
+
+function fixture({ boundary = false, runtimes } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-evolution-'));
   const worktreeParent = mkdtempSync(join(tmpdir(), 'torch-evolution-worktrees-'));
   const env = { ...process.env, XDG_DATA_HOME: mkdtempSync(join(tmpdir(), 'torch-evolution-state-')) };
@@ -46,7 +68,7 @@ function fixture({ boundary = false } = {}) {
   proposal.review = {
     status: 'approved', reviewedAt: '2026-09-27T00:00:00Z', reviewedBy: 'fixture-owner', notes: [],
   };
-  installProject({ repository, proposal, env, projectId: 'evolution-fixture' });
+  installProject({ repository, proposal, env, projectId: 'evolution-fixture', runtimes });
   execFileSync('git', ['-C', root, 'add', '.torch']);
   execFileSync('git', ['-C', root, 'commit', '-m', 'install torch']);
   repository = inspectRepository(root);
@@ -181,7 +203,7 @@ test('SCN-fleet-boundary-evolution: merge and split proposals are durable, owner
 });
 
 test('SCN-fleet-evolution: the manager proposes and owner activates a newly justified persistent domain', () => {
-  const context = fixture();
+  const context = fixture({ runtimes: ['claude', 'codex'] });
   const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
   const evolution = new FleetEvolutionService({
     repositoryRoot: context.root,

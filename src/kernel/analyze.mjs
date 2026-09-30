@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { extname } from 'node:path';
-import { trackedFiles } from './git.mjs';
+import { workingTreeFiles, workingTreeFingerprint } from './git.mjs';
 import { buildArchitectureGraph } from './domains.mjs';
 
 const LANGUAGE_BY_EXTENSION = new Map([
@@ -20,7 +20,8 @@ const MANIFESTS = [
 ];
 
 export function analyzeRepository(repository, { specifications = [] } = {}) {
-  const files = trackedFiles(repository.root);
+  const workingTree = workingTreeFiles(repository.root);
+  const files = workingTree.files;
   const languageCounts = new Map();
   const topLevel = new Set();
 
@@ -70,9 +71,12 @@ export function analyzeRepository(repository, { specifications = [] } = {}) {
       branch: repository.branch,
       head: repository.head,
       hasRemote: repository.remotes.length > 0,
+      workingTreeFingerprint: workingTreeFingerprint(repository.root, files),
     },
     inventory: {
-      trackedFileCount: files.length,
+      trackedFileCount: workingTree.trackedFileCount,
+      untrackedFileCount: workingTree.untrackedFileCount,
+      analyzedFileCount: files.length,
       languages,
       manifests,
       topLevelDirectories: [...topLevel].sort(),

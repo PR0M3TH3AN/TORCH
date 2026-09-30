@@ -80,6 +80,86 @@ export function forgeStatus({ repositoryRoot } = {}) {
   };
 }
 
+export function planForgeSync({ repositoryRoot } = {}) {
+  const config = loadProjectConfig(repositoryRoot);
+  const remote = config.forge?.remote ?? null;
+  const branch = config.project.main_branch;
+  const localCommit = git(repositoryRoot, ['rev-parse', `refs/heads/${branch}`]).stdout;
+  const remotes = git(repositoryRoot, ['remote']).stdout.split('\n').filter(Boolean);
+  const blockers = [];
+  if (config.forge?.provider === 'none' || !remote) {
+    blockers.push({ code: 'FORGE_NOT_ATTACHED' });
+  }
+  if (config.repository.canonical.type !== 'remote'
+    || config.repository.canonical.remote !== remote) {
+    blockers.push({ code: 'FORGE_CANONICAL_CHANGED', canonical: config.repository.canonical });
+  }
+  if (remote && !remotes.includes(remote)) blockers.push({ code: 'FORGE_REMOTE_MISSING', remote });
+  const branchCheck = git(repositoryRoot, ['check-ref-format', '--branch', branch]);
+  if (branchCheck.status !== 0) blockers.push({ code: 'FORGE_TARGET_BRANCH_INVALID', branch });
+  const observed = remote && remotes.includes(remote)
+    ? remoteHead(repositoryRoot, remote, branch)
+    : { available: false, commit: null, error: 'configured remote is unavailable' };
+  if (!observed.available) blockers.push({ code: 'FORGE_UNAVAILABLE', remote, error: observed.error });
+
+  let disposition = 'blocked';
+  if (blockers.length === 0) {
+    if (observed.commit === localCommit) disposition = 'already-synchronized';
+    else if (!observed.commit) disposition = 'publish-new-branch';
+    else if (git(repositoryRoot, ['cat-file', '-e', `${observed.commit}^{commit}`], { timeout: 5_000 }).status !== 0) {
+      blockers.push({ code: 'FORGE_SYNC_FETCH_REQUIRED', remoteCommit: observed.commit,
+        message: `Fetch ${remote}/${branch} before syncing so TORCH can verify ancestry.` });
+    } else if (git(repositoryRoot, [
+      'merge-base', '--is-ancestor', localCommit, observed.commit,
+    ], { timeout: 5_000 }).status === 0) {
+      blockers.push({ code: 'FORGE_REMOTE_AHEAD', localCommit, remoteCommit: observed.commit });
+    } else if (git(repositoryRoot, [
+      'merge-base', '--is-ancestor', observed.commit, localCommit,
+    ], { timeout: 5_000 }).status === 0) disposition = 'fast-forward-remote';
+    else blockers.push({ code: 'FORGE_REMOTE_DIVERGED', localCommit, remoteCommit: observed.commit });
+  }
+  return {
+    action: 'sync-forge-canonical-branch', remote, branch, localCommit,
+    remoteCommit: observed.commit, disposition, requiresConfirmation: disposition !== 'already-synchronized',
+    blockers, canProceed: blockers.length === 0, mutationPerformed: false,
+  };
+}
+
+export function syncForgeRemote({ repositoryRoot, controlPlane, actorId = 'owner' } = {}) {
+  if (!controlPlane) throw new TorchError('Forge synchronization requires the project control plane for owner audit', {
+    code: 'FORGE_AUDIT_REQUIRED',
+  });
+  controlPlane.assertOwnerActor(actorId);
+  const plan = planForgeSync({ repositoryRoot });
+  if (!plan.canProceed) throw new TorchError('Forge synchronization is blocked', {
+    code: 'FORGE_SYNC_BLOCKED', details: plan.blockers,
+  });
+  if (plan.disposition === 'already-synchronized') {
+    return { ...plan, synchronized: true, publishedCommit: null, mutationPerformed: false };
+  }
+  const result = git(repositoryRoot, [
+    'push', '--porcelain', '--', plan.remote, `${plan.localCommit}:refs/heads/${plan.branch}`,
+  ], { timeout: 60_000 });
+  if (result.status !== 0) throw new TorchError('Forge rejected canonical synchronization; no force push was attempted', {
+    code: 'FORGE_SYNC_PUSH_REJECTED', details: { remote: plan.remote, branch: plan.branch, stderr: result.stderr },
+  });
+  const observed = remoteHead(repositoryRoot, plan.remote, plan.branch);
+  const synchronized = observed.available && observed.commit === plan.localCommit;
+  controlPlane.auditOwnerAction({
+    actorId, operation: 'forge.sync', entityType: 'forge-publication', entityId: plan.localCommit,
+    details: {
+      remote: plan.remote, branch: plan.branch, previousRemoteCommit: plan.remoteCommit,
+      publishedCommit: plan.localCommit, observedRemoteCommit: observed.commit,
+      synchronized,
+    },
+  });
+  return {
+    ...plan, synchronized, publishedCommit: plan.localCommit,
+    observedRemoteCommit: observed.commit, mutationPerformed: true,
+    output: result.stdout, pendingSynchronization: !synchronized,
+  };
+}
+
 export function planForgeAttach({ repositoryRoot, remote, provider = 'generic-git' } = {}) {
   const selectedRemote = text(remote, 'remote');
   const selectedProvider = text(provider, 'provider');

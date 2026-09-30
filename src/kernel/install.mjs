@@ -11,6 +11,7 @@ import { projectStatePath } from './paths.mjs';
 import { validateApprovedProposal } from './domains.mjs';
 import { inspectManagedWorktree } from './worktree-state.mjs';
 import { renderDomainPrompt } from './prompts.mjs';
+import { createRuntimeAdapterRegistry } from '../adapters/registry.mjs';
 
 const TRACKED_DIR = '.torch';
 
@@ -18,34 +19,34 @@ function jsonYaml(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-const RUNTIME_DEFINITIONS = Object.freeze({
-  claude: { model: 'opus', background: true },
-  codex: { sandbox: 'workspace-write', approval: 'approve-for-me' },
-});
-
-function resolveInstallRuntimes(proposal, requested) {
+function resolveInstallRuntimes(proposal, requested, registry, requestedDefault) {
+  const explicitRuntime = (runtime) => runtime && runtime !== 'default' ? runtime : null;
+  const required = new Set([
+    explicitRuntime(proposal.session_manager?.runtime),
+    ...proposal.domains.map((domain) => explicitRuntime(domain.runtime)),
+  ].filter(Boolean));
+  const defaultRuntime = requestedDefault ?? explicitRuntime(proposal.session_manager?.runtime)
+    ?? requested?.[0] ?? 'claude';
   const selected = requested === undefined
-    ? Object.keys(RUNTIME_DEFINITIONS)
+    ? [...new Set([defaultRuntime, ...required])]
     : [...new Set(requested)];
-  if (!selected.length || selected.some((runtime) => typeof runtime !== 'string' || !RUNTIME_DEFINITIONS[runtime])) {
+  if (!selected.length || !registry.has(defaultRuntime)
+    || selected.some((runtime) => typeof runtime !== 'string' || !registry.has(runtime))) {
     throw new TorchError('Install runtimes must be one or more supported adapters', {
-      code: 'INSTALL_RUNTIME_INVALID', details: { requested: selected, supported: Object.keys(RUNTIME_DEFINITIONS) },
+      code: 'INSTALL_RUNTIME_INVALID', details: { requested: selected, defaultRuntime, supported: registry.names() },
     });
   }
-  const required = new Set([
-    proposal.session_manager?.runtime ?? 'claude',
-    ...proposal.domains.map((domain) => domain.runtime ?? 'claude'),
-  ]);
-  const missing = [...required].filter((runtime) => !selected.includes(runtime));
+  const missing = [...new Set([defaultRuntime, ...required])].filter((runtime) => !selected.includes(runtime));
   if (missing.length) {
     throw new TorchError('Selected install runtimes do not cover the approved Fleet', {
       code: 'INSTALL_RUNTIME_MISSING', details: { selected, required: [...required], missing },
     });
   }
-  return selected;
+  return { runtimes: selected, defaultRuntime };
 }
 
-function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) {
+function initialFiles({ repository, projectId, createdAt, proposal, runtimes, defaultRuntime, runtimeRegistry }) {
+  const selectedRuntime = (runtime) => runtime && runtime !== 'default' ? runtime : defaultRuntime;
   const promptContent = (source, fallback) => source
     ? readFileSync(safeProjectPath(repository.root, source), 'utf8')
     : fallback;
@@ -70,12 +71,14 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
     },
     synchronization: { strategy: 'dispatcher-managed', auto_merge_worktrees: false },
     runtimes: Object.fromEntries([
-      ['default', proposal.session_manager?.runtime ?? 'claude'],
-      ...runtimes.map((runtime) => [runtime, RUNTIME_DEFINITIONS[runtime]]),
+      ['default', defaultRuntime],
+      ...runtimes.map((runtime) => [runtime, runtimeRegistry.configuration(runtime)]),
     ]),
     checks: proposal.checks ?? [],
+    backlog: { self_claim: { enabled: false, areas: [] } },
     resources: proposal.resources ?? [],
     schedules: proposal.schedules ?? [],
+    ...(proposal.runtime_wake_budget ? { runtime_wake_budget: proposal.runtime_wake_budget } : {}),
     integration: {
       provider: 'torch', target: repository.branch || 'main', require_current_main: true,
       required_checks: (proposal.checks ?? []).map((check) => check.id),
@@ -97,10 +100,13 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
       },
     },
     session_manager: {
-      id: 'session-manager', runtime: proposal.session_manager?.runtime ?? 'claude', start_last: true,
+      id: 'session-manager', runtime: selectedRuntime(proposal.session_manager?.runtime),
+      model: proposal.session_manager?.model ?? null,
+      reasoning: proposal.session_manager?.reasoning ?? null,
       branch: proposal.session_manager?.branch ?? null,
       worktree_name: proposal.session_manager?.worktree_name ?? null,
     },
+    organization_assessment: { observation_window_days: 30, minimum_recurrences: 3 },
     domains: proposal.domains.map((domain) => ({
       id: domain.id,
       title: domain.title,
@@ -111,8 +117,9 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
       neighbours: domain.neighbours ?? [],
       required_checks: domain.required_checks ?? [],
       resources: domain.resources ?? [],
-      runtime: domain.runtime ?? 'claude',
+      runtime: selectedRuntime(domain.runtime),
       model: domain.model ?? null,
+      reasoning: domain.reasoning ?? null,
       branch: domain.branch ?? null,
       worktree_name: domain.worktree_name ?? null,
     })),
@@ -125,6 +132,8 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
       not_scope: ['project feature implementation by default'],
       neighbours: ['all'],
       runtime: config.session_manager.runtime,
+      model: config.session_manager.model,
+      reasoning: config.session_manager.reasoning,
       branch: config.session_manager.branch,
       worktree_name: config.session_manager.worktree_name,
     }, ...config.domains],
@@ -132,7 +141,7 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
 
   const managerPrompt = `${promptContent(
     proposal.session_manager?.prompt_source,
-    '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n',
+      '# TORCH Session Manager\n\nRoute owner requests, establish ownership and priority, and keep routine coordination inside the fleet.\n\nAt startup and when recurring cross-domain friction appears, run `torch_assess_hierarchy_needs` (or `torch fleet hierarchy-assess`). Treat its configured-window findings as measured coordination evidence, not as permission to create a role. Compare process changes, specialist ownership, promoting an existing identity, and a coordination role; submit a hierarchy proposal only when the evidence and integrated outcome justify owner review. Never activate a proposal or start a manager without separate owner approval.\n',
   ).trimEnd()}\n\n## Backlog loop\n\nKeep one durable Fleet backlog. Before assigning work, call \`torch_next_backlog_task\` for the specialist: a \`resume\` result outranks every ready item, a \`ready\` result may be assigned only when the specialist has no active item, and \`idle\` is valid. After completion, repeat the same lookup. Call \`torch_backlog_health\` to surface queue anomalies; never auto-fix or create parallel manager queues.\n\n## Fleet evolution\n\nAt startup, after backlog intake, and when repeated handoffs or cross-domain work appear, call \`torch_assess_fleet_evolution\`. Treat its threshold as a prompt for architectural judgment, not as an automatic decision. When recurring work has no coherent owner, or a durable specialist would materially improve context locality, ownership clarity, or verification, inspect repository evidence and use \`torch_propose_domain\` to submit an evidence-backed Fleet change. When a specialist no longer earns its coordination cost, use \`torch_propose_domain_retirement\`; retirement preserves its branch and refuses active or unrecoverable work. Use \`torch_list_fleet_changes\` to follow change state. Never create, retire, approve, activate, or start a persistent identity yourself; owner approval, CLI activation, and quota-consuming runtime start are separate. Recommend a merge or split for owner review when boundaries should change but do not silently rewrite ownership.\n`;
   const files = new Map([
     ['torch.yaml', jsonYaml(config)],
@@ -148,7 +157,8 @@ function initialFiles({ repository, projectId, createdAt, proposal, runtimes }) 
     ['INSTALLATION.md', `# TORCH installation\n\nInstalled ${createdAt}. Run \`torch doctor\` before starting the fleet.\n`],
   ]);
   for (const domain of config.domains) {
-    const generatedPrompt = renderDomainPrompt(domain);
+    const generatedPrompt = renderDomainPrompt(domain, { projectChecks: config.integration.required_checks
+      .map((id) => config.checks.find((check) => check.id === id)).filter(Boolean) });
     const proposalDomain = proposal.domains.find((candidate) => candidate.id === domain.id);
     files.set(`prompts/${domain.id}.md`, promptContent(proposalDomain?.prompt_source, generatedPrompt));
   }
@@ -227,9 +237,11 @@ function removeOwnedDirectories(projectRoot, directories) {
   }
 }
 
-export function planInstall({ repository, proposal, env = process.env, runtimes: requestedRuntimes } = {}) {
+export function planInstall({ repository, proposal, env = process.env, runtimes: requestedRuntimes,
+  defaultRuntime: requestedDefault,
+  runtimeRegistry = createRuntimeAdapterRegistry({ env }) } = {}) {
   validateApprovedProposal({ proposal, repository });
-  const runtimes = resolveInstallRuntimes(proposal, requestedRuntimes);
+  const { runtimes, defaultRuntime } = resolveInstallRuntimes(proposal, requestedRuntimes, runtimeRegistry, requestedDefault);
   const trackedRoot = join(repository.root, TRACKED_DIR);
   const blockers = trackedStateIgnored(repository.root)
     ? [{ code: 'TRACKED_STATE_IGNORED', path: `${TRACKED_DIR}/torch.yaml` }] : [];
@@ -241,6 +253,7 @@ export function planInstall({ repository, proposal, env = process.env, runtimes:
     wouldCreateTrackedState: !existsSync(trackedRoot),
     approvedDomainCount: proposal.domains.length,
     runtimes,
+    defaultRuntime,
     blockers,
     canProceed: blockers.length === 0,
     mutationPerformed: false,
@@ -254,9 +267,11 @@ export function installProject({
   projectId = randomUUID(),
   now = () => new Date(),
   runtimes: requestedRuntimes,
+  defaultRuntime: requestedDefault,
+  runtimeRegistry = createRuntimeAdapterRegistry({ env }),
 } = {}) {
   validateApprovedProposal({ proposal, repository });
-  const runtimes = resolveInstallRuntimes(proposal, requestedRuntimes);
+  const { runtimes, defaultRuntime } = resolveInstallRuntimes(proposal, requestedRuntimes, runtimeRegistry, requestedDefault);
   const trackedRoot = join(repository.root, TRACKED_DIR);
   const trackedRootExisted = existsSync(trackedRoot);
   if (trackedRootExisted
@@ -284,7 +299,9 @@ export function installProject({
   const directoriesBefore = directoryInventory(trackedRoot, repository.root);
   let manifestWritten = false;
   try {
-    for (const [path, content] of initialFiles({ repository, projectId, createdAt, proposal, runtimes })) {
+    for (const [path, content] of initialFiles({
+      repository, projectId, createdAt, proposal, runtimes, defaultRuntime, runtimeRegistry,
+    })) {
       const absolute = join(trackedRoot, path);
       const record = writeNewFile(absolute, content);
       created.push({ path: relative(repository.root, record.path), sha256: record.sha256 });
