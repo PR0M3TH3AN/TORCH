@@ -77,6 +77,10 @@ export function analyzeRepository(repository, { specifications = [] } = {}) {
       trackedFileCount: workingTree.trackedFileCount,
       untrackedFileCount: workingTree.untrackedFileCount,
       analyzedFileCount: files.length,
+      // Exact observed files supplement source-component globs for manifests,
+      // documentation, schemas and other non-code deliverables. Keep briefs bounded.
+      ownershipPaths: files.slice(0, 1000),
+      ownershipPathsTruncated: files.length > 1000,
       languages,
       manifests,
       topLevelDirectories: [...topLevel].sort(),

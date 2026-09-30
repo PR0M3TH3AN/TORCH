@@ -1,5 +1,31 @@
 # Test Integrity Notes
 
+## 2026-09-30 — Exact observed-file ownership evidence
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-architect-file-ownership
+      given: A committed project with a README, package manifest and JSON schema
+      when: The Architect assigns observed files or invents absent files and directory globs
+      then: Observed-file claims validate, invented claims fail, and oversized exact evidence reports truncation
+  observable_outcomes:
+    - Public pending-proposal validity, invented-path and unknown-evidence diagnostics
+    - Exact evidence capped at 1000 files with explicit OWNERSHIP_EVIDENCE_TRUNCATED finding
+  determinism_controls:
+    - Disposable local Git history and fixed generated filenames
+    - No provider calls, timers, network, retries or sleeps
+  anti_cheat_rationale:
+    prevents:
+      - Assigning arbitrary unseen paths merely because metadata is not a source component
+      - Leaving schemas and manifests permanently unassignable despite observed evidence
+      - Claiming whole-repository ownership coverage from a truncated inventory
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Specialist-only project bootstrap
 
 ```yaml

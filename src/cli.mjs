@@ -404,7 +404,7 @@ export const CANDIDATE_ACCEPTANCE_EVIDENCE = Object.freeze({
   'init-analyze': ['SCN-init-read-only'],
   'spec-aware-design': ['SCN-spec-fleet-design', 'SCN-cli-spec-design'],
   'ai-fleet-bootstrap': ['SCN-ai-fleet-bootstrap', 'SCN-bootstrap-specialist-only'],
-  'ai-fleet-planning': ['SCN-ai-fleet-planning', 'SCN-architect-organization-assessment', 'SCN-bootstrap-primary-ownership'],
+  'ai-fleet-planning': ['SCN-ai-fleet-planning', 'SCN-architect-organization-assessment', 'SCN-bootstrap-primary-ownership', 'SCN-architect-file-ownership'],
   'fleet-evolution': ['SCN-fleet-evolution', 'SCN-cli-fleet-evolution'],
   'fleet-boundary-evolution': ['SCN-fleet-boundary-evolution'],
   'cli-lifecycle-surface': ['SCN-cli-lifecycle-surface'],

@@ -155,6 +155,46 @@ test('SCN-ai-fleet-bootstrap: startup emits a bounded Session Architect brief in
 
 });
 
+test('SCN-architect-file-ownership: observed metadata and deliverables can have primary owners without admitting invented paths', () => {
+  const root = repositoryFixture();
+  mkdirSync(join(root, 'schemas'));
+  writeFileSync(join(root, 'schemas', 'contract.json'), '{"type":"object"}\n');
+  writeFileSync(join(root, 'package.json'), '{"name":"ownership-fixture"}\n');
+  execFileSync('git', ['-C', root, 'add', '.']);
+  execFileSync('git', ['-C', root, 'commit', '-m', 'observed non-code deliverables']);
+  const repository = inspectRepository(root);
+  const analysis = analyzeRepository(repository);
+  const baseline = proposeDomains({ repository, analysis });
+  const brief = createFleetDesignBrief({ repository, analysis, baseline });
+  const proposal = structuredClone(baseline);
+  proposal.domains[0].owned_paths = ['README.md', 'package.json', 'schemas/contract.json'];
+  proposal.domains[0].evidence = [...proposal.domains[0].owned_paths];
+  proposal.organization_assessment = flatOrganizationAssessment(proposal);
+  assert.equal(validateArchitectProposal({ brief, proposal }).valid, true);
+  assert.equal(analysis.inventory.ownershipPathsTruncated, false);
+  for (const invented of ['schemas/missing.json', '../outside.json', 'schemas/**']) {
+    const invalid = structuredClone(proposal);
+    invalid.domains[0].owned_paths.push(invented);
+    invalid.domains[0].evidence.push(invented);
+    const result = validateArchitectProposal({ brief, proposal: invalid });
+    assert.equal(result.valid, false);
+    assert.ok(result.problems.some((problem) => problem.includes('invented owned path:')));
+    assert.ok(result.problems.some((problem) => problem.includes('cited unknown evidence:')));
+  }
+  for (let index = 0; index < 1001; index += 1) {
+    writeFileSync(join(root, 'schemas', `generated-${String(index).padStart(4, '0')}.json`), '{}\n');
+  }
+  const largeAnalysis = analyzeRepository(inspectRepository(root));
+  assert.equal(largeAnalysis.inventory.ownershipPaths.length, 1000);
+  assert.equal(largeAnalysis.inventory.ownershipPathsTruncated, true);
+  const largeBaseline = proposeDomains({ repository: inspectRepository(root), analysis: largeAnalysis });
+  const largeBrief = createFleetDesignBrief({ repository: inspectRepository(root), analysis: largeAnalysis, baseline: largeBaseline });
+  const largeProposal = structuredClone(largeBaseline);
+  largeProposal.organization_assessment = flatOrganizationAssessment(largeProposal);
+  assert.ok(validateArchitectProposal({ brief: largeBrief, proposal: largeProposal }).findings
+    .some((finding) => finding.code === 'OWNERSHIP_EVIDENCE_TRUNCATED'));
+});
+
 test('SCN-bootstrap-primary-ownership: pending and approved rosters reject duplicate and recursive primary claims, not shared consultation', () => {
   const root = repositoryFixture();
   for (const name of ['api', 'world']) {

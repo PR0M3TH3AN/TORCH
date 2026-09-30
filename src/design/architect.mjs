@@ -61,6 +61,7 @@ function providerResponse(provider, result) {
 
 function allowedEvidence(brief) {
   const values = new Set();
+  for (const path of brief.reconnaissance.inventory?.ownershipPaths ?? []) values.add(path);
   for (const component of brief.reconnaissance.architecture.components ?? []) {
     component.evidence.forEach((entry) => values.add(entry));
   }
@@ -74,6 +75,7 @@ function allowedEvidence(brief) {
 
 function allowedOwnedPaths(brief) {
   const values = new Set();
+  for (const path of brief.reconnaissance.inventory?.ownershipPaths ?? []) values.add(path);
   for (const component of brief.reconnaissance.architecture.components ?? []) {
     component.paths.forEach((entry) => values.add(entry));
   }
@@ -164,6 +166,10 @@ export function createArchitectRunPlan({ brief, provider, model, maxBudgetUsd } 
 export function validateArchitectProposal({ brief, proposal } = {}) {
   const problems = [];
   const findings = [];
+  if (brief?.reconnaissance?.inventory?.ownershipPathsTruncated) {
+    findings.push({ severity: 'review', code: 'OWNERSHIP_EVIDENCE_TRUNCATED',
+      message: 'Exact file ownership evidence is bounded; component coverage does not prove whole-repository ownership.' });
+  }
   if (brief?.schema !== 'torch.dev/fleet-design-brief/v1alpha1') problems.push('unsupported design brief schema');
   if (proposal?.schema !== 'torch.dev/domain-proposal/v1alpha1') problems.push('unsupported proposal schema');
   if (proposal?.review?.status !== 'pending' || proposal?.review?.reviewedAt || proposal?.review?.reviewedBy) {

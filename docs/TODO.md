@@ -4,6 +4,20 @@
 
 ## Fresh readiness audit (2026-09-30)
 
+Current checkpoint: `03fcbdd` committed the portable rewrite. The protected fixture
+remains untracked and excluded. A commit-bound candidate passed all 38 acceptance
+groups in an isolated temporary version store; it is inactive and no stable
+launcher was installed. Older dirty-source/pending-checkpoint statements below
+are historical snapshots, not the current commit state.
+
+Install-readiness follow-up: exact observed-file ownership evidence now permits
+reviewable primary ownership for package metadata, schemas, documentation and
+other deliverables, without admitting unobserved paths or invented directory
+globs. Evidence is capped at 1000 entries with explicit truncation. Thirteen
+focused scenarios and all 38 source acceptance groups PASS. Re-checkpoint this
+fix, regenerate a complete six-area proposal and qualify its stopped-install
+rehearsal before requesting real installation or live provider launch.
+
 Self-host ownership follow-up: see
 `reports/audit/self-host-roster-review-2026-09-30.md`. A proposed six-specialist
 grouping covers 124 current implementation/assets/harness/test files with zero
