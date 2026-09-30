@@ -72,6 +72,12 @@ pilot reliability issues have also been added to the same backlog:
   handling instead of equating installed files with an operational timer.
 - [ ] `TASK-pilot-executor-outcomes`: zero exit plus timeout/error/signal cannot
   produce a successful lifecycle/wake receipt; qualify before automatic wakes.
+- [ ] `TASK-pilot-generated-check-artifacts`: retain exact-commit check artifacts
+  outside the tested tree and safely recover proven generated outputs so a gate
+  does not make the following required gate fail WORKTREE_DIRTY.
+- [ ] `TASK-provider-handover`: after release qualification, checkpoint and safely
+  switch one session then the fleet to reviewed Claude Code/Pi profiles; preserve
+  TORCH identity/tasks/messages but never reuse another harness's native session ID.
 
 ## First real self-host run (2026-09-30)
 
