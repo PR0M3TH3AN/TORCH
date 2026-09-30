@@ -88,8 +88,8 @@ candidate `ae18a98e2911aa515d0484518013061b05ff6adf` and the Manager has a bound
 next-slice planning request. The candidate's test/check/lint receipts pass; its
 dashboard receipt remains incomplete because the test writes tracked reports.
 Neither review launch nor controller exit is acceptance or landing evidence.
-There are now 43 owner-intake items, including agent chat, the UI audit and two
-observed attention/startup follow-ups.
+There are now 44 owner-intake items, including agent chat, the UI audit, observed
+attention/startup follow-ups and bounded routine-coordination policy.
 
 - [ ] `TASK-console-ux-audit`: Session Manager assigns Owner Console to audit
   every live dashboard area through actual computer use and inspected screenshots,
@@ -104,6 +104,11 @@ observed attention/startup follow-ups.
   error while the exact installed brief succeeds on the host. Qualify scoped
   sandbox access and actionable failure; do not disable sandboxing, change DB
   permissions, copy state or bypass the authoritative startup brief.
+- [ ] `TASK-bounded-routine-coordination`: live COMMON/manager policy now keeps
+  own-inbox handling, peer questions, named approver decisions and owned ledger
+  maintenance inside the fleet. Project Kernel's approved implementation slice
+  makes this portable in generated instructions and proves authority/wait/pause
+  boundaries with additive scenarios. No general unattended execution is implied.
 
 ## First real self-host run (2026-09-30)
 

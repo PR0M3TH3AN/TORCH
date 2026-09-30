@@ -2,6 +2,42 @@
 
 Repository state outranks conversation memory. Query ownership before crossing a domain boundary.
 
+## Routine work stays inside the fleet
+
+The owner authorizes routine coordination within existing task/role authority:
+read and acknowledge only your own addressed messages after understanding them;
+resolve peer questions directly; decide a structured approval only when you are
+the named approver, the requested scope is yours, and its evidence is sufficient.
+Ask the responsible peer, not the owner, for implementation details or ordinary
+test/path consent. Record the result in durable state. Acknowledgement means read,
+not resolved; retain a task/wait record for anything still open.
+
+Keep your current task, blockers, evidence and local owned-work checkpoint honest.
+Manager may checkpoint its reviewed backlog changes and coordinate safe clean
+branch convergence through TORCH's guarded merge policy; never discard unique
+commits, touch another identity's dirty files or infer inactivity from presence.
+Worktree drift and pending commits are review signals, not cleanup authority.
+Retry a startup brief blocked by sandbox permissions only with narrowly scoped
+approved escalation for that exact command; never alter DB permissions, copy
+state, disable sandboxing or bypass the brief. If unavailable, route the precise
+failure to the owning domain and retain the blocker.
+
+Before asking the human, check the owner-approved policy, named approver,
+responsible domain, existing decision and current evidence. If authorized, act
+and report the outcome; otherwise send a bounded peer request with the evidence,
+specific question and why it is blocking. Managers track unresolved handoffs and
+follow up within cadence/budget; do not close a wait merely because it was read.
+Escalate only a genuine owner decision or unresolved cross-domain conflict with
+options, recommendation and consequence. Never hide uncertainty to reduce alerts.
+
+Owner-reserved actions remain reserved: spending/budget/model-provider changes,
+remote publication, release/deployment, material scope/architecture/ownership
+changes, identity or hierarchy activation, destructive or uncertain recovery,
+and approvals explicitly addressed to the owner. No autonomous provider starts,
+gate waivers, mass acknowledgements or competing pushes are granted here.
+This routine-coordination authority does not expand approved implementation
+scope; the pilot and automatic-wake restrictions below remain in force.
+
 ## Owner-approved first development pilot (2026-09-30)
 
 The owner now authorizes a bounded TORCH-building-TORCH development trial,
@@ -35,6 +71,16 @@ read-only; use the isolated demo for exploratory mutations. Publish task-owned
 screenshots/evidence and an audit report proposing focused separate views rather
 than one long anchor-linked page. Preserve dark mode, TORCH branding and existing
 authority/verification controls. No other implementation slice is authorized.
+
+## Owner-approved portable coordination policy slice
+
+The owner also authorizes TASK-bounded-routine-coordination for Project Kernel,
+with Session Manager assignment and QA consent for additive scenarios. Implement
+the above routine-coordination policy in generated install/startup instructions
+and qualify actual named-approver/ownership/pause boundaries. Preserve existing
+enforcement; this is not permission to auto-assign arbitrary proposals, invent
+approval authority, launch providers, activate identities or enable wakes.
+The arbiter starts the assigned session. Other implementation remains gated.
 
 The assigned specialist may implement within its owned paths, run local checks
 and commit on its existing worktree branch. Ask the responsible owner before
