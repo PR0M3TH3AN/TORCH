@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-scheduler-qualification",
+  "title": "Qualify real manager timers and interrupted-wake recovery",
+  "description": "Manager check-in timers and stale-work review exist in source, but no host timer has been installed. Prepare separate owner-reviewed install/run/remove rehearsal; prove direct-report inspection, approval waits, budget guards, durable dispatch and unknown-launch recovery with actual providers. Do not enable host scheduling from task creation.",
+  "priority": "normal",
+  "affectedDomains": [
+    "qa",
+    "provider-runtime"
+  ],
+  "dependencies": [
+    "TASK-conversation-selfhost-development-trial"
+  ],
+  "acceptanceCriteria": [
+    "Approved bounded dispatch produces durable receipts and respects direct-report boundaries",
+    "Interrupted unknown launches never duplicate or assume terminated providers",
+    "Scheduler removal is verified and no timer remains after the rehearsal"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.692Z",
+  "updatedAt": "2026-09-30T19:30:23.692Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.692Z",
+      "note": "Task created."
+    }
+  ]
+}

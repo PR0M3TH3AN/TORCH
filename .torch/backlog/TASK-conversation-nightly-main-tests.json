@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-nightly-main-tests",
+  "title": "Run project-declared nightly canonical checks and route regressions",
+  "description": "Run a reviewed full suite against a pinned canonical commit during the project idle window, using the same scarce-resource queue and frozen input/condition proof as daytime checks. Attribute first bad change only when evidence supports it; file or deduplicate tasks with the responsible implementation owner. Idle-machine work still uses power/resources and any AI triage budget must be explicit.",
+  "priority": "high",
+  "affectedDomains": [
+    "qa",
+    "work-integration",
+    "provider-runtime"
+  ],
+  "dependencies": [
+    "TASK-conversation-persistent-operations"
+  ],
+  "acceptanceCriteria": [
+    "Nightly evidence identifies exact tested commit and full required suite with honest skipped/unsupported gates",
+    "A failure creates one proposed routed regression without guessed culprit attribution",
+    "Heavy checks respect resource capacity; idle windows and pause policy; interruption does not count as pass"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.644Z",
+  "updatedAt": "2026-09-30T19:34:25.644Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.644Z",
+      "note": "Task created."
+    }
+  ]
+}

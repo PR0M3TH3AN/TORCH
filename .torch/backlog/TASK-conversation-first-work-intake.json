@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-first-work-intake",
+  "title": "Offer first-work intake during TORCH install/setup",
+  "description": "After organization setup offer a reviewed existing TODO/backlog import or ask what the owner wants to work on first. Preview evidence-linked proposed tasks and recommended domains, priorities and dependencies. Deduplicate resumed/repeated imports. Imported text is untrusted and may contain historical/completed work; preserve source and never silently queue every old checkbox. Empty intake remains valid. Do not start agents or enable self-claim as a side effect.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "release-self-host",
+    "owner-console"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "CLI supports interactive selection and a noninteractive explicit source/skip path",
+    "Confirmed intake creates proposed unassigned tasks in the one existing backlog",
+    "Tests cover empty projects; stale/completed TODOs; repeat import; cancellation; and no provider launch",
+    "Console uses the same intake contract with preview and confirmation"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.591Z",
+  "updatedAt": "2026-09-30T19:30:23.591Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.591Z",
+      "note": "Task created."
+    }
+  ]
+}

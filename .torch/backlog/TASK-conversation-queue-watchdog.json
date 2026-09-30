@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-queue-watchdog",
+  "title": "Detect stuck resource queues and account for every queue removal",
+  "description": "Add machine-level non-AI queue/lease health monitoring: waiting work with unused declared slots, missing tickets, premature runners and stale leases. Report process ownership and apply only narrowly approved safe recovery; never kill a browser based on name or assume a stopped runner implies stopped descendants. Existing browser capacity is project-defined, not fixed at two.",
+  "priority": "high",
+  "affectedDomains": [
+    "work-integration",
+    "provider-runtime",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-conversation-persistent-operations"
+  ],
+  "acceptanceCriteria": [
+    "Queued work losing its slot is durably notified and stops instead of silently blocking the queue",
+    "Every withdraw/cancel/recovery has an audited reason and actor",
+    "Watchdog identifies mismatched live executor/lease without killing unrelated or unconfirmed processes"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.637Z",
+  "updatedAt": "2026-09-30T19:34:25.637Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.637Z",
+      "note": "Task created."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-mixed-provider-qualification",
+  "title": "Qualify current Pi and mixed Codex/Claude/Pi fleets",
+  "description": "Current official Pi package is @earendil-works/pi-coding-agent; downloaded --version/--help are not adapter qualification. Verify current flags, extension/login, message binding and resume; exercise mixed harnesses using user-set profiles. Code/regression work is allowed after development activation; live launches and quota need specific owner approval.",
+  "priority": "high",
+  "affectedDomains": [
+    "qa",
+    "provider-runtime"
+  ],
+  "dependencies": [
+    "TASK-conversation-startup-preflight"
+  ],
+  "acceptanceCriteria": [
+    "Real approved bounded Pi extension/start/resume proves identity-bound tool communication",
+    "Codex and Claude can communicate in one approved bounded fleet without cross-identity impersonation",
+    "Profile changes affect only intended sessions; unsupported combinations fail honestly"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.630Z",
+  "updatedAt": "2026-09-30T19:30:23.630Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.630Z",
+      "note": "Task created."
+    }
+  ]
+}

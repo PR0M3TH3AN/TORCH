@@ -1,0 +1,43 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-pilot",
+  "title": "Pilot a TORCH software/docs pipeline and debug a failed stage",
+  "description": "Use TORCH as the first project to qualify pipeline traceability. Run one approved deliverable through stages, deliberately reject/change an input, inspect lineage and resume safely. Meshcraft no-primitives, UV-paintback and voice checks remain project-supplied COMBATRIG examples; do not spend image/voice credits or modify COMBATRIG.",
+  "priority": "normal",
+  "affectedDomains": [
+    "qa",
+    "project-kernel",
+    "work-integration",
+    "owner-console"
+  ],
+  "dependencies": [
+    "TASK-conversation-pipeline-console",
+    "TASK-conversation-pipeline-stalls"
+  ],
+  "acceptanceCriteria": [
+    "Pilot proves checked handoffs; artifact review; failure diagnosis; rerun history; and completion",
+    "Stage owner and flow coordinator responsibilities stay distinct",
+    "No external asset costs or COMBATRIG writes occur without separate approval"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.673Z",
+  "updatedAt": "2026-09-30T19:30:23.673Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.673Z",
+      "note": "Task created."
+    }
+  ]
+}

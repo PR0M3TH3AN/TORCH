@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-idle-worktree-refresh",
+  "title": "Refresh clean idle worktrees without rewriting or discarding work",
+  "description": "Schedule safe canonical convergence for idle unguarded worktrees. Merge, never rebase; skip active assignments/checks/resources, unsaved/staged work, uncommitted generated files, unknown providers and in-progress Git operations. Flag conflicts rather than forcing. Scratch cleanup must be manifest-owned and verified recoverable.",
+  "priority": "normal",
+  "affectedDomains": [
+    "work-integration",
+    "provider-runtime",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-conversation-persistent-operations"
+  ],
+  "acceptanceCriteria": [
+    "Clean unguarded idle branches converge by merge and unique commits remain reachable",
+    "Every active/dirty/guarded worktree is skipped with a precise reason; conflicts are preserved for its owner",
+    "No force push; reset; arbitrary scratch deletion; or silent stash is used"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.657Z",
+  "updatedAt": "2026-09-30T19:34:25.657Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.657Z",
+      "note": "Task created."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-startup-preflight",
+  "title": "Show exact runtime/model/auth preflight in setup and Console",
+  "description": "The first launch selected Codex 0.158.0 while the current session used 0.159.2. Provider managed-update selection exists; expose exact resolved executable/version/model/reasoning and available authentication evidence before approving startup. Distinguish offline metadata from a paid live model probe.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "owner-console",
+    "release-self-host"
+  ],
+  "dependencies": [
+    "TASK-conversation-runtime-diagnostics"
+  ],
+  "acceptanceCriteria": [
+    "Installed setup and Console display the actual future launch profile and executable",
+    "Missing auth or model support is actionable and unknown is not called supported",
+    "Preview is offline and live probes require separate explicit approval"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.612Z",
+  "updatedAt": "2026-09-30T19:30:23.612Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.612Z",
+      "note": "Task created."
+    }
+  ]
+}

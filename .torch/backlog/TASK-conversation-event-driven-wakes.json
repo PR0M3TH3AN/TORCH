@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-event-driven-wakes",
+  "title": "Wake managers from durable significant events with periodic safety checks",
+  "description": "Landing failure, canonical check regression, stuck queues, deployment failure, approval waits and at-risk work should publish bounded project events. A persistent watcher coalesces/deduplicates and routes to the responsible manager; quiet timers act as a safety net. Do not expose private reasoning or replace existing authoritative task/message ledgers.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "work-integration",
+    "owner-console"
+  ],
+  "dependencies": [
+    "TASK-conversation-persistent-operations"
+  ],
+  "acceptanceCriteria": [
+    "Events persist across restart and are replayed idempotently within a bounded window",
+    "Quiet fleet does not burn an AI wake on every poll; significant exceptions route once under budget",
+    "Owner notifications require approved targets and decisions needing the owner; no public event log by default"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.629Z",
+  "updatedAt": "2026-09-30T19:34:25.629Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.629Z",
+      "note": "Task created."
+    }
+  ]
+}

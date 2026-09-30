@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-definitions",
+  "title": "Implement reviewed versioned production pipeline definitions",
+  "description": "Implement spec section 14.0a: evidence-based proposals from repo/spec and recurring handoffs; versioned stage DAGs; one flow coordinator; specialist ownership; pinned artifact/check/resource contracts; separate taste approvals. Pipelines are optional and project-specific, not copied COMBATRIG stages. Agree ownership for any new src/pipelines surface before creating it.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "work-integration"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Definition validation rejects cycles; unknown owners; ambiguous contracts; and duplicate authority",
+    "Creating or changing a definition requires reviewed owner approval",
+    "Ordinary projects without pipelines retain their existing task loop"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.636Z",
+  "updatedAt": "2026-09-30T19:30:23.636Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.636Z",
+      "note": "Task created."
+    }
+  ]
+}

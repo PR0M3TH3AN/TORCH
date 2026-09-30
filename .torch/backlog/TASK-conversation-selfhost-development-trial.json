@@ -1,0 +1,44 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-selfhost-development-trial",
+  "title": "Qualify bounded TORCH-building-TORCH development loop",
+  "description": "The installed smoke proved only one specialist and one manager communicating. Plan an approved bounded code task across specialists: current brief; assigned/resume preference; checks; frozen queued evidence where appropriate; serialized landing on the approved rewrite boundary; landed closure; next-item/idle; stop/resume. Preserve all worktree history and clarify remote/local recoverability before landing.",
+  "priority": "high",
+  "affectedDomains": [
+    "qa",
+    "session-manager",
+    "work-integration",
+    "provider-runtime"
+  ],
+  "dependencies": [
+    "TASK-conversation-development-activation",
+    "TASK-conversation-startup-preflight"
+  ],
+  "acceptanceCriteria": [
+    "Exact code commit and required gates are recorded on the actual merged tree",
+    "No direct main push races or PR bypass occurs; landing conflicts return to the author",
+    "Live model behavior follows fresh per-item instructions and one active assignment",
+    "Stop/resume retains identity and mid-flight work; budget is enforced"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.680Z",
+  "updatedAt": "2026-09-30T19:30:23.680Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.680Z",
+      "note": "Task created."
+    }
+  ]
+}

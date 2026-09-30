@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-provenance",
+  "title": "Persist pipeline instances and immutable attempt provenance",
+  "description": "Track each deliverable through the existing backlog/artifact/check/approval systems. Record content fingerprints, tool versions, model/prompt/seed where available, exact reviewed outputs, metrics and work/wait/cost evidence. Keep private data local; hosted seed does not guarantee reproducibility. Redo adds an attempt rather than overwriting history.",
+  "priority": "high",
+  "affectedDomains": [
+    "work-integration",
+    "project-kernel"
+  ],
+  "dependencies": [
+    "TASK-conversation-pipeline-definitions"
+  ],
+  "acceptanceCriteria": [
+    "Each stage attempt links exact upstream inputs and output artifact digests",
+    "Reruns retain all prior attempts and superseded approval evidence",
+    "Unknown cost/model seed is explicit and private prompts are not exposed in public/demo state"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.641Z",
+  "updatedAt": "2026-09-30T19:30:23.641Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.641Z",
+      "note": "Task created."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-owner-digest",
+  "title": "Finish daily owner digest decision coverage and opt-in notifications",
+  "description": "Local owner-first digest and publication are implemented. Time-index manager decisions so reports can state coverage; add explicitly opt-in private external notification adapters if requested; separately qualify an approved daily cadence. Do not silently send messages or publish a public summary.",
+  "priority": "normal",
+  "affectedDomains": [
+    "provider-runtime",
+    "owner-console"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Owner approvals and neglected requests lead the report; known shipping and unknown coverage stay separate",
+    "Management decision timestamps allow honest bounded coverage",
+    "External sends and cadence are opt-in with reviewed targets and no duplicate delivery"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.715Z",
+  "updatedAt": "2026-09-30T19:30:23.715Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.715Z",
+      "note": "Task created."
+    }
+  ]
+}

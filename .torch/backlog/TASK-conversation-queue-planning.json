@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-queue-planning",
+  "title": "Show evidence-based queue wait estimates and heavy-run scheduling",
+  "description": "Record comparable test runtimes, bounded wait estimates with uncertainty, slowdown alerts, project-declared GPU/card-exclusive leases and optional overnight placement for heavy checks. Never treat old heterogeneous timing as an exact promise or bypass queue ordering to prioritize a waiting UI card.",
+  "priority": "normal",
+  "affectedDomains": [
+    "work-integration",
+    "owner-console",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-conversation-queue-watchdog"
+  ],
+  "acceptanceCriteria": [
+    "Dashboard distinguishes measured duration from uncertain queue prediction",
+    "GPU-exclusive jobs cannot overlap incompatible work and heavy jobs obey approved windows",
+    "Sparse samples show unknown; cancellation/recovery preserves audit and wakes stopped waiters"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.665Z",
+  "updatedAt": "2026-09-30T19:34:25.665Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.665Z",
+      "note": "Task created."
+    }
+  ]
+}

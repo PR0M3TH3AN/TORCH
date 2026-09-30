@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-update-startpaths",
+  "title": "Apply approved provider freshness policy to every launch path",
+  "description": "Normal fleet up applies managed provider updates; audit hierarchy activation/start and persistent schedule wakes, interrupted-update recovery, concurrency and Windows npm execution. Apply policy consistently without introducing provider starts during install/preview or defeating existing wake locks and budgets.",
+  "priority": "normal",
+  "affectedDomains": [
+    "provider-runtime",
+    "project-kernel"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "All runtime launch paths honor the approved update policy or fail closed",
+    "Interrupted updates retain previous usable binaries and do not bypass wake reservations",
+    "Windows execution is qualified or clearly reported unsupported"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.624Z",
+  "updatedAt": "2026-09-30T19:30:23.624Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.624Z",
+      "note": "Task created."
+    }
+  ]
+}

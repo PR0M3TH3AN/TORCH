@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-runtime-diagnostics",
+  "title": "Expose actual Codex JSON startup failure events",
+  "description": "First Sol launch reported inherited Vercel MCP auth stderr while the actual model rejection was in JSON stdout. Parse bounded structured runtime failure events without leaking prompts, credentials or unrelated logs; preserve true execution errors and unknown outcomes.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "release-self-host"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Unsupported-model fixture displays the model rejection instead of only MCP noise",
+    "Malformed/oversized stdout stays bounded and explicitly unknown",
+    "No credential or prompt contents appear in owner diagnostics"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.606Z",
+  "updatedAt": "2026-09-30T19:30:23.606Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.606Z",
+      "note": "Task created."
+    }
+  ]
+}

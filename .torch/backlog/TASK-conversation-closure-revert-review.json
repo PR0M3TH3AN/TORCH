@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-closure-revert-review",
+  "title": "Handle reverted completed work and reconcile unnamed finished tasks",
+  "description": "Existing landed Closes reconciliation is safer than the older COMBATRIG manual closer. Extend with verified revert awareness and a low-cost reviewed open-task/code audit. Backlog terminal-state semantics currently lack reopen; define a spec-backed reopen or linked follow-up transition before implementation. A revert may not undo all outcomes; do not reopen solely from an untrusted commit message.",
+  "priority": "normal",
+  "affectedDomains": [
+    "work-integration",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-conversation-landing-closure"
+  ],
+  "acceptanceCriteria": [
+    "Only verified relevant landed revert evidence can trigger the reviewed follow-up/reopen policy",
+    "An audit proposes evidence-linked closure or follow-up; it cannot mass-close guessed finished tasks",
+    "Exact landing/check evidence and idempotence are retained for original task and reversal lineage"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.671Z",
+  "updatedAt": "2026-09-30T19:34:25.671Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.671Z",
+      "note": "Task created."
+    }
+  ]
+}

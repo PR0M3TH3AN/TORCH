@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-delivery-qualification",
+  "title": "Qualify delivery/fetch adapters and interrupted success recovery",
+  "description": "Real remote transport classification, provider receipt identity, deploy idempotency and stopped-executor attestations remain unqualified. Develop non-effectful/dry-run harnesses first; any real destination, credentials, push or deploy requires separate owner scope. Local green receipts are not production evidence.",
+  "priority": "normal",
+  "affectedDomains": [
+    "work-integration",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Classified retries apply only to safely retryable failures and unknown effects stop",
+    "External-success reconciliation never re-executes an already applied operation",
+    "Owner sees exact delivered version and failure/status evidence without raw secrets"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.708Z",
+  "updatedAt": "2026-09-30T19:30:23.708Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.708Z",
+      "note": "Task created."
+    }
+  ]
+}

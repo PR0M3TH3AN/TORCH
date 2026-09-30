@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-flow",
+  "title": "Gate pipeline handoffs and recover interrupted/reworked stages",
+  "description": "Implement revision-checked transitions, parallel joins, check and approval requirements, changed-upstream invalidation and rebuild-from-stage lineage. Pipeline cards coordinate deliverables but do not form an independently scheduled task queue.",
+  "priority": "high",
+  "affectedDomains": [
+    "work-integration",
+    "project-kernel"
+  ],
+  "dependencies": [
+    "TASK-conversation-pipeline-provenance"
+  ],
+  "acceptanceCriteria": [
+    "Next stage cannot consume unchecked or unapproved required inputs",
+    "Concurrent and replayed transitions are safe; upstream changes invalidate dependent evidence",
+    "Interrupted/rejected work remains traceable and cannot double-start or falsely complete"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.649Z",
+  "updatedAt": "2026-09-30T19:30:23.649Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.649Z",
+      "note": "Task created."
+    }
+  ]
+}

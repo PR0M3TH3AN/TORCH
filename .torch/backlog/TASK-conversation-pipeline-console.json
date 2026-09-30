@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-console",
+  "title": "Build conditional Pipelines dashboard with exact-output review",
+  "description": "Implement spec 14.0a Pipelines view in the real TORCH Console and shared isolated demo: deliverable rows, current/parallel stages, time/wait party, DAG/detail timeline, pinned input/output and attempt lineage, reciprocal Work links, before/after output review and scoped feedback/approval/rework. Use current-blocker-first mobile layout and protected refresh.",
+  "priority": "high",
+  "affectedDomains": [
+    "owner-console",
+    "work-integration"
+  ],
+  "dependencies": [
+    "TASK-conversation-pipeline-flow"
+  ],
+  "acceptanceCriteria": [
+    "Pipelines navigation appears only for relevant project definitions or intentional demo fixtures",
+    "Feedback and decisions bind exact output/attempt with fresh preview and authority checks",
+    "Desktop/mobile browser qualification proves accessible review and preserved drafts",
+    "Demo uses the same renderer but makes zero live API writes"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.660Z",
+  "updatedAt": "2026-09-30T19:30:23.660Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.660Z",
+      "note": "Task created."
+    }
+  ]
+}

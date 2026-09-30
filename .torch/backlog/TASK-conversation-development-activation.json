@@ -1,0 +1,39 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-development-activation",
+  "title": "Prepare owner-reviewed development activation",
+  "description": "The current common prompt authorizes smoke checks only; self-claim is disabled and all specialists are offline. Prepare a scoped development plan, workload/model budget, approved work selection, landing/recoverability boundary and worktree convergence preview. Do not change authorization or start a provider based on this task alone.",
+  "priority": "high",
+  "affectedDomains": [
+    "session-manager",
+    "project-kernel",
+    "release-self-host"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Owner can review scope and budget before activation",
+    "Smoke-only instructions and existing work remain unchanged until separate approval",
+    "Manager triage distinguishes proposed work from ready assignments"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.580Z",
+  "updatedAt": "2026-09-30T19:30:23.580Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.580Z",
+      "note": "Task created."
+    }
+  ]
+}

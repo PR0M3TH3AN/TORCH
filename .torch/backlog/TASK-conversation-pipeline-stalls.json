@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-stalls",
+  "title": "Include stalled pipeline handoffs in manager check-ins",
+  "description": "Report current wait reason, waiting party, elapsed time and significant pipeline stalls alongside task anomalies. Managers inspect their direct reports and flow coordinators; do not repeatedly ping idle agents or automatically approve/resume blocked work.",
+  "priority": "normal",
+  "affectedDomains": [
+    "provider-runtime",
+    "work-integration"
+  ],
+  "dependencies": [
+    "TASK-conversation-pipeline-flow"
+  ],
+  "acceptanceCriteria": [
+    "Stalled deliverable alerts identify exact stage and responsible waiting party",
+    "Repeated observations deduplicate and legitimate idle/approval waits remain explicit",
+    "Manager check-ins do not create another queue or bypass owner approvals"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.655Z",
+  "updatedAt": "2026-09-30T19:30:23.655Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.655Z",
+      "note": "Task created."
+    }
+  ]
+}

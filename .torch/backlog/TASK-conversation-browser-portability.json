@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-browser-portability",
+  "title": "Finish frozen-browser/condition/interruption qualification",
+  "description": "Existing Linux Chromium qualification passes several cases. Finish disk-use evidence, other-project harnesses/platforms, process-group escape boundaries, actual GPU/game conditions and transient mid-measurement drift. Do not treat reported condition probes or runner PID alone as proof of descendant termination.",
+  "priority": "normal",
+  "affectedDomains": [
+    "qa",
+    "work-integration"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Frozen checks measure only captured input even after live rebuild while queued",
+    "Disk/cleanup and supported-platform limits are measured and documented",
+    "Transient invalid conditions and escaped/unconfirmed descendants cannot falsely qualify a pass"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.698Z",
+  "updatedAt": "2026-09-30T19:30:23.698Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.698Z",
+      "note": "Task created."
+    }
+  ]
+}

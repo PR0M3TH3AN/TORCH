@@ -1,0 +1,37 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-mcp-isolation",
+  "title": "Isolate irrelevant inherited MCP servers for TORCH agents",
+  "description": "Inherited global Vercel MCP authentication noise appeared in failed and successful Codex launches. Add project/session-scoped allowlist/isolation that retains TORCH identity-bound tools and does not rewrite or delete user-global harness settings.",
+  "priority": "normal",
+  "affectedDomains": [
+    "provider-runtime"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Tests prove TORCH tools remain available while unrelated MCP startup is excluded",
+    "Global provider configuration and credentials are unchanged",
+    "Owner can inspect and change the project-scoped isolation policy"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.617Z",
+  "updatedAt": "2026-09-30T19:30:23.617Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.617Z",
+      "note": "Task created."
+    }
+  ]
+}

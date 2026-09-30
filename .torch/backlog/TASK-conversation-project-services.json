@@ -1,0 +1,43 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-project-services",
+  "title": "Configure project-specific landing worker, dev server and release cadence",
+  "description": "During init/install detect and propose services the project needs: one serialized landing executor, local owner Console/dev server, daily local digest, and optional project release/live verification jobs. Do not assume Vercel, game builds, HTTPS/LAN exposure, 08:00/16:00 release or network credentials. Schedule selection, destinations, port/TLS and release budgets appear in the owner-reviewed setup plan; unsafe/missing integrations remain visibly unconfigured.",
+  "priority": "normal",
+  "affectedDomains": [
+    "release-self-host",
+    "provider-runtime",
+    "work-integration",
+    "owner-console"
+  ],
+  "dependencies": [
+    "TASK-conversation-persistent-operations"
+  ],
+  "acceptanceCriteria": [
+    "One landing worker per approved project cannot race main pushes and cannot bypass exact checks",
+    "Local-only dev Console can be configured without silently exposing LAN/public access",
+    "Release/deploy and notifications are disabled until destination-specific approval; retries/status/live version proof are preserved",
+    "System versus active-fleet job lifetimes are explicit and stop/reinstall do not orphan services"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.678Z",
+  "updatedAt": "2026-09-30T19:34:25.678Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.678Z",
+      "note": "Task created."
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-console-workflow",
+  "title": "Complete scoped owner workflow controls and live dashboard qualification",
+  "description": "Existing Console supports several previewed actions and live refresh. Audit remaining desired owner controls (assignment/routing, lifecycle, integration and release views) against spec and current capabilities; implement only individually authorized operations. Qualify real provider activity and native background/back-cache refresh while preserving edits and private artifact provenance.",
+  "priority": "normal",
+  "affectedDomains": [
+    "owner-console",
+    "release-self-host"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Controls show target; effect; authority and current evidence before confirmation",
+    "Stale/replayed previews cannot modify a newer task or session",
+    "Live refresh and artifact review retain focused drafts and distinguish recorded from live state"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.720Z",
+  "updatedAt": "2026-09-30T19:30:23.720Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.720Z",
+      "note": "Task created."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-landing-closure",
+  "title": "Qualify live exact-commit task closure and stale review",
+  "description": "Mechanics for Closes trailers, resumed assignments, stale owner requests and manager review are tested. Prove real specialist commit naming and interrupted landed-closure reconciliation in the approved self-host trial before enabling automatic closure or self-claim.",
+  "priority": "normal",
+  "affectedDomains": [
+    "qa",
+    "work-integration"
+  ],
+  "dependencies": [
+    "TASK-conversation-selfhost-development-trial"
+  ],
+  "acceptanceCriteria": [
+    "Closes intent alone cannot complete work; exact landing and policy receipts are required",
+    "Recovery is idempotent and unrelated tasks remain open",
+    "Stale reviews distinguish missing history from proven inactivity and do not auto-restart blocked work"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.703Z",
+  "updatedAt": "2026-09-30T19:30:23.703Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.703Z",
+      "note": "Task created."
+    }
+  ]
+}

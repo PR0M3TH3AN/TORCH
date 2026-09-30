@@ -1,0 +1,39 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-documentation-current",
+  "title": "Reconcile historical roadmap and current ownership documentation",
+  "description": "docs/TODO.md contains historical no-launcher/uncommitted snapshots below newer evidence. Keep provenance but clearly mark superseded status, reconcile partially complete umbrella items and refresh ownership for newly created docs/reports/future pipeline modules. Do not claim old artifact receipts qualify newer code.",
+  "priority": "normal",
+  "affectedDomains": [
+    "project-kernel",
+    "release-self-host",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "One clearly authoritative current status links exact installed/source receipts",
+    "Current implementation ownership remains unique and future new paths get explicit review",
+    "Documentation distinguishes completed mechanics from remaining live/release qualification"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.726Z",
+  "updatedAt": "2026-09-30T19:30:23.726Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.726Z",
+      "note": "Task created."
+    }
+  ]
+}

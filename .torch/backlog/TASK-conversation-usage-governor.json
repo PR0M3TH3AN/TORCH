@@ -1,0 +1,42 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-usage-governor",
+  "title": "Enforce provider-neutral usage limits and reviewed reset/restart policies",
+  "description": "Implement machine-level per-provider/project/session usage monitoring with measured versus estimated/unavailable evidence. Owner can set limits (for example 95 percent), graceful wind-down and a reset-window restart such as Monday 03:20 in their timezone. Do not scrape private account state without approval, invent subscription availability or blindly restart a detached/manually paused fleet. Use conservative invocation budgets where meter data is unavailable.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "owner-console",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-conversation-persistent-operations"
+  ],
+  "acceptanceCriteria": [
+    "Budget crossing gracefully stops new work and preserves in-flight state and resumes under reviewed policy",
+    "Missing/stale usage evidence is not zero cost or permission to run unbounded",
+    "Per-domain measured usage supports profile changes without silently replacing user selections",
+    "Manual pause/detach; credits exhaustion; DST; missed ticks and unknown launches cannot trigger duplicate/unapproved restarts"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.651Z",
+  "updatedAt": "2026-09-30T19:34:25.651Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.651Z",
+      "note": "Task created."
+    }
+  ]
+}

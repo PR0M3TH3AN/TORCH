@@ -1,0 +1,42 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-release-qualification",
+  "title": "Complete version-one release gates and prepare approved publication",
+  "description": "Installed alpha.2 is not full section-32/product qualification. Track remaining model/auth, multi-domain, stop/resume, rollback/removal, dashboard and pipeline gates with current evidence. Package/public-site deployment, default-branch promotion and COMBATRIG migration remain separate owner decisions; do not touch them based on this backlog item.",
+  "priority": "normal",
+  "affectedDomains": [
+    "release-self-host",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-conversation-selfhost-development-trial",
+    "TASK-conversation-mixed-provider-qualification",
+    "TASK-conversation-hierarchy-pilot"
+  ],
+  "acceptanceCriteria": [
+    "Release readiness names unmeasured gates and exact tested artifact instead of a guessed percent",
+    "Accepted candidate/rollback/removal are rehearsed without losing real project history",
+    "Publication and legacy/main promotion occur only under separately approved scope"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.732Z",
+  "updatedAt": "2026-09-30T19:30:23.732Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.732Z",
+      "note": "Task created."
+    }
+  ]
+}

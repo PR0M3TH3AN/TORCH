@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-persistent-operations",
+  "title": "Provision durable TORCH operations in init/install, not a manual cron step",
+  "description": "Latest owner clarification: init/install must provision machine-level project services and schedules as one reviewed setup workflow. Current manager schedule JSON is not enough. Include automatic scheduler integration and a manifest-owned service inventory with lifetime (system/session), timezone, missed-run policy, budgets, pause/resume, restart and uninstall behavior. Persistent services survive AI-session expiry; the explicit stopped-until-ready boundary still prevents provider wakes or development dispatch now. Init needs a preview/confirmation path because existing init is read-only; provision dormant services during stopped install, then enable only reviewed policies. Treat TASK-conversation-automatic-scheduler as the earlier narrower request and implement this latest clarification.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "project-kernel",
+    "release-self-host",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Reviewed init/install provisions or reconciles owned scheduler/service integrations without a separate manual install command",
+    "Dormant installation and dry-run never wake providers; persistent approved operations survive manager-session expiry and reboot",
+    "Repeated init/install/restore/upgrade cannot duplicate jobs; shutdown/cleanup preserve declared lifetimes and remove only owned integrations",
+    "Setup inventories schedule lifetimes; timezones; budgets; restart policy; and destination-specific approval before activation"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:34:25.620Z",
+  "updatedAt": "2026-09-30T19:34:25.620Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:34:25.620Z",
+      "note": "Task created."
+    }
+  ]
+}

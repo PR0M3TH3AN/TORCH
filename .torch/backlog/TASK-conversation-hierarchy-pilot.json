@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-hierarchy-pilot",
+  "title": "Qualify graceful hierarchy expansion and reversal",
+  "description": "Six current specialists do not need managers by headcount alone. Exercise sustained-evidence proposals, process-change alternatives, owner approval and a bounded coordination pilot only if justified. Section 32 requires two domain managers coordinating a real task; current flat smoke does not meet it. Do not activate leads merely to claim readiness.",
+  "priority": "normal",
+  "affectedDomains": [
+    "project-kernel",
+    "qa",
+    "session-manager"
+  ],
+  "dependencies": [
+    "TASK-conversation-selfhost-development-trial"
+  ],
+  "acceptanceCriteria": [
+    "Proposals own concrete integration outcomes and do not duplicate specialist ownership",
+    "Direct specialist communication remains available and program/fleet responsibilities stay separate",
+    "Approved pilot has measured success/stop conditions and preserves work on reversal"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.687Z",
+  "updatedAt": "2026-09-30T19:30:23.687Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.687Z",
+      "note": "Task created."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-automatic-scheduler",
+  "title": "Automatically provision project schedules during setup and approved startup",
+  "description": "Owner expects TORCH scheduling to be part of the product, not a separate manual cron chore. The current install defines a 15-minute manager check-in but does not install a host timer. Integrate idempotent scheduler planning/provisioning into guided setup and explicit fleet activation. Respect the existing stopped-until-ready boundary: setup/dry-run cannot wake models; only approved fleet startup enables recurring coordination within reviewed budgets. Direct-report schedules adapt to graph changes; unsupported hosts must show an actionable supported fallback or explicit limitation. Preserve unrelated host timers; stop/uninstall disable/remove only TORCH-owned integrations.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "project-kernel",
+    "release-self-host",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Owner-reviewed setup configures project schedules and approved startup activates the correct owned scheduler without a second manual command",
+    "No live wake occurs during dry-run; stopped setup; restore-only reinstall; or without reviewed activation policy",
+    "Restart/reinstall/graph changes reconcile idempotently without duplicate units or orphan wakes",
+    "Manager checks cover approval waits and stale work; deploys/notifications retain separate authority; uninstall verifies owned scheduler removal"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Self-host development readiness",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:31:36.655Z",
+  "updatedAt": "2026-09-30T19:31:36.655Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:31:36.655Z",
+      "note": "Task created."
+    }
+  ]
+}

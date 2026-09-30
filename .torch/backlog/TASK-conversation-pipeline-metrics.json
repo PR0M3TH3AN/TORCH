@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-conversation-pipeline-metrics",
+  "title": "Measure pipeline bottlenecks and review versioned improvements",
+  "description": "Aggregate per-stage work versus waiting time, rerun/check/approval failures and known costs. Support configurable evidence-backed review after sufficient samples (five as a starting suggestion, not universal law). Log proposed change and expected metric; owner approves revised definitions.",
+  "priority": "normal",
+  "affectedDomains": [
+    "work-integration",
+    "owner-console"
+  ],
+  "dependencies": [
+    "TASK-conversation-pipeline-flow"
+  ],
+  "acceptanceCriteria": [
+    "Compatible versions can be compared without mixing incompatible stage definitions",
+    "Unknown or incomplete measurement is clearly labelled",
+    "Review proposals retain baseline evidence and do not silently alter active pipelines"
+  ],
+  "observedAt": "ff0712534829",
+  "feature": "Portable production pipelines",
+  "milestone": "Owner-reviewed first development backlog",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:30:23.666Z",
+  "updatedAt": "2026-09-30T19:30:23.666Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:30:23.666Z",
+      "note": "Task created."
+    }
+  ]
+}
