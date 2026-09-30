@@ -22,15 +22,17 @@
   "observedAt": "ed1f7614d1ea",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "owner-console",
-  "evidence": [],
+  "evidence": [
+    "reports/design-system/task-console-ux-audit-owner-console-2026-09-30.md"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T22:15:39.356Z",
-  "updatedAt": "2026-09-30T22:20:04.505Z",
-  "revision": 3,
+  "updatedAt": "2026-09-30T23:38:04.514Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -52,6 +54,13 @@
       "actorId": "session-manager",
       "at": "2026-09-30T22:20:04.505Z",
       "note": "Owner-approved audit/design-only assignment. Actual computer-use navigation, viewed screenshots and desktop/mobile/keyboard coverage required for every live area; source-only inspection cannot qualify completion. Live state read-only, exploratory writes in isolated demo only. Use required frontend-design/browser skills; publish task-owned new evidence/report, preserve existing QA-owned screenshots and test expectations. Propose focused separate views and measurable acceptance criteria; no UI rewrite. Arbiter alone launches provider; automatic AI wakes paused. Current owner-console worktree clean at f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; canonical current ed1f7614 and brief fc14f7512 take precedence over stale worktree copies."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "owner-console",
+      "at": "2026-09-30T23:38:04.514Z",
+      "note": "Resumed assigned audit under current digest. Partial live desktop computer-use coverage and separate-view proposal recorded in the linked local report; prior screenshot timeout blocker remains open. Continuing stable browser capture and remaining keyboard/refresh/history/Operations/action-state coverage. No live action submitted."
     }
   ]
 }
