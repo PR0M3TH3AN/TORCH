@@ -1,0 +1,488 @@
+{
+  "schema": "torch.dev/v1alpha1",
+  "project": {
+    "id": "3dc11932-6e3c-42aa-9a8a-ca7b8f818b54",
+    "name": "TORCH",
+    "main_branch": "rewrite/portable-agent-fleet"
+  },
+  "paths": {
+    "tracked_state": ".torch",
+    "worktree_parent": "~/TORCHWorktrees"
+  },
+  "repository": {
+    "canonical": {
+      "type": "remote",
+      "remote": "origin"
+    }
+  },
+  "forge": {
+    "provider": "none"
+  },
+  "git": {
+    "branch_prefix": "torch/",
+    "convergence": "merge",
+    "allow_rebase": false,
+    "allow_force_push": false,
+    "allow_bare_stash": false
+  },
+  "synchronization": {
+    "strategy": "dispatcher-managed",
+    "auto_merge_worktrees": false
+  },
+  "runtimes": {
+    "default": "codex",
+    "codex": {
+      "model": "gpt-6-luna",
+      "reasoning": "high",
+      "launchPolicy": {
+        "approval": "approve-for-me"
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "test",
+      "title": "test",
+      "command": "npm",
+      "args": [
+        "run",
+        "test"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node --test --test-timeout=60000 test/fleet/*.test.mjs"
+      },
+      "resources": []
+    },
+    {
+      "id": "check",
+      "title": "check",
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs && node --check src/console/server.mjs && node --check src/artifacts/service.mjs && node --check src/adapters/plugins.mjs && node --check src/adapters/pi.mjs && node --check src/adapters/pi/extension.mjs && node --check site/app.js && node --check site/demo.js && node --check site/console.js && node --check site/work-views.js && node --check site/work-progress.js"
+      },
+      "resources": []
+    },
+    {
+      "id": "test-dashboard",
+      "title": "test:dashboard",
+      "command": "npm",
+      "args": [
+        "run",
+        "test:dashboard"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node scripts/test-dashboard-demo.mjs"
+      },
+      "resources": []
+    },
+    {
+      "id": "lint",
+      "title": "lint",
+      "command": "npm",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "eslint src/adapters src/artifacts src/backlog src/canonical src/checks src/console src/convergence src/control-plane src/delivery src/design src/evolution src/forge src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet"
+      },
+      "resources": []
+    }
+  ],
+  "backlog": {
+    "self_claim": {
+      "enabled": false,
+      "areas": []
+    }
+  },
+  "resources": [
+    {
+      "id": "browser",
+      "capacity": 1,
+      "queue": "fifo",
+      "max_hold_seconds": 3600
+    }
+  ],
+  "schedules": [
+    {
+      "id": "session-manager-check-in",
+      "title": "Session Manager direct-report check-in",
+      "owner": "session-manager",
+      "lifetime": "system",
+      "trigger": {
+        "type": "interval",
+        "seconds": 900
+      },
+      "behavior": "coordination",
+      "action": {
+        "type": "manager-check-in",
+        "manager_id": "session-manager"
+      },
+      "required_authority": [
+        "owner"
+      ],
+      "retry": {
+        "max_attempts": 1
+      },
+      "failure_recipient": "session-manager",
+      "source_of_truth": "active organization direct-report graph"
+    }
+  ],
+  "integration": {
+    "provider": "torch",
+    "target": "rewrite/portable-agent-fleet",
+    "require_current_main": true,
+    "required_checks": [
+      "test",
+      "check",
+      "test-dashboard",
+      "lint"
+    ],
+    "landing_authority": [
+      "session-manager"
+    ]
+  },
+  "delivery": {
+    "authority": {
+      "implemented": [
+        "$source"
+      ],
+      "verified": [
+        "$source",
+        "session-manager"
+      ],
+      "integrated": [
+        "session-manager"
+      ],
+      "release_ready": [
+        "session-manager"
+      ],
+      "released": [
+        "owner"
+      ],
+      "deployed": [
+        "owner"
+      ],
+      "live_verified": [
+        "owner"
+      ]
+    },
+    "adapters": {
+      "release": {
+        "provider": "none"
+      },
+      "deployment": {
+        "provider": "none"
+      }
+    }
+  },
+  "session_manager": {
+    "id": "session-manager",
+    "runtime": "codex",
+    "model": "gpt-6.1-sol",
+    "reasoning": "high",
+    "branch": null,
+    "worktree_name": null
+  },
+  "organization_assessment": {
+    "observation_window_days": 30,
+    "minimum_recurrences": 3
+  },
+  "domains": [
+    {
+      "id": "project-kernel",
+      "title": "Project Kernel",
+      "scope": [
+        "Portable project identity, evidence-based bootstrap, canonical instructions and organization evolution"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "src/control-plane/**",
+        "src/design/**",
+        "src/evolution/**",
+        "src/kernel/**",
+        "AGENTS.md",
+        "docs/ARCHITECTURE_DECISIONS.md",
+        "docs/PORTABLE_AGENT_FLEET_SPEC.md",
+        "docs/TODO.md"
+      ],
+      "shared_paths": [
+        "package.json",
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "provider-runtime",
+        "work-integration",
+        "owner-console",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "codex",
+      "model": null,
+      "reasoning": null,
+      "branch": null,
+      "worktree_name": null
+    },
+    {
+      "id": "provider-runtime",
+      "title": "Provider Runtime",
+      "scope": [
+        "Provider-independent identity-bound execution, session lifecycle, messaging adapters and wake limits"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "src/adapters/**",
+        "src/mcp/**",
+        "src/runtime/**",
+        "src/schedules/**",
+        "src/telemetry/**"
+      ],
+      "shared_paths": [
+        "package.json",
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "project-kernel",
+        "work-integration",
+        "owner-console",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "codex",
+      "model": null,
+      "reasoning": null,
+      "branch": null,
+      "worktree_name": null
+    },
+    {
+      "id": "work-integration",
+      "title": "Work and Integration",
+      "scope": [
+        "Exact-commit task verification, scarce resource queues, serialized landing and durable delivery recovery"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "src/backlog/**",
+        "src/canonical/**",
+        "src/checks/**",
+        "src/convergence/**",
+        "src/delivery/**",
+        "src/forge/**",
+        "src/importers/**",
+        "src/integration/**",
+        "src/resources/**"
+      ],
+      "shared_paths": [],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "owner-console",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "codex",
+      "model": null,
+      "reasoning": null,
+      "branch": null,
+      "worktree_name": null
+    },
+    {
+      "id": "owner-console",
+      "title": "Owner Console",
+      "scope": [
+        "Responsive owner controls, protected refresh, private artifacts and faithful fleet evidence"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "site/**",
+        "src/artifacts/**",
+        "src/console/**",
+        "src/observability/**"
+      ],
+      "shared_paths": [],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "work-integration",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "codex",
+      "model": "gpt-6-luna",
+      "reasoning": "high",
+      "branch": null,
+      "worktree_name": null
+    },
+    {
+      "id": "release-self-host",
+      "title": "Release and Self-host",
+      "scope": [
+        "CLI distribution and commit-bound candidate, stable upgrade, rollback and removal"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "bin/**",
+        "src/*",
+        "src/self-host/**",
+        ".gitattributes",
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "LICENSE",
+        "README.md",
+        "package-lock.json",
+        "package.json",
+        "schemas/domain-proposal.schema.json",
+        "torch-release.json"
+      ],
+      "shared_paths": [
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "work-integration",
+        "owner-console",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "codex",
+      "model": "gpt-6-luna",
+      "reasoning": "high",
+      "branch": null,
+      "worktree_name": null
+    },
+    {
+      "id": "qa",
+      "title": "Independent QA",
+      "scope": [
+        "Scenario integrity, real-browser qualification and independent cross-domain acceptance"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "*.mjs",
+        "scripts/**",
+        "test/**",
+        "tests/**",
+        "e2e/**",
+        "docs/TEST_INTEGRITY.md",
+        "reports/audit/abandoned-check-console-2026-09-30.md",
+        "reports/audit/browser-descendant-interruption-2026-09-30.md",
+        "reports/audit/combatrig-import-2026-09-27.json",
+        "reports/audit/completion-audit-report-2026-09-27.md",
+        "reports/audit/frozen-browser-qualification-2026-09-30.md",
+        "reports/audit/interrupted-check-recovery-2026-09-30.md",
+        "reports/audit/observed-file-ownership-2026-09-30.md",
+        "reports/audit/product-alignment-review-2026-09-29.md",
+        "reports/audit/readiness-audit-2026-09-30.md",
+        "reports/audit/same-runtime-browser-qualification-2026-09-30.md",
+        "reports/audit/self-host-readiness-2026-09-30.md",
+        "reports/audit/self-host-roster-review-2026-09-30.md",
+        "reports/audit/specialist-only-bootstrap-2026-09-30.md",
+        "reports/audit/stale-work-review-2026-09-30.md",
+        "reports/design-system/torch-dashboard-activity-review.png",
+        "reports/design-system/torch-dashboard-check-evidence.png",
+        "reports/design-system/torch-dashboard-demo-desktop.png",
+        "reports/design-system/torch-dashboard-demo-mobile.png",
+        "reports/design-system/torch-dashboard-live-refresh.png",
+        "reports/design-system/torch-dashboard-manager-wakes.png",
+        "reports/design-system/torch-dashboard-operation-outcomes.png",
+        "reports/design-system/torch-dashboard-owner-briefing-desktop.png",
+        "reports/design-system/torch-dashboard-owner-briefing-mobile.png",
+        "reports/design-system/torch-dashboard-pilot-conclusion.png",
+        "reports/design-system/torch-dashboard-pilot-review.png",
+        "reports/test-audit/test-integrity-note-2026-09-27-portable-kernel.yaml"
+      ],
+      "shared_paths": [
+        "package.json",
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "work-integration",
+        "owner-console",
+        "release-self-host"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [
+        "browser"
+      ],
+      "runtime": "codex",
+      "model": "gpt-6-luna",
+      "reasoning": "high",
+      "branch": null,
+      "worktree_name": null
+    }
+  ]
+}

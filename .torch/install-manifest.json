@@ -1,0 +1,79 @@
+{
+  "schema": "torch.dev/install-manifest/v1alpha1",
+  "installationId": "73b013e7-41d2-493b-a3a7-022c086f059e",
+  "projectId": "3dc11932-6e3c-42aa-9a8a-ca7b8f818b54",
+  "createdAt": "2026-09-30T18:12:33.880Z",
+  "created": [
+    {
+      "path": ".torch/torch.yaml",
+      "sha256": "6ecb9b6064f605a537fb9b4252b6061177f5ebd450d31d051d84a438590d756d"
+    },
+    {
+      "path": ".torch/roster.yaml",
+      "sha256": "fb17fd5ad48893c22a6383a20aff06c31a2db6cdd1762ea2ec4d2902009dc3a1"
+    },
+    {
+      "path": ".torch/decisions.md",
+      "sha256": "2ed9637753ede4d044109610901fec38065a7b39ec083eb48a68180976c8ff79"
+    },
+    {
+      "path": ".torch/RESUME-BRIEF.md",
+      "sha256": "903e37e64552a79342cb85d73cc0d9d2d5a8ea71bf0289ad909a289302f69221"
+    },
+    {
+      "path": ".torch/prompts/COMMON.md",
+      "sha256": "988f902261d8418a532cfb38c69ba392cb9ff7789874ff099c8cbbf7b46eff8c"
+    },
+    {
+      "path": ".torch/prompts/session-manager.md",
+      "sha256": "0723e5cd27c2392de23c1a1440728dc12a2dd663f745fbde4f98fe062bbb240b"
+    },
+    {
+      "path": ".torch/backlog/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".torch/INSTALLATION.md",
+      "sha256": "72ba5fef012e5ee5b00831f568e8dc216f014b39f751c0e47efff1fa40823e19"
+    },
+    {
+      "path": ".torch/prompts/project-kernel.md",
+      "sha256": "7bddf005ecd3d9d198ab2b0614cab66b8bfd082c625a8ef040badbc472e7e820"
+    },
+    {
+      "path": ".torch/prompts/provider-runtime.md",
+      "sha256": "76130555589d34330d576146e718bbc4b1a1c88b6ddc094eed6e75461c7e6f59"
+    },
+    {
+      "path": ".torch/prompts/work-integration.md",
+      "sha256": "442fc656d0bf346a98f52236dc0f2fa2523d3f93f8bf08a9dfd8bb26bcbe63c8"
+    },
+    {
+      "path": ".torch/prompts/owner-console.md",
+      "sha256": "9abbd3d1c99621d8f345ff6c7890e43d330ba21bd4315bd43c99bcba83fbe360"
+    },
+    {
+      "path": ".torch/prompts/release-self-host.md",
+      "sha256": "2b4a3a7e911e1b36c2ac5c848ce1ef62dec5f99fe17424cf2b57da74bcd26a19"
+    },
+    {
+      "path": ".torch/prompts/qa.md",
+      "sha256": "d95f6d6127833fab80534a35d7b52d81468da45dd97b5905f7680bb5d7fac26d"
+    },
+    {
+      "path": ".torch/domain-proposal.approved.json",
+      "sha256": "4d18085e018b98835d046eb19512a23f99b2ff0abad35106cf4e0358a009655c"
+    }
+  ],
+  "createdDirectories": [
+    ".torch/backlog",
+    ".torch/prompts"
+  ],
+  "patched": [],
+  "external": [
+    {
+      "type": "local-state",
+      "path": "/home/user/.local/share/torch/projects/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54"
+    }
+  ]
+}

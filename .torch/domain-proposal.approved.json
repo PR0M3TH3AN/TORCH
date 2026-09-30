@@ -1,0 +1,2707 @@
+{
+  "schema": "torch.dev/domain-proposal/v1alpha1",
+  "generatedAt": "2026-09-30T17:46:44.361Z",
+  "repository": {
+    "root": "/home/user/Documents/GitHub/TORCH",
+    "initialCommit": "70110adcc55b8e7c37e680e6aa87a012314fbeb5",
+    "head": "fb39cf04e31db525bafc4f23aa64a2e30efc3053",
+    "workingTreeFingerprint": "92879adf240bc625a5352762e641444b162c6fdafb8615a25088a675a1c22ff9"
+  },
+  "review": {
+    "status": "approved",
+    "reviewedAt": "2026-09-30T18:14:00.000Z",
+    "reviewedBy": "owner:Adam-explicit-install-and-startup-request",
+    "notes": [
+      "Owner explicitly requested installation, configuration and bounded startup via logged-in ChatGPT; no pushes, deploys or recurring timers.",
+      "Every observed non-protected file has one proposed primary owner; shared consultation does not duplicate authority.",
+      "Release owns root distribution metadata/schema/CI; Kernel owns architectural docs and AGENTS; QA owns integrity notes and evidence reports.",
+      "Kernel custody of docs/TODO.md does not grant product-priority authority; owner/Fleet Operations retain decisions.",
+      "Protected fixture excluded; Codex GPT-6-Luna/high and Claude Sonnet remain selectable defaults.",
+      "Bound to fb39cf04e31db525bafc4f23aa64a2e30efc3053; proposed leads remain unactivated."
+    ]
+  },
+  "specifications": [
+    {
+      "path": "docs/PORTABLE_AGENT_FLEET_SPEC.md",
+      "sha256": "4ca2f5ccc2761477d704dec7f4d5e1788b02bab71eb9d07ced94f6fe9df38bbc",
+      "bytes": 144918,
+      "title": "TORCH Portable Agent Fleet Specification"
+    }
+  ],
+  "domains": [
+    {
+      "id": "project-kernel",
+      "title": "Project Kernel",
+      "kind": "development",
+      "scope": [
+        "Portable project identity, evidence-based bootstrap, canonical instructions and organization evolution"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "src/control-plane/**",
+        "src/design/**",
+        "src/evolution/**",
+        "src/kernel/**",
+        "AGENTS.md",
+        "docs/ARCHITECTURE_DECISIONS.md",
+        "docs/PORTABLE_AGENT_FLEET_SPEC.md",
+        "docs/TODO.md"
+      ],
+      "shared_paths": [
+        "package.json",
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "provider-runtime",
+        "work-integration",
+        "owner-console",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "default",
+      "evidence": [
+        "src/control-plane/service.mjs",
+        "src/design/architect.mjs",
+        "src/design/brief.mjs",
+        "src/evolution/hierarchy.mjs",
+        "src/evolution/service.mjs",
+        "src/kernel/analyze.mjs",
+        "src/kernel/config.mjs",
+        "src/kernel/doctor.mjs",
+        "src/kernel/domains.mjs",
+        "src/kernel/errors.mjs",
+        "src/kernel/files.mjs",
+        "src/kernel/git.mjs",
+        "src/kernel/install.mjs",
+        "src/kernel/organization.mjs",
+        "src/kernel/paths.mjs",
+        "src/kernel/prompts.mjs",
+        "src/kernel/specifications.mjs",
+        "AGENTS.md",
+        "docs/ARCHITECTURE_DECISIONS.md",
+        "docs/PORTABLE_AGENT_FLEET_SPEC.md",
+        "docs/TODO.md"
+      ]
+    },
+    {
+      "id": "provider-runtime",
+      "title": "Provider Runtime",
+      "kind": "development",
+      "scope": [
+        "Provider-independent identity-bound execution, session lifecycle, messaging adapters and wake limits"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "src/adapters/**",
+        "src/mcp/**",
+        "src/runtime/**",
+        "src/schedules/**",
+        "src/telemetry/**"
+      ],
+      "shared_paths": [
+        "package.json",
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "project-kernel",
+        "work-integration",
+        "owner-console",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "default",
+      "evidence": [
+        "src/adapters/claude.mjs",
+        "src/adapters/codex.mjs",
+        "src/adapters/delivery.mjs",
+        "src/adapters/pi.mjs",
+        "src/adapters/pi/extension.mjs",
+        "src/adapters/plugins.mjs",
+        "src/adapters/registry.mjs",
+        "src/adapters/runtime.mjs",
+        "src/mcp/server.mjs",
+        "src/mcp/tools.mjs",
+        "src/runtime/hierarchy-order.mjs",
+        "src/runtime/lifecycle.mjs",
+        "src/schedules/launcher.mjs",
+        "src/schedules/service.mjs",
+        "src/telemetry/context.mjs"
+      ]
+    },
+    {
+      "id": "work-integration",
+      "title": "Work and Integration",
+      "kind": "development",
+      "scope": [
+        "Exact-commit task verification, scarce resource queues, serialized landing and durable delivery recovery"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "src/backlog/**",
+        "src/canonical/**",
+        "src/checks/**",
+        "src/convergence/**",
+        "src/delivery/**",
+        "src/forge/**",
+        "src/importers/**",
+        "src/integration/**",
+        "src/resources/**"
+      ],
+      "shared_paths": [],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "owner-console",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "default",
+      "evidence": [
+        "src/backlog/activity.mjs",
+        "src/backlog/service.mjs",
+        "src/canonical/fetch.mjs",
+        "src/canonical/local.mjs",
+        "src/checks/conditions.mjs",
+        "src/checks/runner.mjs",
+        "src/checks/service.mjs",
+        "src/checks/snapshot.mjs",
+        "src/convergence/service.mjs",
+        "src/delivery/attempts.mjs",
+        "src/delivery/service.mjs",
+        "src/forge/service.mjs",
+        "src/importers/combatrig.mjs",
+        "src/integration/service.mjs",
+        "src/resources/service.mjs"
+      ]
+    },
+    {
+      "id": "owner-console",
+      "title": "Owner Console",
+      "kind": "development",
+      "scope": [
+        "Responsive owner controls, protected refresh, private artifacts and faithful fleet evidence"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "site/**",
+        "src/artifacts/**",
+        "src/console/**",
+        "src/observability/**"
+      ],
+      "shared_paths": [],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "work-integration",
+        "release-self-host",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "default",
+      "evidence": [
+        "site/app.js",
+        "site/check-evidence.js",
+        "site/console.js",
+        "site/demo.js",
+        "site/live-refresh.js",
+        "site/operation-outcomes.js",
+        "site/owner-digest.js",
+        "site/task-activity.js",
+        "site/work-progress.js",
+        "site/work-views.js",
+        "src/artifacts/service.mjs",
+        "src/console/server.mjs",
+        "src/observability/manager-checkin.mjs",
+        "src/observability/owner-digest.mjs",
+        "src/observability/snapshot.mjs"
+      ]
+    },
+    {
+      "id": "release-self-host",
+      "title": "Release and Self-host",
+      "kind": "development",
+      "scope": [
+        "CLI distribution and commit-bound candidate, stable upgrade, rollback and removal"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "bin/**",
+        "src/*",
+        "src/self-host/**",
+        ".gitattributes",
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "LICENSE",
+        "README.md",
+        "package-lock.json",
+        "package.json",
+        "schemas/domain-proposal.schema.json",
+        "torch-release.json"
+      ],
+      "shared_paths": [
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "work-integration",
+        "owner-console",
+        "qa"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [],
+      "runtime": "default",
+      "evidence": [
+        "bin/torch.mjs",
+        "src/cli.mjs",
+        "src/self-host/service.mjs",
+        ".gitattributes",
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "LICENSE",
+        "README.md",
+        "package-lock.json",
+        "package.json",
+        "schemas/domain-proposal.schema.json",
+        "torch-release.json"
+      ]
+    },
+    {
+      "id": "qa",
+      "title": "Independent QA",
+      "kind": "quality",
+      "scope": [
+        "Scenario integrity, real-browser qualification and independent cross-domain acceptance"
+      ],
+      "not_scope": [
+        "Owner approval, spending, provider launches, host timers, deployment and legacy branch changes are not authorized by this proposal",
+        "Other specialists retain primary implementation ownership",
+        "Do not adopt or alter test-torch-config-host-uQKdqL/"
+      ],
+      "owned_paths": [
+        "*.mjs",
+        "scripts/**",
+        "test/**",
+        "tests/**",
+        "e2e/**",
+        "docs/TEST_INTEGRITY.md",
+        "reports/audit/abandoned-check-console-2026-09-30.md",
+        "reports/audit/browser-descendant-interruption-2026-09-30.md",
+        "reports/audit/combatrig-import-2026-09-27.json",
+        "reports/audit/completion-audit-report-2026-09-27.md",
+        "reports/audit/frozen-browser-qualification-2026-09-30.md",
+        "reports/audit/interrupted-check-recovery-2026-09-30.md",
+        "reports/audit/observed-file-ownership-2026-09-30.md",
+        "reports/audit/product-alignment-review-2026-09-29.md",
+        "reports/audit/readiness-audit-2026-09-30.md",
+        "reports/audit/same-runtime-browser-qualification-2026-09-30.md",
+        "reports/audit/self-host-readiness-2026-09-30.md",
+        "reports/audit/self-host-roster-review-2026-09-30.md",
+        "reports/audit/specialist-only-bootstrap-2026-09-30.md",
+        "reports/audit/stale-work-review-2026-09-30.md",
+        "reports/design-system/torch-dashboard-activity-review.png",
+        "reports/design-system/torch-dashboard-check-evidence.png",
+        "reports/design-system/torch-dashboard-demo-desktop.png",
+        "reports/design-system/torch-dashboard-demo-mobile.png",
+        "reports/design-system/torch-dashboard-live-refresh.png",
+        "reports/design-system/torch-dashboard-manager-wakes.png",
+        "reports/design-system/torch-dashboard-operation-outcomes.png",
+        "reports/design-system/torch-dashboard-owner-briefing-desktop.png",
+        "reports/design-system/torch-dashboard-owner-briefing-mobile.png",
+        "reports/design-system/torch-dashboard-pilot-conclusion.png",
+        "reports/design-system/torch-dashboard-pilot-review.png",
+        "reports/test-audit/test-integrity-note-2026-09-27-portable-kernel.yaml"
+      ],
+      "shared_paths": [
+        "package.json",
+        "schemas/domain-proposal.schema.json"
+      ],
+      "neighbours": [
+        "project-kernel",
+        "provider-runtime",
+        "work-integration",
+        "owner-console",
+        "release-self-host"
+      ],
+      "required_checks": [
+        "test",
+        "check",
+        "test-dashboard",
+        "lint"
+      ],
+      "resources": [
+        "browser"
+      ],
+      "runtime": "default",
+      "evidence": [
+        "eslint.config.mjs",
+        "scripts/condition-browser-command.mjs",
+        "scripts/condition-browser-runtime.mjs",
+        "scripts/frozen-browser-harness.mjs",
+        "scripts/interrupted-browser-harness.mjs",
+        "scripts/interrupted-check-runner.mjs",
+        "scripts/test-dashboard-demo.mjs",
+        "scripts/wait-owned-browser-group.py",
+        "test/fleet/artifacts.test.mjs",
+        "test/fleet/backlog-activity.test.mjs",
+        "test/fleet/backlog.test.mjs",
+        "test/fleet/bootstrap-acceptance.test.mjs",
+        "test/fleet/canonical-fetch.test.mjs",
+        "test/fleet/check-conditions.test.mjs",
+        "test/fleet/check-snapshot.test.mjs",
+        "test/fleet/cli-scenarios.test.mjs",
+        "test/fleet/combatrig-import.test.mjs",
+        "test/fleet/console-check-evidence.test.mjs",
+        "test/fleet/console-live-refresh.test.mjs",
+        "test/fleet/console-operation-outcomes.test.mjs",
+        "docs/TEST_INTEGRITY.md",
+        "reports/audit/abandoned-check-console-2026-09-30.md",
+        "reports/audit/browser-descendant-interruption-2026-09-30.md",
+        "reports/audit/combatrig-import-2026-09-27.json",
+        "reports/audit/completion-audit-report-2026-09-27.md",
+        "reports/audit/frozen-browser-qualification-2026-09-30.md",
+        "reports/audit/interrupted-check-recovery-2026-09-30.md",
+        "reports/audit/observed-file-ownership-2026-09-30.md",
+        "reports/audit/product-alignment-review-2026-09-29.md",
+        "reports/audit/readiness-audit-2026-09-30.md",
+        "reports/audit/same-runtime-browser-qualification-2026-09-30.md",
+        "reports/audit/self-host-readiness-2026-09-30.md",
+        "reports/audit/self-host-roster-review-2026-09-30.md",
+        "reports/audit/specialist-only-bootstrap-2026-09-30.md",
+        "reports/audit/stale-work-review-2026-09-30.md",
+        "reports/design-system/torch-dashboard-activity-review.png",
+        "reports/design-system/torch-dashboard-check-evidence.png",
+        "reports/design-system/torch-dashboard-demo-desktop.png",
+        "reports/design-system/torch-dashboard-demo-mobile.png",
+        "reports/design-system/torch-dashboard-live-refresh.png",
+        "reports/design-system/torch-dashboard-manager-wakes.png",
+        "reports/design-system/torch-dashboard-operation-outcomes.png",
+        "reports/design-system/torch-dashboard-owner-briefing-desktop.png",
+        "reports/design-system/torch-dashboard-owner-briefing-mobile.png",
+        "reports/design-system/torch-dashboard-pilot-conclusion.png",
+        "reports/design-system/torch-dashboard-pilot-review.png",
+        "reports/test-audit/test-integrity-note-2026-09-27-portable-kernel.yaml"
+      ]
+    }
+  ],
+  "collisions": [
+    {
+      "domains": [
+        "provider-runtime",
+        "project-kernel"
+      ],
+      "score": 4,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/adapters",
+          "to": "src/kernel",
+          "evidence": "src/adapters/claude.mjs"
+        },
+        {
+          "type": "dependency",
+          "from": "src/kernel",
+          "to": "src/adapters",
+          "evidence": "src/kernel/doctor.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "project-kernel"
+      ],
+      "score": 4,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/backlog",
+          "to": "src/kernel",
+          "evidence": "src/backlog/activity.mjs"
+        },
+        {
+          "type": "dependency",
+          "from": "src/kernel",
+          "to": "src/backlog",
+          "evidence": "src/kernel/doctor.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "project-kernel"
+      ],
+      "score": 4,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/canonical",
+          "to": "src/kernel",
+          "evidence": "src/canonical/fetch.mjs"
+        },
+        {
+          "type": "dependency",
+          "from": "src/kernel",
+          "to": "src/canonical",
+          "evidence": "src/kernel/doctor.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "owner-console",
+        "provider-runtime"
+      ],
+      "score": 4,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/observability",
+          "to": "src/schedules",
+          "evidence": "src/observability/snapshot.mjs"
+        },
+        {
+          "type": "dependency",
+          "from": "src/schedules",
+          "to": "src/observability",
+          "evidence": "src/schedules/service.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "work-integration"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "scripts",
+          "to": "src/checks",
+          "evidence": "scripts/interrupted-check-runner.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "provider-runtime",
+        "work-integration"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/delivery",
+          "to": "src/adapters",
+          "evidence": "src/delivery/service.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "provider-runtime",
+        "owner-console"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/observability",
+          "to": "src/adapters",
+          "evidence": "src/observability/snapshot.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "project-kernel"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/evolution",
+          "to": "src/backlog",
+          "evidence": "src/evolution/hierarchy.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/mcp",
+          "to": "src/backlog",
+          "evidence": "src/mcp/server.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "owner-console"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/observability",
+          "to": "src/backlog",
+          "evidence": "src/observability/manager-checkin.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "owner-console"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/observability",
+          "to": "src/canonical",
+          "evidence": "src/observability/snapshot.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "project-kernel"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/checks",
+          "to": "src/kernel",
+          "evidence": "src/checks/service.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/mcp",
+          "to": "src/checks",
+          "evidence": "src/mcp/server.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/schedules",
+          "to": "src/checks",
+          "evidence": "src/schedules/service.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "work-integration",
+        "project-kernel"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/delivery",
+          "to": "src/kernel",
+          "evidence": "src/delivery/attempts.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "project-kernel",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/mcp",
+          "to": "src/evolution",
+          "evidence": "src/mcp/server.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "project-kernel",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/mcp",
+          "to": "src/kernel",
+          "evidence": "src/mcp/tools.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "project-kernel",
+        "owner-console"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/observability",
+          "to": "src/kernel",
+          "evidence": "src/observability/manager-checkin.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "project-kernel",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/runtime",
+          "to": "src/kernel",
+          "evidence": "src/runtime/hierarchy-order.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "project-kernel",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/schedules",
+          "to": "src/kernel",
+          "evidence": "src/schedules/launcher.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "provider-runtime",
+        "owner-console"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/mcp",
+          "to": "src/observability",
+          "evidence": "src/mcp/tools.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "owner-console",
+        "provider-runtime"
+      ],
+      "score": 2,
+      "reasons": [
+        {
+          "type": "dependency",
+          "from": "src/observability",
+          "to": "src/runtime",
+          "evidence": "src/observability/snapshot.mjs"
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "owner-console"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "provider-runtime"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "work-integration"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "work-integration"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "work-integration"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "work-integration"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "project-kernel"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "project-kernel"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "project-kernel"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "provider-runtime"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "owner-console"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "provider-runtime"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    },
+    {
+      "domains": [
+        "qa",
+        "provider-runtime"
+      ],
+      "score": 1,
+      "reasons": [
+        {
+          "type": "verification-boundary",
+          "evidence": [
+            "test/fleet/artifacts.test.mjs",
+            "test/fleet/backlog-activity.test.mjs",
+            "test/fleet/backlog.test.mjs",
+            "test/fleet/bootstrap-acceptance.test.mjs",
+            "test/fleet/canonical-fetch.test.mjs",
+            "test/fleet/check-conditions.test.mjs",
+            "test/fleet/check-snapshot.test.mjs",
+            "test/fleet/cli-scenarios.test.mjs",
+            "test/fleet/combatrig-import.test.mjs",
+            "test/fleet/console-check-evidence.test.mjs",
+            "test/fleet/console-live-refresh.test.mjs",
+            "test/fleet/console-operation-outcomes.test.mjs"
+          ]
+        }
+      ],
+      "resolution": {
+        "strategy": "session-manager-coordination",
+        "owner": null
+      }
+    }
+  ],
+  "checks": [
+    {
+      "id": "test",
+      "title": "test",
+      "command": "npm",
+      "args": [
+        "run",
+        "test"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node --test --test-timeout=60000 test/fleet/*.test.mjs"
+      },
+      "resources": []
+    },
+    {
+      "id": "check",
+      "title": "check",
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs && node --check src/console/server.mjs && node --check src/artifacts/service.mjs && node --check src/adapters/plugins.mjs && node --check src/adapters/pi.mjs && node --check src/adapters/pi/extension.mjs && node --check site/app.js && node --check site/demo.js && node --check site/console.js && node --check site/work-views.js && node --check site/work-progress.js"
+      },
+      "resources": []
+    },
+    {
+      "id": "test-dashboard",
+      "title": "test:dashboard",
+      "command": "npm",
+      "args": [
+        "run",
+        "test:dashboard"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "node scripts/test-dashboard-demo.mjs"
+      },
+      "resources": []
+    },
+    {
+      "id": "lint",
+      "title": "lint",
+      "command": "npm",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "source": {
+        "type": "package-script",
+        "command": "eslint src/adapters src/artifacts src/backlog src/canonical src/checks src/console src/convergence src/control-plane src/delivery src/design src/evolution src/forge src/importers src/integration src/kernel src/mcp src/observability src/resources src/runtime src/schedules src/self-host src/telemetry src/cli.mjs bin/torch.mjs site/*.js test/fleet"
+      },
+      "resources": []
+    }
+  ],
+  "resources": [
+    {
+      "id": "browser",
+      "capacity": 1,
+      "queue": "fifo",
+      "max_hold_seconds": 3600
+    }
+  ],
+  "schedules": [
+    {
+      "id": "session-manager-check-in",
+      "title": "Session Manager direct-report check-in",
+      "owner": "session-manager",
+      "lifetime": "system",
+      "trigger": {
+        "type": "interval",
+        "seconds": 900
+      },
+      "behavior": "coordination",
+      "action": {
+        "type": "manager-check-in",
+        "manager_id": "session-manager"
+      },
+      "required_authority": [
+        "owner"
+      ],
+      "retry": {
+        "max_attempts": 1
+      },
+      "failure_recipient": "session-manager",
+      "source_of_truth": "active organization direct-report graph"
+    }
+  ],
+  "architecture": {
+    "components": [
+      {
+        "id": "bin",
+        "key": "bin",
+        "title": "Bin",
+        "paths": [
+          "bin/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "bin/torch.mjs"
+        ],
+        "dependencies": [
+          "src"
+        ],
+        "consumers": []
+      },
+      {
+        "id": "core",
+        "key": "core",
+        "title": "Core systems",
+        "paths": [
+          "*.mjs"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "eslint.config.mjs"
+        ],
+        "dependencies": [],
+        "consumers": []
+      },
+      {
+        "id": "scripts",
+        "key": "scripts",
+        "title": "Scripts",
+        "paths": [
+          "scripts/**"
+        ],
+        "fileCount": 7,
+        "languages": [
+          "JavaScript",
+          "Python"
+        ],
+        "evidence": [
+          "scripts/condition-browser-command.mjs",
+          "scripts/condition-browser-runtime.mjs",
+          "scripts/frozen-browser-harness.mjs",
+          "scripts/interrupted-browser-harness.mjs",
+          "scripts/interrupted-check-runner.mjs",
+          "scripts/test-dashboard-demo.mjs",
+          "scripts/wait-owned-browser-group.py"
+        ],
+        "dependencies": [
+          "src/control-plane",
+          "src/checks",
+          "src/resources",
+          "src/console"
+        ],
+        "consumers": []
+      },
+      {
+        "id": "site",
+        "key": "site",
+        "title": "Site",
+        "paths": [
+          "site/**"
+        ],
+        "fileCount": 10,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "site/app.js",
+          "site/check-evidence.js",
+          "site/console.js",
+          "site/demo.js",
+          "site/live-refresh.js",
+          "site/operation-outcomes.js",
+          "site/owner-digest.js",
+          "site/task-activity.js",
+          "site/work-progress.js",
+          "site/work-views.js"
+        ],
+        "dependencies": [],
+        "consumers": []
+      },
+      {
+        "id": "src",
+        "key": "src",
+        "title": "Src",
+        "paths": [
+          "src/*"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/cli.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/backlog",
+          "src/artifacts",
+          "src/adapters",
+          "src/checks",
+          "src/console",
+          "src/canonical",
+          "src/control-plane",
+          "src/integration",
+          "src/importers",
+          "src/runtime",
+          "src/resources",
+          "src/self-host",
+          "src/observability",
+          "src/telemetry",
+          "src/schedules",
+          "src/design",
+          "src/evolution",
+          "src/convergence",
+          "src/forge",
+          "src/delivery"
+        ],
+        "consumers": [
+          "bin"
+        ]
+      },
+      {
+        "id": "src-adapters",
+        "key": "src/adapters",
+        "title": "Provider adapters",
+        "paths": [
+          "src/adapters/**"
+        ],
+        "fileCount": 8,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/adapters/claude.mjs",
+          "src/adapters/codex.mjs",
+          "src/adapters/delivery.mjs",
+          "src/adapters/pi.mjs",
+          "src/adapters/pi/extension.mjs",
+          "src/adapters/plugins.mjs",
+          "src/adapters/registry.mjs",
+          "src/adapters/runtime.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/mcp"
+        ],
+        "consumers": [
+          "src",
+          "src/delivery",
+          "src/kernel",
+          "src/observability",
+          "src/runtime"
+        ]
+      },
+      {
+        "id": "src-artifacts",
+        "key": "src/artifacts",
+        "title": "Artifacts",
+        "paths": [
+          "src/artifacts/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/artifacts/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src",
+          "src/console",
+          "src/mcp",
+          "src/observability"
+        ]
+      },
+      {
+        "id": "src-backlog",
+        "key": "src/backlog",
+        "title": "Backlog",
+        "paths": [
+          "src/backlog/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/backlog/activity.mjs",
+          "src/backlog/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src",
+          "src/console",
+          "src/evolution",
+          "src/integration",
+          "src/kernel",
+          "src/mcp",
+          "src/observability"
+        ]
+      },
+      {
+        "id": "src-canonical",
+        "key": "src/canonical",
+        "title": "Canonical",
+        "paths": [
+          "src/canonical/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/canonical/fetch.mjs",
+          "src/canonical/local.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src",
+          "src/kernel",
+          "src/observability"
+        ]
+      },
+      {
+        "id": "src-checks",
+        "key": "src/checks",
+        "title": "Checks",
+        "paths": [
+          "src/checks/**"
+        ],
+        "fileCount": 4,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/checks/conditions.mjs",
+          "src/checks/runner.mjs",
+          "src/checks/service.mjs",
+          "src/checks/snapshot.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/convergence"
+        ],
+        "consumers": [
+          "scripts",
+          "src",
+          "src/mcp",
+          "src/schedules"
+        ]
+      },
+      {
+        "id": "src-console",
+        "key": "src/console",
+        "title": "Console",
+        "paths": [
+          "src/console/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/console/server.mjs"
+        ],
+        "dependencies": [
+          "src/observability",
+          "src/artifacts",
+          "src/backlog",
+          "src/control-plane",
+          "src/evolution",
+          "src/kernel",
+          "src/schedules"
+        ],
+        "consumers": [
+          "scripts",
+          "src"
+        ]
+      },
+      {
+        "id": "src-control-plane",
+        "key": "src/control-plane",
+        "title": "Control Plane",
+        "paths": [
+          "src/control-plane/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/control-plane/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "scripts",
+          "src",
+          "src/console",
+          "src/mcp"
+        ]
+      },
+      {
+        "id": "src-convergence",
+        "key": "src/convergence",
+        "title": "Convergence",
+        "paths": [
+          "src/convergence/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/convergence/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src/checks",
+          "src"
+        ]
+      },
+      {
+        "id": "src-delivery",
+        "key": "src/delivery",
+        "title": "Delivery",
+        "paths": [
+          "src/delivery/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/delivery/attempts.mjs",
+          "src/delivery/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/adapters"
+        ],
+        "consumers": [
+          "src"
+        ]
+      },
+      {
+        "id": "src-design",
+        "key": "src/design",
+        "title": "Design",
+        "paths": [
+          "src/design/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/design/architect.mjs",
+          "src/design/brief.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src"
+        ]
+      },
+      {
+        "id": "src-evolution",
+        "key": "src/evolution",
+        "title": "Evolution",
+        "paths": [
+          "src/evolution/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/evolution/hierarchy.mjs",
+          "src/evolution/service.mjs"
+        ],
+        "dependencies": [
+          "src/backlog",
+          "src/kernel"
+        ],
+        "consumers": [
+          "src",
+          "src/console",
+          "src/mcp"
+        ]
+      },
+      {
+        "id": "src-forge",
+        "key": "src/forge",
+        "title": "Forge",
+        "paths": [
+          "src/forge/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/forge/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src",
+          "src/kernel"
+        ]
+      },
+      {
+        "id": "src-importers",
+        "key": "src/importers",
+        "title": "Importers",
+        "paths": [
+          "src/importers/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/importers/combatrig.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src"
+        ]
+      },
+      {
+        "id": "src-integration",
+        "key": "src/integration",
+        "title": "Integration",
+        "paths": [
+          "src/integration/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/integration/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/backlog"
+        ],
+        "consumers": [
+          "src",
+          "src/mcp",
+          "src/schedules"
+        ]
+      },
+      {
+        "id": "src-kernel",
+        "key": "src/kernel",
+        "title": "Kernel",
+        "paths": [
+          "src/kernel/**"
+        ],
+        "fileCount": 14,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/kernel/analyze.mjs",
+          "src/kernel/config.mjs",
+          "src/kernel/doctor.mjs",
+          "src/kernel/domains.mjs",
+          "src/kernel/errors.mjs",
+          "src/kernel/files.mjs",
+          "src/kernel/git.mjs",
+          "src/kernel/install.mjs",
+          "src/kernel/organization.mjs",
+          "src/kernel/paths.mjs",
+          "src/kernel/prompts.mjs",
+          "src/kernel/specifications.mjs"
+        ],
+        "dependencies": [
+          "src/forge",
+          "src/canonical",
+          "src/adapters",
+          "src/backlog"
+        ],
+        "consumers": [
+          "src/adapters",
+          "src/artifacts",
+          "src/backlog",
+          "src/canonical",
+          "src/checks",
+          "src",
+          "src/console",
+          "src/control-plane",
+          "src/convergence",
+          "src/delivery",
+          "src/design",
+          "src/evolution",
+          "src/forge",
+          "src/importers",
+          "src/integration",
+          "src/mcp",
+          "src/observability",
+          "src/resources",
+          "src/runtime",
+          "src/schedules",
+          "src/self-host",
+          "src/telemetry"
+        ]
+      },
+      {
+        "id": "src-mcp",
+        "key": "src/mcp",
+        "title": "Mcp",
+        "paths": [
+          "src/mcp/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/mcp/server.mjs",
+          "src/mcp/tools.mjs"
+        ],
+        "dependencies": [
+          "src/checks",
+          "src/backlog",
+          "src/integration",
+          "src/control-plane",
+          "src/resources",
+          "src/telemetry",
+          "src/schedules",
+          "src/evolution",
+          "src/artifacts",
+          "src/kernel",
+          "src/observability"
+        ],
+        "consumers": [
+          "src/adapters"
+        ]
+      },
+      {
+        "id": "src-observability",
+        "key": "src/observability",
+        "title": "Observability",
+        "paths": [
+          "src/observability/**"
+        ],
+        "fileCount": 3,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/observability/manager-checkin.mjs",
+          "src/observability/owner-digest.mjs",
+          "src/observability/snapshot.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/backlog",
+          "src/adapters",
+          "src/canonical",
+          "src/artifacts",
+          "src/schedules",
+          "src/runtime"
+        ],
+        "consumers": [
+          "src",
+          "src/console",
+          "src/mcp",
+          "src/schedules"
+        ]
+      },
+      {
+        "id": "src-resources",
+        "key": "src/resources",
+        "title": "Resources",
+        "paths": [
+          "src/resources/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/resources/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "scripts",
+          "src",
+          "src/mcp"
+        ]
+      },
+      {
+        "id": "src-runtime",
+        "key": "src/runtime",
+        "title": "Runtime adapters",
+        "paths": [
+          "src/runtime/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/runtime/hierarchy-order.mjs",
+          "src/runtime/lifecycle.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/adapters"
+        ],
+        "consumers": [
+          "src",
+          "src/observability"
+        ]
+      },
+      {
+        "id": "src-schedules",
+        "key": "src/schedules",
+        "title": "Schedules",
+        "paths": [
+          "src/schedules/**"
+        ],
+        "fileCount": 2,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/schedules/launcher.mjs",
+          "src/schedules/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel",
+          "src/observability",
+          "src/checks",
+          "src/integration"
+        ],
+        "consumers": [
+          "src",
+          "src/console",
+          "src/mcp",
+          "src/observability"
+        ]
+      },
+      {
+        "id": "src-self-host",
+        "key": "src/self-host",
+        "title": "Self Host",
+        "paths": [
+          "src/self-host/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/self-host/service.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src"
+        ]
+      },
+      {
+        "id": "src-telemetry",
+        "key": "src/telemetry",
+        "title": "Telemetry",
+        "paths": [
+          "src/telemetry/**"
+        ],
+        "fileCount": 1,
+        "languages": [
+          "JavaScript"
+        ],
+        "evidence": [
+          "src/telemetry/context.mjs"
+        ],
+        "dependencies": [
+          "src/kernel"
+        ],
+        "consumers": [
+          "src",
+          "src/mcp"
+        ]
+      }
+    ],
+    "dependencies": [
+      {
+        "from": "bin",
+        "to": "src",
+        "evidence": "bin/torch.mjs",
+        "targetEvidence": "src/cli.mjs"
+      },
+      {
+        "from": "scripts",
+        "to": "src/control-plane",
+        "evidence": "scripts/interrupted-check-runner.mjs",
+        "targetEvidence": "src/control-plane/service.mjs"
+      },
+      {
+        "from": "scripts",
+        "to": "src/checks",
+        "evidence": "scripts/interrupted-check-runner.mjs",
+        "targetEvidence": "src/checks/service.mjs"
+      },
+      {
+        "from": "scripts",
+        "to": "src/resources",
+        "evidence": "scripts/interrupted-check-runner.mjs",
+        "targetEvidence": "src/resources/service.mjs"
+      },
+      {
+        "from": "scripts",
+        "to": "src/console",
+        "evidence": "scripts/test-dashboard-demo.mjs",
+        "targetEvidence": "src/console/server.mjs"
+      },
+      {
+        "from": "src/adapters",
+        "to": "src/kernel",
+        "evidence": "src/adapters/claude.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/adapters",
+        "to": "src/mcp",
+        "evidence": "src/adapters/pi/extension.mjs",
+        "targetEvidence": "src/mcp/tools.mjs"
+      },
+      {
+        "from": "src/artifacts",
+        "to": "src/kernel",
+        "evidence": "src/artifacts/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/backlog",
+        "to": "src/kernel",
+        "evidence": "src/backlog/activity.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/canonical",
+        "to": "src/kernel",
+        "evidence": "src/canonical/fetch.mjs",
+        "targetEvidence": "src/kernel/config.mjs"
+      },
+      {
+        "from": "src/checks",
+        "to": "src/kernel",
+        "evidence": "src/checks/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/checks",
+        "to": "src/convergence",
+        "evidence": "src/checks/service.mjs",
+        "targetEvidence": "src/convergence/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/kernel",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/kernel/analyze.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/backlog",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/artifacts",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/artifacts/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/adapters",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/adapters/claude.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/checks",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/checks/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/console",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/console/server.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/canonical",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/canonical/local.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/control-plane",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/control-plane/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/integration",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/integration/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/importers",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/importers/combatrig.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/runtime",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/runtime/lifecycle.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/resources",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/resources/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/self-host",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/self-host/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/observability",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/observability/snapshot.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/telemetry",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/telemetry/context.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/schedules",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/schedules/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/design",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/design/brief.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/evolution",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/evolution/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/convergence",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/convergence/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/forge",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/forge/service.mjs"
+      },
+      {
+        "from": "src",
+        "to": "src/delivery",
+        "evidence": "src/cli.mjs",
+        "targetEvidence": "src/delivery/service.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/observability",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/observability/snapshot.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/artifacts",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/artifacts/service.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/backlog",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/control-plane",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/control-plane/service.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/evolution",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/evolution/service.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/kernel",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/kernel/config.mjs"
+      },
+      {
+        "from": "src/console",
+        "to": "src/schedules",
+        "evidence": "src/console/server.mjs",
+        "targetEvidence": "src/schedules/launcher.mjs"
+      },
+      {
+        "from": "src/control-plane",
+        "to": "src/kernel",
+        "evidence": "src/control-plane/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/convergence",
+        "to": "src/kernel",
+        "evidence": "src/convergence/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/delivery",
+        "to": "src/kernel",
+        "evidence": "src/delivery/attempts.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/delivery",
+        "to": "src/adapters",
+        "evidence": "src/delivery/service.mjs",
+        "targetEvidence": "src/adapters/delivery.mjs"
+      },
+      {
+        "from": "src/design",
+        "to": "src/kernel",
+        "evidence": "src/design/architect.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/evolution",
+        "to": "src/backlog",
+        "evidence": "src/evolution/hierarchy.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src/evolution",
+        "to": "src/kernel",
+        "evidence": "src/evolution/hierarchy.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/forge",
+        "to": "src/kernel",
+        "evidence": "src/forge/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/importers",
+        "to": "src/kernel",
+        "evidence": "src/importers/combatrig.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/integration",
+        "to": "src/kernel",
+        "evidence": "src/integration/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/integration",
+        "to": "src/backlog",
+        "evidence": "src/integration/service.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src/kernel",
+        "to": "src/forge",
+        "evidence": "src/kernel/doctor.mjs",
+        "targetEvidence": "src/forge/service.mjs"
+      },
+      {
+        "from": "src/kernel",
+        "to": "src/canonical",
+        "evidence": "src/kernel/doctor.mjs",
+        "targetEvidence": "src/canonical/local.mjs"
+      },
+      {
+        "from": "src/kernel",
+        "to": "src/adapters",
+        "evidence": "src/kernel/doctor.mjs",
+        "targetEvidence": "src/adapters/registry.mjs"
+      },
+      {
+        "from": "src/kernel",
+        "to": "src/backlog",
+        "evidence": "src/kernel/doctor.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/checks",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/checks/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/backlog",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/integration",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/integration/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/control-plane",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/control-plane/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/resources",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/resources/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/telemetry",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/telemetry/context.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/schedules",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/schedules/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/evolution",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/evolution/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/artifacts",
+        "evidence": "src/mcp/server.mjs",
+        "targetEvidence": "src/artifacts/service.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/kernel",
+        "evidence": "src/mcp/tools.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/mcp",
+        "to": "src/observability",
+        "evidence": "src/mcp/tools.mjs",
+        "targetEvidence": "src/observability/manager-checkin.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/kernel",
+        "evidence": "src/observability/manager-checkin.mjs",
+        "targetEvidence": "src/kernel/worktrees.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/backlog",
+        "evidence": "src/observability/manager-checkin.mjs",
+        "targetEvidence": "src/backlog/service.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/adapters",
+        "evidence": "src/observability/snapshot.mjs",
+        "targetEvidence": "src/adapters/registry.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/canonical",
+        "evidence": "src/observability/snapshot.mjs",
+        "targetEvidence": "src/canonical/local.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/artifacts",
+        "evidence": "src/observability/snapshot.mjs",
+        "targetEvidence": "src/artifacts/service.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/schedules",
+        "evidence": "src/observability/snapshot.mjs",
+        "targetEvidence": "src/schedules/launcher.mjs"
+      },
+      {
+        "from": "src/observability",
+        "to": "src/runtime",
+        "evidence": "src/observability/snapshot.mjs",
+        "targetEvidence": "src/runtime/hierarchy-order.mjs"
+      },
+      {
+        "from": "src/resources",
+        "to": "src/kernel",
+        "evidence": "src/resources/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/runtime",
+        "to": "src/kernel",
+        "evidence": "src/runtime/hierarchy-order.mjs",
+        "targetEvidence": "src/kernel/organization.mjs"
+      },
+      {
+        "from": "src/runtime",
+        "to": "src/adapters",
+        "evidence": "src/runtime/lifecycle.mjs",
+        "targetEvidence": "src/adapters/runtime.mjs"
+      },
+      {
+        "from": "src/schedules",
+        "to": "src/kernel",
+        "evidence": "src/schedules/launcher.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/schedules",
+        "to": "src/observability",
+        "evidence": "src/schedules/service.mjs",
+        "targetEvidence": "src/observability/manager-checkin.mjs"
+      },
+      {
+        "from": "src/schedules",
+        "to": "src/checks",
+        "evidence": "src/schedules/service.mjs",
+        "targetEvidence": "src/checks/service.mjs"
+      },
+      {
+        "from": "src/schedules",
+        "to": "src/integration",
+        "evidence": "src/schedules/service.mjs",
+        "targetEvidence": "src/integration/service.mjs"
+      },
+      {
+        "from": "src/self-host",
+        "to": "src/kernel",
+        "evidence": "src/self-host/service.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      },
+      {
+        "from": "src/telemetry",
+        "to": "src/kernel",
+        "evidence": "src/telemetry/context.mjs",
+        "targetEvidence": "src/kernel/errors.mjs"
+      }
+    ],
+    "sharedSurfaces": [
+      "eslint.config.mjs",
+      "schemas/domain-proposal.schema.json",
+      "src/kernel/config.mjs",
+      "test-torch-config-host-uQKdqL/package.json",
+      "test-torch-config-host-uQKdqL/torch-config.json",
+      "test-torch-config-host-uQKdqL/torch/torch-config.json"
+    ],
+    "verificationSurfaces": [
+      "test/fleet/artifacts.test.mjs",
+      "test/fleet/backlog-activity.test.mjs",
+      "test/fleet/backlog.test.mjs",
+      "test/fleet/bootstrap-acceptance.test.mjs",
+      "test/fleet/canonical-fetch.test.mjs",
+      "test/fleet/check-conditions.test.mjs",
+      "test/fleet/check-snapshot.test.mjs",
+      "test/fleet/cli-scenarios.test.mjs",
+      "test/fleet/combatrig-import.test.mjs",
+      "test/fleet/console-check-evidence.test.mjs",
+      "test/fleet/console-live-refresh.test.mjs",
+      "test/fleet/console-operation-outcomes.test.mjs",
+      "test/fleet/console-owner-digest.test.mjs",
+      "test/fleet/console-schedule-launcher.test.mjs",
+      "test/fleet/console-task-activity.test.mjs",
+      "test/fleet/console-work-progress.test.mjs",
+      "test/fleet/console-work-views.test.mjs",
+      "test/fleet/context-telemetry.test.mjs",
+      "test/fleet/control-plane.test.mjs",
+      "test/fleet/dashboard-demo.test.mjs",
+      "test/fleet/delivery.test.mjs",
+      "test/fleet/domain-analysis.test.mjs",
+      "test/fleet/evolution.test.mjs",
+      "test/fleet/forge-migration.test.mjs",
+      "test/fleet/hierarchy-evolution.test.mjs",
+      "test/fleet/integration-canonical.test.mjs",
+      "test/fleet/kernel-lifecycle.test.mjs",
+      "test/fleet/lifecycle.test.mjs",
+      "test/fleet/manager-checkin.test.mjs",
+      "test/fleet/mcp-adapter.test.mjs",
+      "test/fleet/organization.test.mjs",
+      "test/fleet/owner-approval-console.test.mjs",
+      "test/fleet/owner-digest.test.mjs",
+      "test/fleet/package-distribution.test.mjs",
+      "test/fleet/pi-adapter.test.mjs",
+      "test/fleet/product-surface.test.mjs",
+      "test/fleet/runtime-plugins.test.mjs",
+      "test/fleet/runtime-profiles.test.mjs",
+      "test/fleet/schedules.test.mjs",
+      "test/fleet/self-host.test.mjs",
+      "test/fleet/spec-design.test.mjs",
+      "test/fleet/verification-resources.test.mjs",
+      "test/fleet/worktree-lifecycle.test.mjs"
+    ],
+    "operationalSurfaces": [
+      ".github/workflows/ci.yml"
+    ]
+  },
+  "organization_assessment": {
+    "shape": "coordination_roles",
+    "rationale": "Six coherent implementation outcomes replace file-directory agents. Two optional trial leads coordinate platform and task-to-landing integration; defining roles does not authorize their launch.",
+    "evidence": [
+      "src/control-plane/service.mjs",
+      "src/adapters/claude.mjs",
+      "src/backlog/activity.mjs",
+      "site/app.js",
+      "bin/torch.mjs",
+      "eslint.config.mjs"
+    ],
+    "authority_boundaries": {
+      "implementation_ownership": "Each specialist owns only its listed primary paths; schema/package/root metadata require explicit shared-boundary review.",
+      "coordination_responsibility": "Platform and Workflow/Experience leads own integrated outcomes, not implementation paths or mandatory communication routing.",
+      "fleet_operations_authority": "Fleet Operations owns registry, lifecycle, routing mechanics, resource health and approved session creation, separately from product priorities.",
+      "project_priority_authority": "Program Director proposes sequencing and reports to owner; owner retains product direction and material scope decisions.",
+      "independent_review_authority": "QA independently reports regression and acceptance evidence across both domains.",
+      "owner_only_decisions": [
+        "Approve roster and unresolved root metadata/schema ownership",
+        "Approve checkpoint, stable installation and bounded live trial",
+        "Approve provider/model/budget, session creation, timers and external actions"
+      ]
+    },
+    "proposed_coordination_roles": [
+      {
+        "id": "platform-lead",
+        "title": "Platform Lead",
+        "coordinates_domains": [
+          "project-kernel",
+          "provider-runtime",
+          "release-self-host"
+        ],
+        "integrated_outcome": "A portable installed tool resumes with current instructions and identity-bound runtimes",
+        "decision_scope": [
+          "Coordinate shared interfaces, integration sequence and blockers; direct specialist communication remains allowed"
+        ],
+        "owner_escalations": [
+          "New standing sessions, product scope, spending, provider execution, installation and live trial require owner approval"
+        ],
+        "evidence": [
+          "src/control-plane/service.mjs",
+          "src/adapters/claude.mjs",
+          "bin/torch.mjs"
+        ],
+        "owns_implementation_paths": false,
+        "has_owner_approval_authority": false
+      },
+      {
+        "id": "workflow-experience-lead",
+        "title": "Workflow and Experience Lead",
+        "coordinates_domains": [
+          "work-integration",
+          "owner-console"
+        ],
+        "integrated_outcome": "One verified task lands serially and remains faithfully visible to the owner",
+        "decision_scope": [
+          "Coordinate shared interfaces, integration sequence and blockers; direct specialist communication remains allowed"
+        ],
+        "owner_escalations": [
+          "New standing sessions, product scope, spending, provider execution, installation and live trial require owner approval"
+        ],
+        "evidence": [
+          "src/backlog/activity.mjs",
+          "site/app.js"
+        ],
+        "owns_implementation_paths": false,
+        "has_owner_approval_authority": false
+      }
+    ],
+    "direct_peer_communication": "preserved"
+  }
+}
