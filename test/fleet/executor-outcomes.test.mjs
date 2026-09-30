@@ -72,7 +72,7 @@ function expectInterruptedStart({ context, result, expectedReason }) {
 test('SCN-executor-interrupted-outcomes: a graceful timeout, signal, or ENOBUFS cannot create an idle turn or disclose output', () => {
   const timeout = spawnSync(process.execPath, [
     '-e', 'process.on("SIGTERM", () => process.exit(0)); setInterval(() => {}, 1000);',
-  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 100, killSignal: 'SIGTERM' });
+  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 1_000, killSignal: 'SIGTERM' });
   assert.equal(timeout.status, 0);
   assert.equal(timeout.error?.code, 'ETIMEDOUT');
   expectInterruptedStart({ context: fixture(), result: timeout, expectedReason: 'executor-error-ETIMEDOUT' });

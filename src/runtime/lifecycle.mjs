@@ -543,10 +543,13 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
       const runtimeSessionId = captureRuntimeId({ action, runtimeAdapter, result });
       const diagnostic = typeof runtimeAdapter?.diagnoseStartupFailure === 'function'
         ? runtimeAdapter.diagnoseStartupFailure({ stdout: result?.stdout, stderr: result?.stderr }) : null;
+      const uncertain = outcome.state === 'unknown';
       controlPlane.reportStatus({
-        areaId: action.areaId, state: 'working', runtime: action.runtime,
+        areaId: action.areaId, state: uncertain ? 'working' : 'offline', runtime: action.runtime,
         runtimeSessionId,
-        summary: 'Runtime executor completion is unknown; duplicate launch is blocked pending reconciliation.',
+        summary: uncertain
+          ? 'Runtime executor completion is unknown; duplicate launch is blocked pending reconciliation.'
+          : 'Runtime launch failed with a terminal nonzero exit.',
       });
       throw new TorchError(`Fleet startup failed for ${action.areaId}`, {
         code: 'FLEET_START_FAILED',
