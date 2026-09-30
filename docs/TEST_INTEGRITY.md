@@ -14,9 +14,14 @@ test_integrity_note:
       given: An assigned task and pending peer and owner approvals in a fixed-time local control plane
       when: The named recipient acknowledges messages and the manager attempts a non-owned decision
       then: The task and approvals remain pending until only the named peer decides its approval
+    - id: SCN-routine-coordination-paused-dispatch
+      given: An assigned task, an approved named-peer request, and a pending owner provider decision
+      when: A public runtime start is attempted without an authorized executor
+      then: The start is refused, no provider adapter runs, and the assigned task and owner wait remain unresolved
   observable_outcomes:
     - Generated tracked instruction text for fresh-install and resume surfaces
     - Durable task state, approval state, named-approver identity, and authority errors
+    - Public start refusal, zero adapter invocations, offline identity state, and retained owner wait
   determinism_controls:
     - Disposable local Git repository, SQLite state, and fixed clock
     - No provider calls, network, retries, sleeps, or host timers

@@ -4,6 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
 import test from 'node:test';
+import { createClaudeAdapter } from '../../src/adapters/claude.mjs';
 import { createBacklogService } from '../../src/backlog/service.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
@@ -11,6 +12,7 @@ import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
+import { planAreaUp, startFleet } from '../../src/runtime/lifecycle.mjs';
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), 'torch-routine-coordination-'));
@@ -100,6 +102,49 @@ test('SCN-routine-coordination-boundaries: acknowledgement leaves work pending a
     (error) => error.code === 'APPROVER_AUTHORITY_REQUIRED');
     assert.equal(control.listApprovals({ actorId: context.worker, status: 'pending' }).some((item) =>
       item.id === ownerApproval.id), true, 'a rejected manager attempt leaves the owner decision pending');
+  } finally {
+    control.close();
+  }
+});
+
+test('SCN-routine-coordination-paused-dispatch: an unapproved public start leaves work and owner waits unresolved', () => {
+  const context = fixture();
+  let adapterCalls = 0;
+  const adapter = createClaudeAdapter({ executable: 'claude', runner: () => {
+    adapterCalls++;
+    throw new Error('A disabled provider must not run.');
+  } });
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env,
+    clock: () => new Date('2026-09-30T12:00:00Z') });
+  try {
+    const backlog = createBacklogService({ repositoryRoot: context.root, controlPlane: control });
+    const created = backlog.create({ actorId: 'session-manager', title: 'Paused dispatch boundary',
+      description: 'Keep assigned work visible while provider execution is disabled.',
+      acceptanceCriteria: ['The start boundary fails closed.'], affectedDomains: [context.worker] });
+    const ready = backlog.transition({ taskId: created.id, actorId: 'session-manager', to: 'ready',
+      expectedRevision: created.revision });
+    const assigned = backlog.transition({ taskId: ready.id, actorId: 'session-manager', to: 'assigned',
+      owner: context.worker, expectedRevision: ready.revision });
+    const taskMessage = control.sendMessage({ sender: 'session-manager', recipient: context.worker,
+      body: 'Wait for explicit provider authorization.', references: { task: assigned.id } });
+    control.ackMessage({ recipient: context.worker, messageId: taskMessage.id });
+    const peerApproval = control.requestApproval({ requester: context.worker, approver: context.peer,
+      task: assigned.id, title: 'Peer consent', summary: 'Approve the bounded routine path.' });
+    control.decideApproval({ approvalId: peerApproval.id, decidedBy: context.peer, decision: 'approved',
+      expectedRevision: peerApproval.revision, note: 'Routine path reviewed.' });
+    const ownerWait = control.requestApproval({ requester: context.worker, approver: 'owner', task: assigned.id,
+      title: 'Owner provider decision', summary: 'Provider execution remains owner-reserved.' });
+
+    const plan = planAreaUp({ repositoryRoot: context.root, controlPlane: control, areaId: context.worker,
+      adapter, fresh: true });
+    assert.equal(plan.canProceed, true, JSON.stringify(plan.blockers));
+    assert.throws(() => startFleet({ plan, controlPlane: control }),
+      (error) => error.code === 'RUNTIME_EXECUTION_NOT_AUTHORIZED');
+    assert.equal(adapterCalls, 0, 'the disabled public start cannot invoke a provider adapter');
+    assert.equal(backlog.get(assigned.id).state, 'assigned', 'acknowledgement and refusal cannot complete work');
+    assert.equal(control.listApprovals({ actorId: context.worker, status: 'pending' }).some((item) =>
+      item.id === ownerWait.id), true, 'the owner wait remains visible after the blocked start');
+    assert.equal(control.identity(context.worker).state, 'offline', 'a blocked start cannot report false idle or success');
   } finally {
     control.close();
   }
