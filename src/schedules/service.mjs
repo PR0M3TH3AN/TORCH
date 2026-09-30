@@ -115,7 +115,11 @@ function validate(definition) {
 
 function bounded(value) {
   const content = value?.toString() ?? '';
-  return content.length > 65_536 ? `${content.slice(0, 65_536)}\n[truncated]` : content;
+  const safe = content
+    .replace(/\bBearer\s+[-A-Za-z0-9._~+/]+=*/gi, 'Bearer [REDACTED]')
+    .replace(/((?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|token|password|secret|credential|authorization|cookie|prompt|private reasoning)\s*(?:=|:|\s)\s*)([^\s,;]+)/gi, '$1[REDACTED]')
+    .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[REDACTED]@');
+  return safe.length > 65_536 ? `${safe.slice(0, 65_536)}\n[truncated]` : safe;
 }
 
 function managerWakeCapability(prepared, managerId, maxUsd) {

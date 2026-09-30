@@ -465,6 +465,61 @@ function writeCombinedPrompt(action) {
   writeFileSync(action.promptFile, action.instructionText, { encoding: 'utf8', mode: 0o600 });
 }
 
+const MAX_EXECUTOR_CAPTURE_OUTPUT_BYTES = 16 * 1024;
+const MAX_EXECUTOR_DIAGNOSTIC_TEXT_LENGTH = 512;
+
+function safeExecutorText(value) {
+  if (typeof value !== 'string') return null;
+  const compact = value.replace(/\s+/g, ' ').trim();
+  if (!compact) return null;
+  return compact
+    .replace(/\bBearer\s+[-A-Za-z0-9._~+/]+=*/gi, 'Bearer [REDACTED]')
+    .replace(/((?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|token|password|secret|credential|authorization|cookie|prompt|private reasoning)\s*(?:=|:|\s)\s*)([^\s,;]+)/gi, '$1[REDACTED]')
+    .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[REDACTED]@')
+    .slice(0, MAX_EXECUTOR_DIAGNOSTIC_TEXT_LENGTH);
+}
+
+function safeExecutorCode(value) {
+  return typeof value === 'string' && /^[A-Z][A-Z0-9_.-]{0,79}$/.test(value) ? value : null;
+}
+
+export function classifyExecutorOutcome(result) {
+  const status = Number.isInteger(result?.status) ? result.status : null;
+  const signal = typeof result?.signal === 'string' && result.signal.trim() ? result.signal.trim() : null;
+  const errorCode = safeExecutorCode(result?.error?.code);
+  if (errorCode || result?.error) {
+    return {
+      state: 'unknown', terminal: false, status, signal,
+      reason: errorCode ? `executor-error-${errorCode}` : 'executor-error',
+      ...(errorCode ? { errorCode } : {}),
+    };
+  }
+  if (signal) return { state: 'unknown', terminal: false, status, signal, reason: 'executor-signal' };
+  if (status === 0) return { state: 'succeeded', terminal: true, status, signal: null };
+  if (status === null) return { state: 'unknown', terminal: false, status: null, signal: null, reason: 'executor-status-missing' };
+  return { state: 'failed', terminal: true, status, signal: null, reason: 'executor-nonzero-status' };
+}
+
+function canSafelyCaptureRuntimeId(result) {
+  const output = result?.stdout ?? result?.output;
+  return Buffer.byteLength(typeof output === 'string' ? output : String(output ?? ''), 'utf8')
+    <= MAX_EXECUTOR_CAPTURE_OUTPUT_BYTES;
+}
+
+function captureRuntimeId({ action, runtimeAdapter, result }) {
+  if (!action.requiresRuntimeIdCapture || !runtimeAdapter || !canSafelyCaptureRuntimeId(result)) {
+    return action.runtimeSessionId;
+  }
+  try {
+    return runtimeAdapter.captureRuntimeId({
+      areaId: action.areaId, runtimeSessionId: action.runtimeSessionId,
+      stdout: result?.stdout, output: result?.output,
+    }).runtimeSessionId;
+  } catch {
+    return action.runtimeSessionId;
+  }
+}
+
 export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   if (!plan?.canProceed) {
     throw new TorchError('Fleet startup plan has unresolved blockers', {
@@ -482,20 +537,25 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
     controlPlane.assertIdentity(action.areaId);
     writeCombinedPrompt(action);
     const result = executor({ ...action.launch, areaId: action.areaId, runtimeSessionId: action.runtimeSessionId });
-    if (result?.status !== undefined && result.status !== 0) {
-      const runtimeAdapter = runtimes.get(action.runtime);
+    const outcome = classifyExecutorOutcome(result);
+    const runtimeAdapter = runtimes.get(action.runtime);
+    if (outcome.state !== 'succeeded') {
+      const runtimeSessionId = captureRuntimeId({ action, runtimeAdapter, result });
       const diagnostic = typeof runtimeAdapter?.diagnoseStartupFailure === 'function'
         ? runtimeAdapter.diagnoseStartupFailure({ stdout: result?.stdout, stderr: result?.stderr }) : null;
       controlPlane.reportStatus({
-        areaId: action.areaId, state: 'offline', runtime: action.runtime,
-        runtimeSessionId: action.runtimeSessionId, summary: 'Runtime launch failed.',
+        areaId: action.areaId, state: 'working', runtime: action.runtime,
+        runtimeSessionId,
+        summary: 'Runtime executor completion is unknown; duplicate launch is blocked pending reconciliation.',
       });
       throw new TorchError(`Fleet startup failed for ${action.areaId}`, {
         code: 'FLEET_START_FAILED',
         details: {
-          areaId: action.areaId, status: result.status,
-          stderr: diagnostic ? diagnostic.stderr : result.stderr ?? null,
-          ...(diagnostic ? { diagnostic } : {}),
+          areaId: action.areaId, status: outcome.status, signal: outcome.signal,
+          executorOutcome: outcome,
+          ...(diagnostic
+            ? { diagnostic, stderr: diagnostic.stderr }
+            : { stderr: safeExecutorText(result?.stderr ?? result?.error?.message) }),
           started,
         },
       });

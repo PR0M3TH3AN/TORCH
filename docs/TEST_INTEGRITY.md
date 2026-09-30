@@ -1,5 +1,35 @@
 # Test Integrity Notes
 
+## 2026-09-30 — Executor terminal-outcome integrity
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-executor-interrupted-outcomes
+      given: A real child that exits cleanly after SIGTERM plus deterministic signal and ENOBUFS executor results
+      when: Runtime startup receives a status-zero timeout, signal, or output-overflow error
+      then: No idle completion is recorded; captured identity remains working and failure evidence excludes private output
+    - id: SCN-scheduled-executor-failure
+      given: A scheduled command returns status zero together with ENOBUFS and screenshot-heavy output
+      when: The scheduler records its receipt
+      then: The receipt is failed, output is bounded, and credential or private-reasoning values are redacted
+  observable_outcomes:
+    - Durable runtime presence state and retained native session identifier
+    - Schedule result, exit status, bounded output, and redacted error evidence
+  determinism_controls:
+    - Disposable local Git fixtures and a bounded SIGTERM-aware child process
+    - Injected signal and ENOBUFS boundaries; no network, provider launch, retry, or sleep
+  anti_cheat_rationale:
+    prevents:
+      - Treating status zero as successful when Node reports timeout or output overflow
+      - Marking an interrupted runtime idle and permitting a duplicate launch
+      - Passing screenshot payloads, credentials, prompts, or private reasoning into durable receipts
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Exact observed-file ownership evidence
 
 ```yaml

@@ -42,6 +42,10 @@ import {
 import { ResourceService } from './resources/service.mjs';
 import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
 import { observeProject } from './observability/snapshot.mjs';
+
+// Provider output is evidence, not an unbounded artifact channel.  startFleet
+// classifies ENOBUFS as an interrupted outcome instead of a completed turn.
+const MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES = 1024 * 1024;
 import { OwnerDigestService } from './observability/owner-digest.mjs';
 import { ContextTelemetryService } from './telemetry/context.mjs';
 import { ScheduleService } from './schedules/service.mjs';
@@ -1108,6 +1112,7 @@ export async function runCli(argv = process.argv.slice(2), {
           plan, controlPlane: control, adapters,
           executor: (launch) => spawn(launch.command, launch.args, {
             cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+            maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES,
           }),
         }), { json });
         return 0;
@@ -1441,6 +1446,7 @@ export async function runCli(argv = process.argv.slice(2), {
             plan, controlPlane: control, adapters,
             executor: (launch) => spawn(launch.command, launch.args, {
               cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+              maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES,
             }),
           }), { json });
         } else throw new TorchError(`Unknown fleet operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
@@ -1615,7 +1621,7 @@ export async function runCli(argv = process.argv.slice(2), {
                 plan, controlPlane: control, adapters,
                 executor: (launch) => spawn(launch.command, launch.args, {
                   cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
-                  timeout: 300_000, maxBuffer: 8 * 1024 * 1024, killSignal: 'SIGTERM',
+                  timeout: 300_000, maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES, killSignal: 'SIGTERM',
                 }),
               });
             },
