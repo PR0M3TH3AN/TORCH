@@ -104,3 +104,31 @@ Receipts are under `/tmp/torch-pilot-*`, including repaired full-source acceptan
 native parser tests, scheduler installation/reconciliation, durable wake/run
 state and owner-request messages. The live dashboard and actual branch state
 take precedence over historical progress descriptions in this report.
+
+## Continued pilot and owner UX feedback
+
+The owner approved continuing the controlled pilot and is watching the Console.
+Independent QA reviewed candidate `ae18a98e2911aa515d0484518013061b05ff6adf`:
+the lifecycle scenario independently PASSed 7/7, with no assertion relaxation.
+QA accepted code/scenario content, **not integration qualification**. Required
+dashboard receipt remains incomplete and canonical convergence remains required.
+QA's durable report is message `8275d64a-7b28-49ee-a379-2c6d0bdcacb3`.
+
+Two additional owner-intake proposals bring the backlog to 41:
+
+- `TASK-owner-agent-chat`: threaded durable owner conversations and reviewed
+  wake-on-message after executor/presence qualification. Current agent message
+  recipient validation does not permit the owner as a recipient; owner replies
+  need a distinct authorized API, not an invented specialist identity.
+- `TASK-console-ux-audit`: the owner rejects excessive scrolling and a generic
+  all-in-one-page dashboard. Session Manager has an explicit bounded assignment
+  request for existing Owner Console. Require actual computer-use navigation,
+  inspected screenshots of every current area, desktop/mobile and interaction
+  coverage, and a focused multi-screen proposal. Live state is read-only; demo
+  may exercise mutations. Missing browser tools are a blocker, not permission
+  to claim a source-only audit completed the request.
+
+Canonical COMMON now permits this audit in parallel with diagnostics QA, without
+authorizing UI implementation, unrelated dispatch, automatic wakes or release.
+The arbiter launches Owner Console only after actual manager assignment; a
+request in an inbox is not itself assignment evidence.

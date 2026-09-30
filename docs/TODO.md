@@ -78,6 +78,23 @@ pilot reliability issues have also been added to the same backlog:
 - [ ] `TASK-provider-handover`: after release qualification, checkpoint and safely
   switch one session then the fleet to reviewed Claude Code/Pi profiles; preserve
   TORCH identity/tasks/messages but never reuse another harness's native session ID.
+- [ ] `TASK-owner-agent-chat`: persistent per-agent owner conversations for the
+  Manager and every activated domain, durable replies and clear queued/delivered/
+  running/failed outcomes. Reviewed wake-on-message must respect pauses, budgets
+  and runtime leases; qualify executor outcomes and starting presence first.
+
+The owner approved continuing the controlled pilot. Independent QA now has exact
+candidate `ae18a98e2911aa515d0484518013061b05ff6adf` and the Manager has a bounded
+next-slice planning request. The candidate's test/check/lint receipts pass; its
+dashboard receipt remains incomplete because the test writes tracked reports.
+Neither review launch nor controller exit is acceptance or landing evidence.
+There are now 41 owner-intake items, including agent chat and the UI audit.
+
+- [ ] `TASK-console-ux-audit`: Session Manager assigns Owner Console to audit
+  every live dashboard area through actual computer use and inspected screenshots,
+  including desktop/mobile and keyboard/refresh behavior. Owner rejects the long
+  single-page/anchor-navigation layout. Propose focused separate screens, concise
+  overview and contextual drilldowns. Audit/proposal only; no UI rewrite yet.
 
 ## First real self-host run (2026-09-30)
 

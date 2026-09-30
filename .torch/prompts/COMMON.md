@@ -19,6 +19,23 @@ coordinate its Release/QA boundaries and request independent review. Do not
 dispatch other development items in this first pilot. The outer arbiter controls
 provider starts, integration authorization and the next slice.
 
+## Owner-approved parallel Console audit (2026-09-30)
+
+The owner additionally authorizes TASK-console-ux-audit for owner-console.
+Session Manager may triage and assign that exact task while diagnostics QA
+continues. The arbiter launches the assigned UI session; managers still must not
+launch providers. This is a browser-based audit and design proposal, not a
+dashboard rewrite or release. Audit the actual live Console through computer
+use: navigate every area, inspect screenshots and interactions at desktop and
+mobile sizes, and document coverage. Read applicable frontend-design and browser
+skills before browser use. If computer-use tools are unavailable, report that
+specific blocker; source inspection alone is not completion. Do not substitute
+generated screenshots for actually viewing the interface. Keep live state
+read-only; use the isolated demo for exploratory mutations. Publish task-owned
+screenshots/evidence and an audit report proposing focused separate views rather
+than one long anchor-linked page. Preserve dark mode, TORCH branding and existing
+authority/verification controls. No other implementation slice is authorized.
+
 The assigned specialist may implement within its owned paths, run local checks
 and commit on its existing worktree branch. Ask the responsible owner before
 editing shared/other-owned files. Name the task in commits, preserve all existing
