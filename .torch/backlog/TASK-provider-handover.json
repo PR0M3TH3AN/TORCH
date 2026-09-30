@@ -1,0 +1,42 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-provider-handover",
+  "title": "Rehearse quality-release Codex to Claude Code or Pi fleet handover",
+  "description": "Owner wants TORCH to build itself, install a qualified new release, then switch agents to Claude Code or Pi and prove continuity. Test one session before whole-fleet migration. Checkpoint assigned work, branches, checks, artifacts and inbox; safely stop the old harness; apply reviewed per-session provider/model profiles; start the new harness on current canonical instructions and durable TORCH identity. Native session IDs and prompt caches are not portable. Retain prior runtime mappings and rollback. Do not swap providers before the quality-release/pilot decision.",
+  "priority": "normal",
+  "affectedDomains": [
+    "provider-runtime",
+    "qa",
+    "session-manager"
+  ],
+  "dependencies": [
+    "TASK-conversation-release-qualification"
+  ],
+  "acceptanceCriteria": [
+    "TORCH identity, task, worktree and pending communications survive handover",
+    "The new provider gets a fresh native session ID and current instructions, never a foreign resume ID",
+    "Approved bounded live contract tests prove the loop under each target harness",
+    "Whole-fleet cutover follows one-agent proof and can reverse without duplicate live sessions"
+  ],
+  "observedAt": "94062020c767",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T20:31:08.864Z",
+  "updatedAt": "2026-09-30T20:31:08.864Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T20:31:08.864Z",
+      "note": "Task created."
+    }
+  ]
+}

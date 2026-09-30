@@ -1,0 +1,39 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-pilot-systemd-rendering",
+  "title": "Qualify real systemd unit rendering and active scheduler evidence",
+  "description": "First live pilot install produced WorkingDirectory= with outer quotes, rejected as not absolute by the actual systemd parser. TORCH status counted manifest files as installed although timer was enabled but inactive. Arbiter is making a minimal scalar-path renderer repair to unblock this owned scheduler; current tests mocked systemctl and missed the error. Require native parser regression and real host activation verification. Follow up with installed/configured/enabled/active/failed status and false-success/rollback qualification; do not weaken unit ownership or infer liveness from file presence.",
+  "priority": "urgent",
+  "affectedDomains": [
+    "provider-runtime",
+    "qa",
+    "owner-console"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Real systemd parser accepts generated scalar path including spaces and literal percent/quotes",
+    "Real owned timer and dispatcher activation is verified, not merely manifest installation",
+    "Failed/inactive units are surfaced distinctly and rollback preserves unrelated services"
+  ],
+  "observedAt": "c940a343c357",
+  "feature": "Self-host development readiness",
+  "milestone": "First real development trial",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T20:04:53.270Z",
+  "updatedAt": "2026-09-30T20:04:53.270Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T20:04:53.270Z",
+      "note": "Task created."
+    }
+  ]
+}

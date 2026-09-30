@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-pilot-generated-check-artifacts",
+  "title": "Keep check-generated artifacts from blocking exact verification",
+  "description": "The first live runtime task ran the required dashboard gate and rewrote five tracked QA-owned PNG reports. The next TORCH gate refused WORKTREE_DIRTY. Archive proof outputs outside the tested tree, bind them to exact commit and permit only explicit narrowly scoped check-owned cleanup. Do not stash or commit generated baselines. Add a regression for artifact-generating check sequences while preserving user edits and frozen inputs. Ensure actual code progress uses revisioned task state rather than staying assigned through code commits.",
+  "priority": "high",
+  "affectedDomains": [
+    "qa",
+    "work-integration",
+    "owner-console",
+    "provider-runtime"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Required check sequences finish without changing tracked expectations or losing evidence",
+    "Generated artifact bytes and exact-commit provenance remain recoverable",
+    "Preexisting/user edits are preserved; only proven check-owned changes may be restored",
+    "Task progress and blockers reflect the current lifecycle"
+  ],
+  "observedAt": "94062020c767",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T20:31:08.855Z",
+  "updatedAt": "2026-09-30T20:31:08.855Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T20:31:08.855Z",
+      "note": "Task created."
+    }
+  ]
+}

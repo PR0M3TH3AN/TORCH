@@ -1,0 +1,39 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-pilot-starting-presence",
+  "title": "Publish live startup presence before invoking a provider",
+  "description": "During the first development trial the real Sol process ran and used TORCH tools for several minutes while the Console still reported offline. startFleet currently records final presence only after the blocking executor returns. Record a durable guarded starting state before launch, capture execution identity/lease where available, and conservatively reconcile success/failure/unknown interruption. Do not let scheduler or manual startup duplicate a still-running manager or turn unknown launch into offline. This task is proposed only; do not expand the current diagnostics pilot without arbiter approval.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "owner-console",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Actual startup is visible as starting/running rather than falsely offline before its executor returns",
+    "Concurrent timer/manual starts cannot duplicate one identity and unknown interruption remains guarded",
+    "Failure/completion and process absence are distinguished with bounded attributable evidence; regression tests cover the race"
+  ],
+  "observedAt": "c940a343c357",
+  "feature": "Self-host development readiness",
+  "milestone": "First real development trial",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T19:55:23.203Z",
+  "updatedAt": "2026-09-30T19:55:23.203Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T19:55:23.203Z",
+      "note": "Task created."
+    }
+  ]
+}

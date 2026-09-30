@@ -1,0 +1,40 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-pilot-executor-outcomes",
+  "title": "Treat executor timeout/error/signal as failure or unknown even with zero exit",
+  "description": "First real scheduled manager wake ran exactly its 300-second executor timeout and was labelled succeeded/invoked without independently verified manager completion. Native local reproduction confirms spawnSync can return status 0 plus error ETIMEDOUT when a child traps SIGTERM. startFleet currently checks status but ignores result.error/signal. This is a confirmed false-success boundary; the actual manager timeout is suspected rather than independently captured. Automatic provider wakes are temporarily disabled while machine coordination stays enabled. Require explicit executor outcome handling, completion evidence and guarded interrupted-launch recovery. Preserve existing wake receipts as historical claims; do not rewrite evidence.",
+  "priority": "urgent",
+  "affectedDomains": [
+    "provider-runtime",
+    "qa",
+    "owner-console"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "A zero exit with ETIMEDOUT or signal cannot become successful lifecycle or scheduler receipt",
+    "Failed/unknown executor completion retains captured runtime identity and blocks duplicate launch until safe reconciliation",
+    "Tests cover real gracefully terminating timeout and deterministic injected error boundaries without weakening existing assertions",
+    "Automatic wakes are re-enabled only after exact-source qualification and a successful bounded live manager turn"
+  ],
+  "observedAt": "d636cae93c5a",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-09-30T20:20:17.000Z",
+  "updatedAt": "2026-09-30T20:20:17.000Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "owner",
+      "at": "2026-09-30T20:20:17.000Z",
+      "note": "Task created."
+    }
+  ]
+}
