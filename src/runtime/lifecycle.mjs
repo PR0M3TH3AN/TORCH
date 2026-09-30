@@ -483,13 +483,21 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
     writeCombinedPrompt(action);
     const result = executor({ ...action.launch, areaId: action.areaId, runtimeSessionId: action.runtimeSessionId });
     if (result?.status !== undefined && result.status !== 0) {
+      const runtimeAdapter = runtimes.get(action.runtime);
+      const diagnostic = typeof runtimeAdapter?.diagnoseStartupFailure === 'function'
+        ? runtimeAdapter.diagnoseStartupFailure({ stdout: result?.stdout, stderr: result?.stderr }) : null;
       controlPlane.reportStatus({
         areaId: action.areaId, state: 'offline', runtime: action.runtime,
         runtimeSessionId: action.runtimeSessionId, summary: 'Runtime launch failed.',
       });
       throw new TorchError(`Fleet startup failed for ${action.areaId}`, {
         code: 'FLEET_START_FAILED',
-        details: { areaId: action.areaId, status: result.status, stderr: result.stderr ?? null, started },
+        details: {
+          areaId: action.areaId, status: result.status,
+          stderr: diagnostic ? diagnostic.stderr : result.stderr ?? null,
+          ...(diagnostic ? { diagnostic } : {}),
+          started,
+        },
       });
     }
     let runtimeSessionId = action.runtimeSessionId;
