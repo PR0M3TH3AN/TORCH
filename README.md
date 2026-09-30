@@ -164,6 +164,37 @@ Requirements:
 - Node.js 22 or later
 - Git
 
+### Provider version preflight
+
+Opt in during installation with `torch install ... --update-runtimes --yes`,
+or on an existing project with `torch runtimes update-policy --mode auto --yes`.
+Approved `torch up --yes` (including resume) refreshes the selected built-in
+providers against the official npm `latest` release, at most once every 24
+hours. Change the interval with `--max-age-hours 1` through `168`; disable future
+downloads with `--mode off`. Dry runs never query the registry or install code.
+Existing projects stay opt-in; `--yes` alone does not authorize new downloads.
+
+Preview or force a manual update:
+
+```bash
+torch runtimes update --runtime codex,claude,pi --dry-run --json
+torch runtimes update --runtime codex,claude,pi --force --yes --json
+```
+
+Updates install exact resolved versions into XDG-local TORCH-owned prefixes,
+verify `--version` and `--help`, then atomically select their absolute executable
+paths. Global installations, login files and provider settings are untouched;
+old versions remain available to already-running processes. Codex and Claude
+packages can execute installation scripts; Pi uses its current official
+`@earendil-works/pi-coding-agent` distribution with scripts disabled. Custom
+adapters require their own reviewed updater. Concurrent updates stop at a lock;
+failed downloads or verification retain the prior selection and block automatic
+startup rather than silently claiming the latest version. Interrupted updates
+leave the lock for inspection, not automatic deletion. Model/account access and
+adapter flag compatibility remain separate live qualification gates. Persistent
+schedule and hierarchy-start updater integration remains pending; use `torch up`
+for this first trial.
+
 Run the current verification suite:
 
 ```bash

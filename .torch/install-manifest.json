@@ -69,11 +69,60 @@
     ".torch/backlog",
     ".torch/prompts"
   ],
-  "patched": [],
+  "patched": [
+    {
+      "type": "git-info-exclude-line",
+      "path": "/home/user/Documents/GitHub/TORCH/.git/info/exclude",
+      "line": ".task",
+      "installationId": "73b013e7-41d2-493b-a3a7-022c086f059e"
+    }
+  ],
   "external": [
     {
       "type": "local-state",
       "path": "/home/user/.local/share/torch/projects/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54"
+    },
+    {
+      "type": "worktree",
+      "area": "session-manager",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/session-manager",
+      "branch": "torch/session-manager"
+    },
+    {
+      "type": "worktree",
+      "area": "project-kernel",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/project-kernel",
+      "branch": "torch/project-kernel"
+    },
+    {
+      "type": "worktree",
+      "area": "provider-runtime",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/provider-runtime",
+      "branch": "torch/provider-runtime"
+    },
+    {
+      "type": "worktree",
+      "area": "work-integration",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/work-integration",
+      "branch": "torch/work-integration"
+    },
+    {
+      "type": "worktree",
+      "area": "owner-console",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/owner-console",
+      "branch": "torch/owner-console"
+    },
+    {
+      "type": "worktree",
+      "area": "release-self-host",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/release-self-host",
+      "branch": "torch/release-self-host"
+    },
+    {
+      "type": "worktree",
+      "area": "qa",
+      "path": "/home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/qa",
+      "branch": "torch/qa"
     }
   ]
 }

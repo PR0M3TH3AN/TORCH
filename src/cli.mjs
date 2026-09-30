@@ -3,6 +3,7 @@ import { BacklogService } from './backlog/service.mjs';
 import { ArtifactService } from './artifacts/service.mjs';
 import { createClaudeAdapter } from './adapters/claude.mjs';
 import { createRuntimeAdapterRegistry } from './adapters/registry.mjs';
+import { planProviderUpdates, updateProviders } from './adapters/updates.mjs';
 import { profileCapabilityIssues, resolveLaunchPolicy } from './adapters/runtime.mjs';
 import {
   inspectRuntimePluginTrust, planRuntimePluginRevoke, planRuntimePluginTrust,
@@ -69,7 +70,7 @@ Usage:
   torch architect validate --brief <path> --response <path> [--json]
   torch architect run --brief <path> --provider <claude|codex> --output <path> [--model <model>] [--max-budget-usd <amount>] --yes [--json]
   torch domains [--repo <path>] [--spec <path>] [--output <path>] [--json]
-  torch install --proposal <path> [--runtime <adapter,adapter>] [--default-runtime <adapter>] [--dry-run] [--yes] [--json]
+  torch install --proposal <path> [--runtime <adapter,adapter>] [--default-runtime <adapter>] [--update-runtimes] [--dry-run] [--yes] [--json]
   torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
   torch up [--fresh] [--only <id,id>] [--dry-run] [--yes] [--json]
   torch down [--dry-run] [--yes] [--json]
@@ -91,6 +92,8 @@ Usage:
   torch profile set --area <id> [--runtime <adapter>] [--model <model>|--inherit-model] [--reasoning <level|none>] [--launch-policy <field=value> ...] [--reset|--reset-launch-policy] [--dry-run|--yes] [--json]
   torch profile defaults --runtime <adapter> [--model <model>] [--reasoning <level|none>] [--launch-policy <field=value> ...] [--reset|--reset-launch-policy] --yes [--json]
   torch runtimes list [--json]
+  torch runtimes update --runtime <codex,claude,pi> [--force] [--dry-run|--yes] [--json]
+  torch runtimes update-policy --mode <auto|off> [--max-age-hours <1-168>] --yes [--json]
   torch runtimes trust --name <id> --module </absolute/path/adapter.cjs> [--yes --sha256 <reviewed-hash>] [--json]
   torch runtimes revoke --name <id> [--yes --sha256 <reviewed-hash>] [--json]
   torch complete --area <id> --summary <text> [--task <id>] [--evidence <text>] [--commit <sha>] [--json]
@@ -415,6 +418,7 @@ export const CANDIDATE_ACCEPTANCE_EVIDENCE = Object.freeze({
   'branches-worktrees': ['SCN-worktree-bootstrap'],
   'runtime-identities': ['SCN-mixed-runtime'],
   'runtime-profiles': ['SCN-runtime-profiles', 'SCN-runtime-cost-ceiling', 'SCN-runtime-profile-cli'],
+  'provider-updates': ['SCN-provider-updates', 'SCN-provider-updates-recovery', 'SCN-provider-update-safety', 'SCN-provider-update-cli'],
   'console-runtime-profile': ['SCN-console-runtime-profile'],
   'console-schedule-launcher': ['SCN-console-schedule-launcher'],
   'runtime-adapters': [
@@ -552,6 +556,38 @@ export async function runCli(argv = process.argv.slice(2), {
     }
     if (command === 'runtimes') {
       const operation = argv[1] ?? 'list';
+      if (operation === 'update') {
+        const names = commaList(optionValue(argv, '--runtime'));
+        if (!names.length) throw new TorchError('Select --runtime codex,claude,pi', { code: 'RUNTIME_UPDATE_INVALID' });
+        const plan = planProviderUpdates(names, { env });
+        if (argv.includes('--dry-run') || !argv.includes('--yes')) {
+          print({ ...plan, requiresApproval: true }, { json }); return 0;
+        }
+        print(updateProviders(names, { env, runner: spawn, authorized: true, force: argv.includes('--force') }), { json });
+        return 0;
+      }
+      if (operation === 'update-policy') {
+        const repository = inspectRepository(optionValue(argv, '--repo') ?? cwd);
+        const config = loadProjectConfig(repository.root);
+        const mode = optionValue(argv, '--mode');
+        const maxAge = Number(optionValue(argv, '--max-age-hours') ?? 24);
+        const policy = { mode, max_age_hours: maxAge };
+        const names = optionValue(argv, '--runtime') === undefined
+          ? Object.keys(config.runtimes).filter(name => name !== 'default')
+          : commaList(optionValue(argv, '--runtime'));
+        planProviderUpdates(names, { env });
+        for (const name of names) {
+          if (!Object.hasOwn(config.runtimes, name)) throw new TorchError('Runtime is not configured', { code: 'RUNTIME_UPDATE_INVALID', details: { name } });
+          config.runtimes[name].updatePolicy = policy;
+        }
+        validateProjectConfig(config);
+        if (argv.includes('--dry-run') || !argv.includes('--yes')) {
+          print({ policy, runtimes: names, requiresApproval: true, mutationPerformed: false }, { json }); return 0;
+        }
+        print({ path: persistProfileConfig(repository.root, config), policy, runtimes: names,
+          sessionsStarted: false, mutationPerformed: true }, { json });
+        return 0;
+      }
       if (operation === 'list') {
         const builtIns = createRuntimeAdapterRegistry({ env, loadPlugins: false }).names();
         let trust;
@@ -967,12 +1003,15 @@ export async function runCli(argv = process.argv.slice(2), {
       const runtimes = runtimeOption === undefined ? undefined : commaList(runtimeOption);
       if (argv.includes('--dry-run')) {
         const proposal = loadProposal(cwd, proposalPath);
-        print({ ...planInstall({
+        const plan = planInstall({
           repository, proposal, env, runtimes, defaultRuntime,
           runtimeRegistry: createRuntimeAdapterRegistry({
             env, loadPlugins: true, pluginNames: [...(runtimes ?? proposalRuntimeNames(proposal)), ...[defaultRuntime].filter(Boolean)],
           }),
-        }), proposal: resolve(cwd, proposalPath) }, { json });
+        });
+        print({ ...plan, proposal: resolve(cwd, proposalPath),
+          ...(argv.includes('--update-runtimes') ? { providerUpdates: planProviderUpdates(plan.runtimes, { env }) } : {}),
+        }, { json });
         return 0;
       }
       if (!argv.includes('--yes')) {
@@ -981,12 +1020,25 @@ export async function runCli(argv = process.argv.slice(2), {
         });
       }
       const proposal = loadProposal(cwd, proposalPath);
-      print(installProject({
+      if (argv.includes('--update-runtimes')) {
+        const installPlan = planInstall({ repository, proposal, env, runtimes, defaultRuntime });
+        if (!installPlan.canProceed) throw new TorchError('Install plan has blockers', { code: 'INSTALL_BLOCKED', details: installPlan.blockers });
+        updateProviders(installPlan.runtimes, { env, runner: spawn, authorized: true });
+      }
+      const installed = installProject({
         repository, proposal, env, runtimes, defaultRuntime,
         runtimeRegistry: createRuntimeAdapterRegistry({
           env, loadPlugins: true, pluginNames: [...(runtimes ?? proposalRuntimeNames(proposal)), ...[defaultRuntime].filter(Boolean)],
         }),
-      }), { json });
+      });
+      if (argv.includes('--update-runtimes')) {
+        const config = loadProjectConfig(repository.root);
+        for (const name of Object.keys(config.runtimes).filter(name => name !== 'default')) {
+          config.runtimes[name].updatePolicy = { mode: 'auto', max_age_hours: 24 };
+        }
+        persistProfileConfig(repository.root, config);
+      }
+      print(installed, { json });
       return 0;
     }
     if (command === 'doctor') {
@@ -1010,6 +1062,16 @@ export async function runCli(argv = process.argv.slice(2), {
       return 0;
     }
     if (command === 'up') {
+      const updateConfig = loadProjectConfig(repository.root);
+      if (argv.includes('--yes') && !argv.includes('--dry-run')) {
+        const selected = optionValue(argv, '--only') === undefined ? undefined : commaList(optionValue(argv, '--only'));
+        for (const name of configuredRuntimeNames(repository.root, selected)) {
+          const policy = updateConfig.runtimes[name]?.updatePolicy;
+          if (policy?.mode === 'auto') updateProviders([name], {
+            env, runner: spawn, authorized: true, maxAgeHours: policy.max_age_hours,
+          });
+        }
+      }
       const control = openControlPlane({ repositoryRoot: repository.root, env });
       try {
         const only = optionValue(argv, '--only') === undefined ? undefined : commaList(optionValue(argv, '--only'));

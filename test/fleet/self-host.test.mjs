@@ -159,6 +159,8 @@ test('SCN-candidate-isolation: staging requires complete acceptance and never ch
   writeFileSync(join(checkout, 'node_modules', 'fixture-dependency', 'index.js'), 'export const dependency = true;\n');
   symlinkSync('../fixture-dependency/index.js', join(checkout, 'node_modules', '.bin', 'fixture-dependency'));
   writeFileSync(join(checkout, '.gitignore'), 'node_modules/\nlocal-secret.env\n');
+  mkdirSync(join(checkout, '.torch'));
+  writeFileSync(join(checkout, '.torch', 'torch.yaml'), '{"machineSpecificProject":true}\n');
   execFileSync('git', ['init', '-b', 'main', checkout]);
   execFileSync('git', ['-C', checkout, 'config', 'user.email', 'torch-test@example.invalid']);
   execFileSync('git', ['-C', checkout, 'config', 'user.name', 'TORCH Test']);
@@ -173,6 +175,8 @@ test('SCN-candidate-isolation: staging requires complete acceptance and never ch
   assert.deepEqual(boundedPlan.excludedUntracked, ['new-runtime-adapter.mjs'],
     'the reviewed candidate plan names untracked files that will not ship');
   const bounded = service.installCandidate({ source: checkout, validate: accepted });
+  assert.equal(existsSync(join(bounded.destination, '.torch')), false,
+    'tracked self-host project state must not ship inside the installed engine');
   assert.equal(existsSync(join(bounded.destination, 'local-secret.env')), false);
   assert.equal(existsSync(join(bounded.destination, 'new-runtime-adapter.mjs')), false);
   assert.equal(existsSync(join(bounded.destination, 'node_modules', '.bin', 'fixture-dependency')), true);

@@ -4,13 +4,14 @@ import { createCodexAdapter } from './codex.mjs';
 import { createPiAdapter } from './pi.mjs';
 import { validateRuntimeAdapter } from './runtime.mjs';
 import { inspectRuntimePluginTrust, loadTrustedRuntimeAdapters } from './plugins.mjs';
+import { managedProvider } from './updates.mjs';
 
 export class RuntimeAdapterRegistry {
   constructor({ env = process.env, adapters = [], loadPlugins = false, pluginNames } = {}) {
     this.adapters = new Map([
-      ['claude', createClaudeAdapter({ env })],
-      ['codex', createCodexAdapter({ env })],
-      ['pi', createPiAdapter({ env })],
+      ['claude', createClaudeAdapter({ env, executable: managedProvider('claude', { env })?.executable ?? 'claude' })],
+      ['codex', createCodexAdapter({ env, executable: managedProvider('codex', { env })?.executable ?? 'codex' })],
+      ['pi', createPiAdapter({ env, executable: managedProvider('pi', { env })?.executable ?? 'pi' })],
     ]);
     this.pluginErrors = [];
     this.trustedPlugins = [];

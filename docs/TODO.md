@@ -1,5 +1,60 @@
 # TORCH remaining work
 
+## First real self-host run (2026-09-30)
+
+### Portable production pipelines (new roadmap element)
+
+- [ ] Detect justified recurring multi-stage flows from repo/spec and handoff
+  evidence; propose owner-reviewed pipeline definitions without auto-creation.
+- [ ] Define versioned stage DAGs with one flow coordinator, specialist owners,
+  pinned inputs/outputs, project invariants, checks, resources and approval roles.
+- [ ] Track deliverable instances through the existing backlog/artifact/check/
+  approval systems; do not create another independently scheduled task queue.
+- [ ] Implement revision-checked transitions, provenance, attempt lineage,
+  invalidation, parallel joins, rework and idempotent interrupted-stage recovery.
+- [ ] Add why-waiting/stall diagnostics and manager exception check-ins for
+  handoffs and deliverables, not just stale task commits.
+- [ ] Add Console deliverable cards, stage timeline, exact-output feedback,
+  approval/rework actions and before/after evidence.
+- [ ] Add conditional Pipelines navigation, per-definition deliverable rows,
+  reciprocal Work-board links, why-waiting drilldown, parallel stage view,
+  accessible mobile/current-blocker presentation and protected refresh.
+- [ ] Add evidence-backed stage metrics and configurable sample-based reviews;
+  keep unknown costs explicit and preserve definition-version comparisons.
+  Use the same renderer for private live state and clearly labelled demo fixtures.
+- [ ] Pilot a TORCH software/docs pipeline, then separately qualify project-
+  supplied mesh, UV-paintback, transcription or other domain checks as needed.
+  Canonical contract/acceptance plan: spec section 14.0a. No runtime implemented yet.
+
+- [x] Install accepted `0.1.0-alpha.0` into the normal version store, activate
+  stable launcher, install six-domain configuration and create seven worktrees.
+- [x] Verify ChatGPT sign-in, Luna specialist startup and Sol 6.1 manager startup
+  using the current installed Codex 0.159.2 binary. Durable specialist message,
+  manager acknowledgement and runtime IDs observed. No development dispatch,
+  pushes, deployments or host timers enabled.
+- [x] Add owner-approved install/startup provider version preflight for Codex,
+  Claude Code and Pi: exact managed binaries, 24-hour freshness, serialized
+  updates, retained previous installs, offline previews and fail-closed errors.
+  Four deterministic scenarios added; live download qualification recorded in
+  the first-run audit, not implied by mocked installer tests.
+- [ ] Fix `torch brief` invoked from a managed worktree: both live sessions hit
+  `LOCAL_STATE_METADATA_MISMATCH`. Resolve canonical project binding with
+  checked worktree membership, never weaken root/installation identity checks.
+- [ ] Surface Codex JSON stdout failure events: first Sol launch hid the actual
+  model rejection behind an unrelated inherited Vercel MCP authentication error.
+- [ ] Add exact executable/version/model/auth preflight to owner Console and
+  setup flow. PATH selected CLI 0.158.0 while the current session used 0.159.2;
+  the older child rejected Sol 6.1 and required manual investigation/retry.
+- [ ] Make configuration checkpoint/worktree/manifest handoffs explicit or
+  guided: generated tracked files and provisioning manifest updates require
+  deliberate commits; a healthy doctor does not prove startup readiness.
+- [ ] Isolate irrelevant inherited global MCP servers without removing user
+  settings. Vercel auth noise appeared in both failed and successful Codex runs.
+- [ ] Integrate approved update policy into hierarchy activation and persistent
+  schedule wakes; qualify interrupted-update recovery and Windows npm execution.
+- [ ] Qualify current Pi flag/extension/login compatibility after its official
+  package migration; a verified binary `--help` is not a full adapter proof.
+
 ## Review corrections (2026-09-29)
 
 ## Fresh readiness audit (2026-09-30)

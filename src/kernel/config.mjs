@@ -320,6 +320,13 @@ export const projectConfigSchema = z.object({
     }
   }
   for (const [runtime, profile] of Object.entries(config.runtimes)) {
+    if (runtime !== 'default' && profile?.updatePolicy !== undefined) {
+      const policy = z.object({ mode: z.enum(['auto', 'off']),
+        max_age_hours: z.number().int().min(1).max(168) }).strict().safeParse(profile.updatePolicy);
+      if (!policy.success) for (const issue of policy.error.issues) {
+        context.addIssue({ ...issue, path: ['runtimes', runtime, 'updatePolicy', ...issue.path] });
+      }
+    }
     if (runtime === 'default' || !profile || typeof profile !== 'object' || Array.isArray(profile)) continue;
     if (profile.launchPolicy !== undefined) {
       const result = launchPolicy.safeParse(profile.launchPolicy);

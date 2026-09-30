@@ -32,6 +32,7 @@
   "runtimes": {
     "default": "codex",
     "codex": {
+      "updatePolicy": { "mode": "auto", "max_age_hours": 24 },
       "model": "gpt-6-luna",
       "reasoning": "high",
       "launchPolicy": {
@@ -237,8 +238,8 @@
       ],
       "resources": [],
       "runtime": "codex",
-      "model": null,
-      "reasoning": null,
+      "model": "gpt-5.6-terra",
+      "reasoning": "high",
       "branch": null,
       "worktree_name": null
     },
@@ -279,8 +280,8 @@
       ],
       "resources": [],
       "runtime": "codex",
-      "model": null,
-      "reasoning": null,
+      "model": "gpt-5.6-terra",
+      "reasoning": "high",
       "branch": null,
       "worktree_name": null
     },
@@ -322,8 +323,8 @@
       ],
       "resources": [],
       "runtime": "codex",
-      "model": null,
-      "reasoning": null,
+      "model": "gpt-5.6-terra",
+      "reasoning": "high",
       "branch": null,
       "worktree_name": null
     },
@@ -479,7 +480,7 @@
         "browser"
       ],
       "runtime": "codex",
-      "model": "gpt-6-luna",
+      "model": "gpt-5.6-terra",
       "reasoning": "high",
       "branch": null,
       "worktree_name": null
