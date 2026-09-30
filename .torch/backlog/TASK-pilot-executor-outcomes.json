@@ -19,15 +19,15 @@
   "observedAt": "d636cae93c5a",
   "feature": null,
   "milestone": null,
-  "state": "proposed",
-  "owner": null,
+  "state": "assigned",
+  "owner": "provider-runtime",
   "evidence": [],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-09-30T20:20:17.000Z",
-  "revision": 1,
+  "updatedAt": "2026-09-30T23:19:49.273Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -35,6 +35,20 @@
       "actorId": "owner",
       "at": "2026-09-30T20:20:17.000Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-09-30T23:19:21.442Z",
+      "note": "Owner goal-continuation brief0e4eafe9 and d5b46444 authorize ONLY this Provider Runtime reliability slice. Diagnostics blocked rev6 on actual incomplete dashboard/convergence gate, preserving ae18a98e owner/receipts/QA verdict; next provider-runtime idle afterward. Clean provider tree preserves unique diagnostics commits. Required qualification includes timeout/error/signal, zero exit ENOBUFS, screenshot-heavy bounded output, actual terminal-turn evidence, retained identity/duplicate-launch guard, no private reasoning. Exact CLI consent200dcdba Release and additive test consente198e23b QA pending; no cross-owned edits until approved. Arbiter controls starts/acceptance/integration/update, wakes paused."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-09-30T23:19:49.273Z",
+      "note": "Next provider-runtime ready after diagnostics explicitly blocked; assign one active runtime item only. Implement owned runtime/adapter/schedule executor completion classification and bounded output handling, retaining durable identity and uncertain outcomes. Reproduce true zero-exit ETIMEDOUT/ENOBUFS and signal/error boundaries; actual terminal completion required, not controller exit/idle badge. Release CLI path consent200dcdba and QA additive test consente198e23b pending and required before their files. Preserve ae18a98e diagnostics work, full receipt/QA history and all other agents' edits; safe clean convergence then exact required checks. No private reasoning/prompt/credential exposure, gate waivers or history rewriting. Arbiter alone starts, accepts, integrates and updates installation; wakes remain paused."
     }
   ]
 }

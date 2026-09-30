@@ -22,15 +22,19 @@
   "observedAt": "7b7c6584b9d3",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "verification",
   "owner": "project-kernel",
-  "evidence": [],
-  "commit": null,
+  "evidence": [
+    "npm run test: 195 passed",
+    "5 explicitly skipped",
+    "0 failed; npm run check passed; npm run lint passed; dashboard gate blocked by missing Playwright chromium_headless_shell-1243"
+  ],
+  "commit": "d3a679849b0f5e55c2114223a2e56977c318391e",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T23:06:51.644Z",
-  "updatedAt": "2026-09-30T23:09:46.256Z",
-  "revision": 3,
+  "updatedAt": "2026-09-30T23:18:42.537Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -52,6 +56,20 @@
       "actorId": "session-manager",
       "at": "2026-09-30T23:09:46.256Z",
       "note": "Assign exact owner-approved portable policy slice after next lookup ready/no active work. Implement current COMMON routine policy in owned src/kernel generated install/domain/brief instructions; reuse existing control-plane enforcement, do not duplicate queues or broaden authority. Query any additional path owners before edits. Named QA request 8e3567c7-920d-4969-916c-23e12858c568 must be approved before test/** or docs/TEST_INTEGRITY.md edits. Evidence must exercise real named-approver/own-inbox/ack-not-resolution and paused execution boundaries, preserve every existing assertion and produce Test Integrity Note. Fresh canonical brief required at start; clean worktree f72daadc is stale, guarded convergence preserves commits and owner changes. Arbiter launches; manager assigns only. Keep diagnostics verification and Console audit intact; no provider starts/wakes/remote publication/landing."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "project-kernel",
+      "at": "2026-09-30T23:18:42.279Z",
+      "note": null
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "project-kernel",
+      "at": "2026-09-30T23:18:42.537Z",
+      "note": null
     }
   ]
 }

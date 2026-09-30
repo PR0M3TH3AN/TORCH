@@ -17,7 +17,7 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "verification",
+  "state": "blocked",
   "owner": "provider-runtime",
   "evidence": [
     "test:f359e781-e79b-4d72-ab0f-5e9ed0c33281",
@@ -28,14 +28,18 @@
     "receipt:b05d7e37-c8ab-4c53-b70c-55c04889fbde:check:pass",
     "receipt:6d559b63-87b6-43e5-a181-9caabd2c15f4:lint:pass",
     "receipt:214a5830-7238-4188-82bd-eb6e9cd568bc:test-dashboard:incomplete:worktree-changed-during-check",
-    "message:541ba9ec-8441-4312-b997-0fb92f373af7:arbiter-independent-QA-request"
+    "message:541ba9ec-8441-4312-b997-0fb92f373af7:arbiter-independent-QA-request",
+    "message:8275d64a-7b28-49ee-a379-2c6d0bdcacb3:QA-accepted-scenario-code-not-integration-qualified",
+    "approval:b125592b-e022-453d-b2d9-98c0fd8ac164:approved-rev2-exact-additive-test-scope",
+    "canonical:3ca70f2d43be3eac1a4df26d8aa485f58e239beb:advanced-beyond-diagnostics-candidate",
+    "dependency:TASK-pilot-generated-check-artifacts"
   ],
   "commit": "ae18a98e2911aa515d0484518013061b05ff6adf",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Required test-dashboard receipt 214a5830-7238-4188-82bd-eb6e9cd568bc is INCOMPLETE (worktree-changed-during-check) despite exit0: dashboard generates tracked QA-owned PNGs. Candidate ae18a98e is behind/diverged from current canonical3ca70f2d; guarded convergence and new exact-commit required checks remain necessary. QA scenario/code verdict accepted, explicitly NOT integration-qualified. Artifact isolation/provenance slice must resolve actual gate; preserve historical receipts and all unique commits.",
   "createdAt": "2026-09-30T19:30:23.606Z",
-  "updatedAt": "2026-09-30T22:14:30.800Z",
-  "revision": 5,
+  "updatedAt": "2026-09-30T23:17:58.527Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -71,6 +75,13 @@
       "actorId": "session-manager",
       "at": "2026-09-30T22:14:30.800Z",
       "note": "Reconcile finished implementation into independent verification at arbiter request. Three exact-SHA receipts pass; test-dashboard exit0 remains INCOMPLETE due to worktree-changed-during-check. Preserve original receipt/history; generated images were archived/restored under owner direction, not accepted as new baselines. Independent QA acceptance and structured QA consent reconciliation outstanding; current canonical ed1f7614 has advanced beyond candidate. Verification is not readiness to integrate, completion or landing authority. No new implementation is dispatched; automatic AI wakes remain paused."
+    },
+    {
+      "from": "verification",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-09-30T23:17:58.527Z",
+      "note": "Explicit owner goal-continuation instruction digest0e4eafe9 and message d5b46444-ee83-4ccb-a0a1-bf7674354e60 authorize recording this actual unresolved artifact/convergence dependency before dispatching one executor reliability assignment. Original owner, candidate, every receipt, QA verdict and approval retained. This is blocked, not completed or ready_to_integrate. No gate waiver, replacement baseline, discard, runtime launch or landing."
     }
   ]
 }
