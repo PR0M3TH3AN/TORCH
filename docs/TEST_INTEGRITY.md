@@ -2268,3 +2268,25 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+# First live scheduler pilot: native systemd parser (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-systemd-native-unit
+      given: "A generated dispatcher with a repository path containing spaces, percent and quote characters"
+      when: "The real Linux systemd-analyze parser verifies the emitted service"
+      then: "The service parses successfully and WorkingDirectory remains an absolute scalar path"
+  observable_outcomes:
+    - "Actual native parser exit status and generated unit bytes"
+  determinism_controls:
+    - "Temporary project path alias and unit file; /usr/bin/true command; verify-only, no service activation"
+  anti_cheat_rationale:
+    prevents:
+      - "Mocked systemctl success masking invalid unit syntax"
+      - "Treating quoted ExecStart syntax as valid for scalar WorkingDirectory"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
