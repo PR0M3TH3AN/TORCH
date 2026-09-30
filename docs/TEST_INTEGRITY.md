@@ -2195,3 +2195,45 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+# Provider update preflight (2026-09-30)
+
+Self-host packaging follow-up: extended the existing SCN-candidate-isolation
+fixture with a tracked `.torch/torch.yaml`; assert it is absent from the engine
+candidate while committed engine files and dependency symlinks remain present.
+This adds a stricter no-project-state-shipping invariant without changing any
+existing assertion. Update policy is validated under `runtimes.<name>.updatePolicy`,
+which older readers already treat as extensible runtime data; no incompatible
+top-level project key or permanent global provider setting is introduced.
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-provider-updates
+      given: approved selected built-in providers and deterministic registry
+      when: latest versions install and pass parser/version smoke checks
+      then: registry launches exact managed binaries and fresh startup is offline
+    - id: SCN-provider-update-cli
+      given: installed project with owner-enabled update policy
+      when: dry run, actual startup and failed stale refresh execute
+      then: preview is offline, actual launch uses updated binary, failure cannot launch
+    - id: SCN-provider-updates-recovery
+      given: prior verified activation
+      when: download fails, another updater owns lock or executable changes
+      then: prior selection survives failure and unsafe or concurrent use is refused
+    - id: SCN-provider-update-safety
+      given: fixed official package allowlist and owned prefixes
+      when: arbitrary name, injected version, escaped prefix or symlink store appears
+      then: updater refuses without arbitrary install execution
+  observable_outcomes:
+    - persisted selected versions and exact launch commands
+    - refusal codes and absence of downloads during preview or fresh-cache use
+  determinism_controls:
+    - isolated XDG roots, local Git fixtures and boundary installer runner
+    - no provider accounts or live registry in regression tests
+  anti_cheat_rationale:
+    prevents: [unverified activation, global overwrite, silent stale fallback, arbitrary command injection]
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

@@ -23,6 +23,7 @@ export const CANDIDATE_ACCEPTANCE_SCENARIOS = Object.freeze([
   'branches-worktrees',
   'runtime-identities',
   'runtime-profiles',
+  'provider-updates',
   'console-runtime-profile',
   'console-schedule-launcher',
   'runtime-adapters',
@@ -150,10 +151,10 @@ function gitSourceDescriptor(root) {
   const excludedUntracked = execFileSync('git', ['-C', root, 'ls-files', '--others', '--exclude-standard', '-z'], {
     encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
   }).split('\0').filter(Boolean).sort();
-  const include = (name, entry) => name === 'node_modules'
+  const include = (name, entry) => name !== '.torch' && !name.startsWith('.torch/') && (name === 'node_modules'
     || name.startsWith('node_modules/')
     || tracked.has(name)
-    || (entry.isDirectory() && [...tracked].some((path) => path.startsWith(`${name}/`)));
+    || (entry.isDirectory() && [...tracked].some((path) => path.startsWith(`${name}/`))));
   return { mode: 'git-commit', commit, include, excludedUntracked };
 }
 

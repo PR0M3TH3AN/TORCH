@@ -1225,6 +1225,187 @@ ownership unless it is represented by an allowed durable operation.
 
 ## 14. Runtime adapter contract
 
+### 14.0 Provider distribution freshness
+
+Owners MAY approve automatic built-in provider updates at installation with
+`--update-runtimes`, or later through `torch runtimes update-policy --mode auto
+--yes`. Without that policy, installation/startup MUST NOT silently acquire
+new code. Approved normal `torch up --yes`, including resume, MUST refresh the
+selected providers against their official npm latest stable releases when the
+last successful check is older than the configured 1–168-hour window (24 hours
+by default). Preview MUST be offline. Codex, Claude Code and Pi MUST be covered;
+custom adapters require a separately reviewed distribution strategy.
+
+TORCH MUST use versioned machine-local prefixes and exact selected executable
+paths, not assume the first PATH entry is current. Downloads MUST preserve
+global installs, login state, running processes and user provider settings.
+The updater MUST serialize writes, validate registry versions, verify the
+installed version and parser startup, and atomically publish each provider's
+activation record only after success. Failed or interrupted updates MUST NOT
+silently fall back while claiming freshness; prior activations and failed
+installation evidence remain available. This does not establish model access,
+live adapter compatibility, update-script safety or off-machine recoverability.
+Package lifecycle execution MUST be visible in the approval preview. Persistent
+schedule/hierarchy launch paths and platform-specific installers require their
+own qualification; initial automatic integration is the normal `up` path.
+
+### 14.0a Traceable production pipelines (planned)
+
+TORCH MUST support optional project-specific multi-stage production flows,
+without hard-coding game-art stages or requiring a pipeline in simple projects.
+Session Architect and managers SHOULD identify recurring handoff failures,
+repeated stage sequences, approval waits and integrated deliverables as evidence
+that a pipeline may help. They MUST propose, not silently activate, a definition.
+Prefer a simple checklist where no durable multi-stage state is justified.
+
+A pipeline is a versioned contract for producing a deliverable; it is neither
+a second backlog nor a mandatory new manager. Each definition MUST describe:
+
+- a concrete outcome and one accountable flow coordinator;
+- a bounded stage DAG with explicit parallel stages and join prerequisites;
+- existing specialist implementation owners for each stage;
+- required input types, immutable versions/hashes, and output contracts;
+- project invariants, applicable checks, test conditions and scarce resources;
+- machine acceptance criteria separately from creative/owner approvals;
+- retry safety, failure escalation, rework routes and stall thresholds;
+- permitted model/tool profiles and separate spending/asset-generation approval;
+- external dependencies and honest reproducibility limitations.
+
+Project constraints such as zero stock primitives, a locked model sheet or an
+exact UV template MUST be explicit stage invariants. They MUST NOT become
+generic defaults or be relaxed because a downstream tool finds them inconvenient.
+Human taste approval MUST NOT be replaced by an automated geometry gate.
+
+Each deliverable MUST have one persistent pipeline-instance record (for example
+one rig, character, voice pack, migration, research packet or release). The record
+MUST pin the definition revision and identify its current accepted outputs,
+stage attempts, responsible identities, existing backlog task IDs, dependencies,
+receipts, approval revisions, provenance and unresolved waits. Stage work MUST
+use the existing authoritative backlog. A pipeline card is a view of that work
+and its deliverable lineage, not another independently assignable task system.
+
+A stage becomes eligible only when all predecessor outputs match their pinned
+contracts and required checks/approvals are valid. Running, output-produced,
+machine-verified, awaiting-approval, accepted, failed and invalidated MUST remain
+distinguishable. Task completion or a file's existence MUST NOT imply acceptance.
+Advancement MUST use revision checks so duplicate handoffs, parallel attempts
+and concurrent managers cannot advance the same instance twice.
+
+Changed upstream content MUST invalidate dependent evidence and approvals, not
+silently reuse them. A definition edit MUST NOT rewrite a running instance's
+history. Explicit owner-reviewed migration or a new versioned instance is
+required. Rework MUST retain the rejected outputs, reasons and attempt lineage;
+rollback MUST preserve history and respect irreversible external effects.
+
+Provenance MUST include exact code commits where relevant, artifact content
+digests, reference/UV-map/model-sheet versions, tool/model versions, non-secret
+generation parameters and check conditions. Prompts and resource-sensitive
+metadata MUST remain private with redaction and deliberate export. Seeds alone
+MUST NOT be represented as guaranteeing reproducibility of hosted image/voice
+models. Generated outputs are immutable recorded evidence; regeneration is a
+new attempt, even with identical inputs. No generative provider or chargeable
+service is invoked merely because a definition names it.
+
+Debugging MUST answer: what is waiting, why, on whom, since when, which input or
+gate failed, what changed between attempts, and what exact evidence permitted
+the last transition. Evidence SHOULD support before/after visual review where
+useful. Checks MAY be reused through explicit input/output capability contracts;
+TORCH MUST NOT claim a mesh/UV/transcription checker exists just because it is
+named in a template. Each project supplies and qualifies domain-specific checks.
+
+Managers MUST surface stalled instances and handoff waits even when individual
+tasks have recent commits. Waiting on owner, specialist, check resource, external
+service and upstream rework MUST be separate reasons, not one generic stale
+clock. Manager direct-report check-ins SHOULD consult these exception views.
+They MUST NOT approve their own outputs, create approval pressure loops, or
+invent tasks to keep a pipeline busy.
+
+The Console SHOULD show deliverable cards, stage timeline/DAG, accepted versions,
+current owner, age/reason of waits, failed checks, approval actions and evidence.
+Owners MUST be able to comment on an exact output version, approve within their
+authority and request rework. The hierarchy coordinates outcomes; specialists
+retain ownership and direct communication. Existing Art/Production leads MAY
+coordinate a flow; a new lead requires the existing evidence/owner approval path.
+
+Initial implementation order (not implemented by this specification update):
+
+Console design requirements:
+
+- Show a Pipelines navigation entry only when approved definitions/instances
+  exist. Otherwise show a contextual proposal entry in setup, not an empty
+  production board or an automatically created generic pipeline.
+- Group instances by pipeline revision. Each row shows deliverable name,
+  current stage(s), coordinator, stage owner, working/waiting duration, waiting
+  reason/party, latest evidence and attention status. A pipeline-stage strip
+  communicates actual accepted, active, waiting and invalidated stages. Parallel
+  active stages MUST NOT be flattened into a falsely linear progress percentage.
+- Filter by pipeline, deliverable, coordinator, stage owner, wait reason and
+  attention state. Save views through the existing project-scoped view mechanism.
+  A linked backlog task can open its deliverable view; ordinary tasks remain on
+  the Work board. Show a reciprocal link instead of copying task state.
+- Opening a deliverable shows its actual DAG/timeline, inputs and output
+  previews, acceptance metrics, approval subject/revision, rejection reason,
+  attempt history and upstream/downstream lineage. A "Why is this waiting?"
+  summary identifies the exact unmet prerequisite and permitted next action.
+- Owner actions use the existing preview/confirmation and authority boundaries:
+  comment on an exact artifact, review an approval, request rework, pause or
+  resume a permitted instance, or review a proposed definition migration.
+  No drag gesture may bypass a stage gate; raw state editing is not an owner
+  convenience feature. A definition/role proposal is never a creation approval.
+- Retain the existing dark TORCH visual identity, keyboard accessibility,
+  mobile layout, draft/focus preservation and protected refresh. Text/icons
+  must distinguish stage states without relying on color. On mobile show the
+  current stage and blocker first, then expand the full flow. Failed snapshot
+  loads preserve the last evidence with an explicit stale timestamp.
+- Aggregate per-stage active versus waiting time, rework count, categorized
+  check/approval failures, measured usage/cost and evidence coverage. Unknown
+  cost remains unknown; wall-clock time is not active processing time. Compare
+  metrics only for compatible definition versions and explain denominators.
+- After a configurable sample (five completed instances is a starting point,
+  not a universal rule), a manager MAY propose one bottleneck improvement with
+  baseline, expected metric change and review window. Changes require the same
+  definition-review boundary; existing instances stay pinned. Avoid claiming
+  causal improvements from small or incompatible samples.
+- The shared Console demo MUST use the same renderer with clearly labelled
+  fixture evidence. It MUST NOT call live provider APIs or represent fixture
+  approvals and metrics as real project measurements.
+
+Example only (project-defined stages, not a built-in rig template):
+
+```text
+Pipelines / Rig production
+Deliverable   Stage                 Waiting on       Since      Owner
+Bastion       Model sheet review    Art approval     2 days     Concept Art
+Wayfarer      Texture check         UV coverage      18 min     Textures
+
+Bastion / definition v2 / attempt 3
+Spec -> Concept -> Model sheet -> Mesh -> Texture -> Integration
+                    awaiting approval
+Inputs: approved concept digest / locked proportions digest
+Output: model-sheet digest + preview
+Required: proportion check passed; Art Director approval pending
+[Review evidence] [Comment] [Request rework]
+History: attempt 2 rejected, silhouette too wide; retained for comparison
+```
+
+This view is planned, not a currently available Console feature.
+
+1. Definition/instance schemas, validation, read-only pipeline assessment and
+   owner-reviewed activation; reject cycles, unknown owners/checks and overlaps.
+2. Backlog-linked durable transitions, pinned artifacts, checks/approvals and
+   output-specific feedback, with rework and idempotent crash recovery.
+3. Why-waiting and stall diagnostics plus manager exception reporting.
+4. Console deliverable cards and attempt/lineage comparison.
+5. TORCH self-host pilot on a docs/software pipeline; COMBATRIG art integration
+   remains a separate project-authorized adoption.
+
+Required acceptance scenarios MUST prove that a stale UV/reference input blocks
+downstream advancement; changed output invalidates approval; duplicate handoffs
+advance once; a parallel join waits for every accepted branch; rejection preserves
+history; restart resumes the same stage attempt; resource waits are not mistaken
+for productive work; and an owner decision cannot be replaced by an AI manager.
+No pipeline runtime or COMBATRIG mutation is authorized by documenting this plan.
+
 Each adapter SHOULD implement capabilities equivalent to:
 
 ```text
