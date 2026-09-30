@@ -38,25 +38,27 @@ function fixture() {
   return { root, env, worker };
 }
 
-function planFor(context, runtimeSessionId = 'captured-native-session') {
+function planFor(context, {
+  runtimeSessionId = 'captured-native-session', requiresRuntimeIdCapture = false,
+} = {}) {
   return {
     canProceed: true,
     projectId: 'executor-outcomes-fixture',
     actions: [{
       areaId: context.worker, runtime: 'codex', runtimeSessionId,
-      requiresRuntimeIdCapture: false, completionState: 'idle', mode: 'resume',
+      requiresRuntimeIdCapture, completionState: 'idle', mode: 'resume',
       promptFile: join(context.root, 'runtime-prompt.md'), instructionText: 'test prompt',
       launch: { command: 'codex', args: [], cwd: context.root },
     }],
   };
 }
 
-function expectInterruptedStart({ context, result, expectedReason }) {
+function expectInterruptedStart({ context, result, expectedReason, plan = planFor(context) }) {
   const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
   try {
     let failure;
     assert.throws(() => startFleet({
-      plan: planFor(context), controlPlane: control,
+      plan, controlPlane: control,
       adapters: new Map([['codex', createCodexAdapter()]]), executor: () => result,
     }), (error) => {
       failure = error;
@@ -64,7 +66,8 @@ function expectInterruptedStart({ context, result, expectedReason }) {
     });
     assert.equal(failure.details.executorOutcome.reason, expectedReason);
     assert.equal(control.identity(context.worker).state, 'working');
-    assert.equal(control.identity(context.worker).runtimeSessionId, 'captured-native-session');
+    assert.equal(control.identity(context.worker).runtimeSessionId,
+      plan.actions[0].runtimeSessionId ?? 'overflow-thread');
     return failure;
   } finally { control.close(); }
 }
@@ -92,6 +95,17 @@ test('SCN-executor-interrupted-outcomes: a graceful timeout, signal, or ENOBUFS 
     expectedReason: 'executor-error-ENOBUFS',
   });
   assert.doesNotMatch(JSON.stringify(overflow.details), /image-data|fixture-token|fixture-password|private-prompt/);
+
+  const overflowContext = fixture();
+  expectInterruptedStart({
+    context: overflowContext,
+    plan: planFor(overflowContext, { runtimeSessionId: null, requiresRuntimeIdCapture: true }),
+    result: {
+      status: 0, error: Object.assign(new Error('overflow'), { code: 'ENOBUFS' }),
+      stdout: `{"type":"thread.started","thread_id":"overflow-thread"}\n${screenshotPayload}`,
+    },
+    expectedReason: 'executor-error-ENOBUFS',
+  });
 });
 
 test('SCN-scheduled-executor-failure: a zero-status executor error records failure and keeps output bounded and redacted', () => {

@@ -500,20 +500,20 @@ export function classifyExecutorOutcome(result) {
   return { state: 'failed', terminal: true, status, signal: null, reason: 'executor-nonzero-status' };
 }
 
-function canSafelyCaptureRuntimeId(result) {
+function boundedRuntimeCaptureOutput(result) {
   const output = result?.stdout ?? result?.output;
-  return Buffer.byteLength(typeof output === 'string' ? output : String(output ?? ''), 'utf8')
-    <= MAX_EXECUTOR_CAPTURE_OUTPUT_BYTES;
+  return Buffer.from(typeof output === 'string' ? output : String(output ?? ''), 'utf8')
+    .subarray(0, MAX_EXECUTOR_CAPTURE_OUTPUT_BYTES).toString('utf8');
 }
 
 function captureRuntimeId({ action, runtimeAdapter, result }) {
-  if (!action.requiresRuntimeIdCapture || !runtimeAdapter || !canSafelyCaptureRuntimeId(result)) {
+  if (!action.requiresRuntimeIdCapture || !runtimeAdapter) {
     return action.runtimeSessionId;
   }
   try {
     return runtimeAdapter.captureRuntimeId({
       areaId: action.areaId, runtimeSessionId: action.runtimeSessionId,
-      stdout: result?.stdout, output: result?.output,
+      stdout: boundedRuntimeCaptureOutput(result),
     }).runtimeSessionId;
   } catch {
     return action.runtimeSessionId;
