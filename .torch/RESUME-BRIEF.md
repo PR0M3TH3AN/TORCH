@@ -1,6 +1,6 @@
 # TORCH resume brief
 
-Captured: 2026-09-30T18:48:00.157Z
+Captured: 2026-09-30T19:16:13.202Z
 Project: 3dc11932-6e3c-42aa-9a8a-ca7b8f818b54
 
 ## Fleet identities
@@ -15,13 +15,13 @@ Project: 3dc11932-6e3c-42aa-9a8a-ca7b8f818b54
 
 ## Worktrees
 
-- qa: branch=torch/qa; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
-- release-self-host: branch=torch/release-self-host; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
-- owner-console: branch=torch/owner-console; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
-- work-integration: branch=torch/work-integration; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
-- provider-runtime: branch=torch/provider-runtime; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
-- project-kernel: branch=torch/project-kernel; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
-- session-manager: branch=torch/session-manager; commit=2a8ec35dac1c4b603297176fd1a8dcce36300d2b; dirty=no
+- qa: branch=torch/qa; commit=f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; dirty=no
+- release-self-host: branch=torch/release-self-host; commit=f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; dirty=no
+- owner-console: branch=torch/owner-console; commit=f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; dirty=no
+- work-integration: branch=torch/work-integration; commit=f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; dirty=no
+- provider-runtime: branch=torch/provider-runtime; commit=f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; dirty=no
+- project-kernel: branch=torch/project-kernel; commit=f72daadcba9f5d8d47ff4130afc6e39498e7d0d4; dirty=no
+- session-manager: branch=torch/session-manager; commit=c52b19454e7bd97598849ae2c925cb0d33d85ae3; dirty=no
 
 ## Open integration
 
