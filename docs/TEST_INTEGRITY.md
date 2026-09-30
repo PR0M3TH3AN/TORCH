@@ -2290,3 +2290,31 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Codex startup runtime diagnostics (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-startup-diagnostics
+      given: "A real Codex adapter and lifecycle plan receive deterministic nonzero child-process results"
+      when: "Codex stdout contains a model-rejection event, malformed JSON, or output above the diagnostic bound"
+      then: "Owner-visible failure details prefer the structured model rejection, redact stderr secrets and prompt fields, and label malformed or oversized output unknown with an explicit reason"
+  observable_outcomes:
+    - "FLEET_START_FAILED status, persisted offline identity state and owner-visible diagnostic details"
+    - "Structured model rejection over noisy MCP stderr; explicit unknown outcomes without retained oversized stdout"
+    - "No synthetic prompt, token or password value in serialized error details"
+  determinism_controls:
+    - "Disposable local Git/XDG fixtures and fixed injected child-process output"
+    - "Real createCodexAdapter and startFleet boundary; no provider calls, retries, sleeps or network"
+  anti_cheat_rationale:
+    prevents:
+      - "Returning a hard-coded success while losing the real nonzero execution status"
+      - "Displaying unrelated MCP noise instead of a structured model rejection"
+      - "Leaking raw prompt or credential values through diagnostics"
+      - "Treating malformed or oversized stdout as trusted structured evidence"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

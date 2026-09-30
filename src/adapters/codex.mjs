@@ -86,7 +86,7 @@ function redactDiagnosticText(value, limit = MAX_DIAGNOSTIC_TEXT_LENGTH) {
   const compact = value.replace(/\s+/g, ' ').trim();
   if (!compact) return null;
   return compact
-    .replace(/\bBearer\s+[A-Za-z0-9._~+\/-]+=*/gi, 'Bearer [REDACTED]')
+    .replace(/\bBearer\s+[-A-Za-z0-9._~+/]+=*/gi, 'Bearer [REDACTED]')
     .replace(/((?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|token|password|secret|credential|authorization|cookie)\s*(?:=|:|\s)\s*)([^\s,;]+)/gi, '$1[REDACTED]')
     .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[REDACTED]@')
     .slice(0, limit);
