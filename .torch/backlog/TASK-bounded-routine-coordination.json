@@ -22,7 +22,7 @@
   "observedAt": "7b7c6584b9d3",
   "feature": null,
   "milestone": null,
-  "state": "verification",
+  "state": "in_progress",
   "owner": "project-kernel",
   "evidence": [
     "npm run test: 195 passed",
@@ -33,8 +33,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T23:06:51.644Z",
-  "updatedAt": "2026-09-30T23:18:42.537Z",
-  "revision": 5,
+  "updatedAt": "2026-09-30T23:35:35.493Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -69,6 +69,13 @@
       "to": "verification",
       "actorId": "project-kernel",
       "at": "2026-09-30T23:18:42.537Z",
+      "note": null
+    },
+    {
+      "from": "verification",
+      "to": "in_progress",
+      "actorId": "project-kernel",
+      "at": "2026-09-30T23:35:35.493Z",
       "note": null
     }
   ]

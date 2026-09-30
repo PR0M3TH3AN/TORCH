@@ -20,15 +20,17 @@
   "observedAt": "94062020c767",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "work-integration",
-  "evidence": [],
-  "commit": null,
+  "evidence": [
+    "f46c713cc9e90697d02e3e29222b3eeb7cd71d99"
+  ],
+  "commit": "f46c713cc9e90697d02e3e29222b3eeb7cd71d99",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T20:31:08.855Z",
-  "updatedAt": "2026-09-30T23:21:01.498Z",
-  "revision": 3,
+  "updatedAt": "2026-09-30T23:36:29.576Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -50,6 +52,13 @@
       "actorId": "session-manager",
       "at": "2026-09-30T23:21:01.498Z",
       "note": "Assign after Work Integration next ready/no active work. Implement run-owned output destination outside tested tree with exact candidate/check/run hashes and recoverable bytes; retain dirty-tree/commit-changed/error/condition/resource guards and original dashboard receipt. QA permission649f7e47 pending for scripts/test-dashboard-demo.mjs output plumbing and additive tests/docs; no assertions/PNG baselines/user edits modified. Preserve all existing work, task-named local commits and resulting exact-commit checks. Coordinate any CLI/package/Console changes with owners before editing. Resume diagnostics only after actual blocker resolved and runtime executor assignment settled; never create two active runtime items. Arbiter controls runtime starts, independent acceptance, integration/update. Wakes paused; no destructive recovery/publication."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "work-integration",
+      "at": "2026-09-30T23:36:29.576Z",
+      "note": "Implemented external artifact isolation/provenance with QA consent 649f7e47; awaiting guarded convergence and independent QA acceptance."
     }
   ]
 }
