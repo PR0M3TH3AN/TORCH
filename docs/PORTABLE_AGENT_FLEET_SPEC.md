@@ -451,6 +451,18 @@ or installed persistent launchers. Historical messages and receipts therefore
 do not make reversal permanently impossible, while active or unowned state
 still blocks deletion.
 
+Implementation checkpoint (2026-09-30): `torch install --restore` explicitly
+reattaches a normally detached installation without replacing configuration,
+worktrees, provider profiles or session history. It never launches a provider
+or recreates host timers. `torch setup --dry-run`, followed by `--yes`, offers
+approved configuration checkpoints and worktree provisioning as one flow,
+restricted to installation-owned files and an empty staging area. Install may
+opt into the same flow with `--setup`. Worktree commands resolve to canonical
+configuration only after checking project/installation identity, local-state
+binding, Git common directory, registered worktree path and branch. Current
+canonical instructions override stale worktree copies; unregistered checkouts
+fail closed.
+
 Ordinary CLI uninstall is also review-first and explicitly confirmed. It uses
 the same safe Fleet wind-down contract as detach, removes only manifest-owned
 persistent schedule launchers after verifying their content, and preserves the

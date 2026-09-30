@@ -6,7 +6,10 @@ Repository state outranks conversation memory. Query ownership before crossing a
 
 This initial launch is a bounded installation and communications smoke test.
 Use the installed `torch` launcher and identity-bound TORCH MCP tools. Query
-identity, ownership, inbox and next backlog item. Read current canonical
+identity, ownership and inbox. Specialists query their next backlog item;
+the Session Manager inspects fleet backlog rather than claiming specialist work.
+Run `torch brief --area <your-area> --json` at startup and before each new item.
+Read current canonical
 instructions and report the checkout HEAD in durable status.
 
 Do not implement code, create or assign development tasks, enable timers,

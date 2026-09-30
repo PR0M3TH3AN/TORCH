@@ -24,6 +24,8 @@ import { diagnoseProject } from './kernel/doctor.mjs';
 import { loadProjectConfig, validateProjectConfig } from './kernel/config.mjs';
 import { asErrorRecord, TorchError } from './kernel/errors.mjs';
 import { inspectRepository } from './kernel/git.mjs';
+import { resolveInstalledProjectRoot } from './kernel/project-root.mjs';
+import { setupProject, restoreProject } from './kernel/setup.mjs';
 import { inspectSpecifications } from './kernel/specifications.mjs';
 import { installProject, planInstall, uninstallProject } from './kernel/install.mjs';
 import { IntegrationService } from './integration/service.mjs';
@@ -72,6 +74,8 @@ Usage:
   torch domains [--repo <path>] [--spec <path>] [--output <path>] [--json]
   torch install --proposal <path> [--runtime <adapter,adapter>] [--default-runtime <adapter>] [--update-runtimes] [--dry-run] [--yes] [--json]
   torch worktrees [--parent <path>] [--dry-run] [--yes] [--json]
+  torch install --restore [--dry-run] [--yes] [--json]
+  torch setup [--parent <path>] [--dry-run] [--yes] [--json]
   torch up [--fresh] [--only <id,id>] [--dry-run] [--yes] [--json]
   torch down [--dry-run] [--yes] [--json]
   torch capture [--json]
@@ -414,7 +418,7 @@ export const CANDIDATE_ACCEPTANCE_EVIDENCE = Object.freeze({
   'forge-migration': ['SCN-forge-migration'],
   'delivery-lifecycle': ['SCN-delivery-lifecycle', 'SCN-delivery-attempts', 'SCN-delivery-retry-boundaries', 'SCN-delivery-succeeded-recovery',
     'SCN-owner-digest', 'SCN-owner-digest-schedule', 'SCN-owner-digest-receipts'],
-  'review-install-roster': ['SCN-cli-domain-review', 'SCN-cli-install-provider-default', 'SCN-install-provider-inheritance'],
+  'review-install-roster': ['SCN-cli-domain-review', 'SCN-cli-install-provider-default', 'SCN-install-provider-inheritance', 'SCN-guided-setup'],
   'branches-worktrees': ['SCN-worktree-bootstrap'],
   'runtime-identities': ['SCN-mixed-runtime'],
   'runtime-profiles': ['SCN-runtime-profiles', 'SCN-runtime-cost-ceiling', 'SCN-runtime-profile-cli'],
@@ -471,7 +475,7 @@ export const CANDIDATE_ACCEPTANCE_EVIDENCE = Object.freeze({
   'capture-stop-resume': [
     'SCN-fleet-fresh-resume', 'SCN-hierarchy-aware-start-stop', 'SCN-hierarchy-startup-cycle',
   ],
-  'detach-uninstall': ['SCN-install-doctor-purge'],
+  'detach-uninstall': ['SCN-install-doctor-purge', 'SCN-install-restore', 'SCN-worktree-canonical-brief'],
   'combatrig-compatibility': ['SCN-combatrig-import', 'SCN-cli-combatrig-import'],
   'product-surface': ['SCN-product-site', 'SCN-dashboard-demo', 'SCN-console-readonly', 'SCN-console-lifecycle-blockers',
     'SCN-console-owner-digest', 'SCN-demo-owner-digest', 'SCN-console-check-evidence', 'SCN-console-task-activity', 'SCN-console-operation-outcomes', 'SCN-console-live-refresh'],
@@ -796,7 +800,9 @@ export async function runCli(argv = process.argv.slice(2), {
     }
     const designCommand = ['init', 'analyze', 'domains', 'design', 'bootstrap'].includes(command);
     const repositoryRoot = designCommand ? resolve(cwd, optionValue(argv, '--repo') ?? '.') : cwd;
-    const repository = inspectRepository(repositoryRoot);
+    const inspectedRepository = inspectRepository(repositoryRoot);
+    const repository = designCommand ? inspectedRepository
+      : inspectRepository(resolveInstalledProjectRoot(inspectedRepository.root, env));
     if (command === 'profile') {
       const operation = argv[1] ?? 'show';
       const areaId = optionValue(argv, '--area');
@@ -997,6 +1003,11 @@ export async function runCli(argv = process.argv.slice(2), {
       return 0;
     }
     if (command === 'install') {
+      if (argv.includes('--restore')) {
+        const result = restoreProject({ repository, env, dryRun: argv.includes('--dry-run'), authorized: argv.includes('--yes') });
+        print(result, { json });
+        return 0;
+      }
       const proposalPath = optionValue(argv, '--proposal');
       const runtimeOption = optionValue(argv, '--runtime');
       const defaultRuntime = optionValue(argv, '--default-runtime');
@@ -1038,7 +1049,11 @@ export async function runCli(argv = process.argv.slice(2), {
         }
         persistProfileConfig(repository.root, config);
       }
-      print(installed, { json });
+      print(argv.includes('--setup') ? { ...installed, setup: setupProject({ repository: inspectRepository(repository.root), env, authorized: true, parentOverride: optionValue(argv, '--parent') }) } : installed, { json });
+      return 0;
+    }
+    if (command === 'setup') {
+      print(setupProject({ repository, env, authorized: argv.includes('--yes'), dryRun: argv.includes('--dry-run'), parentOverride: optionValue(argv, '--parent') }), { json });
       return 0;
     }
     if (command === 'doctor') {

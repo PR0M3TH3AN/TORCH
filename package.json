@@ -1,6 +1,6 @@
 {
   "name": "torch-agent-fleet",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "type": "module",
   "description": "TORCH — a portable, provider-independent AI development fleet for Git repositories",
   "main": "src/cli.mjs",

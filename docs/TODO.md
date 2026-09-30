@@ -37,7 +37,7 @@
   updates, retained previous installs, offline previews and fail-closed errors.
   Four deterministic scenarios added; live download qualification recorded in
   the first-run audit, not implied by mocked installer tests.
-- [ ] Fix `torch brief` invoked from a managed worktree: both live sessions hit
+- [x] Fix `torch brief` invoked from a managed worktree: both live sessions hit
   `LOCAL_STATE_METADATA_MISMATCH`. Resolve canonical project binding with
   checked worktree membership, never weaken root/installation identity checks.
 - [ ] Surface Codex JSON stdout failure events: first Sol launch hid the actual
@@ -45,7 +45,7 @@
 - [ ] Add exact executable/version/model/auth preflight to owner Console and
   setup flow. PATH selected CLI 0.158.0 while the current session used 0.159.2;
   the older child rejected Sol 6.1 and required manual investigation/retry.
-- [ ] Make configuration checkpoint/worktree/manifest handoffs explicit or
+- [x] Make configuration checkpoint/worktree/manifest handoffs explicit or
   guided: generated tracked files and provisioning manifest updates require
   deliberate commits; a healthy doctor does not prove startup readiness.
 - [ ] Isolate irrelevant inherited global MCP servers without removing user
