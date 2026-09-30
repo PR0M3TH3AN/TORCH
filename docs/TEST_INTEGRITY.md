@@ -1,5 +1,36 @@
 # Test Integrity Notes
 
+## 2026-09-30 — Bounded routine coordination
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-routine-coordination-instructions
+      given: A freshly installed Fleet using generated default prompts
+      when: Common, manager, specialist, and resume instructions are read
+      then: Each preserves own-inbox acknowledgement, direct peer routing, owner exceptions, and paused execution
+    - id: SCN-routine-coordination-boundaries
+      given: An assigned task and pending peer and owner approvals in a fixed-time local control plane
+      when: The named recipient acknowledges messages and the manager attempts a non-owned decision
+      then: The task and approvals remain pending until only the named peer decides its approval
+  observable_outcomes:
+    - Generated tracked instruction text for fresh-install and resume surfaces
+    - Durable task state, approval state, named-approver identity, and authority errors
+  determinism_controls:
+    - Disposable local Git repository, SQLite state, and fixed clock
+    - No provider calls, network, retries, sleeps, or host timers
+  anti_cheat_rationale:
+    prevents:
+      - Treating acknowledgement as task or approval completion
+      - Letting a manager decide an owner or peer approval
+      - Omitting policy boundaries from one generated startup surface
+      - Re-enabling paused execution or granting starts, spending, publication, destructive recovery, or arbitrary dispatch
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Exact observed-file ownership evidence
 
 ```yaml
