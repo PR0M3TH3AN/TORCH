@@ -88,13 +88,22 @@ candidate `ae18a98e2911aa515d0484518013061b05ff6adf` and the Manager has a bound
 next-slice planning request. The candidate's test/check/lint receipts pass; its
 dashboard receipt remains incomplete because the test writes tracked reports.
 Neither review launch nor controller exit is acceptance or landing evidence.
-There are now 41 owner-intake items, including agent chat and the UI audit.
+There are now 43 owner-intake items, including agent chat, the UI audit and two
+observed attention/startup follow-ups.
 
 - [ ] `TASK-console-ux-audit`: Session Manager assigns Owner Console to audit
   every live dashboard area through actual computer use and inspected screenshots,
   including desktop/mobile and keyboard/refresh behavior. Owner rejects the long
   single-page/anchor-navigation layout. Propose focused separate screens, concise
   overview and contextual drilldowns. Audit/proposal only; no UI rewrite yet.
+- [ ] `TASK-console-attention-actions`: meaningful condition/agent/branch labels,
+  deduplicated findings and contextual quick actions. Owner approve/reject uses
+  existing evidence/revision/preview confirmation; never clear peer messages,
+  merge branches or publish to a remote through a generic warning button.
+- [ ] `TASK-pilot-brief-sandbox`: the first UI audit stopped at a read-only SQLite
+  error while the exact installed brief succeeds on the host. Qualify scoped
+  sandbox access and actionable failure; do not disable sandboxing, change DB
+  permissions, copy state or bypass the authoritative startup brief.
 
 ## First real self-host run (2026-09-30)
 

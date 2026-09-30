@@ -132,3 +132,29 @@ Canonical COMMON now permits this audit in parallel with diagnostics QA, without
 authorizing UI implementation, unrelated dispatch, automatic wakes or release.
 The arbiter launches Owner Console only after actual manager assignment; a
 request in an inbox is not itself assignment evidence.
+
+## Attention-panel triage and audit recovery
+
+Session Manager assigned `TASK-console-ux-audit` to Owner Console at revision 3.
+The first audit turn **did not perform browser coverage**: installed `torch brief`
+failed with `ERR_SQLITE_ERROR` / read-only database. The identical installed brief
+passes from the host. The arbiter resumed the same session with directions to
+request narrowly scoped escalation for that exact command, not change permissions
+or skip the guard. `TASK-pilot-brief-sandbox` captures durable qualification.
+
+Owner additionally requests contextual quick actions in Needs your attention.
+`TASK-console-attention-actions` requires meaningful per-agent/branch findings,
+deduplicated messages and owner-only reviewed approve/reject actions. Total
+owner intake is now 43. It does not authorize warning dismissal, blanket message
+acknowledgement, automatic merging or remote publication.
+
+Observed worktree warnings: manager backlog updates are dirty, and manager and
+Provider Runtime retain unique commits. These are preserved task state and
+unlanded work, not permission to remove worktrees or discard commits. The manager
+has a narrowly authorized local backlog checkpoint/convergence request and must
+review its own inbox. Provider code still requires integration gates.
+
+Recovery is `ONE-DISK` for current rewrite HEAD: origin exists, but local
+remote-tracking references do not contain that commit. This is not proof of a
+live remote query. Off-machine synchronization requires an explicit owner
+publication/backup decision; no remote push or default-main promotion occurred.
