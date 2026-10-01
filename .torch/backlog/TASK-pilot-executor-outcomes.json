@@ -19,7 +19,7 @@
   "observedAt": "d636cae93c5a",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "provider-runtime",
   "evidence": [
     "receipt:b346e435-f3e2-45f8-935d-0d4fe67dd3ea:test:pass",
@@ -35,14 +35,17 @@
     "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md",
     "message:47308bba-aa1d-4712-b871-e7bc57aba3a6:owner-artifact-dependency-landed",
     "message:4eb63056-e77c-4c1e-b8f1-d742869b813e:QA-exact-additive-note-reconciliation",
-    "message:9d671f19-4184-4dc0-b98f-0b0d9cb2d868:QA-exact-note-reconciliation-consent"
+    "message:9d671f19-4184-4dc0-b98f-0b0d9cb2d868:QA-exact-note-reconciliation-consent",
+    "receipt:fc8da04b-76fb-4e5d-9ca9-dacfddd31332:incomplete:worktree-changed-during-check",
+    "message:c293d46a-0e20-40cb-bdcf-1e45f434ee22:installed-checker-correction",
+    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:owner-technical-routing"
   ],
-  "commit": "5bbd81a01fa5281ee17c4b4fbafc2e58d1327f7d",
+  "commit": "286bfa72e3202ec0806f7c3075821c8057d6e132",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Merged candidate is gate-blocked after installed alpha.2 check runtime (not candidate CLI) ran dashboard and rewrote exactly five QA-owned tracked PNGs. Dashboard exit0 receipt fc8da04b-76fb-4e5d-9ca9-dacfddd31332 is incomplete/worktree-changed-during-check. Preserve NEW bytes, external archive/hash and clean-before provenance; obtain NEW named QA bounded recovery disposition before any restoration. Lint unrun; no new four-gate qualification/integration. Re-entry uses explicit candidate bin/torch.mjs from canonical cwd, registered area, after approved recovery.",
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-10-01T06:26:55.754Z",
-  "revision": 8,
+  "updatedAt": "2026-10-01T06:44:06.318Z",
+  "revision": 9,
   "history": [
     {
       "from": null,
@@ -99,6 +102,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T06:26:55.754Z",
       "note": "Closing read received actual QA9d671f19: QA independently inspected both merge indexes and issued exact additive reconciliation/path consent to each owner. Named peer consent wait resolved; resume SAME existing assignment to preserve complete strict local notes plus canonical generated-artifact note and remove only conflict markers/duplicates. Specialists alone finish/stage/commit own preserved merge, all four required checks on resulting clean exact candidate, independent QA/newrequest. Unmerged tree is work in progress, not qualification; Manager edits no peer files and starts no providers. Old candidates, receipts, verdicts and archive retained; wakes paused."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:44:06.318Z",
+      "note": "Actual merge finished; preserve new exact candidate and previous strict QA/receipt history. Landed isolation1a2 not shown faulty: installed alpha2 check service lacks output environment propagation, native Kernel admitted installed launcher. Native owner must archive new byte set and exact pre-clean receipts then request QA recovery for THIS candidate/path set; old4068350 approval cannot cover this incident. No peer dirty-file edits/restore/stash/gate waiver. Candidate CLI/source version explicit for all resulting checks; Release read-only activation/rollback plan pending arbiter, wakes paused."
     }
   ]
 }

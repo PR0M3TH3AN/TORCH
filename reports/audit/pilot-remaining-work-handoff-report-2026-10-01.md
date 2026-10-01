@@ -1,6 +1,78 @@
 # Current pilot remaining-work handoff
 
-## Current reconciliation at 06:27 UTC
+## Current reconciliation at 06:48 UTC
+
+Current canonical brief still matches `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`;
+read again before attention triage. Canonical is clean at landed `1a2b5b0`.
+No fresh ready integration request exists. Six specialists retained: repeated
+cross-domain signals and 29 hierarchy recurrences are advisory; this incident
+calls for check-runtime provenance and peer routing, not another identity.
+Startup backlog health had no anomalies, historical activity remains incomplete.
+
+**Waiting on the owner:** no current owner-addressed pending decision. Ordinary
+technical recovery and path consent belong to named peers, not human relay.
+
+| Handling | Responsible party and next step | Evidence and actual limit |
+| --- | --- | --- |
+| Fleet | Runtime archives new five PNGs and pre-clean provenance, requests new QA scoped recovery | Candidate `286bfa72e3202ec0806f7c3075821c8057d6e132`; dashboard `fc8da04b-76fb-4e5d-9ca9-dacfddd31332` exit 0 **incomplete**, tree changed; lint unrun |
+| Fleet | Kernel archives its new five PNGs and provenance, requests its own QA disposition | Candidate `dd62c7787737e35138cef7871489d6be1ee696c9`; dashboard `108f3607-c9c6-4135-8f39-3b57e6accbfa` exit 0 **incomplete**, tree changed; lint unrun |
+| Fleet | QA decides additive attention scenario/path consent | Approval `6d029541-3206-41f8-bdd7-eda7514f34e3` pending; attention ready revision 3, unassigned until actual consent |
+| Fleet | Release prepares read-only candidate installation and rollback plan | Request `ed730547-1e18-4e9c-a456-33549524e2fc`; installed alpha.2 remains active, activation not performed |
+| Fleet | Kernel transports exact proposal blob and adds working TODO link | Manager author consent `25b96042-6d44-454e-a517-5d5514ba031d` for only report at commit `2c50ae6`; not entire manager commit or ledger |
+| Arbiter | Resume native owners for preservation/review, then approved recovery and candidate checks; review installation plan before activation | Manager starts no providers and edits no dirty peer files; no install/wake action |
+
+Both strict note merges finished. Runtime task is now **blocked revision 9** and
+Kernel task **blocked revision 11**, recording the actual new gate instead of old
+merge consent or idle presence. Manager verified their new exact receipts: each
+test/check PASS, dashboard incomplete/worktree-changed-during-check; neither has
+all four qualifying gates. Each worktree has exactly the five tracked PNG changes.
+Candidate source passes `TORCH_CHECK_ARTIFACT_DIR`; Kernel correction `c293d46a`
+admits using installed alpha.2 launcher. Installed check service and landed source
+are different runtimes. No source regression or arbitrary QA repair is established.
+
+Recovery requires NEW external archived bytes, manifest hashes/candidate/receipt,
+exact current HEAD and public clean-before evidence, then named QA approval for
+that proven set. Old `406ff` approval covered `8350` and cannot authorize either
+new incident. Do not restore, stash, delete, update baselines, rerun old checker or
+claim exit 0 qualifies. Only each native owner applies its approved recovery.
+Afterwards all checks use explicit candidate CLI from canonical cwd, for example:
+
+```sh
+# cwd: /home/user/Documents/GitHub/TORCH
+node /home/user/TORCHWorktrees/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/provider-runtime/bin/torch.mjs checks run --id test-dashboard --area provider-runtime --yes --json
+```
+
+Use the corresponding Kernel path/area for Kernel and the same candidate runtime
+for all four required gates. Retain engine path and exact receipts; resulting
+clean commit needs independent QA/new serialized request. Installed startup tools
+may remain installed by policy; that does not authorize using their old check
+implementation to qualify new code. Source landing alone never updates installation.
+
+Owner `9590d8b1` now authorizes bounded **TASK-console-attention-actions** using
+actual committed desktop audit findings. Manager amended this same task's owned
+metadata at expected revision 1: removed only full-audit completion as a start
+dependency, retained every old acceptance criterion, added honest handling labels
+and final real visual acceptance, recorded revision/history, then triaged ready.
+The audit remains blocked revision 5; no completion claim or duplicate queue.
+QA consent is required before assignment. Scope is concise owner-only decisions,
+named Fleet and Arbiter work, exact area/branch/path labels, deduplicated warnings,
+blocked-reason projection, drafts and current approver/revision controls. Unknown
+evidence stays visible; no general dashboard rewrite or authority bypass.
+Concrete arbiter evidence `bd4df0d9`: doctor emits `area` while attention reads
+`areaId`; duplicate message count; every unlanded integration labelled decision;
+snapshot backlog projection omits `blockedReason`. Source/API evidence cannot be
+called visual PASS; actual browser connection and desktop/mobile coverage remain
+final acceptance gates.
+
+Starting-presence task remains queued after executor qualification and diagnostics
+resume. Owner `89cd3b3d` observed actual running services while installed presence
+still displayed stale idle. Require actual held-open CLI fixture, launch lease,
+manual/timer exclusion and unknown interruption evidence, with Release/QA consent.
+Automatic wakes stay paused even after terminal-executor gates pass, until this
+startup boundary and an explicit safe activation decision are qualified. No
+default-main, deployment, publication, spending or provider-model changes.
+
+## Historical reconciliation at 06:27 UTC
 
 Installed brief reread matches digest `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
 Canonical remains clean at landed `1a2b5b0`; no newer candidate/request exists.

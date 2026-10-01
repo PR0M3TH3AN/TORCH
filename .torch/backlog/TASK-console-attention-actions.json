@@ -2,36 +2,44 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-console-attention-actions",
   "title": "Make attention findings specific, deduplicated and actionable",
-  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly.",
+  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly. Owner 9590d8b1 (2026-10-01) authorizes bounded implementation using the committed observed desktop audit findings while TASK-console-ux-audit remains blocked and incomplete. Full-audit completion is no longer an implementation-start prerequisite; actual browser desktop/mobile visual acceptance remains required before completion. Scope: separate Waiting on you (genuine authenticated owner decision with consequence/options), Fleet handling (named responsible domain and next step), and Arbiter handling (provider starts/install activation). Do not rewrite the dashboard architecture or hide unresolved risks. QA path consent is required before assignment; existing frozen assertions, ownership and verification controls remain enforced.",
   "priority": "high",
   "affectedDomains": [
     "owner-console",
     "project-kernel",
     "qa"
   ],
-  "dependencies": [
-    "TASK-console-ux-audit"
-  ],
+  "dependencies": [],
   "acceptanceCriteria": [
     "Overview shows exact condition and responsible identity instead of repeated opaque codes",
     "Duplicate message finding is one actionable card",
     "Approve/reject appears only for an owner-addressed pending approval and uses current revision/evidence preview and explicit confirmation",
     "Worktree progress is not falsely presented as a broken repository; unsafe recovery remains visible",
     "Quick actions route to exact entities and cannot silently merge, acknowledge peers, publish or delete",
-    "Regression covers stale decision, wrong approver, duplicate findings, no available action, failure and refresh while editing"
+    "Regression covers stale decision, wrong approver, duplicate findings, no available action, failure and refresh while editing",
+    "Waiting on you contains only a genuine owner-addressed decision with evidence/options/consequence; routine domain waits show Fleet handling with responsible owner/next step; arbiter-reserved execution/install work is labelled Arbiter handling.",
+    "Unavailable browser and last actual visual capture remain explicit verification dependencies; source/API/scenario evidence cannot be labelled visual PASS, and final desktop/mobile acceptance remains incomplete until real browser evidence exists.",
+    "Implementation uses existing observed desktop audit evidence without marking the audit completed; preserve dark mode, TORCH branding, owner authority, independent QA consent and exact candidate checks."
   ],
   "observedAt": "0224abf2e08d",
   "feature": null,
   "milestone": null,
-  "state": "proposed",
+  "state": "ready",
   "owner": null,
-  "evidence": [],
+  "evidence": [
+    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:bounded-attention-implementation-authorized",
+    "owner-console:eab85dd:reports/design-system/task-console-ux-audit-owner-console-2026-09-30.md:desktop-findings-mobile-incomplete",
+    "approval:6d029541-3206-41f8-bdd7-eda7514f34e3:pending-QA-path-consent",
+    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:bounded-implementation",
+    "message:bd4df0d9-6647-476a-bef0-a6c0c7b1c3aa:concrete-attention-projection-evidence",
+    "approval:6d029541-3206-41f8-bdd7-eda7514f34e3:pending-QA-consent"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-09-30T22:56:50.255Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T06:47:44.579Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -39,6 +47,20 @@
       "actorId": "owner",
       "at": "2026-09-30T22:56:50.255Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:46:37.285Z",
+      "note": "Explicit owner-authorized metadata amendment, not a lifecycle transition: remove full audit completion dependency for bounded attention implementation using actual existing desktop findings. Preserve blocked audit and require real final visual acceptance. Existing service exposes no metadata-amend API; reviewed Manager-owned ledger changed with expected revision1 and recorded revision2/history. No dependency gate waiver or assignment authority invented. QA6d029541 consent still pending before assignment."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:47:44.579Z",
+      "note": "Current briefd7e6d69 reread before exactnewitem. Canonical continueddevelopment ownerauthorization plus exact9590d8b1 permits bounded existingattention task. Metadatarev2 removes only full-audit start prerequisite; auditblockedrev5 remains unchanged, final actualdesktop/mobilevisualacceptance mandatory. OwnerConsole nextidle/cleaneab85dd/no active item. Ready for prioritization only; MUST obtain actual QA6d029541 pathconsent before assignment. Existing allcriteria/assertions/authoritycontrols retained; sourceobservability projected blockedReason ownedConsole. Arbiter controls start, no manager providerlaunch; no broadUIrewrite or scopeexpansion."
     }
   ]
 }
