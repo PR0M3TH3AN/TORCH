@@ -17,30 +17,31 @@ same browser session worked. Live Console actions stayed read-only except for
 unsent test strings in the local request form; neither string was sent and no
 durable Console state was changed.
 
-**Not complete:** mobile screenshot capture, exhaustive keyboard order, empty,
-loading, and failed-action states, and task-owned artifact publication. The
-browser viewport capability accepted a 390 x 844 override, and DOM navigation
-worked, but one viewport screenshot was blank and the next failed with
-`Timed out after 5000ms waiting for CDP command Page.captureScreenshot.` I did
-not retry that failing mobile capture route. See the dated images under
-`artifacts/TASK-console-ux-audit/`; do not treat the blank mobile image as visual
-coverage.
+**Not complete:** mobile coverage beyond Overview, an exact 390 x 844 CSS
+viewport, exhaustive keyboard order, empty/loading/failed-action states, and
+task-owned artifact publication for every screen. After the owner authorized
+one bounded recovery, a fresh Overview tab produced a valid narrow screenshot.
+The requested 390 x 844 override measured as 433 x 938 CSS pixels at DPR 0.9;
+the prior blank `mobile-release-gates.jpg` and the subsequent 5-second CDP
+timeout remain evidence of the failed capture route on the old scrolled tab.
+See the images under `artifacts/TASK-console-ux-audit/`.
 
 ## Personally observed evidence
 
 | View | URL fragment | Viewport | Viewed observation / evidence |
 |---|---|---|---|
-| Overview | `#overview` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-overview.png). “Healthy” appears beside six attention items, including five generic doctor warnings; project facts also show `Clean at snapshot` and `ONE-DISK`. |
-| Briefing | `#owner-briefing` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-briefing.png). Empty briefing state gives CLI build/publish instructions. On the first navigation, Work was highlighted while Briefing content was shown; repeated navigation selected Flow watch correctly. |
-| Flow watch | `#flow-watch` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-flow-watch.png). Check-in and approval panels sit side by side; timer installation is explicitly unverified and only named approvers can decide. |
-| Work | `#work` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-work.png). Filters form a dense block above five board columns; 44 active items make cards narrow and text wrap heavily. |
-| Progress | `#initiative-progress` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-progress.png). Feature/milestone summaries and the start of Fleet inventory share one long page. |
-| Fleet | `#fleet` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-fleet.png). Session state and ownership inventories sit side by side; repeated runtime/model/profile data and long paths dominate. |
-| Conversations | `#communications` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-conversations.png). Long messages fill two columns; an identical owner message appears in both columns. |
-| Organization | `#organization` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-organization.png). Three-column role cards repeat reporting/coordination links and show lengthy authority/path descriptions. |
-| Evidence | `#evidence` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-evidence.png). Check receipts use a narrow left column with repeated pass entries and large empty space to the right; entries are collapsed disclosures. |
-| Release gates | `#delivery` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-release-gates.png). Integration is “ready” while delivery, fetch, and operation receipts are absent; copy distinguishes landing from deployment. |
-| Operations | `#delivery` (expanded disclosure) | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-operations.png). Expansion reveals Worktrees and Resources; details continue below the viewport. |
+| Overview | `#overview` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-overview.jpg). “Healthy” appears beside six attention items, including five generic doctor warnings; project facts also show `Clean at snapshot` and `ONE-DISK`. |
+| Overview | `#overview` | 433 x 938 CSS, DPR 0.9 (requested 390 x 844) | [Narrow screenshot](../../artifacts/TASK-console-ux-audit/mobile-overview.jpg). Overview content fits the measured viewport width, but the horizontal nav clips after “Progress” and displays its own horizontal scrollbar. Screenshot dimensions are 462 x 1041 pixels. |
+| Briefing | `#owner-briefing` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-briefing.jpg). Empty briefing state gives CLI build/publish instructions. On the first navigation, Work was highlighted while Briefing content was shown; repeated navigation selected Flow watch correctly. |
+| Flow watch | `#flow-watch` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-flow-watch.jpg). Check-in and approval panels sit side by side; timer installation is explicitly unverified and only named approvers can decide. |
+| Work | `#work` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-work.jpg). Filters form a dense block above five board columns; 44 active items make cards narrow and text wrap heavily. |
+| Progress | `#initiative-progress` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-progress.jpg). Feature/milestone summaries and the start of Fleet inventory share one long page. |
+| Fleet | `#fleet` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-fleet.jpg). Session state and ownership inventories sit side by side; repeated runtime/model/profile data and long paths dominate. |
+| Conversations | `#communications` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-conversations.jpg). Long messages fill two columns; an identical owner message appears in both columns. |
+| Organization | `#organization` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-organization.jpg). Three-column role cards repeat reporting/coordination links and show lengthy authority/path descriptions. |
+| Evidence | `#evidence` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-evidence.jpg). Check receipts use a narrow left column with repeated pass entries and large empty space to the right; entries are collapsed disclosures. |
+| Release gates | `#delivery` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-release-gates.jpg). Integration is “ready” while delivery, fetch, and operation receipts are absent; copy distinguishes landing from deployment. |
+| Operations | `#delivery` (expanded disclosure) | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-operations.jpg). Expansion reveals Worktrees and Resources; details continue below the viewport. |
 
 ## Interaction evidence
 
@@ -61,10 +62,16 @@ coverage.
 - **Form validation:** Preview request with no recipient kept the form local and
   displayed “Choose an identity and write the request before previewing.” No
   message was sent. The form states that sending adds one durable inbox message.
-- **Mobile:** at 390 x 844, the DOM still contained Console content and all main
-  sections. `mobile-release-gates.png` is blank (3,157 bytes); the next screenshot
-  command returned the exact CDP timeout above. Mobile visual behavior remains
-  unverified.
+- **Mobile:** the first viewport override did not apply to a newly created tab;
+  the owner-directed fresh-tab capture exposed that mismatch. On the fresh tab,
+  the 390 x 844 request measured 433 x 938 CSS pixels at DPR 0.9. DOM rectangles
+  showed the Overview section in view and no page-level horizontal overflow
+  (`documentWidth` 416, viewport width 433), while the visible navigation itself
+  had a horizontal scrollbar. The one authorized fresh-tab screenshot is
+  `mobile-overview.jpg` (462 x 1041 image pixels). The earlier
+  `mobile-release-gates.jpg` remains blank (3,157 bytes), followed by the exact
+  CDP screenshot timeout; it is not visual evidence of that view. Other mobile
+  sections remain uninspected.
 
 The task-owned images are local browser evidence. They have not been published to
 TORCH artifact storage; publication will follow a committed full SHA and a stable
@@ -127,9 +134,10 @@ mass-acknowledge, merge, cleanup, or publication shortcuts.
 
 ## Next evidence needed
 
-Coordinate the 390 x 844 screenshot timeout with Provider Runtime and QA; then
-capture navigation views at mobile size and inspect overflow, wrapping, nav
-behavior, and density. Continue keyboard order and representative empty/loading/
-pending/failed/unknown states, using the isolated demo for state-changing actions.
-Publish only task-owned evidence after local commit. Live state stays read-only.
-No UI implementation or release is proposed by this audit.
+Coordinate the capture behavior with Provider Runtime and QA. If a later task
+authorization permits more mobile captures, inspect every navigation view at an
+exact 390 x 844 CSS viewport for overflow, wrapping, nav behavior, and density.
+Continue keyboard order and representative empty/loading/pending/failed/unknown
+states, using the isolated demo for state-changing actions. Publish only
+task-owned evidence after local commit. Live state stays read-only. No UI
+implementation or release is proposed by this audit.
