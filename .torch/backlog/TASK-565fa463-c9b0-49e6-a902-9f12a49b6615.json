@@ -21,21 +21,28 @@
   "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "feature": "Unread-first inbox dependency",
   "milestone": "Before Runtime inbox integration and dormant service components",
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "project-kernel",
   "evidence": [
     "message:7abee039-9bde-4706-9876-4e50385d9ddb:Runtime-wrapper-contract",
     "message:da0d22aa-0796-489f-b485-fd0c3dfef723:Kernel-owned-reviewed-API/separate-assignment-needed",
     "message:1dfe8f90-a381-469a-9041-915480cf4bce:QA-exact-Kernel-source/test-contribution-and-strict-scenarios",
     "TASK-1e688a36-9df7-47ad-a540-99de15979717:blocked4:sequenced-after-inbox",
-    "current-brief:d7e6d69:read-before-this-item"
+    "current-brief:d7e6d69:read-before-this-item",
+    "message:b952872d-40d2-4096-b942-a6df1d1dc9df:implemented-export-focused-evidence-real-source-gate-refusal",
+    "message:44512241-b862-4695-b7fd-2aa0851116c9:hermetic-WAL-mutant-survives-six-scenarios",
+    "message:6e4ae798-5847-4dc4-878a-444748c52669:QA-test/doc-only-mutation-killing-strengthening",
+    "message:019aff91-71f5-42c2-9573-c1abd1b45c6b:same-assignment-bounded-strengthening",
+    "message:44c76670-194b-4011-83bc-a03872fa0188:7908d1b-amended-clean-source-unchanged-original/mutant/restored-evidence-and-refusal",
+    "git:7908d1b:only-test/fleet/control-plane.test.mjs-and-docs/TEST_INTEGRITY.md-delta-from-f67:independently-inspected",
+    "message:c55359eb-08e8-45be-8ed5-4b2902fae52c:independent-both-mutants-fail-remaining-leading-whitespace-DML-count-gap"
   ],
-  "commit": null,
+  "commit": "7908d1b06e701184c04fedefaf3af977422ae976",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:57:51.775Z",
-  "updatedAt": "2026-10-01T10:58:59.162Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T11:25:28.661Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -57,6 +64,27 @@
       "actorId": "session-manager",
       "at": "2026-10-01T10:58:59.162Z",
       "note": "Fresh current brief/ownership and native next readyTHIS/no active Kernel assignment after inventory blocked4; actual prior Kernel branch clean e8e33f1, preserve unique reservation/design commits. Assign actual da0/954701d4 observeMessages API dependency of e440. Implement ONLY src/control-plane/service.mjs plus exact QA1dfe-consented additive test/fleet/control-plane.test.mjs; keep legacy readMessages ASC/history array, one shared SQLite observation snapshot, strict registered recipient/selection/limit, literal all visibility, zero DML/ack and no source schema guard/version alteration. Return exact API/candidate and strict Test Integrity Note through agreed destination/review note; unconsented doc edits forbidden. Runtime only later consumes Kernel export, no Kernel contribution permission to Runtime. Fresh source gates/independent QA/native integration policy remain required; real schema/engine/tool refusal blocks qualification, fixture tests alone never PASS receipt. Inventory1e688 remains blocked4 contract pending; reservation125 blocked5 preserved, no duplicate active Kernel item or live DB/host/install/activation/provider action. Arbiter controls provider turn."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T11:18:15.617Z",
+      "note": "Record actual implemented Kernel observeMessages at clean f67f47f; continuing SAME assignment only for exact QA-authorized WAL mutation-killing test/doc strengthening. This is an open implementation-validation phase, not ready/accepted/completed. Owner445 actual audit INSERT mutant survives6/6 because state.db comparison omits WAL; no evidence actual SELECT source writes. Preserve all original assertions; assert actual connection DML zero and logical durable-state equality, original implementation PASS/mutant FAIL for forbidden-read mutation. Exact test/fleet/control-plane.test.mjs plus additive docs/TEST_INTEGRITY.md, confirm actual named QA6d9 constraints. Source guard CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED current2 required3 remains unresolved genuine qualification blocker; no native PASS/integration request or installation/live schema recovery. Runtime task stays assigned3, inventory1e688 and reservation125 remain blocked; no duplicate active Kernel item."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T11:23:03.969Z",
+      "note": "Actual Kernel amendment finished during this cycle; refresh native task and clean exact Git state before recording genuine blocked qualification outcome. Preserve f67 candidate/history, all original scenarios/assertions and owner445 mutant gap, complete acceptance criteria and owner. Manager inspected exact two-path diff/logical-state+connection instrument assertions, but did not run tests or grant independent QA acceptance. Candidate source exists; native schema refusal/no required exact receipts still real. Blocked state frees no automatic new assignment; inventory contract remains unresolved and no specialist launched."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T11:25:28.661Z",
+      "note": "Fresh actual owner independent7908 review: normal6/6 PASS/helper audit mutant FAIL on instrumented calls/direct multilineINSERT mutant FAIL on logical equality. A precise remaining zero-DML instrumentation gap requires existing test/doc-only strengthening on SAME task: leading whitespace after start-of-string is not classified; count actual direct multilineINSERT and preserve every existing assertion/source/schema behavior. Resume bounded test-only correction within actual QA6d9/6e4 consent, no new assignment/provider turn or production source edits. Real native schema2/3 refusal remains an unresolved qualification gate, not waived by these source results. Return amended exact candidate and independent review before acceptance."
     }
   ]
 }

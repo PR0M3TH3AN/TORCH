@@ -1,6 +1,141 @@
 # Current pilot remaining-work handoff
 
-## Current peer contracts and sequenced implementation at 11:04 UTC
+## Current decisions and qualification boundaries at 11:25 UTC
+
+Fresh owner **c55359eb** independently verifies7908 normal6/6 PASS, original
+helper audit mutant FAIL on counted writes, and a direct multiline audit INSERT
+mutant FAIL on logical-state equality. It identifies one remaining precise
+instrumentation gap: the start-of-string regex branch misses leading whitespace,
+so actual multiline audit INSERT is not counted (helper counts identity writes).
+The SAME565 task resumed **in_progress6** only for existing QA-consented
+test/doc strengthening: whitespace-aware classification and an actual strict
+direct multiline-write count case. Both external mutation failures and every
+existing invariant remain required. Kernel and QA received the concrete
+correction;7908 is not final accepted/native qualified. The schema2/3 refusal
+remains open. No new implementation item or provider was launched.
+Console independently reports SAME workflow **in_progress10** after assigned9,
+implementing actual approved title/stale-preview/deep-link fixes. Ledger at this
+refresh: **55 tasks,39 proposed,7 blocked,6 completed,1 assigned,2 in_progress**;
+each of Runtime, Kernel and Console has only one active item. These current
+facts supersede the earlier in-cycle7908 blocked5/two assigned counts below.
+
+Final-cycle refresh received Kernel **44c76670**: amended clean
+**7908d1b06e701184c04fedefaf3af977422ae976**, changing only the consented test
+and integrity note from f67. Source/API/schema are unchanged. Manager inspected
+the two-path delta: connection execution-count instrumentation, all logical
+durable fixture tables, visible messages/ownership comparison, retained original
+assertions, audit-INSERT mutation failure and restored-original invariant.
+Kernel reports focused6/6, test224 PASS/5 intentional SKIP and check/lint PASS;
+Manager did not run these tests or grant independent acceptance. QA handoff
+**022eb810** requests exact original PASS/external owner mutant FAIL for the
+correct forbidden-write reason/restored PASS. The native test guard still refuses
+current2/required3 before execution, no receipt/request. After fresh task/Git
+read, SAME565 is now **blocked5 at7908**, with all f67 history retained; Kernel's
+code/test amendment is finished while independent QA and native qualification
+remain open. Runtime/Kernel handoffs **d3ca5583/0d10f84b** carry this newer truth.
+No automatic inventory assignment follows the blocked transition.
+
+Work **a377c8c3** corrects its garbled **6c01d8f8** revision: reusable exact
+engine, separately Kernel-authenticated FixtureContext/NativeContext, permanent
+fixture nonpromotion and only fresh compatible native receipts satisfying
+integration/backlog/delivery gates. Current exactPasses consumers remain
+authoritative. The fixture-only contradiction and proposed attestation landing
+waiver are withdrawn; the bootstrap circularity is explicitly retained. Exact
+context/spec18/20/ADR and CLI/contributor/scenario peer reviews remain pending,
+routed through **0d10f84b**, **1e1f2ce9**, **38d76cca**; Work **7592f1fd** records
+direction reviewed, no implementation/policy acceptance. Task6e4 stays proposed1.
+
+The new scheduled self check-in **d1b90688** was read and acknowledged only after
+current manager-check-in refreshed its stale findings. All four new messages
+were individually acknowledged; acknowledgment does not settle their waits.
+Current ledger: **55 tasks,39 proposed,8 blocked,6 completed,2 assigned**
+(Runtime e4403 and Console workflow9), no duplicate active owner. This paragraph
+supersedes earlier in-cycle f67/in_progress4 and unrevised Work statements below.
+
+Canonical brief digest remains `d7e6d69`; the exact brief retry alone crossed the
+startup SQLite sandbox boundary. Current canonical is clean `0fdfcb3`; Manager
+starts at `d835ac1`. The explicit own unread query
+`{recipient:"session-manager",unacknowledged_only:true,limit:100}` returned seven
+current messages, all individually understood and acknowledged. This refresh
+supersedes the 11:04 status below; historical presence does not prove idle work.
+
+Owner **eca7ded3** delegates the concrete compatibility decision: Overview's
+initial and return document title is exactly **TORCH Dashboard**; other views
+retain exact contextual titles. QA **6e4ae798** confirms actual contributor
+consent (`d3e5a001` to Console), retaining the original demo title assertion.
+Console's clean `a67a04d` has three source-gate PASS records and dashboard FAIL
+`713f8acc` at that assertion before navigation captures/new stale-evidence
+scenario execute. These records remain evidence for that exact candidate only.
+Fresh native next lookup was idle with no active Console item; the existing
+workflow moved **blocked8 → assigned9**, keeping owner, candidate, all receipts,
+criteria and history. Manager handoff **11685229** routes the narrow console.js
+correction, equally strict new navigation mapping/integrity note, existing
+secondary deep-link target focus/viewport and N→N+1 stale-preview invalidation
+requirements. Preserve drafts and unchanged-current previews. No original demo
+assertion change, backend/live-refresh expansion or new UI task is authorized.
+Fresh four exact candidate-source gates, independent QA and actual live
+desktop/mobile acceptance remain required; no final acceptance is claimed.
+
+Kernel **b952872d** hands off the implemented `observeMessages` export at clean
+**f67f47f95e492a30d868e64021b7090b4ca36f6e**. Manager inspected its single
+MATERIALIZED CTE SELECT and unchanged legacy read API. Kernel reports focused
+6/6, full npm test224 PASS/5 intentional SKIP, check/lint PASS. These are focused
+and direct source evidence, not qualified native receipts: the actual source
+guard refused before execution with **CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED,
+current2 required3**; no receipt, integration request or dashboard run followed.
+
+Owner **44512241** proves a validation gap, not a production-source write: its
+hermetic wrapper performs four audit INSERTs after original observation, while
+the same suite still passes6/6. The assertion compares state.db bytes and misses
+WAL writes. QA **6e4ae798** (`6d9c8a03` to Kernel) authorizes test/doc-only
+strengthening: actual connection DML write-count zero and logical durable-state
+equality across observations, preserving every assertion; original source must
+PASS and the demonstrated mutating variant must FAIL for the forbidden-write
+reason. Manager inspected the test and mutant without opening production state.
+The SAME inbox component is now **in_progress4**, candidate recorded, with this
+remaining bounded validation work and real qualification refusal in its history.
+It is not accepted or landed. Handoff **a0a4a463** names only
+test/fleet/control-plane.test.mjs and additive docs/TEST_INTEGRITY.md for this
+strengthening; no production source/schema/guard alteration follows.
+
+Runtime **e440 remains assigned3**. Handoff **b889c9d6** corrects the stale
+"unimplemented inbox API" dependency: candidate source exists; qualified API
+acceptance/landing does not. QA **008df147** receives both actual decisions for
+independent resulting-candidate review. No specialist has a duplicate active
+implementation, and no provider session was launched by Manager.
+
+Dormant-service APIs remain separate, unimplemented phases: Kernel inventory
+**1e688 blocked4** needs its exact export/input/output and QA contract after inbox
+qualification; Runtime dormant launcher **2b4 proposed1** follows e440 and the
+qualified inventory. Release handoff **6ed4c5cf** preserves persistent-operations
+blocked5 and its full roadmap; the older QA contributor prohibition is resolved
+by cc381/167, while actual API contract/qualification gates remain open.
+Reservation125 and starting-presence blocked histories are preserved.
+
+Work's source-qualification **6e4 remains proposed/unassigned**. Handoff
+**e351b653** requests the reviewed protocol revision: resolve fixture-only engine
+versus eventual authenticated native execution, identify exact Kernel/Release/QA
+context bindings, actual spec/scenario authority and integration consumer changes
+for any source-landing policy change. A byte digest does not authenticate an
+actor; fixture attestations cannot become native receipts. Existing native PASS
+landing gates remain unchanged. No code assignment or prose waiver follows.
+
+Fleet evolution shows eight recurring domain sets; the 30-day hierarchy scan
+shows nine domain-set signals and eleven historical direct coordination requests.
+Existing six specialists still coherently own the actual work. Improve exact
+contracts, test integrity and reviewed qualification policy first; no new domain,
+coordination identity, retirement or hierarchy activation is justified here.
+Fleet changes are empty. Health reports37 stale observed-commit findings and two
+resolved-dependency warnings; warnings are observational, not cleanup/unblock
+authority. Genuine remaining schema/scope gates are retained.
+
+Owner-only runtime-switch approval **75a8ebae remains pending**. The five-PNG
+human consent covers only completed exact Runtime recovery; it grants no pending
+runtime switch or live schema recovery. No automatic wakes, installation switch,
+live schema recovery, host activation, extra identities or provider launches.
+Final acceptance must refresh inbox, exact candidate and task evidence again.
+
+## Historical peer contracts and sequenced implementation at 11:04 UTC
 
 Canonical briefs still match `d7e6d69`; startup readonly DB failure was retried
 only with the narrowly authorized exact brief. Own branch starts clean at
