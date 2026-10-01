@@ -1,5 +1,19 @@
 # Current pilot remaining-work handoff
 
+Latest actual Work **c90d7c8a** confirms the complete integrity-record V1 contract
+reached named QA in durable **68d4ea0e-aac8-4d00-bafb-9248266b205b**: schema/preimage/
+vector/exact paths and61 legacy-section/14 commit-blob mapping. Manager routes that
+actual packet's decision, replacing old generic references. Manager requests its
+complete addressed copy/versioned artifact before substantive contract review;
+delivery summary is not consent or acceptance. Unowned docs/test-integrity/records
+path still refuses pending reviewed contributor authority. No code/migration or
+second assignment. Existing internal QA decision now has concrete review evidence.
+Owner **06ac7fd5** independently reproduces Release8fb focused9/9; existing Release
+handle is still active, no restart. Later TIN merge retains canonical current prefix
+and appends unchanged Release blocks, preserving divergent original commits/bytes;
+do not assert both divergent whole-file prefixes. Actual QA/new converged native
+receipts remain required. Browser skill discovery still unavailable; no live proof.
+
 Latest reviewed Release handoff **0c4ea57c** returns clean exact
 **8fb58b232ed5e854f00125a3b96922a2c8615b98**, same three paths,9/9 focused reported,
 null invalid-pointer target/version with retained typed refusal, strict absolute/
