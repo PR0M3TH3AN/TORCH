@@ -84,6 +84,19 @@ function captureGeneratedArtifacts({ generatedDirectory, commit, checkId, defini
   };
 }
 
+// B2 admission boundary only. Kernel owns policy parsing/registration and the parent;
+// this service must never synthesize either from cwd, environment, or caller JSON.
+function assertCandidateNativeAdmissionAvailable(definition) {
+  if (!Object.hasOwn(definition ?? {}, 'candidate_execution_policy')) return;
+  if (!definition.candidate_execution_policy) {
+    throw new TorchError('Candidate execution policy is not registered', { code: 'CANDIDATE_SNAPSHOT_POLICY_UNDECLARED' });
+  }
+  // A registered policy alone is not the genuine parent issuer or receipt adapter.
+  throw new TorchError('Candidate native parent bootstrap is unavailable', {
+    code: 'CANDIDATE_PARENT_NATIVE_BOOTSTRAP_UNAVAILABLE',
+  });
+}
+
 export class CheckService {
   constructor({
     repositoryRoot, controlPlane, resourceService = null,
@@ -330,6 +343,8 @@ export class CheckService {
     if (missing.length) throw new TorchError('Prepared check requires resource leases', {
       code: 'CHECK_BLOCKED', details: missing.map((resourceId) => ({ code: 'RESOURCE_LEASE_REQUIRED', resourceId })),
     });
+    // Deliberately before snapshot verification, state mutation, artifacts, or child spawn.
+    assertCandidateNativeAdmissionAvailable(currentDefinition);
     verifyCheckSnapshot(item.snapshot, { stateRoot: this.stateRoot });
     const claimed = this.controlPlane.database.prepare(`UPDATE prepared_checks SET state = 'running', runner_json = ?
       WHERE id = ? AND project_id = ? AND area_id = ? AND state = 'prepared'`)

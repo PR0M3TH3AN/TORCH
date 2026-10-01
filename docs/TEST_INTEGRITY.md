@@ -2715,3 +2715,42 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Candidate source B2 frozen-input and fence boundaries (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-bootstrap-one-shot
+      given: "An issued, nonce-bound native admission"
+      when: "It is opened, replayed, expired, foreign, or malformed"
+      then: "Only one bounded private bootstrap opens; every invalid case refuses before child start and exposes no authority handle"
+    - id: SCN-candidate-input-consumption
+      given: "A frozen project-local source snapshot"
+      when: "The original source changes before the fixed Node child reads its cwd"
+      then: "The child observes the captured bytes; snapshot drift refuses"
+    - id: SCN-candidate-execution-boundary
+      given: "A fixed command and explicit bounded environment"
+      when: "Ambient PATH/HOME/cache fallback or output overflow is attempted"
+      then: "Execution refuses or remains non-success"
+    - id: SCN-candidate-fence-closure
+      given: "A private PID1 namespace observation"
+      when: "Descendant closure is absent or uncertain"
+      then: "The outcome is UNKNOWN/INCOMPLETE, never terminal PASS"
+  observable_outcomes:
+    - "No DB, ControlPlane, writer, receipt adapter, or authority FD reaches the child"
+    - "Product input links and special nodes refuse; frozen product S stays under 64MiB/file and 512MiB total"
+    - "Artifact output remains M/artifactManifest; receipt-adapter A is absent and unclaimed"
+  determinism_controls:
+    - "Temporary source trees, fixed Node executable, explicit empty ambient environment, bounded streams, and injected observations"
+    - "No live policy registration, installation, network, cache, or provider process"
+  anti_cheat_rationale:
+    prevents:
+      - "Reading mutated live source instead of captured bytes"
+      - "Replaying a private admission or relabeling fixture output as a receipt"
+      - "Treating PGID emptiness, zero exit, or Chromium metadata as descendant/binary proof"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

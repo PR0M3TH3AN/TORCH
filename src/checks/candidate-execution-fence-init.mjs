@@ -1,0 +1,3 @@
+// Private init entrypoint. It is never a CLI surface: bootstrap is supplied only on inherited FD3 and acknowledgement only on FD4.
+import { closeSync, readFileSync, writeFileSync } from 'node:fs';
+export function readPrivateFenceBootstrapV2() { const frame = readFileSync(3, 'utf8'); if (Buffer.byteLength(frame, 'utf8') > 65_536) throw new Error('CANDIDATE_FENCE_FRAME_TOO_LARGE'); const value = JSON.parse(frame); if (!value?.nonce || !value?.generation) throw new Error('CANDIDATE_FENCE_FRAME_INVALID'); writeFileSync(4, JSON.stringify({ nonce: value.nonce, generation: value.generation })); closeSync(3); closeSync(4); return Object.freeze({ nonce: value.nonce, generation: value.generation, admissionFdsClosed: true }); }
