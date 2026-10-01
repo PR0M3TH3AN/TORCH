@@ -24,7 +24,7 @@
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "verification",
   "owner": "release-self-host",
   "evidence": [
     "message:f286a236-77f8-4bc6-a2a3-a4c45d33fa76:TORCH-engine-scope",
@@ -49,14 +49,20 @@
     "message:e2b45734-0ed1-4ab2-b3e3-2bf467794a64:QA-exact-acceptance",
     "message:9fca81ef-e8e2-4298-acac-22f22cb0bb51:prioritize-qualified-metadata-landing",
     "integration:f71e4202-fad8-4e65-a9db-fbbd0886269d:landed-2026-10-01T08:21:54.593Z",
-    "git:canonical-clean-rewrite-28c941d:independent-readback"
+    "git:canonical-clean-rewrite-28c941d:independent-readback",
+    "message:74ff2d68-c67c-465d-b1be-0245bb8edc83:reviewed-plan-and-single-arbiter-build",
+    "message:e13d28ff-c9d3-4c0b-ab43-ae0a7db69cda:isolated-candidate-acceptance-success",
+    "artifact:/home/user/.local/share/torch/runtime/versions/0.1.0-alpha.3/.torch-validation.json:sha256:0e66890bc8a0681a79329ac860f747a56e289ed1b4a9b845cc79da8df6611905",
+    "candidate-digest:2dafa8483df597d2d94e5ca9cdda52014bf0fc63b02c5333c239bba9ee3c7040:independently-recomputed",
+    "candidate:39-required-scenarios:test-lint-syntax-status0-no-error-signal",
+    "registry:generation3:active-alpha2:previous-alpha1:independently-read"
   ],
   "commit": "28c941d1ecbc3da8908a84f96c06ac0b929d4b19",
   "integrationRequest": "f71e4202-fad8-4e65-a9db-fbbd0886269d",
   "blockedReason": null,
   "createdAt": "2026-10-01T06:52:30.704Z",
-  "updatedAt": "2026-10-01T08:22:33.087Z",
-  "revision": 10,
+  "updatedAt": "2026-10-01T08:32:01.096Z",
+  "revision": 11,
   "history": [
     {
       "from": null,
@@ -127,6 +133,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T08:22:33.087Z",
       "note": "Qualified metadata source actually landed through authorized serialized path, all4 exact PASS plus independent QA; canonical clean28c941d verified. Resume SAME item for remaining acceptance criteria: read-only exact landed-source candidate/rollback plan, conflict-free reviewed plan before bounded isolated build. No task completion, installed version switch, restart, wakes or provider freshness inferred."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:32:01.096Z",
+      "note": "Single arbiter isolated build actually completed; immutable receipt independently read and hashed, exact source/digest and39 scenario groups/test-lint-syntax zero/noerror/signal verified. Independently read activealpha2/registrygen3 and alpha3 rollback-safe v1alpha1 metadata. Same bounded task enters final evidence/rollback review; no duplicate build/overwrite, active switch/restart/provider/wake qualification or broader release completion inferred."
     }
   ]
 }

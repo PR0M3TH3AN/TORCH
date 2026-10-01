@@ -1,5 +1,64 @@
 # Current pilot remaining-work handoff
 
+## Genuine owner activation wait at 08:34 UTC
+
+Owner `6fc99e88` reports automatic approval review **refused exact alpha.3
+activation before execution**, because switching the active runtime can affect
+live services and earlier authority covered candidate build/dry-run. Preserve
+that refusal. Arbiter already asked user asynchronously with mixed-code risk;
+no new post-risk answer has been received. Manager reread current canonical brief,
+reviewed existing activation task and all17 visible approvals to avoid duplicates,
+and created ONE owner-addressed request **75a8ebae-54f8-47da-9a5a-fbe647d0baaf,
+pending revision1**, linked to existing TASK-conversation-development-activation.
+No task assignment or owner decision was performed. Exact action is accepted
+alpha2-to-alpha3 active pointer/registry switch, source28c941/digest2dafa848 above;
+retain alpha2 for rollback. No daemon restart, agent stop/start, wakes, publication
+or wider activation included. Existing loaded processes may run old code while
+future invocations load new code. Keep activealpha2 pending fresh owner consent
+and arbiter timing review; do not retry, bypass or treat39-group isolated PASS as
+activation consent. Native Release receives `3b968a78`; Console receives this
+single genuine owner wait under its existing guarded owner controls. Routine peer
+waits remain Fleet handling; execution remains arbiter-controlled.
+
+Final health read has ONE warning, BACKLOG_BLOCKED_DEPENDENCIES_RESOLVED, on Work
+Integration integrity-records preparation. Manager rechecked the actual blocker:
+completed reliability dependencies do not resolve named QA schema/path review or
+reviewed implementation-phase authority. Preserve blockedrev5 and followup; no
+auto-unblock or full completion to silence health. This supersedes startup's
+healthy/no-findings snapshot. Bounded commit history remains truncated/incomplete;
+the historical TASK-fleet-resume commit label is an untracked coordination label,
+not a second backlog or new assignment. All other active assignments retain
+continuity, advisory evolution produces no identity/hierarchy change, and manager
+turn ends on recorded owner/peer waits without starting providers or polling.
+
+## Isolated candidate acceptance readback at 08:32 UTC
+
+Owner `e13d28ff` reports single isolated build finished successfully. Manager
+independently read and hashed immutable
+`/home/user/.local/share/torch/runtime/versions/0.1.0-alpha.3/.torch-validation.json`:
+sha256 `0e66890bc8a0681a79329ac860f747a56e289ed1b4a9b845cc79da8df6611905`,
+passed:true, source exact28c941d, all39 required scenario groups and test/lint/syntax
+status0, no error/signal. Independently recomputed installed candidate inventory
+digest matches `2dafa8483df597d2d94e5ca9cdda52014bf0fc63b02c5333c239bba9ee3c7040`,
+4829 files/47137426 bytes. This supersedes pending-build statements below; no
+duplicate build or installed artifact mutation was performed by Manager.
+
+Independently read active symlink `versions/0.1.0-alpha.2`, registrygeneration3
+activealpha2/previousalpha1 and alpha3 rollback_safe v1alpha1 state metadata.
+Arbiter reports dry-run upgrade canProceed:true/mutation:false; active switch,
+service timing/restart and automatic wake activation remain separately reserved.
+Same Release task is **verification revision11**, retaining exact landed request,
+immutable artifact/hash, reviewed plan and acceptance receipts. Native Release
+`ecae76ea` and QA `31a7da77` receive bounded final artifact/rollback review request;
+no full-task closure or broader live/browser/mixed-provider/starting-lease/deeper
+engine-provenance qualification inferred from isolated acceptance.
+
+Manager reviewed and checkpointed owned ledger/report at `bb37693`, then TORCH
+guarded convergence produced clean `ee84a51f05196f090c030df8e4037fb319fb7918`,
+preserving41 unique Manager commits and exact canonical28c941 ancestry. JSON and
+diff checks pass; coordination-only Manager requiredChecks remain empty. Final
+acceptance evidence is a further owned checkpoint, not canonical source edits.
+
 ## Durable resume and exact metadata landing at 08:28 UTC
 
 Current canonical brief digest is `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
