@@ -20,7 +20,7 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "release-self-host",
   "evidence": [
     "message:94010b22-c6ce-4d34-9ed9-01b2330106db:sequence-real-next-Release-persistent-setup-owned-work",
@@ -31,14 +31,18 @@
     "message:703bb01b-6f7a-43f4-92c4-b86ca01b6153:Kernel-boundary-review",
     "message:87c3b0a7-bd6f-46dd-a4cc-b72e27ee55c5:isolated-qualification/future-Release-fence",
     "message:a10ce5dc-5f65-4ec6-8808-3a8ccbf6ec97:Runtime-design-review",
-    "message:c63ec499-fc6f-4246-9190-05d457d11de9:QA-strict-design-boundaries"
+    "message:c63ec499-fc6f-4246-9190-05d457d11de9:QA-strict-design-boundaries",
+    "message:e4dc7e71-1cc9-4326-a7e7-a7547a793043:actual-owned-source-peer-API/test-boundary-hold",
+    "message:efff7c90-4f2b-413b-a488-7e9c678ed0ae:explicit-named-test-implementer-disposition-required",
+    "message:cb0e71d4-28f5-49f7-ab79-42b8d23a98a1:named-QA-exact-contributor-decision-or-implementer-request",
+    "message:04554a2e-6e39-4399-a609-4337d37169a3:retain-real-peer-consent-holds"
   ],
   "commit": null,
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Actual Release e4dc7e71 implementation hold: Kernel manifest/API and Runtime dormant launcher contracts remain pending; QA a4f58d03 scenario consent explicitly forbids contributor test/** edits. Await QA cb0e71d4 exact contribution permission or named QA test implementer/support contract, plus actual Kernel76cf/Runtime9cf decisions. No owner implementation-detail permission needed, no shared-path edits authorized by a scenario-only consent.",
   "createdAt": "2026-09-30T19:34:25.620Z",
-  "updatedAt": "2026-10-01T09:56:38.861Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T10:15:14.694Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -67,6 +71,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:56:38.861Z",
       "note": "Current canonical brief reread and exact Release next resume SAME task. Owner99ee5 directs precise implementation contract/path map and actual named QA additive scenario consent, then reviewed Release-owned portable source work: combined digest-bound init/install preview and dormant schedule provisioning/reconciliation. Kernel config/manifest APIs and Runtime launcher/lifecycle remain peer-owned; exact consent required before edits there. Source paths begin Release src/cli.mjs/src/self-host/service.mjs/bin as individually named in returned plan; no package/global/provider/config/host changes inferred. Qualify strict isolated fixture state, distinguish from unavailable real-project schema3 gates; don't wait on live recovery to design/develop pure portable code once consent is sufficient. Return concrete enforceable future writer-fence proposal, not process absence/token alone. No host unit enable/linger/destination choice, service stop, production state relocation/live mutation, engine installation/activation or provider wake. Keep full criteria and independent final exact checks/QA/guarded integration requirements."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:15:14.694Z",
+      "note": "Reconcile actual implementation blocker on SAME Release task, no parallel queue or false human hold. Previous portable source phase remains approved within owned exact paths after sufficient real peer API/test contribution decisions; a4 scenarios alone never override explicit test-edit prohibition. Resume same task after genuine peer gates clear; fullcriteria/owner/history preserved. No live host/state/activation/wake action."
     }
   ]
 }

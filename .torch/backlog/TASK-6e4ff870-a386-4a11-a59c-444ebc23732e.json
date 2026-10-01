@@ -1,0 +1,46 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-6e4ff870-a386-4a11-a59c-444ebc23732e",
+  "title": "Separate candidate source qualification from live control-plane initialization",
+  "description": "Explicit owner a970326b-87a5-4292-8f22-e1bec0c15f11/92f7fd36 corrects the inventory: no explicit existing check-engine separation item exists. Add ONE proposed bounded item in the existing backlog. Incident observed on canonical cb145e56 and Kernel reservation candidate be1ae951: candidate CLI initialized production schema3 during qualification, installed/canonical schema2 writers relabel it, and native CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED currentVersion2 requiredVersion3 then prevents qualification, causing activation/landing circularity. Design supported separation of exact candidate-source execution engine from a versioned, independently fingerprinted compatible receipt/control-plane adapter without migrating live production state merely to test candidate. Preserve actual authenticated native project/area/commit/definition/run/resource/guard/outcome evidence and immutable artifacts. Work owns src/checks, Kernel src/control-plane, Release CLI wiring and QA scenarios/acceptance; agree exact contract, owned paths and scenario consent before any implementation. No old-checker shortcut, fake isolated real-project receipts, gate waiver, install activation, production DB recovery, new identity or parallel queue. TASK-4dc metadata/candidate preparation remains completed; its retained deeper provenance roadmap was not an explicit task until this proposal.",
+  "priority": "high",
+  "affectedDomains": [
+    "work-integration",
+    "project-kernel",
+    "release-self-host",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-3909cbf6-10c6-44ce-b82e-5bfb62cf34c8"
+  ],
+  "acceptanceCriteria": [
+    "Work, Kernel, Release and QA review a precise versioned executor/receipt-adapter interface, primary-owned path map and named contribution/scenario consent before implementation or source qualification claims.",
+    "Candidate-source checks use an exact clean candidate execution engine without initializing or migrating production control-plane schema; boundary scenarios compare live schema/data/provenance before and after and preserve existing identities, tasks, messages, held reservations and resource guards.",
+    "Receipts independently bind actual execution-engine commit/content digest and actual loaded adapter identity/digest/interface/schema version under an explicitly reviewed compatibility contract, plus authenticated native project, area, candidate, definition, run and terminal outcome.",
+    "Unknown engine, incompatible adapter, forged compatibility evidence, digest mismatch, stale candidate or changed definition/input/artifact evidence fails closed; an installed older checker is never presumed candidate-equivalent.",
+    "Frozen inputs, resource/worktree protections, unknown/error/timeout outcomes and immutable external artifact names/bytes/hashes retain strict exact-commit gate integrity; zero exit or isolated fixture output alone cannot become a real-project PASS receipt.",
+    "Strict isolated migration/compatibility/self-host scenarios remain visibly distinct from full operational qualification and cannot be promoted or copied as native real-project receipts; no production-state recovery or activation follows from fixture success.",
+    "Preserve all prior schema guard refusals, old unqualified receipts, archives, assertions and Test Integrity Notes; eventual independent QA acceptance and fresh exact native checks plus serialized guarded integration are required without gate waivers."
+  ],
+  "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
+  "feature": "Check execution provenance and state isolation",
+  "milestone": "Reviewed reliability dependencies",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T10:14:01.401Z",
+  "updatedAt": "2026-10-01T10:14:01.401Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:14:01.401Z",
+      "note": "Task created."
+    }
+  ]
+}

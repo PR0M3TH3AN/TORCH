@@ -1,5 +1,60 @@
 # Current pilot remaining-work handoff
 
+## Current intake and genuine peer waits at 10:15 UTC
+
+Owner `a970326b` corrects the task inventory: the deeper check-engine roadmap
+had no explicit separation task. Manager reread the current canonical brief and
+created exactly one **proposed, high-priority** item in the existing backlog:
+`TASK-6e4ff870-a386-4a11-a59c-444ebc23732e`, "Separate candidate source
+qualification from live control-plane initialization." Its observed commit is
+`cb145e56`, description retains candidate `be1ae951` and native schema-downgrade
+refusal, and prerequisite task3909 is actually completed. Seven strict criteria
+cover separate engine/adapter identities and compatibility, no production
+schema initialization merely for source checks, authenticated real-project
+receipts, exact frozen inputs/guards/artifact provenance, incompatible/unknown/
+forged/stale negatives and distinct isolated versus full qualification.
+This supersedes the earlier assumption that retained roadmap prose implied an
+explicit queue item. No assignment or implementation occurred. Work and Kernel
+review requests `53fbc8d8`/`dbbb9b13` bind the actual new task; Release and QA
+remain required interface/CLI/scenario reviewers.
+
+Release persistent-operations is **blocked revision 5** on its actual peer
+boundaries, not an owner implementation-detail hold. Release `e4dc7e71` confirms
+Kernel manifest/API and Runtime dormant launcher contracts remain pending.
+Owner `efff7c90` clarifies that QA `a4f58d03` approved scenarios but explicitly
+forbade Release editing QA-owned tests. Manager request `cb0e71d4` asks named QA
+for an explicit decision: bounded contributor edits of only the new
+`test/fleet/persistent-operations.test.mjs` under all strict constraints and
+independent QA acceptance, or QA as the actual test implementer with a precise
+support contract for later scoped assignment. `04554a2e` retains the prohibition
+until that decision. QA is idle after actual task3909 completion; no second
+simultaneous QA item was created and no forbidden test edit is approved.
+The approved portable Release source phase can resume on the SAME task once
+actual contracts and contribution/implementer permission are sufficient.
+
+Owner `92f7fd36` reports an actual non-force rewrite push of exact `0fdfcb3`,
+verified remote `0fdfcb3` and unchanged default-main `a468`. These are explicitly
+arbiter-reported remote results; Manager performed only the previously recorded
+native guarded local landing. No installation or live Console activation follows.
+
+Manager checkpoint `51d9ddb` converged through TORCH's blocker-free guarded merge
+to **`bd6d39022ad8fa568f0fd80befa863f9659c6c6a`**, preserving all51 unique commits.
+Both accepted canonical `0fdfcb3` and the preceding reviewed checkpoint are
+ancestors; resulting worktree and full canonical-relative diff checks are clean.
+Manager has no configured feature checks; ledger integrity is validated without
+claiming this coordination merge is a separately qualified feature candidate.
+The supported Manager-publication restriction remains, so checkpoints are local.
+
+After intake, Fleet evolution was refreshed again: seven recurring domain sets
+remain advisory. Exact Work/Kernel/Release/QA interfaces address the new gap within
+existing owners; retain six specialists and no hierarchy/domain activation.
+All51 tasks remain:38 proposed, six blocked, six completed, one in progress
+(Console). Health now has37 stale-observation findings after canonical advanced
+and two resolved-dependency findings with real ownership/schema waits retained;
+no automatic fix, ACK flood or hidden risk. Automatic wakes and alpha.3 activation
+remain held as described below. End this coordination cycle on the actual named
+peer waits; no provider launch, poll loop or authority bypass.
+
 ## Guarded artifact delivery and current Fleet at 10:09 UTC
 
 Startup brief still matches `d7e6d69`; exact narrowly approved retry resolved
