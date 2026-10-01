@@ -14,6 +14,8 @@
   <script src="/check-evidence.js" defer></script>
   <script src="/task-activity.js" defer></script>
   <script src="/operation-outcomes.js" defer></script>
+  <script src="/attention-projection.js" defer></script>
+  <script src="/attention-actions.js" defer></script>
   <script src="/live-refresh.js" defer></script>
   <script src="/demo.js" defer></script>
   <script src="/console.js" defer></script>
@@ -41,14 +43,19 @@
       <a href="#organization">Organization</a>
       <a href="#evidence">Evidence</a>
       <a href="#delivery">Release gates</a>
-      <p class="rail-note">Local project view<br><span id="project-commit">—</span></p>
+      <details class="rail-provenance">
+        <summary>Snapshot provenance</summary>
+        <span>Commit <code id="project-commit">—</code></span>
+        <span>Branch <code id="project-branch-detail">—</code></span>
+      </details>
     </nav>
 
     <div class="console-workspace">
       <p class="console-error" id="console-error" role="alert" hidden></p>
       <p id="live-refresh-status" role="status" aria-live="polite">Waiting for the first snapshot.</p>
+      <p id="console-view-status" class="screen-reader-only" role="status" aria-live="polite"></p>
 
-      <section id="overview" class="pulse-zone" aria-labelledby="pulse-title">
+      <section id="overview" class="pulse-zone" data-console-view="overview" aria-labelledby="pulse-title">
         <div class="pulse-main">
           <div class="pulse-heading"><div><p class="section-kicker">Project pulse</p><h1 id="pulse-title">Work in motion</h1></div><span id="fleet-health" class="health-flag">Observing</span></div>
           <p id="project-summary" class="pulse-summary">TORCH is gathering the latest repository and fleet evidence.</p>
@@ -65,12 +72,12 @@
         </aside>
       </section>
 
-      <section id="owner-briefing" class="console-section owner-briefing" aria-labelledby="owner-briefing-title">
+      <section id="owner-briefing" class="console-section owner-briefing" data-console-view="owner-briefing" aria-labelledby="owner-briefing-title">
         <div class="section-heading"><h2 id="owner-briefing-title">Owner briefing</h2><span>Published evidence</span></div>
         <div id="owner-briefing-content"><p>Reading the latest local publication…</p></div>
       </section>
 
-      <section id="flow-watch" class="console-section flow-watch-section" aria-labelledby="flow-watch-title">
+      <section id="flow-watch" class="console-section flow-watch-section" data-console-view="flow-watch" aria-labelledby="flow-watch-title">
         <div class="section-heading"><div><p class="section-kicker">Approvals and reporting lines</p><h2 id="flow-watch-title">Flow watch</h2></div><span>Owner decisions gated</span></div>
         <p class="flow-watch-note">See which teams need attention and who owns each decision. A configured cadence does not confirm that a system timer is installed.</p>
         <div class="flow-watch-grid">
@@ -86,7 +93,7 @@
         </div>
       </section>
 
-      <section id="work" class="board-section" aria-labelledby="work-title">
+      <section id="work" class="board-section" data-console-view="work" aria-labelledby="work-title">
         <div class="section-heading"><div><p class="section-kicker">Authoritative backlog</p><h2 id="work-title">Work board</h2></div><span id="task-count">0 active</span></div>
         <div class="work-view-tools" role="group" aria-label="Backlog views and filters">
           <div class="work-filter-row">
@@ -159,13 +166,13 @@
         <p id="task-create-action-status" class="priority-action-status" role="status" aria-live="polite" hidden></p>
       </section>
 
-      <section id="initiative-progress" class="console-section initiative-section" aria-labelledby="initiative-title">
+      <section id="initiative-progress" class="console-section initiative-section" data-console-view="initiative-progress" aria-labelledby="initiative-title">
         <div class="section-heading"><div><p class="section-kicker">Derived from the single backlog</p><h2 id="initiative-title">Feature and milestone progress</h2></div><span>Task states only · gates remain separate</span></div>
         <p class="initiative-note">Progress is calculated from each linked task's current state. It does not mean checks passed, integration landed, or a release is ready.</p>
         <div id="initiative-rollup" class="initiative-rollup" aria-live="polite"></div>
       </section>
 
-      <section id="fleet" class="console-section fleet-section" aria-labelledby="fleet-title">
+      <section id="fleet" class="console-section fleet-section" data-console-view="fleet" aria-labelledby="fleet-title">
         <div class="section-heading"><div><p class="section-kicker">Persistent identities</p><h2 id="fleet-title">Fleet and ownership</h2></div><span id="agent-health-note">Session state from latest observation</span></div>
         <div class="fleet-columns">
           <article class="work-surface"><div class="panel-heading"><h3>Sessions</h3><span>One context per identity</span></div><div id="agent-list" class="agent-list"></div>
@@ -194,19 +201,19 @@
         </div>
       </section>
 
-      <section id="organization" class="console-section organization-section" aria-labelledby="organization-title">
+      <section id="organization" class="console-section organization-section" data-console-view="organization" aria-labelledby="organization-title">
         <div class="section-heading"><div><p class="section-kicker">Current approved structure</p><h2 id="organization-title">Organization map</h2></div><span id="organization-revision">No active graph</span></div>
         <div id="organization-map" class="organization-map" aria-live="polite"></div>
         <div id="organization-lifecycle" class="organization-lifecycle" aria-live="polite"></div>
       </section>
 
-      <section id="organization-proposals" class="console-section" aria-labelledby="proposal-title">
+      <section id="organization-proposals" class="console-section" data-console-view="organization" aria-labelledby="proposal-title">
         <div class="section-heading"><div><p class="section-kicker">Owner review</p><h2 id="proposal-title">Organization proposals</h2></div><span id="change-count">0 pending</span></div>
         <p id="organization-action-status" class="organization-action-status" role="status" aria-live="polite" hidden></p>
         <div id="change-list" class="console-list"></div>
       </section>
 
-      <section id="communications" class="console-section communication-section" aria-labelledby="communications-title">
+      <section id="communications" class="console-section communication-section" data-console-view="communications" aria-labelledby="communications-title">
         <div class="section-heading"><div><p class="section-kicker">Durable coordination</p><h2 id="communications-title">Conversations</h2></div><span id="message-count">0 unacknowledged</span></div>
         <details class="owner-request-composer">
           <summary>Request work from an agent</summary>
@@ -242,7 +249,7 @@
         <div id="message-list" class="conversation-stream"></div>
       </section>
 
-      <section id="evidence" class="console-section evidence-section" aria-labelledby="evidence-title">
+      <section id="evidence" class="console-section evidence-section" data-console-view="evidence" aria-labelledby="evidence-title">
         <div class="section-heading"><div><p class="section-kicker">Provenance first</p><h2 id="evidence-title">Evidence and review</h2></div><span>Exact commit receipts</span></div>
         <div class="evidence-columns">
           <article class="work-surface"><div class="panel-heading"><h3>Checks</h3><span>Passes are commit-bound</span></div><div id="check-list" class="console-list"></div></article>
@@ -250,7 +257,7 @@
         </div>
       </section>
 
-      <section id="delivery" class="console-section delivery-section" aria-labelledby="delivery-title">
+      <section id="delivery" class="console-section delivery-section" data-console-view="delivery" aria-labelledby="delivery-title">
         <div class="section-heading"><div><p class="section-kicker">Separate authority gates</p><h2 id="delivery-title">Integration and release</h2></div><span>Integration is not deployment</span></div>
         <div class="delivery-columns">
           <article class="work-surface"><div class="panel-heading"><h3>Integration</h3><span>FIFO queue · source commit</span></div><div id="integration-list" class="console-list"></div></article>
@@ -259,7 +266,7 @@
         <div id="operation-outcomes"></div>
       </section>
 
-      <details class="console-section more-details">
+      <details id="fleet-operations" class="console-section more-details" data-console-view="fleet">
         <summary>Operations, resources, and decisions</summary>
         <div class="operations-grid">
           <article class="work-surface"><div class="panel-heading"><h3>Worktrees</h3><span>Branches and recoverability</span></div><div id="worktree-list" class="console-list"></div></article>

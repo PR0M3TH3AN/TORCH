@@ -1,4 +1,148 @@
+const consoleViewDefinitions = Object.freeze({
+  overview: { title: 'Overview' },
+  'owner-briefing': { title: 'Briefing' },
+  'flow-watch': { title: 'Flow watch' },
+  work: { title: 'Work' },
+  'initiative-progress': { title: 'Progress' },
+  fleet: { title: 'Fleet' },
+  communications: { title: 'Conversations' },
+  organization: { title: 'Organization' },
+  evidence: { title: 'Evidence' },
+  delivery: { title: 'Release gates' },
+});
+
+function installConsoleViewRouting() {
+  const nav = document.querySelector('.console-rail');
+  const sections = [...document.querySelectorAll('.console-workspace > [data-console-view]')];
+  const links = [...(nav?.querySelectorAll('a[href^="#"]') ?? [])];
+  if (!nav || !sections.length || !links.length) return { sync: () => 'overview' };
+
+  let lastHash = null;
+  const initialHash = globalThis.location.hash;
+  const decodeHash = (hash) => {
+    try { return decodeURIComponent(String(hash ?? '').replace(/^#/, '')); } catch { return ''; }
+  };
+
+  function resolveView(hash) {
+    const fragment = decodeHash(hash);
+    if (consoleViewDefinitions[fragment]) return fragment;
+    const target = document.getElementById(fragment);
+    const containingView = target?.closest('[data-console-view]')?.dataset.consoleView;
+    return consoleViewDefinitions[containingView] ? containingView : 'overview';
+  }
+
+  function accountForStickyNavigation(target) {
+    const workspace = document.querySelector('.console-workspace');
+    if (!workspace || !target) return;
+    const railBounds = nav.getBoundingClientRect();
+    const workspaceBounds = workspace.getBoundingClientRect();
+    const overlapsWorkspace = railBounds.right > workspaceBounds.left + 1
+      && workspaceBounds.right > railBounds.left + 1;
+    if (overlapsWorkspace) {
+      target.style.scrollMarginTop = `${Math.ceil(railBounds.height + 8)}px`;
+    } else {
+      target.style.removeProperty('scroll-margin-top');
+    }
+  }
+
+  function positionNestedTarget(target, targetId, view) {
+    const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
+    if (!target || targetId === view || targetView !== view) return;
+    for (let ancestor = target; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+    }
+    accountForStickyNavigation(target);
+    if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
+      target.tabIndex = -1;
+    }
+    target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+    target.focus?.({ preventScroll: true });
+  }
+
+  const initialFragment = decodeHash(initialHash);
+  let initialPositionPending = Boolean(initialFragment && !consoleViewDefinitions[initialFragment]
+    && document.getElementById(initialFragment));
+  let userIntentVersion = 0;
+  const abandonInitialPosition = () => {
+    initialPositionPending = false;
+    userIntentVersion += 1;
+  };
+  const onNavigation = () => {
+    abandonInitialPosition();
+    sync({ focus: true });
+  };
+
+  function sync({ focus = false, force = false } = {}) {
+    const hash = globalThis.location.hash || '#overview';
+    if (!force && hash === lastHash) return resolveView(hash);
+    lastHash = hash;
+    const view = resolveView(hash);
+    const definition = consoleViewDefinitions[view];
+    const visible = sections.filter((section) => section.dataset.consoleView === view);
+    sections.forEach((section) => { section.hidden = section.dataset.consoleView !== view; });
+    links.forEach((link) => {
+      const route = resolveView(link.getAttribute('href'));
+      if (route === view) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    const workspace = document.querySelector('.console-workspace');
+    if (workspace) workspace.dataset.currentView = view;
+    document.title = view === 'overview' ? 'TORCH Dashboard' : `${definition.title} | TORCH Local Fleet Console`;
+    const announcement = document.querySelector('#console-view-status');
+    if (announcement) announcement.textContent = `Viewing ${definition.title}.`;
+
+    if (focus) {
+      const targetId = decodeHash(hash);
+      const target = document.getElementById(targetId);
+      const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
+      if (target && targetId !== view && targetView === view) {
+        positionNestedTarget(target, targetId, view);
+      } else {
+        const labelledBy = visible[0]?.getAttribute('aria-labelledby');
+        const heading = (labelledBy && document.getElementById(labelledBy))
+          ?? visible[0]?.querySelector('h1, h2');
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus({ preventScroll: true });
+        }
+        if (target && targetId === view && targetView === view) {
+          accountForStickyNavigation(target);
+          target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+        } else {
+          globalThis.scrollTo?.({ top: 0, behavior: 'instant' });
+        }
+      }
+    }
+    return view;
+  }
+
+  globalThis.addEventListener('hashchange', onNavigation);
+  globalThis.addEventListener('popstate', onNavigation);
+  globalThis.addEventListener('wheel', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('touchstart', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('pointerdown', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('keydown', (event) => {
+    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) {
+      abandonInitialPosition();
+    }
+  });
+  sync({ focus: Boolean(initialFragment && !consoleViewDefinitions[initialFragment]) });
+  return {
+    sync,
+    afterInitialLayout() {
+      if (!initialPositionPending) return;
+      initialPositionPending = false;
+      if (globalThis.location.hash !== initialHash) return;
+      const targetId = decodeHash(initialHash);
+      const view = resolveView(initialHash);
+      positionNestedTarget(document.getElementById(targetId), targetId, view);
+    },
+    userIntentVersion: () => userIntentVersion,
+  };
+}
+
 const $ = (selector) => document.querySelector(selector);
+const consoleViewRouter = installConsoleViewRouting();
 const demoWorkspace = globalThis.TorchConsoleDemo;
 const workViews = globalThis.TorchWorkViews;
 const workProgress = globalThis.TorchWorkProgress;
@@ -12,6 +156,38 @@ const refreshProtection = globalThis.TorchLiveRefresh.createProtection(document)
 refreshProtection.remember();
 let renderingSnapshot = false;
 let heldPanels = 0;
+
+function invalidateStalePriorityPreviews(tasks = []) {
+  const currentById = new Map(tasks.map((task) => [task.id, task]));
+  for (const form of document.querySelectorAll('.priority-change-form[data-preview-token]')) {
+    const task = currentById.get(form.dataset.taskId);
+    const currentRevision = Number(task?.revision);
+    const previewRevision = Number(form.dataset.revision);
+    if (!task || !Number.isSafeInteger(currentRevision) || currentRevision === previewRevision) continue;
+
+    const ticket = form.closest('.task-ticket');
+    if (!ticket) continue;
+    const priority = task.priority ?? 'normal';
+    const priorityBadge = ticket.querySelector('.ticket-topline .priority');
+    if (priorityBadge) {
+      priorityBadge.className = `priority priority-${escapeHtml(priority)}`;
+      priorityBadge.textContent = priority;
+    }
+    form.dataset.revision = String(currentRevision);
+    delete form.dataset.previewToken;
+    delete form.dataset.planHash;
+    const priorityField = form.querySelector('[name="priority"]');
+    const reasonField = form.querySelector('[name="reason"]');
+    if (priorityField) priorityField.disabled = false;
+    if (reasonField) reasonField.disabled = false;
+    const preview = form.querySelector('[data-priority-preview]');
+    if (preview) {
+      preview.replaceChildren();
+      preview.hidden = true;
+    }
+    priorityStatus(form, `Task evidence advanced to revision ${currentRevision}. The older preview was cleared; review the current task before previewing again.`);
+  }
+}
 
 const escapeHtml = (value) => {
   const element = document.createElement('span');
@@ -45,6 +221,55 @@ function setText(selector, value) {
   if (element) element.textContent = value ?? '';
 }
 
+function compactOwnerBriefingProvenance() {
+  const publication = $('#owner-briefing-content')?.querySelector('.briefing-publication');
+  if (!publication) return;
+
+  const timestamp = publication.querySelector('p time');
+  const window = [...publication.querySelectorAll('.briefing-muted')]
+    .find((paragraph) => paragraph.textContent.trim().startsWith('Window:'));
+  if (timestamp || window) {
+    const disclosure = document.createElement('details');
+    disclosure.className = 'briefing-provenance';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Publication time and reporting window';
+    disclosure.append(summary);
+    if (timestamp) {
+      const exactTime = timestamp.cloneNode(true);
+      exactTime.textContent = timestamp.getAttribute('datetime') || timestamp.textContent;
+      const published = document.createElement('p');
+      published.append('Published ', exactTime);
+      disclosure.append(published);
+      timestamp.textContent = ageLabel(timestamp.getAttribute('datetime'));
+      timestamp.title = exactTime.textContent;
+    }
+    if (window) {
+      const limitation = 'Recorded evidence, not independent live verification.';
+      if (window.textContent.includes(limitation)) {
+        const visibleLimitation = window.cloneNode(false);
+        visibleLimitation.textContent = limitation;
+        window.textContent = window.textContent.replace(limitation, '').trim();
+        window.after(visibleLimitation);
+      }
+      disclosure.append(window);
+    }
+    publication.append(disclosure);
+  }
+
+  for (const code of publication.querySelectorAll('code')) {
+    const commit = code.textContent.trim();
+    if (!/^[a-f0-9]{40}$/i.test(commit)) continue;
+    const disclosure = document.createElement('details');
+    disclosure.className = 'briefing-provenance';
+    const summary = document.createElement('summary');
+    summary.textContent = `Commit ${shortCommit(commit)}`;
+    const exact = document.createElement('code');
+    exact.textContent = commit;
+    disclosure.append(summary, exact);
+    code.replaceWith(disclosure);
+  }
+}
+
 function shortCommit(value) {
   return value ? String(value).slice(0, 9) : '—';
 }
@@ -69,9 +294,10 @@ function taskCard(task, healthFindings = []) {
   const staleEvidence = healthFindings.find((finding) => finding.taskId === task.id
     && ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'].includes(finding.code));
   return `<article class="task-ticket">
-    <div class="ticket-topline"><code>${escapeHtml(task.id)}</code><span class="priority priority-${escapeHtml(task.priority ?? 'normal')}">${escapeHtml(task.priority ?? 'normal')}</span></div>
+    <div class="ticket-topline"><span class="priority priority-${escapeHtml(task.priority ?? 'normal')}">${escapeHtml(task.priority ?? 'normal')}</span></div>
     <h4>${escapeHtml(task.title ?? 'Untitled task')}</h4>
     <p>${escapeHtml(detail || 'No task description recorded.')}</p>
+    <details class="task-reference"><summary>Task reference</summary><code>${escapeHtml(task.id)}</code></details>
     ${staleEvidence ? `<div class="evidence-warning" role="status"><strong>Evidence needs refresh</strong><p>${escapeHtml(staleEvidence.recommendation)}</p></div>` : ''}
     <dl class="ticket-meta">
       <div><dt>Owner</dt><dd>${escapeHtml(task.owner ?? 'Unassigned')}</dd></div>
@@ -706,7 +932,7 @@ function renderFlowWatch(snapshot) {
       const waitClass = approval.approver === 'owner' ? 'wait-owner'
         : approval.approver === 'session-manager' ? 'wait-manager' : '';
       const refs = [approval.task, approval.evidence].filter(Boolean).map((reference) => escapeHtml(reference)).join(' · ');
-      return `<article class="approval-item ${waitClass}">
+      return `<article class="approval-item ${waitClass}" id="approval-${escapeHtml(encodeURIComponent(approval.id))}">
         <h4>${escapeHtml(approval.title)}</h4>
         <p>${escapeHtml(requester?.title ?? approval.requester)} is waiting on <strong class="approval-target">${escapeHtml(approver)}</strong>${refs ? ` · ${refs}` : ''}</p>
         <details><summary>Request details · ${escapeHtml(ageLabel(approval.createdAt))}</summary><p>${escapeHtml(approval.summary)}</p></details>
@@ -725,60 +951,38 @@ function renderFlowWatch(snapshot) {
     : empty(approvalState?.reason ?? 'Structured approval requests are not available.'));
 }
 
-function attentionItems(snapshot) {
-  const items = [];
-  const unresolvedDelivery = (snapshot.deliveryOperations ?? []).filter((operation) => ['running', 'unknown', 'succeeded'].includes(operation.state));
-  if (unresolvedDelivery.length) items.push({ tone: 'urgent', title: `${unresolvedDelivery.length} delivery operation${unresolvedDelivery.length === 1 ? ' needs' : 's need'} review`,
-    detail: 'Inspect recorded attempts and external state before owner-approved recovery. Do not automatically repeat effects.', href: '#operation-outcomes' });
-  const neglected = (snapshot.backlogActivity?.tasks ?? []).filter((task) => task.status === 'stale' && task.ownerRequested);
-  if (neglected.length) items.push({ tone: 'review', title: `${neglected.length} owner request${neglected.length === 1 ? ' needs' : 's need'} activity review`,
-    detail: 'No named commit within the configured review window. Blocked work may be waiting as expected.', href: '#activity-review' });
-  const unknownWakes = snapshot.managerWakes?.blockingCount ?? 0;
-  if (unknownWakes) items.push({
-    tone: 'urgent', title: `${unknownWakes} manager ${unknownWakes === 1 ? 'launch needs' : 'launches need'} inspection`,
-    detail: 'An unknown launch blocks another wake. Inspect the runtime before owner-approved recovery; no automatic restart occurs.',
-    href: '#manager-wakes',
-  });
-  const findings = snapshot.doctor?.findings ?? [];
-  for (const finding of findings.filter((entry) => entry.severity === 'error' || entry.severity === 'warning').slice(0, 5)) {
-    items.push({
-      tone: finding.severity === 'error' ? 'urgent' : 'review',
-      title: finding.areaId ? `${finding.areaId}: ${finding.code}` : finding.code,
-      detail: finding.message ?? finding.recommendation ?? 'Doctor reported a project condition to review.',
-    });
-  }
-  const awaiting = snapshot.messages?.unacknowledged ?? 0;
-  if (awaiting) items.push({
-    tone: 'review', title: `${awaiting} unacknowledged ${awaiting === 1 ? 'message' : 'messages'}`,
-    detail: 'Open Conversations to inspect the latest durable inter-session handoffs.',
-    href: '#communications',
-  });
-  const ownerApprovals = (snapshot.approvalRequests?.items ?? []).filter((approval) =>
-    approval.status === 'pending' && approval.approver === 'owner');
-  if (ownerApprovals.length) items.push({
-    tone: 'decision', title: `${ownerApprovals.length} approval ${ownerApprovals.length === 1 ? 'request' : 'requests'} need your decision`,
-    detail: 'The named owner is the approver; review the request evidence in Flow watch.', href: '#flow-watch',
-  });
-  const pendingChanges = (snapshot.fleetChanges ?? []).filter((change) => !['active', 'rejected'].includes(change.state));
-  const pendingHierarchy = (snapshot.hierarchyProposals ?? []).filter((proposal) => proposal.state === 'proposed');
-  if (pendingChanges.length + pendingHierarchy.length) items.push({
-    tone: 'decision', title: `${pendingChanges.length + pendingHierarchy.length} organization ${pendingChanges.length + pendingHierarchy.length === 1 ? 'proposal' : 'proposals'}`,
-    detail: 'Organization proposals wait for owner review; they do not change the active Fleet.',
-    href: '#organization-proposals',
-  });
-  const waitingIntegration = (snapshot.integration ?? []).filter((item) => !['landed', 'rejected'].includes(item.state));
-  if (waitingIntegration.length) items.push({
-    tone: 'decision', title: `${waitingIntegration.length} integration ${waitingIntegration.length === 1 ? 'request' : 'requests'}`,
-    detail: 'Review exact source commits and required checks before landing.', href: '#delivery',
-  });
-  const staleEvidence = (snapshot.backlogHealth?.findings ?? []).filter((finding) =>
-    ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'].includes(finding.code));
-  if (staleEvidence.length) items.push({
-    tone: 'review', title: `${staleEvidence.length} task ${staleEvidence.length === 1 ? 'evidence record needs' : 'evidence records need'} refresh`,
-    detail: 'Some backlog items were observed against an old or unreachable commit. Re-check them before dispatch.',
-    href: '#backlog-board',
-  });
-  return items;
+function attentionGroups(snapshot) {
+  return globalThis.TorchAttentionProjection.groups(snapshot);
+}
+function renderAttention(groups) {
+  const definitions = [
+    ['owner', 'Waiting on you', 'Only requests that name the project owner as decision-maker.'],
+    ['fleet', 'Fleet handling', 'A named domain owns the next step; unknown ownership stays explicit.'],
+    ['arbiter', 'Arbiter handling', 'No observed item has structured evidence assigning its next step exclusively to an arbiter.'],
+  ];
+  const total = Object.values(groups).reduce((sum, items) => sum + items.length, 0);
+  setText('#attention-count', `${total} ${total === 1 ? 'item' : 'items'}`);
+  setHtml('#attention-list', definitions.map(([key, title, description]) => {
+    const items = groups[key];
+    return `<section class="attention-group attention-group-${key}" aria-labelledby="attention-${key}-title">
+      <div class="attention-group-heading"><h3 id="attention-${key}-title">${title}</h3><span>${items.length}</span></div>
+      ${items.length ? items.map((item) => `<article class="attention-item tone-${escapeHtml(item.tone)}">
+        <span class="attention-mark" aria-hidden="true"></span><div class="attention-copy">
+          <strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
+          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''}</small>
+          ${item.evidence.length > 120
+            ? `<details class="attention-evidence"><summary>Evidence and references</summary><p>${escapeHtml(item.evidence)}</p></details>`
+            : `<small class="attention-evidence-short">Evidence: ${escapeHtml(item.evidence)}</small>`}
+          <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
+          ${item.decisionApprovalId ? `<div class="attention-quick-actions" role="group" aria-label="Owner decision shortcuts for ${escapeHtml(item.title)}">
+            <button type="button" data-attention-decision="approved" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Approve</button>
+            <button type="button" class="quiet-action" data-attention-decision="rejected" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Reject</button>
+            <p class="attention-action-status" role="status" aria-live="polite" hidden></p>
+          </div>` : ''}
+          ${item.requestOwner ? `<a href="#owner-request-form" data-attention-recipient="${escapeHtml(item.requestOwner)}">Request review from ${escapeHtml(item.owner)}</a>` : ''}
+        </div></article>`).join('') : `<p class="attention-empty">${escapeHtml(description)}</p>`}
+    </section>`;
+  }).join(''));
 }
 
 function render(snapshot) {
@@ -789,11 +993,12 @@ function render(snapshot) {
   const active = tasks.filter((task) => !['completed', 'cancelled'].includes(task.state));
   const working = active.filter((task) => task.state === 'in_progress').length;
   const blocked = active.filter((task) => task.state === 'blocked').length;
-  const attention = attentionItems(snapshot);
+  const attention = attentionGroups(snapshot);
   const branch = snapshot.repository?.branch ?? 'branch not recorded';
 
   setText('#project-name', project?.name ?? project?.id ?? 'Not installed');
   setText('#project-branch', branch);
+  setText('#project-branch-detail', branch);
   setText('#project-commit', shortCommit(snapshot.repository?.head));
   setText('#fleet-health', snapshot.mode === 'installed'
     ? (snapshot.doctor?.healthy ? 'Healthy' : 'Review findings') : 'Not installed');
@@ -807,22 +1012,18 @@ function render(snapshot) {
   const parts = [`${agents.length} persistent ${agents.length === 1 ? 'identity' : 'identities'}`,
     `${working} ${working === 1 ? 'task' : 'tasks'} in progress`];
   if (blocked) parts.push(`${blocked} blocked`);
+  const attentionCount = Object.values(attention).reduce((sum, items) => sum + items.length, 0);
   setText('#project-summary', snapshot.mode === 'installed'
-    ? `${parts.join(' · ')}. ${attention.length ? `${attention.length} item${attention.length === 1 ? '' : 's'} may need your review.` : 'No owner decision is currently waiting in the observed queues.'}`
+    ? `${parts.join(' · ')}. ${attentionCount ? `${attentionCount} item${attentionCount === 1 ? '' : 's'} need a named next step.` : 'No owner decision is currently waiting in the observed queues.'}`
     : 'This repository has not been installed as a TORCH Fleet. The view is showing repository intake only.');
   renderTaskCreateOptions(agents, tasks, snapshot.mode === 'installed');
   renderOwnerRequestOptions(agents, tasks, snapshot.mode === 'installed');
   renderRuntimeProfileEditor(agents, snapshot.runtimeAdapters ?? [], snapshot.mode === 'installed');
   renderFlowWatch(snapshot);
   setHtml('#owner-briefing-content', globalThis.TorchOwnerDigest.render(snapshot.ownerDigest));
+  compactOwnerBriefingProvenance();
 
-  setText('#attention-count', `${attention.length} ${attention.length === 1 ? 'item' : 'items'}`);
-  setHtml('#attention-list', attention.length ? attention.map((item) => `
-    <div class="attention-item tone-${escapeHtml(item.tone)}">
-      <span class="attention-mark" aria-hidden="true"></span>
-      <div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
-      ${item.href ? `<a href="${escapeHtml(item.href)}">Open relevant view</a>` : ''}</div>
-    </div>`).join('') : empty('No owner decisions are waiting in the observed queues.'));
+  renderAttention(attention);
 
   renderBacklog(tasks, snapshot.backlogHealth?.findings ?? []);
   setHtml('#activity-review-content', globalThis.TorchTaskActivity.render(snapshot.backlogActivity));
@@ -849,7 +1050,7 @@ function render(snapshot) {
     const refs = [message.task, message.path, message.commit].filter(Boolean);
     const ack = (message.acknowledgedBy ?? []).length
       ? `Acknowledged by ${message.acknowledgedBy.join(', ')}` : 'Awaiting acknowledgement';
-    return `<article class="conversation-item"><div class="conversation-meta"><strong>${escapeHtml(message.sender)} to ${escapeHtml(message.recipient)}</strong><span>${escapeHtml(ageLabel(message.createdAt))}</span></div><p>${escapeHtml(message.body)}</p><small>${escapeHtml(ack)}${refs.length ? ` · ${escapeHtml(refs.join(' · '))}` : ''}</small></article>`;
+    return `<article class="conversation-item" id="message-${escapeHtml(message.id)}"><div class="conversation-meta"><strong>${escapeHtml(message.sender)} to ${escapeHtml(message.recipient)}</strong><span>${escapeHtml(ageLabel(message.createdAt))}</span></div><p>${escapeHtml(message.body)}</p><small>${escapeHtml(ack)}${refs.length ? ` · ${escapeHtml(refs.join(' · '))}` : ''}</small></article>`;
   }).join('') : empty('No durable messages yet. Runtime-native private reasoning is not shown here.'));
 
   setHtml('#check-list', globalThis.TorchCheckEvidence.render(snapshot.checks));
@@ -906,7 +1107,7 @@ function render(snapshot) {
 
   const worktrees = snapshot.worktrees ?? [];
   setHtml('#worktree-list', worktrees.length ? worktrees.map((worktree) => `
-    <div class="list-row"><div><strong>${escapeHtml(worktree.area)}</strong><small>${escapeHtml(worktree.branch)} · ${escapeHtml(worktree.path)}</small></div><span>${escapeHtml(`${worktree.ahead ?? 0} ahead / ${worktree.behind ?? 0} behind`)}</span></div>
+    <div class="list-row" id="worktree-${escapeHtml(encodeURIComponent(worktree.area))}"><div><strong>${escapeHtml(worktree.area)}</strong><small>${escapeHtml(worktree.branch)} · ${escapeHtml(worktree.path)}</small></div><span>${escapeHtml(`${worktree.ahead ?? 0} ahead / ${worktree.behind ?? 0} behind`)}</span></div>
   `).join('') : empty('No managed worktrees have been created.'));
 
   const holders = snapshot.resources?.holders ?? [];
@@ -945,15 +1146,27 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     return snapshot;
   },
   apply: (snapshot) => {
+    const viewportBeforeRender = appliedRefreshes > 0
+      ? { left: globalThis.scrollX, top: globalThis.scrollY } : null;
+    const userIntentAtRender = consoleViewRouter.userIntentVersion();
     const editedBeforeRender = refreshProtection.dirty();
     heldPanels = 0;
     renderingSnapshot = true;
     try { render(snapshot); } finally { renderingSnapshot = false; }
+    invalidateStalePriorityPreviews(snapshot.backlog ?? []);
     refreshProtection.remember({ preserve: editedBeforeRender });
     $('#console-error').hidden = true;
     const status = $('#live-refresh-status');
-    status.dataset.generation = String(++appliedRefreshes);
+    const renderGeneration = ++appliedRefreshes;
     status.textContent = `${liveUpdatesPaused ? 'Automatic updates paused.' : 'Updates every 15 seconds while visible.'}${heldPanels ? ' Edited forms and active previews retained; their panels may show older state.' : ''}`;
+    globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
+        if (renderGeneration !== appliedRefreshes) return;
+        if (viewportBeforeRender && consoleViewRouter.userIntentVersion() === userIntentAtRender) {
+          globalThis.scrollTo?.(viewportBeforeRender.left, viewportBeforeRender.top);
+        }
+        if (renderGeneration === 1) consoleViewRouter.afterInitialLayout();
+        status.dataset.generation = String(renderGeneration);
+      }));
   },
   onError: (caught) => {
     const error = $('#console-error');
@@ -1864,8 +2077,46 @@ $('#change-list')?.addEventListener('click', async (event) => {
 });
 
 $('#attention-list')?.addEventListener('click', (event) => {
+  const decisionButton = event.target.closest('[data-attention-decision]');
+  if (decisionButton) {
+    const card = decisionButton.closest('.attention-item');
+    const status = card?.querySelector('.attention-action-status');
+    const approvalId = decisionButton.dataset.attentionApproval;
+    const decision = decisionButton.dataset.attentionDecision;
+    const form = [...document.querySelectorAll('#approval-request-list .approval-decision-form')]
+      .find((candidate) => candidate.dataset.approvalId === approvalId);
+    const previewButton = form?.querySelector('[data-approval-preview]');
+    const shortcut = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(form, decision, previewButton ? (approvalForm) => {
+      approvalForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      previewButton.click();
+    } : null);
+    if (!shortcut.started) {
+      if (status) {
+        status.textContent = shortcut.reason;
+        status.hidden = false;
+      }
+      return;
+    }
+    if (status) {
+      status.textContent = `Opening the guarded ${decision} preview for this owner-addressed request. Confirm only after reviewing its current evidence.`;
+      status.hidden = false;
+    }
+    return;
+  }
   const link = event.target.closest('a[href^="#"]');
   const target = link && document.getElementById(link.getAttribute('href').slice(1));
+  const recipient = link?.dataset.attentionRecipient;
+  if (recipient) {
+    const form = $('#owner-request-form');
+    const recipientSelect = form?.elements.namedItem('recipient');
+    const body = form?.elements.namedItem('body');
+    const status = form?.querySelector('.owner-request-status');
+    const hasRecipient = [...(recipientSelect?.options ?? [])].some((option) => option.value === recipient);
+    if (form && recipientSelect && body && hasRecipient && !recipientSelect.value && !body.value.trim()) {
+      recipientSelect.value = recipient;
+      if (status) status.textContent = `Selected ${recipient}. Add context and review the preview before sending anything.`;
+    }
+  }
   for (let parent = target?.parentElement; parent; parent = parent.parentElement) {
     if (parent.tagName === 'DETAILS') parent.open = true;
   }
@@ -1899,11 +2150,11 @@ globalThis.addEventListener('pageshow', (event) => {
   if (event.persisted && !liveUpdatesPaused && document.visibilityState === 'visible') refresh();
 });
 if (demoWorkspace) {
-  document.title = 'TORCH Dashboard';
   $('#demo-banner').hidden = false;
   $('#reset-demo')?.addEventListener('click', () => {
     demoWorkspace.reset();
     globalThis.location.reload();
   });
 }
+consoleViewRouter.sync({ force: true });
 refresh();

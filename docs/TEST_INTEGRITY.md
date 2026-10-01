@@ -1,5 +1,187 @@
 # Test Integrity Notes
 
+## 2026-09-30 — Bounded routine coordination
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-routine-coordination-instructions
+      given: A freshly installed Fleet using generated default prompts
+      when: Common, manager, specialist, and resume instructions are read
+      then: Each preserves own-inbox acknowledgement, direct peer routing, owner exceptions, and paused execution
+    - id: SCN-routine-coordination-boundaries
+      given: An assigned task and pending peer and owner approvals in a fixed-time local control plane
+      when: The named recipient acknowledges messages and the manager attempts a non-owned decision
+      then: The task and approvals remain pending until only the named peer decides its approval
+    - id: SCN-routine-coordination-paused-dispatch
+      given: An assigned task, an approved named-peer request, and a pending owner provider decision
+      when: A public runtime start is attempted without an authorized executor
+      then: The start is refused, no provider adapter runs, and the assigned task and owner wait remain unresolved
+    - id: SCN-routine-coordination-paused-schedule-dispatch
+      given: An assigned waiting task, a pending owner provider decision, and an installed manager check-in schedule with wake.enabled false
+      when: The public system scheduler dispatches the due owner-authorized coordination schedule
+      then: It queues a durable manager review without planning or invoking a provider, while the task and owner wait remain unresolved
+  observable_outcomes:
+    - Generated tracked instruction text for fresh-install and resume surfaces
+    - Durable task state, approval state, named-approver identity, and authority errors
+    - Public start refusal, zero adapter invocations, offline identity state, and retained owner wait
+    - Installed wake policy, public scheduled-dispatch receipt, zero provider or command invocations, retained assignment and owner wait
+  determinism_controls:
+    - Disposable local Git repository, SQLite state, and fixed clock
+    - No provider calls, network, retries, sleeps, or host timers
+  anti_cheat_rationale:
+    prevents:
+      - Treating acknowledgement as task or approval completion
+      - Letting a manager decide an owner or peer approval
+      - Omitting policy boundaries from one generated startup surface
+      - Re-enabling paused execution or granting starts, spending, publication, destructive recovery, or arbitrary dispatch
+      - Treating a queued manager check-in as authorization to start a provider or resolve the underlying wait
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Codex terminal completion correction
+
+```yaml
+test_integrity_note:
+  change_type: spec_correction
+  scenarios:
+    - id: SCN-mixed-runtime
+      given: A status-zero Codex protocol stream containing thread.started and turn.completed
+      when: Fleet startup captures the provider-specific durable identity
+      then: The completed turn may record idle with the captured identity
+    - id: SCN-codex-terminal-completion
+      given: A status-zero Codex stream containing thread.started but no turn.completed
+      when: Fleet startup evaluates terminal evidence
+      then: Startup fails, retains the captured identity as working, and area startup refuses a duplicate
+    - id: SCN-provider-update-cli
+      given: The managed-provider fixture simulates a successful status-zero Codex exec stream
+      when: Startup follows an approved provider update
+      then: The fixture includes turn.completed after thread.started, preserving strict successful-turn evidence
+  observable_outcomes:
+    - Durable runtime state and captured Codex thread identifier
+    - FLEET_START_FAILED outcome and public area-start blocker
+  determinism_controls:
+    - Disposable local Git fixture and fixed JSON protocol records
+    - No provider calls, network, retries, sleeps, or timeout changes
+  anti_cheat_rationale:
+    prevents:
+      - Treating identity creation as successful turn completion
+      - Returning idle from a status-zero stream missing terminal evidence
+      - Launching a duplicate over an uncertain captured identity
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+Spec basis: a native successful Codex protocol probe emitted ten records ending
+in `turn.completed`; `thread.started` establishes identity only, not completion.
+
+## 2026-09-30 — Bounded Codex executor qualification
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-streaming-protocol-reduction
+      given: A successful Codex stream containing an initial identity, a multi-megabyte image record, private stderr, and terminal completion
+      when: The bounded reducer and lifecycle process the stream
+      then: Only identity and terminal records cross the boundary and idle is recorded without private output
+    - id: SCN-cli-codex-protocol-routing
+      given: A Codex launch planned by the CLI
+      when: The CLI invokes the executor
+      then: It launches the bounded reducer instead of collecting provider stdout directly
+    - id: SCN-codex-final-terminal-state
+      given: A stream whose final terminal failure follows an earlier completion, plus real child signal and spawn-error cases
+      when: The reducer and lifecycle classify the child outcome
+      then: Only the final failed terminal is retained, signals remain uncertain, and a safe spawn-error code is preserved
+    - id: SCN-scheduled-manager-wake-terminal-failure
+      given: An owner-authorized manager check-in with a planned Codex wake whose stream lacks terminal completion
+      when: The actual ScheduleService invokes the wake boundary
+      then: The schedule and wake reservation are failed while the manager identity remains working
+  observable_outcomes:
+    - Bounded reducer stdout, durable runtime state, schedule result, and reservation outcome
+  determinism_controls:
+    - Disposable Git/control-plane fixtures and fixed protocol records
+    - Local SIGTERM-aware child with a readiness marker; no provider, network, retries, or sleeps
+  anti_cheat_rationale:
+    prevents:
+      - Solving image overflow only by shrinking a parent buffer
+      - Marking a missing-terminal manager wake as invoked or successful
+      - Accepting an earlier completed event after a later failed terminal
+      - Retaining private image, token, or reasoning material in durable evidence
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Executor terminal-outcome integrity
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-executor-interrupted-outcomes
+      given: A real child that exits cleanly after SIGTERM plus deterministic signal and ENOBUFS executor results
+      when: Runtime startup receives a status-zero timeout, signal, or output-overflow error
+      then: No idle completion is recorded; captured identity remains working and failure evidence excludes private output
+    - id: SCN-scheduled-executor-failure
+      given: A scheduled command returns status zero together with ENOBUFS and screenshot-heavy output
+      when: The scheduler records its receipt
+      then: The receipt is failed, output is bounded, and credential or private-reasoning values are redacted
+  observable_outcomes:
+    - Durable runtime presence state and retained native session identifier
+    - Schedule result, exit status, bounded output, and redacted error evidence
+  determinism_controls:
+    - Disposable local Git fixtures and a bounded SIGTERM-aware child process
+    - Injected signal and ENOBUFS boundaries; no network, provider launch, retry, or sleep
+  anti_cheat_rationale:
+    prevents:
+      - Treating status zero as successful when Node reports timeout or output overflow
+      - Marking an interrupted runtime idle and permitting a duplicate launch
+      - Passing screenshot payloads, credentials, prompts, or private reasoning into durable receipts
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Early identity and safe no-code diagnostics
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-interrupted-identity
+      given: A real local helper whose child emits thread.started then remains alive
+      when: The parent observes the reduced bounded identity and sends SIGTERM to the helper
+      then: The helper closes by SIGTERM without a terminal success, while lifecycle retains the identity as working and uncertain
+    - id: SCN-codex-code-less-diagnostics
+      given: Code-less structured model, authentication, or quota errors containing prompt, reasoning, and image adversarial fields
+      when: The bounded reducer and adapter classify startup failure
+      then: Only the allowlisted category crosses the boundary; no free-form diagnostic or adversarial field remains
+    - id: SCN-cli-codex-real-executable
+      given: An installed disposable project and an isolated executable named codex
+      when: The actual runCli up command starts the selected domain
+      then: The reducer carries identity and terminal completion through the CLI boundary and durable identity becomes idle
+  observable_outcomes:
+    - Real helper close signal, exact reduced protocol bytes, and working retained runtime identity
+    - Safe diagnostic category with no prompt, reasoning, image, or free-form message
+    - Actual CLI JSON response and persisted identity state from a fake executable on an isolated PATH
+  determinism_controls:
+    - Local child process signal handshake driven by receipt of thread.started; a bounded watchdog only terminates and awaits the owned fixture on failed emission, never retries or asserts product timing
+    - Disposable Git/XDG fixtures and a hermetic executable; a tagged guard rejects an absent or mismatched env before native spawn, then delegates unchanged to native spawnSync only for the validated fake path
+  anti_cheat_rationale:
+    prevents:
+      - Delaying identity output until child close and losing it on interruption
+      - Treating code-less model/auth/quota errors as successful or retaining their raw text
+      - Testing only an injected launch helper instead of the CLI execution boundary
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Generated exact-check artifacts
 
 ```yaml
@@ -2317,6 +2499,138 @@ test_integrity_note:
     prevents:
       - "Mocked systemctl success masking invalid unit syntax"
       - "Treating quoted ExecStart syntax as valid for scalar WorkingDirectory"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Codex startup runtime diagnostics (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-startup-diagnostics
+      given: "A real Codex adapter and lifecycle plan receive deterministic nonzero child-process results"
+      when: "Codex stdout contains a model-rejection event, malformed JSON, or output above the diagnostic bound"
+      then: "Owner-visible failure details prefer the structured model rejection, redact stderr secrets and prompt fields, and label malformed or oversized output unknown with an explicit reason"
+  observable_outcomes:
+    - "FLEET_START_FAILED status, persisted offline identity state and owner-visible diagnostic details"
+    - "Structured model rejection over noisy MCP stderr; explicit unknown outcomes without retained oversized stdout"
+    - "No synthetic prompt, token or password value in serialized error details"
+  determinism_controls:
+    - "Disposable local Git/XDG fixtures and fixed injected child-process output"
+    - "Real createCodexAdapter and startFleet boundary; no provider calls, retries, sleeps or network"
+  anti_cheat_rationale:
+    prevents:
+      - "Returning a hard-coded success while losing the real nonzero execution status"
+      - "Displaying unrelated MCP noise instead of a structured model rejection"
+      - "Leaking raw prompt or credential values through diagnostics"
+      - "Treating malformed or oversized stdout as trusted structured evidence"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Standalone dashboard artifact isolation (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-dashboard-artifacts
+      given: "The dashboard test runs without an artifact environment, with an external runner directory, or with a repository/worktree target"
+      when: "It chooses the screenshot output boundary before the browser or screenshot writer starts"
+      then: "The default is a retained fresh external directory with provenance and hashes; explicit external output is honored; repository, temporary-root, pre-existing and symlink-resolved targets fail before protected bytes change"
+  observable_outcomes:
+    - "Printed artifact directory, provenance, relative names, byte counts and SHA-256 hashes"
+    - "Refusal code for direct, temporary-root, existing-file and symlink-resolved tracked-worktree destinations"
+    - "Unchanged tracked baseline and external user bytes after refusal"
+  determinism_controls:
+    - "Disposable Git worktrees and temporary directories"
+    - "Fixed fixture bytes and SHA-256 assertions; no browser, network, sleep or retry is needed for the boundary scenarios"
+  anti_cheat_rationale:
+    prevents:
+      - "Silently falling back to tracked golden-image paths"
+      - "Bypassing repository protection through a symlink"
+      - "Claiming runner output without exact retained evidence provenance"
+      - "Masking a protected-write failure by changing golden assertions"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Console dashboard navigation and preview freshness (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: [new_tests, refactor_tests]
+  scenarios:
+    - id: SCN-dashboard-fragment-navigation-preserves-existing-captures
+      given: "The existing dashboard scenarios and eleven screenshot destinations run in their established order"
+      when: "The driver selects each target section's supported fragment immediately before its unchanged checks and captures"
+      then: "Each original assertion and capture executes against the selected view without changing capture order, viewport coverage, artifact destination, or artifact safeguards"
+    - id: SCN-console-priority-preview-invalidates-on-newer-evidence
+      given: "A task priority preview and unsent priority and reason values are created from task evidence revision N"
+      when: "A separate confirmed sample API action advances that task to authoritative revision N+1, then the reader refreshes again after navigating away and back"
+      then: "The revision N token, preview, and confirmation control remain absent; revision N+1 is visible, the unsent values remain intact and editable across both refreshes, a new preview is bound to N+1, and that current preview survives another unchanged refresh"
+    - id: SCN-console-current-preview-and-draft-survive-unchanged-refresh
+      given: "A task has an active priority preview and unsent priority and reason values bound to its current evidence revision"
+      when: "Console refresh returns the same task revision"
+      then: "The preview token, review panel, confirmation boundary, and unsent field values remain available unchanged"
+    - id: SCN-console-view-navigation
+      given: "The Console has addressable work, fleet, evidence, and flow-watch views"
+      when: "A reader opens fragments, follows navigation, and uses browser Back and Forward"
+      then: "Exactly one matching view is visible with the matching title, accessible current-page link, and persistent project and freshness context"
+    - id: SCN-console-mobile-navigation
+      given: "The Console is rendered at a 390x844 viewport"
+      when: "Each supported destination is selected"
+      then: "Every navigation destination remains visible and the document and navigation have no horizontal overflow"
+    - id: SCN-console-view-title-mapping
+      given: "The Console loads Overview and a reader selects each other supported view"
+      when: "The reader returns to Overview after visiting contextual views"
+      then: "Overview has the exact title TORCH Dashboard on initial and return navigation; all other views keep their exact contextual titles"
+    - id: SCN-console-owner-briefing-evidence-limitation-stays-visible
+      given: "The sample Console has a published owner briefing with reporting provenance"
+      when: "The owner briefing is rendered without opening compact provenance details"
+      then: "The warning that recorded evidence is not independent live verification remains visible, while exact publication time and reporting-window details stay in the collapsed disclosure"
+    - id: SCN-console-secondary-deeplink-focus-and-history
+      given: "The Console is loaded at the organization-proposals or approval-request-list fragment"
+      when: "The reader opens either direct link and uses browser Back and Forward"
+      then: "Exactly the matching view is selected and the actual secondary target is focused inside the viewport"
+    - id: SCN-console-operational-deeplink-fleet
+      given: "Operations, resources, schedules, providers, decisions, context, and manager-wakes are grouped in the Fleet workspace at 1280x900 and 390x844"
+      when: "The reader loads #manager-wakes directly, follows its existing attention link, or returns to it through Back and Forward, then later navigates, scrolls, and refreshes"
+      then: "After the first deterministic data/layout application Fleet is selected, the Operations disclosure opens, manager-wakes receives focus fully inside the viewport, a later refresh retains the user's selected view and scrolled position without refocusing manager-wakes, and Operations is hidden on unrelated views"
+    - id: SCN-console-view-drafts
+      given: "A task draft and an owner approval preview are present"
+      when: "The reader changes views and refreshes the sample Console"
+      then: "The unsent draft and same-revision preview remain available with their existing explicit owner confirmation boundary"
+  observable_outcomes:
+    - "Selected fragment, visible view, original assertion results, and the unchanged ordered screenshot set"
+    - "Revision N+1 displayed after refresh, with the old preview token and confirmation control unavailable"
+    - "Unsent priority and reason values retained and editable after newer evidence invalidates the old preview"
+    - "The same draft remains dirty and intact after another unchanged refresh and route transition, with the old token and confirmation control still absent"
+    - "An unchanged current-revision preview, confirmation boundary, and draft retained after refresh"
+    - "A regenerated preview token and displayed revision bound to N+1"
+    - "Exact Overview and contextual view titles, plus focused in-viewport secondary targets across direct loads and browser history"
+    - "The manager-wakes route selects Fleet and opens/focuses its nested target fully inside desktop and mobile viewports after first render and across browser history; later refresh retains the user's selected view and scrolled position without refocusing manager-wakes; operations stay hidden outside Fleet"
+    - "Visible recorded-evidence limitation beside owner briefing content while exact provenance remains compact and collapsed"
+    - "No browser requests to live project APIs and no changes to tracked screenshot expectations"
+  determinism_controls:
+    - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
+    - "Manager-wakes routing uses the existing isolated sample Console, a deterministic two-frame first-generation layout-completion marker, and browser fragment history without changing project state"
+    - "The test establishes a fixed nonzero numeric scroll baseline, observes that exact position, dispatches the actual non-scrolling Refresh button event, waits for generation two, and retains the exact scroll-position equality assertion"
+    - "Newer evidence is introduced through the sample's supported preview/confirm API before an explicit refresh"
+    - "The browser test advances only the isolated sample API; it never submits the priority form or mutates a live project"
+    - "No network, live project mutation, retry, sleep, timeout, golden update, or direct fixture-source change"
+  anti_cheat_rationale:
+    prevents:
+      - "Capturing a view other than the one named by the scenario while retaining a passing screenshot call"
+      - "Passing scroll-preservation coverage because an unsettled smooth-scroll or Playwright auto-scroll masks refresh movement"
+      - "Reusing a revision N preview after authoritative task evidence advances to N+1"
+      - "Treating an unchanged preview on refresh as proof of stale-preview invalidation"
+      - "Passing because of changed screenshot expectations, weakened assertions, or bypassed artifact provenance"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

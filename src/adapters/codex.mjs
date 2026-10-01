@@ -69,12 +69,101 @@ function launchPolicyArgs(policy = {}) {
   return args;
 }
 
+const MAX_STARTUP_OUTPUT_BYTES = 16 * 1024;
+const MAX_STARTUP_EVENT_COUNT = 64;
+const MAX_DIAGNOSTIC_TEXT_LENGTH = 512;
+
 function parseJsonLines(output) {
   const records = [];
   for (const line of String(output ?? '').split('\n').map((value) => value.trim()).filter(Boolean)) {
     try { records.push(JSON.parse(line)); } catch { /* non-JSON diagnostics are not events */ }
   }
   return records;
+}
+
+function redactDiagnosticText(value, limit = MAX_DIAGNOSTIC_TEXT_LENGTH) {
+  if (typeof value !== 'string') return null;
+  const compact = value.replace(/\s+/g, ' ').trim();
+  if (!compact) return null;
+  return compact
+    .replace(/\bBearer\s+[-A-Za-z0-9._~+/]+=*/gi, 'Bearer [REDACTED]')
+    .replace(/((?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|token|password|secret|credential|authorization|cookie|prompt|private reasoning)\s*(?:=|:|\s)\s*)([^\s,;]+)/gi, '$1[REDACTED]')
+    .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[REDACTED]@')
+    .slice(0, limit);
+}
+
+function boundedStartupOutput(output) {
+  const text = typeof output === 'string' ? output : String(output ?? '');
+  if (Buffer.byteLength(text, 'utf8') > MAX_STARTUP_OUTPUT_BYTES) {
+    return { records: null, reason: 'stdout-exceeds-bound' };
+  }
+  const lines = text.split('\n').map((value) => value.trim()).filter(Boolean);
+  if (lines.length > MAX_STARTUP_EVENT_COUNT) return { records: null, reason: 'stdout-too-many-events' };
+  const records = [];
+  for (const line of lines) {
+    try { records.push(JSON.parse(line)); } catch { return { records: null, reason: 'stdout-malformed-json' }; }
+  }
+  return { records, reason: null };
+}
+
+function startupFailureEvent(record) {
+  if (!record || typeof record !== 'object' || Array.isArray(record)) return null;
+  if (record.type === 'error' || record.type === 'turn.failed' || record.type === 'turn.error') {
+    const error = record.error && typeof record.error === 'object' && !Array.isArray(record.error)
+      ? record.error : record;
+    return {
+      code: error.code ?? record.code,
+      category: error.category ?? record.category,
+      message: error.message ?? record.message,
+    };
+  }
+  return null;
+}
+
+function safeDiagnosticCode(value) {
+  return typeof value === 'string' && /^[A-Z][A-Z0-9_.-]{0,79}$/.test(value) ? value : null;
+}
+
+function safeDiagnosticCategory(value) {
+  return ['model-rejection', 'authentication', 'quota'].includes(value) ? value : null;
+}
+
+function categoryFromDiagnosticCode(code) {
+  if (!code) return null;
+  if (/(?:MODEL|UNSUPPORTED|UNAVAILABLE|NOT_FOUND)/.test(code)) return 'model-rejection';
+  if (/(?:AUTH|UNAUTHORIZED|FORBIDDEN|CREDENTIAL)/.test(code)) return 'authentication';
+  if (/(?:QUOTA|RATE_LIMIT|RATE-LIMIT|LIMIT_EXCEEDED)/.test(code)) return 'quota';
+  return null;
+}
+
+export function diagnoseCodexStartupFailure({ stdout, stderr } = {}) {
+  const parsed = boundedStartupOutput(stdout);
+  const safeStderr = redactDiagnosticText(stderr);
+  if (!parsed.records) {
+    return {
+      schema: 'torch.dev/runtime-startup-diagnostic/v1alpha1', outcome: 'unknown', reason: parsed.reason,
+      stderr: safeStderr,
+    };
+  }
+  const failure = parsed.records.map(startupFailureEvent).find(Boolean);
+  if (!failure) {
+    return {
+      schema: 'torch.dev/runtime-startup-diagnostic/v1alpha1', outcome: 'unknown', reason: 'stdout-no-failure-event',
+      stderr: safeStderr,
+    };
+  }
+  const message = redactDiagnosticText(failure.message);
+  const code = safeDiagnosticCode(failure.code);
+  const category = safeDiagnosticCategory(failure.category);
+  const modelRejection = /\b(model|unsupported|not supported|unavailable|not available|does not exist)\b/i.test(message ?? '')
+    || /MODEL|UNSUPPORTED/i.test(code ?? '');
+  return {
+    schema: 'torch.dev/runtime-startup-diagnostic/v1alpha1', outcome: 'known',
+    category: category ?? categoryFromDiagnosticCode(code) ?? (modelRejection ? 'model-rejection' : 'runtime-error'),
+    ...(code ? { code } : {}),
+    ...(message ? { message } : {}),
+    stderr: safeStderr,
+  };
 }
 
 export class CodexRuntimeAdapter {
@@ -225,6 +314,10 @@ export class CodexRuntimeAdapter {
       });
     }
     return { areaId: text(areaId, 'areaId'), runtimeSessionId: text(captured, 'runtimeSessionId') };
+  }
+
+  diagnoseStartupFailure({ stdout, stderr } = {}) {
+    return diagnoseCodexStartupFailure({ stdout, stderr });
   }
 
   getStatus() { return unsupportedCapability(this.name, 'getStatus'); }
