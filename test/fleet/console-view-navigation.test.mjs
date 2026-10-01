@@ -105,6 +105,54 @@ test('SCN-console-secondary-deeplink-focus-and-history: direct fragments and his
   await assertTarget('approval-request-list', 'flow-watch', 'Flow watch');
 });
 
+test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep links settle after first render without stealing later navigation', async (t) => {
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+    const { page } = await openDemo(t, viewport);
+    const base = `http://127.0.0.1:${new URL(page.url()).port}/console?demo=1`;
+    const assertManagerWakes = async () => {
+      await assertSelectedView(page, 'fleet', 'Fleet');
+      const state = await page.locator('#manager-wakes').evaluate((target) => {
+        const bounds = target.getBoundingClientRect();
+        return {
+          activeId: document.activeElement?.id,
+          operationsOpen: target.closest('#fleet-operations')?.open,
+          top: bounds.top,
+          bottom: bounds.bottom,
+          height: innerHeight,
+        };
+      });
+      assert.equal(state.operationsOpen, true);
+      assert.equal(state.activeId, 'manager-wakes');
+      assert.ok(state.top >= 0 && state.bottom <= state.height,
+        `manager-wakes must be fully inside ${viewport.width}x${viewport.height}: ${JSON.stringify(state)}`);
+    };
+
+    await page.goto(`${base}#manager-wakes`);
+    await page.locator('#live-refresh-status[data-generation="1"]').waitFor();
+    await assertManagerWakes();
+
+    await page.goto(`${base}#overview`);
+    await page.locator('#live-refresh-status[data-generation="1"]').waitFor();
+    await page.locator('#attention-list a[href="#manager-wakes"]').click();
+    await assertManagerWakes();
+    await page.goBack();
+    await assertSelectedView(page, 'overview', 'Overview');
+    await page.goForward();
+    await assertManagerWakes();
+
+    await page.locator('.console-rail a[href="#work"]').click();
+    await page.mouse.wheel(0, 180);
+    const beforeRefresh = await page.evaluate(() => scrollY);
+    await page.locator('#refresh-console').click();
+    await page.locator('#live-refresh-status[data-generation="2"]').waitFor();
+    assert.equal(new URL(page.url()).hash, '#work');
+    await assertSelectedView(page, 'work', 'Work');
+    assert.notEqual(await page.evaluate(() => document.activeElement?.id), 'manager-wakes');
+    assert.equal(await page.evaluate(() => scrollY), beforeRefresh,
+      'a later refresh must retain the user’s scrolled position');
+  }
+});
+
 test('SCN-console-priority-preview-invalidates-on-newer-evidence: refresh preserves editable drafts and rejects the old preview', async (t) => {
   const { page } = await openDemo(t, { width: 1280, height: 900 });
   const form = page.locator('.priority-change-form[data-task-id="API-08"]');

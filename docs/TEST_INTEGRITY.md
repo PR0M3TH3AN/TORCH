@@ -2599,9 +2599,9 @@ test_integrity_note:
       when: "The reader opens either direct link and uses browser Back and Forward"
       then: "Exactly the matching view is selected and the actual secondary target is focused inside the viewport"
     - id: SCN-console-operational-deeplink-fleet
-      given: "Operations, resources, schedules, providers, decisions, context, and manager-wakes are grouped in the Fleet workspace"
-      when: "The reader loads #manager-wakes directly, follows its existing attention link, or returns to it through Back and Forward"
-      then: "Fleet is selected, the Operations disclosure opens, manager-wakes receives focus inside the viewport, and the entire Operations section is hidden on unrelated views"
+      given: "Operations, resources, schedules, providers, decisions, context, and manager-wakes are grouped in the Fleet workspace at 1280x900 and 390x844"
+      when: "The reader loads #manager-wakes directly, follows its existing attention link, or returns to it through Back and Forward, then later navigates, scrolls, and refreshes"
+      then: "After the first deterministic data/layout application Fleet is selected, the Operations disclosure opens, manager-wakes receives focus fully inside the viewport, the later refresh preserves the reader's view and scroll, and Operations is hidden on unrelated views"
     - id: SCN-console-view-drafts
       given: "A task draft and an owner approval preview are present"
       when: "The reader changes views and refreshes the sample Console"
@@ -2614,12 +2614,12 @@ test_integrity_note:
     - "An unchanged current-revision preview, confirmation boundary, and draft retained after refresh"
     - "A regenerated preview token and displayed revision bound to N+1"
     - "Exact Overview and contextual view titles, plus focused in-viewport secondary targets across direct loads and browser history"
-    - "The manager-wakes route selects Fleet and opens/focuses its nested target across direct navigation and browser history; operations stay hidden outside Fleet"
+    - "The manager-wakes route selects Fleet and opens/focuses its nested target fully inside desktop and mobile viewports after first render and across browser history; later refresh preserves the user's view and scroll; operations stay hidden outside Fleet"
     - "Visible recorded-evidence limitation beside owner briefing content while exact provenance remains compact and collapsed"
     - "No browser requests to live project APIs and no changes to tracked screenshot expectations"
   determinism_controls:
     - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
-    - "Manager-wakes routing uses the existing isolated sample Console and browser fragment history without changing project state"
+    - "Manager-wakes routing uses the existing isolated sample Console, a deterministic first-generation completion marker, and browser fragment history without changing project state"
     - "Newer evidence is introduced through the sample's supported preview/confirm API before an explicit refresh"
     - "The browser test advances only the isolated sample API; it never submits the priority form or mutates a live project"
     - "No network, live project mutation, retry, sleep, timeout, golden update, or direct fixture-source change"

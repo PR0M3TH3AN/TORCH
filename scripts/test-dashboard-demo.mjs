@@ -231,6 +231,7 @@ try {
   await page.locator('#owner-briefing .briefing-detail').first().locator('summary').click();
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'expanded briefing evidence must fit mobile width');
   await page.locator('#reset-demo').click();
+  await selectView(page, 'flow-watch');
   await page.locator('#approval-request-count').filter({ hasText: '1 open' }).waitFor();
   assert.equal(await page.locator('.priority-urgent').count(), 0);
   assert.equal(await page.locator('.agent-row').count(), 6);

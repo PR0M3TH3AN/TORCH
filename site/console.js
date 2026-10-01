@@ -18,6 +18,7 @@ function installConsoleViewRouting() {
   if (!nav || !sections.length || !links.length) return { sync: () => 'overview' };
 
   let lastHash = null;
+  const initialHash = globalThis.location.hash;
   const decodeHash = (hash) => {
     try { return decodeURIComponent(String(hash ?? '').replace(/^#/, '')); } catch { return ''; }
   };
@@ -44,6 +45,29 @@ function installConsoleViewRouting() {
     }
   }
 
+  function positionNestedTarget(target, targetId, view) {
+    const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
+    if (!target || targetId === view || targetView !== view) return;
+    for (let ancestor = target; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+    }
+    accountForStickyNavigation(target);
+    if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
+      target.tabIndex = -1;
+    }
+    target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+    target.focus?.({ preventScroll: true });
+  }
+
+  const initialFragment = decodeHash(initialHash);
+  let initialPositionPending = Boolean(initialFragment && !consoleViewDefinitions[initialFragment]
+    && document.getElementById(initialFragment));
+  const abandonInitialPosition = () => { initialPositionPending = false; };
+  const onNavigation = () => {
+    abandonInitialPosition();
+    sync({ focus: true });
+  };
+
   function sync({ focus = false, force = false } = {}) {
     const hash = globalThis.location.hash || '#overview';
     if (!force && hash === lastHash) return resolveView(hash);
@@ -68,15 +92,7 @@ function installConsoleViewRouting() {
       const target = document.getElementById(targetId);
       const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
       if (target && targetId !== view && targetView === view) {
-        for (let ancestor = target; ancestor; ancestor = ancestor.parentElement) {
-          if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
-        }
-        accountForStickyNavigation(target);
-        if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
-          target.tabIndex = -1;
-        }
-        target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
-        target.focus?.({ preventScroll: true });
+        positionNestedTarget(target, targetId, view);
       } else {
         const labelledBy = visible[0]?.getAttribute('aria-labelledby');
         const heading = (labelledBy && document.getElementById(labelledBy))
@@ -96,11 +112,28 @@ function installConsoleViewRouting() {
     return view;
   }
 
-  globalThis.addEventListener('hashchange', () => sync({ focus: true }));
-  globalThis.addEventListener('popstate', () => sync({ focus: true }));
-  const initialFragment = decodeHash(globalThis.location.hash);
+  globalThis.addEventListener('hashchange', onNavigation);
+  globalThis.addEventListener('popstate', onNavigation);
+  globalThis.addEventListener('wheel', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('touchstart', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('pointerdown', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('keydown', (event) => {
+    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) {
+      abandonInitialPosition();
+    }
+  });
   sync({ focus: Boolean(initialFragment && !consoleViewDefinitions[initialFragment]) });
-  return { sync };
+  return {
+    sync,
+    afterInitialLayout() {
+      if (!initialPositionPending) return;
+      initialPositionPending = false;
+      if (globalThis.location.hash !== initialHash) return;
+      const targetId = decodeHash(initialHash);
+      const view = resolveView(initialHash);
+      positionNestedTarget(document.getElementById(targetId), targetId, view);
+    },
+  };
 }
 
 const $ = (selector) => document.querySelector(selector);
@@ -1118,6 +1151,7 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     const status = $('#live-refresh-status');
     status.dataset.generation = String(++appliedRefreshes);
     status.textContent = `${liveUpdatesPaused ? 'Automatic updates paused.' : 'Updates every 15 seconds while visible.'}${heldPanels ? ' Edited forms and active previews retained; their panels may show older state.' : ''}`;
+    if (appliedRefreshes === 1) consoleViewRouter.afterInitialLayout();
   },
   onError: (caught) => {
     const error = $('#console-error');
