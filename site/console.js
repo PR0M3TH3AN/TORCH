@@ -1141,10 +1141,13 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     return snapshot;
   },
   apply: (snapshot) => {
+    const viewportBeforeRender = appliedRefreshes > 0
+      ? { left: globalThis.scrollX, top: globalThis.scrollY } : null;
     const editedBeforeRender = refreshProtection.dirty();
     heldPanels = 0;
     renderingSnapshot = true;
     try { render(snapshot); } finally { renderingSnapshot = false; }
+    if (viewportBeforeRender) globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
     invalidateStalePriorityPreviews(snapshot.backlog ?? []);
     refreshProtection.remember({ preserve: editedBeforeRender });
     $('#console-error').hidden = true;
