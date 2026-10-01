@@ -1,5 +1,21 @@
 # Current pilot remaining-work handoff
 
+## Last exact-source observation at 13:20 UTC
+
+After checkpoint914ce5a, CURRENT native tasks still Console in_progress13, Work
+assigned3 and Runtime assigned5; explicit addressed unread100 returned empty.
+Fresh clean Console HEAD is **062bcc523965137b473f392898bcf7557f3fd48f**. Manager
+read its exact delta from a7: only product scrollTo options changed to numeric
+arguments; test still uses wheel+scrollend. Exact native
+**2eadf095-e036-4c02-adbe-b7cc4eb98ae0** remains FAIL, exit1, invalidReason null,
+measurementsExecuted true, same strict507-versus327 retention failure at line157.
+Actual already-approved fixed numeric TEST stimulus remains unapplied at this
+checkpoint. Console **f601fb6d** and QA **bd8131ea** receive exact current evidence
+and the pending agent-owned repair, preserving all historical failures and
+independent source-timing justification. No acceptance, permission escalation,
+owner-question relay, process stop, new assignment or provider launch follows.
+
+
 ## Resumed current coordination and failed-check refresh boundary at 13:17 UTC
 
 Read canonical brief again, exact digest **d7e6d69**. Default readonly-SQLite
