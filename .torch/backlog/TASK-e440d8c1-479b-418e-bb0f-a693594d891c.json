@@ -17,7 +17,8 @@
     "Foreign recipient claims, arbitrary state-root redirection and unauthenticated metadata fail closed; reading never acknowledges, resolves, transfers ownership or changes stored message/ack records.",
     "Named Runtime, Kernel and QA review exact source/API/test contribution paths, strict boundary scenarios including group messages and limits, and deterministic pagination observations before implementation; preserve all existing assertions and add a Test Integrity Note.",
     "Exact clean candidate checks, independent QA acceptance and guarded serialized integration are required; no fixture-only output, omitted unread filter or acknowledgement counts substitute for real current evidence.",
-    "Before publishing a final blocked/waiting-on-approval/needs-owner report, refresh authoritative unread inbox, current named permission and task evidence; distinguish a timestamped earlier observation from current state and reconcile already-resolved routine waits without asking the owner again. A mechanical observation-watermark/status protocol, if needed, requires an owned reviewed proposal before schema/API implementation."
+    "Before publishing a final blocked/waiting-on-approval/needs-owner report, refresh authoritative unread inbox, current named permission and task evidence; distinguish a timestamped earlier observation from current state and reconcile already-resolved routine waits without asking the owner again. A mechanical observation-watermark/status protocol, if needed, requires an owned reviewed proposal before schema/API implementation.",
+    "Before a failed-check repair/check iteration, refresh the current authoritative brief, actual addressed unread inbox, current task and named consent revisions; apply already-resolved peer direction before further edits or checks. A pending wheel/rAF/scrollend stimulus or an acknowledged historical handoff cannot substitute for current instructions, justify trial timing patches, weakened assertions, duplicate dispatch or a missing-owner-permission claim. Preserve strict behavior, failed receipts and attributable historical evidence; any new mechanical refresh/status protocol needs separately reviewed owned scope."
   ],
   "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "feature": "Identity-bound inbox selection and observation integrity",
@@ -31,14 +32,16 @@
     "ownership:src/mcp/tools.mjs=provider-runtime",
     "message:5039498d-a7f6-4ccd-93b8-cfb86ca2149e:exact-owned-contract-request",
     "message:758830da-8cbb-4b24-a38f-ea472685ecf6:QA-scenario/path/contributor-decision-request",
-    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:Console12:22-stale-QA-wait-after12:19-consent"
+    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:Console12:22-stale-QA-wait-after12:19-consent",
+    "message:c9bd14d0-f006-4b65-9f4e-54c77c58cb42:failed-check-recovery-current-brief-unread-consent-refresh-boundary",
+    "receipt:8ac4a6ab-99b9-4fa5-a941-eac1d03842ba:a7e84cf:fail507-vs327-after-resolved-QA8009-numeric-stimulus"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:32:53.996Z",
-  "updatedAt": "2026-10-01T12:27:23.922Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T13:16:57.335Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -67,6 +70,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T12:27:23.922Z",
       "note": "Owner22df explicitly requests existing-item incident/requirement recording. Reviewed metadata-only amendment preserves current state, owner, candidate, dependencies, prior criteria and every historical wait. No lifecycle transition, new assignment, wrapper/API/schema contract implementation, autoapproval or mass acknowledgement. Fresh final-status observation is required; any mechanical protocol stays an owned reviewed proposal."
+    },
+    {
+      "from": "assigned",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T13:16:57.335Z",
+      "note": "Owner c9bd14d0 explicitly requests recording this failed-check repair incident in existing stale-brief/unread workflow acceptance. Reviewed Manager-owned metadata-only amendment, expected revision4; append strict safe repair-boundary criterion and exact evidence while preserving state, owner, candidate, dependencies, prior criteria and full history. Native service has no metadata-amend operation. No lifecycle transition, new assignment, source/API/schema implementation, acceptance, guard waiver or provider action."
     }
   ]
 }

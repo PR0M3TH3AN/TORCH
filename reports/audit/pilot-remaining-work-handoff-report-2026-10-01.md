@@ -1,5 +1,95 @@
 # Current pilot remaining-work handoff
 
+## Resumed current coordination and failed-check refresh boundary at 13:17 UTC
+
+Read canonical brief again, exact digest **d7e6d69**. Default readonly-SQLite
+brief failure was resolved through narrowly approved escalation of that exact
+command only. Read CURRENT native tasks, then explicitly addressed unread100;
+read actual owner **c5fdb013**, later owner **c9bd14d0** and Work **2f8dca82**.
+The 13:17 CURRENT task refresh followed by explicit unread100 returns empty;
+this is timestamped observation, not a historical-page completeness inference.
+Requested owner44512241 WAL counterexample, eca7ded3 exact Overview title,
+Kernel b952 implemented API/refusal and QA d29c narrow acceptance were reread
+from this identity's addressed history, separately from unread inspection.
+
+**Current Console evidence and repair.** Fresh clean **a7e84cf5530379f8f3129e2ccd28efd36a3001fe**
+still uses wheel input with scrollend settlement. Manager read the exact test/doc
+delta from b1c633d and native **8ac4a6ab-99b9-4fa5-a941-eac1d03842ba** output:
+FAIL exit1, invalidReason null, measurementsExecuted true; scroll retention
+**507 != 327** at navigation line157, again an exact180px difference. Owner c5
+separately reports the predecessor b1c/07512 same failure. These are distinct
+preserved failed receipts, not an accepted explanation or permission to weaken
+the strict equality. The current test/doc still retain the required behavior.
+
+Actual QA8009 and prior Manager d47b already resolve the stimulus direction:
+fixed numeric nonzero scroll with observed actual position, no pending wheel,
+actual non-scrolling Refresh event, existing generation completion and unchanged
+exact retention assertion. Manager **65f8ef9f** requires Console to refresh its
+brief/current task/unread inbox BEFORE the next repair/check iteration and apply
+that actual resolved direction. QA **d5f21468** receives exact current failure,
+strict correction review and a separate request to justify any accumulated
+product timing changes behaviorally. No blind reversion, repeated trial timing
+patches, retries/sleeps, relaxed bounds, assertion removal or done/landing claim.
+This remains the same Console in_progress13, not missing owner/test permission.
+
+Owner **c9bd14d0** explicitly requests this real incident in existing unread-
+workflow acceptance. Reviewed Manager-owned metadata appends one strict failed-
+check recovery refresh criterion and two evidence references to **e440 assigned5**;
+state/owner/candidate/dependencies, seven prior criteria and full historical waits
+are preserved. Native service has no metadata-amend operation; this is a recorded
+owner-requested ledger amendment, not a lifecycle transition or runtime/API/schema
+implementation. Runtime **ab249ddf** receives the exact incident/boundary. Manager
+checks prove append-only changes, 55 unique tasks, valid revision/history/state,
+known acyclic dependencies and one active task per specialist. Full roadmap and
+the separate integrity evidence task remain, with no duplicate assignments.
+
+**Actual Work design review.** Work **2f8dca82** supplies a concrete proposed
+CandidateQualification/v1 contract based on exact Kernel **f688da69**. It names
+the pure executeConditionedCheck extraction seam rather than CheckService's
+control-plane initialization/DDL/receipt state; proposed CandidateAttemptStore
+in registered CP state and a separate future Kernel provisioner; no-DDL sole
+ReceiptAdapter; sealed-to-finalized BEGIN IMMEDIATE CAS with durable ResultRecord
+and optional PASS receipt atomically; immutable E/S/A/definition/input/guard tuple;
+sorted regular-file artifact seal; explicit per-attempt worker environment and
+opaque authority token; actual child/process fence; exact-identity read-only
+persistence reconciliation. UNKNOWN retains guards without result/receipt/replay;
+proven attributable terminal failure permits only existing-policy scoped cleanup
+after durable evidence and no-live-descendants proof, never PASS eligibility.
+
+Manager routes named Kernel store/provisioner/fence decision **5ab5ffe9**, Release
+command/output/refusal **ab029ea5**, QA exact future scenario/path decision
+**fb7aab84**, and Work integration **41cbd169**. Kernel's contribution remains only
+proposed spec18/20 and ADR026 on Work assigned3. Missing/incompatible registered
+store must refuse; future provisioner/compatibility policy cannot silently perform
+live recovery to bootstrap source qualification. Worker capability withholding
+is not an OS same-user sandbox. Proposed new code paths are not approved code.
+Exact refined doc and actual named decisions remain open before implementation;
+native landing gates, compatible legacy tuples and fixture nonpromotion stand.
+
+**Fleet assessment and boundaries.** Manager check-in13:13 reports no findings or
+named approval waits, with timestamped idle presence rows only; not proof of
+process absence/task completion. Fleet evolution eight recurring domain sets,
+hierarchy nine sets plus11 historical Manager requests, Fleet changes empty.
+Existing coherent owners and exact process/contracts fit these observations;
+another identity/manager would add coordination before current contracts qualify.
+No merge/split/retirement proposal or activation is warranted this cycle.
+Health37 stale-observed and2 resolved-dependency warnings remain observations,
+not automatic cleanup/unblock authority; activity scan is truncated.
+
+Current55 tasks remain38 proposed,8 blocked,6 completed,2 assigned,1 in_progress.
+Runtime e440 assigned5, Work6e4 assigned3 and Console workflow in_progress13 each
+retain continuity. Kernel inbox a4bba is implemented and narrowly QA-reviewed,
+but native3/2 refusal remains genuine; the old 'QA pending' clause is historical.
+Inventory1e688 blocked4 follows supported inbox qualification; dormant Runtime
+2b4 proposed1 follows current wrapper/inventory; Release persistent operations
+then consumes qualified APIs. No API-completion/qualified-receipt/operational
+acceptance is invented to dispatch these phases. Canonical clean0fdf and Kernel
+cleanf688 were read at13:13. No new dispatch, final acceptance, wakes, installation
+switch, live schema recovery, host activation, extra identities or provider launches.
+Five-PNG approval remains only completed exact Runtime recovery; pending75a8
+runtime activation and live schema recovery retain their separate boundaries.
+
+
 ## Fixed-layout diagnostic and existing integrity evidence at 13:10 UTC
 
 Final CURRENT task refresh retains the same55 counts and three active assignments.
