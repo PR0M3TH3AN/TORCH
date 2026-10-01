@@ -108,6 +108,22 @@ test('SCN-candidate-store-fixture-nonpromotion: fixture attestation cannot expos
   const fixture = provisionCandidateAttemptStoreFixtureV1({ harness });
   const provisioner = await import('../../src/control-plane/candidate-attempt-store-provisioner.mjs');
   const store = await import('../../src/control-plane/candidate-attempt-store.mjs');
+  assert.deepEqual(Object.keys(store), [
+    'CANDIDATE_ATTEMPT_STORE_PROTOCOL_VERSION',
+    'CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION',
+    'candidateAttemptStoreDdlBytesV1',
+    'candidateAttemptStoreDdlStatementsV1',
+    'candidateAttemptStoreDigestsV1',
+    'candidateAttemptStoreSchemaBytesV1',
+  ], 'store public namespace must remain data-only and exact');
+  assert.deepEqual(Object.keys(provisioner), [
+    'applyCandidateAttemptStoreFixtureTestCorruptionV1',
+    'closeCandidateAttemptStoreFixtureHarnessV1',
+    'closeCandidateAttemptStoreFixtureV1',
+    'createCandidateAttemptStoreFixtureHarnessV1',
+    'inspectCandidateAttemptStoreFixtureV1',
+    'provisionCandidateAttemptStoreFixtureV1',
+  ], 'provisioner public namespace must remain exact');
   assert.equal(fixture.promotion, 'nonpromotable');
   assert.equal(inspectCandidateAttemptStoreFixtureV1({ fixture }).nonpromotable, true);
   for (const forbiddenExport of [
@@ -142,6 +158,14 @@ test('SCN-candidate-store-fixture-authority: foreign, closed, reused, nonempty, 
   assert.deepEqual(executionCalls, [], 'public fixture APIs must reject caller database or forged authority before any database execution');
   closeCandidateAttemptStoreFixtureHarnessV1({ harness: issuedForBypassAttempt });
 
+  const issuedHarness = createCandidateAttemptStoreFixtureHarnessV1();
+  const copiedIssuedHarness = Object.freeze({ ...issuedHarness });
+  expectCode(() => provisionCandidateAttemptStoreFixtureV1({ harness: copiedIssuedHarness }), 'CANDIDATE_STORE_FIXTURE_AUTH_REQUIRED');
+  const issuedFixture = provisionCandidateAttemptStoreFixtureV1({ harness: issuedHarness });
+  const copiedIssuedFixture = Object.freeze({ ...issuedFixture });
+  expectCode(() => inspectCandidateAttemptStoreFixtureV1({ fixture: copiedIssuedFixture }), 'CANDIDATE_STORE_FIXTURE_AUTH_REQUIRED');
+  closeCandidateAttemptStoreFixtureV1({ fixture: issuedFixture });
+
   const closed = createCandidateAttemptStoreFixtureHarnessV1();
   closeCandidateAttemptStoreFixtureHarnessV1({ harness: closed });
   expectCode(() => provisionCandidateAttemptStoreFixtureV1({ harness: closed }), 'CANDIDATE_STORE_FIXTURE_AUTH_EXPIRED');
@@ -166,7 +190,8 @@ test('SCN-candidate-store-fixture-authority: foreign, closed, reused, nonempty, 
 test('SCN-candidate-store-metadata-drift: only enumerated hermetic corruption can invalidate a provisioned fixture', () => {
   for (const [kind, code] of [
     ['ddl-drift', 'CANDIDATE_STORE_SCHEMA_DRIFT'],
-    ['malformed-meta', 'CANDIDATE_STORE_METADATA_INVALID'],
+    ['digest-drift', 'CANDIDATE_STORE_METADATA_INVALID'],
+    ['malformed-meta-lexical', 'CANDIDATE_STORE_METADATA_INVALID'],
   ]) {
     const harness = createCandidateAttemptStoreFixtureHarnessV1();
     const fixture = provisionCandidateAttemptStoreFixtureV1({ harness });

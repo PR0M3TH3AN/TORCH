@@ -2702,3 +2702,36 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+## 2026-10-01 — Candidate attempt-store B0 namespace and lexical-metadata correction
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-store-fixture-nonpromotion
+      given: The public store and provisioner module namespaces
+      when: Their exports are enumerated
+      then: Each exactly equals its B0 allowlist, so renamed database, connection, root, path, manifest, or selector exports fail
+    - id: SCN-candidate-store-fixture-authority
+      given: Clones of actually issued harness and fixture objects
+      when: Provisioning or inspection is attempted through those clones
+      then: Both are WeakMap-refused without exposing or selecting a fixture target
+    - id: SCN-candidate-store-metadata-drift
+      given: A provisioned fixture and an enumerated fixture-only lexical metadata corruption
+      when: Read-only metadata verification runs
+      then: An uppercase digest is rejected separately from the existing format-valid all-zero digest drift
+  observable_outcomes:
+    - Exact public export arrays and stable authority or metadata refusal codes
+    - No caller SQLite execution, raw handle, registered target, or fixture promotion
+  determinism_controls:
+    - Hermetic own-mkdtemp fixture, private WeakMap capabilities, fixture-only temporary check-constraint bypass, and no retry or live state
+  anti_cheat_rationale:
+    prevents:
+      - Renaming a raw database initializer or connection verifier to evade a name denylist
+      - Forging a capability by copying an issued public object
+      - Treating a format-valid digest mismatch as sufficient lexical validation coverage
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

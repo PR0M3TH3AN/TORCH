@@ -13,7 +13,9 @@ import {
 
 const harnesses = new WeakMap();
 const fixtures = new WeakMap();
-const TEST_CORRUPTIONS = new Set(['nonempty', 'registered-relationship', 'ddl-drift', 'malformed-meta']);
+const TEST_CORRUPTIONS = new Set([
+  'nonempty', 'registered-relationship', 'ddl-drift', 'digest-drift', 'malformed-meta-lexical',
+]);
 const DIGEST_PATTERN = /^[0-9a-f]{64}$/;
 const MAX_IDENTIFIER_BYTES = 128;
 
@@ -190,12 +192,22 @@ export function applyCandidateAttemptStoreFixtureTestCorruptionV1(input = {}) {
     mkdirSync(markerRoot);
     writeFileSync(join(markerRoot, 'install-manifest.json'), '{"fixture":"registered-relationship"}\n', { flag: 'wx' });
   }
-  if (kind === 'ddl-drift' || kind === 'malformed-meta') {
+  if (kind === 'ddl-drift' || kind === 'digest-drift' || kind === 'malformed-meta-lexical') {
     if (!state.fixture) fail('Fixture corruption requires a provisioned fixture', 'CANDIDATE_STORE_FIXTURE_INPUT_INVALID', { kind });
     const database = new DatabaseSync(databasePath(state));
     try {
       if (kind === 'ddl-drift') database.exec('CREATE TABLE fixture_schema_drift (id TEXT PRIMARY KEY)');
-      else database.prepare('UPDATE candidate_attempt_store_meta SET ddl_digest = ? WHERE singleton = 1').run('0'.repeat(64));
+      if (kind === 'digest-drift') {
+        database.prepare('UPDATE candidate_attempt_store_meta SET ddl_digest = ? WHERE singleton = 1').run('0'.repeat(64));
+      }
+      if (kind === 'malformed-meta-lexical') {
+        database.exec('PRAGMA ignore_check_constraints = ON');
+        try {
+          database.prepare('UPDATE candidate_attempt_store_meta SET ddl_digest = ? WHERE singleton = 1').run('A'.repeat(64));
+        } finally {
+          database.exec('PRAGMA ignore_check_constraints = OFF');
+        }
+      }
     } finally {
       database.close();
     }
