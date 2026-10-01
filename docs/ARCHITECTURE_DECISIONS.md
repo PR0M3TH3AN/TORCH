@@ -493,13 +493,38 @@ open their version-2 control-plane service. Any of those writers can relabel a
 reservation-bearing database after the candidate has initialized it. A
 reservation-aware candidate alone therefore cannot safely repair the state.
 
+### Staged qualification without production-state migration
+
+There is no non-circular native qualification path today. Every normal
+candidate-CLI check opens the registered production state root before executing
+its check, so it correctly stops at the downgrade guard. That failure must not
+be bypassed to create a real-project receipt.
+
+The first implementation phase is therefore limited to an isolated fixture:
+it uses a unique `XDG_DATA_HOME`, a fixture installation and state root, and a
+candidate-source executable. It may construct version-2 and version-3 fixture
+databases and exercise the recovery planner/backup verifier there. Its outputs
+are scoped source evidence only; they cannot be stored as, substituted for, or
+promoted into any receipt for this project. The existing test fixtures already
+support a distinct `XDG_DATA_HOME`; the registered manifest/state-root checks
+ensure that such a fixture is not the production installation.
+
+Only after independent QA accepts that isolated implementation may Release
+propose a separately reviewed reservation-aware runtime installation and writer
+fence. That activation is not authorized by this ADR. Once the fence is live,
+the real project may take a fresh read-only plan, a separately authorized
+consistent backup, and—only after another review—an apply. Full native gates
+remain unavailable until that real state has been safely recovered; this
+sequence reports the circular dependency instead of hiding it.
+
 ### Required read-only preflight and backup contract
 
-The future recovery command must first emit a digest-bound, read-only plan. It
+The future recovery planner must first emit a digest-bound, read-only plan. It
 must record the project manifest and `project.json` identities, repository and
 runtime source hashes, active-launcher target, candidate commit, database file
 and WAL/SHM hashes, and the exact observed writer set. It must reject an
-unresolved or untrusted writer rather than infer that a process is absent.
+unresolved or untrusted writer rather than infer that a process is absent. A
+plan does not create a backup or change the database.
 
 The plan must validate all of the following before it can name a database
 recoverable:
@@ -515,10 +540,11 @@ recoverable:
 - Project identity, local-state path, and database provenance bind to the
   requested installation. A copied, forged, newer-than-supported, or
   cross-project database refuses recovery.
-- A filesystem-consistent backup of `state.db`, `state.db-wal`, and
-  `state.db-shm`, when present, is made outside the project tree and described
-  by a hash manifest before any future mutation. Backup success is necessary
-  but never itself an authorization to apply recovery.
+- The plan identifies the external backup destination and the source files to
+  fingerprint, but does not copy them. A later backup phase must produce a
+  consistent snapshot and immutable hash manifest before any future mutation.
+  Backup success is necessary but never itself an authorization to apply
+  recovery.
 
 Writer isolation is a separate, independently verified prerequisite. The
 future recovery implementation must verify a reservation-aware installed
@@ -527,6 +553,24 @@ arbiter-owned service can write this state root. A caller-supplied boolean or
 free-text claim that executors are stopped is insufficient. Runtime/version
 activation remains a separately owned and reviewed operation.
 
+The required attestation is a Release-owned, installation-bound recovery fence,
+not a process-list observation. Its verifier must bind the project and state
+root, the approved reservation-aware runtime digest, retired writer digests,
+the active launcher target, and an exclusive fence token. The fence begins
+before plan-hash recheck, remains held through online backup and the apply
+transaction, and remains enforced afterwards so an old writer cannot restart
+and relabel the database. `BEGIN IMMEDIATE` protects the short database
+transaction but is not a substitute for that lifetime fence. The apply phase
+recomputes the source `state.db`/WAL/SHM hashes while the fence is held and
+refuses if they differ from the plan. It then verifies a fresh immutable
+snapshot rather than trusting volatile live file copies.
+
+No such verifier or enforceable lifetime fence exists in the current alpha.2
+installation. A state-root lock that the version-2 writers do not honor, a
+stopped PID, or an unsigned attestation is not sufficient. Consequently, live
+backup and live apply are deliberately unsupported until Release supplies and
+independently validates this boundary.
+
 ### Proposed future interface (not implemented or invoked)
 
 The supported path should be two explicit commands implemented only after
@@ -534,18 +578,24 @@ review:
 
 ```text
 torch control-plane reservation-recovery plan --area project-kernel --target-schema 3 --json
+torch control-plane reservation-recovery backup --plan <plan-digest> \
+  --writer-attestation <trusted-fence> --destination <external-path> --yes --json
 torch control-plane reservation-recovery apply --plan <plan-digest> \
-  --backup-manifest <backup-digest> --writer-attestation <trusted-record> --yes --json
+  --backup-manifest <backup-digest> --writer-attestation <trusted-fence> --yes --json
 ```
 
-`plan` is read-only. `apply` must be unavailable until the plan, immutable
-backup manifest, and a verifier-backed writer attestation all match current
-state. In one immediate write transaction it must repeat every validation,
-record an audit event, and only then advance the version label from 2 to 3.
-It must never create a missing reservation table, drop/rebuild an index, delete
-a row, clear a lease, or accept a different schema shape as a recovery
-shortcut. A changed hash, concurrent writer, or transaction contention aborts
-without a partial relabel.
+`plan` is read-only. `backup` is a separate, explicit mutation: while the
+trusted fence is held it must use Node's `node:sqlite` online `backup()` API to
+write an external snapshot, then create an immutable manifest over the backup
+and the fenced source inventory. Independent file copies of live
+`state.db`/WAL/SHM are prohibited. `apply` must be unavailable until the plan,
+immutable backup manifest, and a verifier-backed writer attestation all match
+current state. In one immediate write transaction it must repeat every
+validation, record an audit event, and only then advance the version label from
+2 to 3. It must never create a missing reservation table, drop/rebuild an
+index, delete a row, clear a lease, or accept a different schema shape as a
+recovery shortcut. A changed hash, concurrent writer, or transaction contention
+aborts without a partial relabel.
 
 ### Required deterministic scenarios before any implementation
 
@@ -560,6 +610,10 @@ without a partial relabel.
   duplicate runtime reservation is created.
 - A forged caller evidence record cannot stand in for trusted writer isolation
   or a verified backup manifest.
+- Candidate-source recovery tooling operating under an isolated fixture state
+  root yields scoped evidence only; a normal candidate CLI pointed at the real
+  manifest remains blocked until a separately reviewed fence and live recovery
+  exist.
 
 These scenarios are additive future QA work under the existing strict consent;
 they do not relax ADR-024's fail-closed guard or change existing assertions.
