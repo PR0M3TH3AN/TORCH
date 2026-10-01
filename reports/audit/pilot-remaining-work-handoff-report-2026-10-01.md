@@ -1,5 +1,103 @@
 # Current pilot remaining-work handoff
 
+## Current diagnostic receipts and concrete design reviews at 13:31 UTC
+
+Canonical brief reread, digest **d7e6d69**; readonly default brief was retried only
+through approved exact-command escalation. CURRENT task read preceded explicit
+addressed unread100. Actual owner **7a6eb8ca**, Kernel **42e3108b**, owner
+**512dde54**, QA **9d94cd87**, Release **46a8bde7** and owner **c565e2c5** were
+understood, routed and individually acknowledged. Owner44512241 WAL mutant,
+eca7ded3 exact Overview title, Kernel b952 implementation/refusal and QA d29c
+narrow proof were separately reread in this identity's history, not used to infer
+unread completeness. Manager begins cleancaa9f2b; no memory hit was used.
+
+**Actual native receipts versus deterministic/operational acceptance.** Console
+**7ea65992db2424be1e8242d44b1dbb2b9c6012c2** has real exact test **27108947** and
+check **4d7ba790 PASS**, plus dashboard **8a47081d FAIL**. Manager read the exact
+062-to7ea delta: added global scrollTo wrapper/event tracing and extra async
+page.evaluate roundtrips in assertion-message construction; exact equality stays,
+but test still uses wheel+scrollend rather than QA8009's fixed numeric stimulus.
+Instrumentation can alter the known race timing; receipt PASS is preserved as
+an actual result, not fabricated/refused or independently accepted deterministic
+qualification. QA **1d9e7825** receives precise instrumentation/consent/necessity
+disposition and separate source-timing review; Console **f4291001** receives
+resolved numeric direction and fresh unread-before-repair boundary.
+
+Manager independently reads7ea dashboard output: measurementsExecuted true,
+locator timeout locating approval-decision-form in selectViewFor at driver301.
+Console advances to independently clean **cfb69b490037bca119eca53d6f07bf29130065ac**;
+exact driver delta selects the actual owning Flow Watch view before the unchanged
+capture instead of deriving it from a missing approval form. Native **0baefdd8
+test PASS**, **18de60d9 check PASS**, **078ff5da dashboard FAIL** remain exact results;
+no lint/four-PASS qualification or final acceptance is established. Owner c565
+attributes the newer failure to Review change at driver364 and identifies a
+specific hypothesis: unconditional summary click closes already-open protected
+priority details. Manager reads that actual source; browser-state proof remains
+required. QA **b93e36dd** receives the precise narrow contributor decision request:
+inspect disclosure.open, real summary click only if closed, retain every original
+Review/preview/token/revision assertion, no forced DOM opening/show-all fallback,
+skips/retries/sleeps/looser bounds or capture changes. Console **bbf0a82a** receives
+that pending request separately from already-approved numeric test stimulus.
+
+**New contribution within an unchanged task.** Owner7a reports a shared arbiter
+orchestration bug: reused followup flag highlighted the old completedf688 request,
+so a new Work2f8/Manager5ab attempt-store contribution was called duplicate.
+Arbiter corrected exact current handoff and resumed only the existing identity
+after terminal; Manager did not launch it. Kernel now returns NEW clean
+**6fdb88ea200f1680c9051144f59a87acc904e41e**. Manager reads its full exact two-doc
+delta: proposed AttemptStore/AttemptRecord/ResultRecord, owner-authorized future
+provisioner versus no-DDL adapter, missing-store refusal, artifact manifest/seal,
+exact tuple/guard/lease/process fence CAS, UNKNOWN retention versus proven failed
+cleanup, absolute fixture nonpromotion and legitimate reviewed prelanding source
+subject without circular operational prerequisite. Normative text/ADR024/025,
+source/schema/gates stay unchanged. Work **b3ddff09**, QA **bbd87258** and Release
+**e7f50a6a** receive this NEW exact contribution, not an old completion summary.
+
+Owner explicitly requests recording current named handoff versus superseded/
+completed/pending contribution in existing stale-brief/startup UX. Reviewed owned
+metadata appends one criterion/evidence/history entry to **e440 assigned6**;
+all eight prior criteria, state/owner/candidate/dependencies and histories remain.
+Runtime **0e9ce34e** receives the actual shared incident. Mechanical status/API/
+schema implementation remains separately reviewed scope. Validation proves
+append-only amendment,55 unique tasks, valid revisions/state/history, known
+acyclic dependencies and one active assignment per specialist. No duplicate task.
+
+**Actual named design reviews now exist.** QA9d94 supplies concrete no-DDL store,
+E/S/A, atomic result/eligible receipt, crash ambiguity, replay/artifact/drift,
+UNKNOWN/survivor, proven cleanup/nonpromotion and separate consumer scenarios.
+Release46a8 proposes candidate-plan/run dispatched before live initialization,
+derived authenticated subject, separate terminal/cleanup/receipt/operational JSON,
+stable refusals, trusted-parent-only result transport and exact guard/lease IDs
+plus fence generations. Release explicitly bounds its evidence to clean oldcb145
+source, not convergence/qualification. Generic missing QA/Release review is stale;
+exact final API, contributor paths, policy/compatibility/provisioner/fence/sealing/
+environment and isolation approvals remain open before code. Manager routes
+actual reviews to Work **7b0e583c**, Kernel **56b390c9**, Release **4ed11bb9** and
+QA **8eb68dc1**. Worker opaque transport cannot grant result-writer/finalizer
+authority; area/check may verify only authenticated allowed binding, never select
+foreign subject/authority. Cleanup adds no new lease-release authority. Candidate
+source, native receipt and operational acceptance stay separate; fixture results
+remain permanently nonpromotable and current native landing gates stand.
+
+**Fleet judgment and roadmap.** Check-in13:25 has the actual Kernel unread finding
+handled above and no named approval waits; idle presence timestamps prove neither
+process absence nor finished assignment. Evolution eight recurring domain sets,
+hierarchy nine sets+11 historical Manager requests, changes empty. Exact process,
+handoff and specialist contracts remain preferable to another identity/manager;
+no merge/split/retirement/activation proposal. Health37 stale-observed+2 resolved-
+dependency warnings remain observational, scan truncated, no automatic repair.
+CURRENT55 tasks retain38 proposed,8 blocked,6 completed,2 assigned,1 in_progress:
+Runtime e440 assigned6, Work6e4 assigned3 and Console in_progress13. Kernel inbox
+a4bba exists with narrow independent proof acceptance but genuine native3/2 refusal;
+old missing API/test-consent/QA-pending summaries cannot replace current evidence.
+Inventory1e688 blocked4, dormant Runtime2b4 proposed1 and Release persistent
+operations remain separately sequenced contract/qualified-API phases. Full roadmap
+and blocked histories survive. Canonical clean0fdf and Kernel clean6fdb were read.
+No final acceptance, dispatch, automatic wakes, installation switch, live schema
+recovery, host activation, extra identities or provider launches. Exact five-PNG
+consent remains completed Runtime recovery only, not pending75a8 activation.
+
+
 ## Last exact-source observation at 13:20 UTC
 
 After checkpoint914ce5a, CURRENT native tasks still Console in_progress13, Work

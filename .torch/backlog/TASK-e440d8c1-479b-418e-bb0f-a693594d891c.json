@@ -18,7 +18,8 @@
     "Named Runtime, Kernel and QA review exact source/API/test contribution paths, strict boundary scenarios including group messages and limits, and deterministic pagination observations before implementation; preserve all existing assertions and add a Test Integrity Note.",
     "Exact clean candidate checks, independent QA acceptance and guarded serialized integration are required; no fixture-only output, omitted unread filter or acknowledgement counts substitute for real current evidence.",
     "Before publishing a final blocked/waiting-on-approval/needs-owner report, refresh authoritative unread inbox, current named permission and task evidence; distinguish a timestamped earlier observation from current state and reconcile already-resolved routine waits without asking the owner again. A mechanical observation-watermark/status protocol, if needed, requires an owned reviewed proposal before schema/API implementation.",
-    "Before a failed-check repair/check iteration, refresh the current authoritative brief, actual addressed unread inbox, current task and named consent revisions; apply already-resolved peer direction before further edits or checks. A pending wheel/rAF/scrollend stimulus or an acknowledged historical handoff cannot substitute for current instructions, justify trial timing patches, weakened assertions, duplicate dispatch or a missing-owner-permission claim. Preserve strict behavior, failed receipts and attributable historical evidence; any new mechanical refresh/status protocol needs separately reviewed owned scope."
+    "Before a failed-check repair/check iteration, refresh the current authoritative brief, actual addressed unread inbox, current task and named consent revisions; apply already-resolved peer direction before further edits or checks. A pending wheel/rAF/scrollend stimulus or an acknowledged historical handoff cannot substitute for current instructions, justify trial timing patches, weakened assertions, duplicate dispatch or a missing-owner-permission claim. Preserve strict behavior, failed receipts and attributable historical evidence; any new mechanical refresh/status protocol needs separately reviewed owned scope.",
+    "Before classifying a same-task contribution as duplicate, completed or waiting, refresh the actual addressed unread inbox and compare the exact named current handoff, candidate and requested scope with superseded/completed contributions, even when the task revision is unchanged. Startup/resume UX must distinguish a stale orchestration hint from a pending current contribution and show its provenance; a reused followup flag or terminal old contribution cannot close a new handoff. Any mechanical handoff/version/status schema or activation change remains a separately reviewed owned proposal."
   ],
   "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "feature": "Identity-bound inbox selection and observation integrity",
@@ -34,14 +35,15 @@
     "message:758830da-8cbb-4b24-a38f-ea472685ecf6:QA-scenario/path/contributor-decision-request",
     "message:22df881a-9d38-4706-b0bf-da05c6b674c8:Console12:22-stale-QA-wait-after12:19-consent",
     "message:c9bd14d0-f006-4b65-9f4e-54c77c58cb42:failed-check-recovery-current-brief-unread-consent-refresh-boundary",
-    "receipt:8ac4a6ab-99b9-4fa5-a941-eac1d03842ba:a7e84cf:fail507-vs327-after-resolved-QA8009-numeric-stimulus"
+    "receipt:8ac4a6ab-99b9-4fa5-a941-eac1d03842ba:a7e84cf:fail507-vs327-after-resolved-QA8009-numeric-stimulus",
+    "message:7a6eb8ca-bc61-4b1e-860b-d4f87f521855:reused-arbiter-followup-flag-obscured-new-Work2f8-Manager5ab-attempt-store-contribution"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:32:53.996Z",
-  "updatedAt": "2026-10-01T13:16:57.335Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T13:28:26.706Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -77,6 +79,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T13:16:57.335Z",
       "note": "Owner c9bd14d0 explicitly requests recording this failed-check repair incident in existing stale-brief/unread workflow acceptance. Reviewed Manager-owned metadata-only amendment, expected revision4; append strict safe repair-boundary criterion and exact evidence while preserving state, owner, candidate, dependencies, prior criteria and full history. Native service has no metadata-amend operation. No lifecycle transition, new assignment, source/API/schema implementation, acceptance, guard waiver or provider action."
+    },
+    {
+      "from": "assigned",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T13:28:26.706Z",
+      "note": "Owner 7a6eb8ca explicitly requests existing stale-brief/task-startup UX recording of exact named current handoff versus superseded/completed/pending contribution, including shared arbiter orchestration incident. Reviewed metadata-only amendment, expected revision5. Preserve owner/state/candidate/dependencies, eight prior criteria and full history. Native service has no metadata-amend operation; no lifecycle transition, new task/assignment, API/status/schema implementation, provider launch or acceptance."
     }
   ]
 }
