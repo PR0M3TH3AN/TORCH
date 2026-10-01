@@ -1,5 +1,52 @@
 # Current pilot remaining-work handoff
 
+## Exact QA consent, integrity stop and revised draft at 13:08 UTC
+
+Fresh CURRENT tasks remain Runtime assigned4, Console in_progress13 and Work
+design assigned3, with the same55-task counts and no parallel implementation.
+Explicit unread100 then reads QA **8009e1e9**, owner **45009b5b** and Kernel
+**3901164b**; all were understood, routed and individually acknowledged.
+
+QA now consents the precise Console variant: fixed numeric page scroll plus
+observed settlement, actual non-scrolling Refresh button event, existing
+generation completion, and exact scrollY equality167. It also consents the
+driver-only selectViewFor('#approval-request-count') after reset before the
+unchanged original wait/assertion. No retries, sleeps or looser bounds.
+These exact decisions resolve the earlier generic test-permission waits;
+implementation evidence, native gates and independent acceptance remain open.
+
+Owner45009 reports an unconsented dirty diff that removed scroll preservation
+assertions/evidence. Manager immediately holds acceptance and routes stop
+**6b3332cc**/QA **534341d1**, without modifying peer files or cancelling processes.
+Fresh exact inspection must qualify that historical warning: clean committed
+**edbea736f0ae9e1d455e6d043da335fc2aeae99b** versus69ab DOES retain the final exact
+scroll equality, restores the document's scroll-preservation outcome, and retains
+product viewport restoration with animation-frame/user-intent fencing. Manager
+does not misreport the earlier dirty relaxation as this committed candidate.
+Its native **80ba0d3c-7ecc-4b68-a3b0-77d2643e646c** is nevertheless FAIL, exit1,
+invalidReason null. The test still uses unsettled mouse.wheel; the precisely
+consented deterministic correction is pending. Actual corrective handoffs
+**39ea7fae** and **9db23369** request exact diff and QA disposition. No reduced
+coverage result, guessed race explanation or clean Git state is acceptance.
+
+Kernel hands revised proposed-only **f688da69eaf431e0f8fa160a99d84cfe5d5d9c2e**.
+Manager reads the full two-document delta from1e277: authenticated tagged
+candidate/operational subjects, specific be1ae951 Kernel schema refusal,
+sealed manifest and atomic compare-and-swap consumed/result persistence,
+UNKNOWN guarded reconciliation without replay, and proven terminal failure
+existing-policy scoped cleanup after durable evidence/no-live-descendants proof.
+Current normative paragraphs/ADR024/025, source, schema and native gates are
+unchanged. Work receives exact proposed draft **756ec854** for design-lead review;
+QA8009 confirms the cleanup/schema distinctions. Durable store/fence/sealing/
+environment/isolation contracts, Release presentation and future scenario/path/
+code/policy consent remain concrete decisions before implementation. No new
+Kernel implementation assignment or design-final/native/operational acceptance.
+
+Local Manager checkpoint331eb70 contains the preceding reconciliation; this
+addendum preserves newer actual evidence rather than replacing historical states.
+All startup/install/schema/host/wake/provider and exact five-PNG boundaries stand.
+
+
 ## Current evidence reconciliation and routed decisions at 13:03 UTC
 
 Canonical brief was read again this cycle with digest **d7e6d69**. The default
