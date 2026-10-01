@@ -32,6 +32,21 @@ clean provenance, then records its decision. Only Kernel may apply an approved
 five-path restoration. Rejected `c2a1702b`, archived bytes and unqualified manual
 run evidence remain preserved. Manager routed this directly to QA and Kernel.
 
+Closing readback adds a distinct current guard failure: QA message
+`f0b0f323-f729-46fa-9e3c-856c51585c53` confirms the five-file provenance recheck
+passed, but automatic approval review refused the decision because it treated
+forwarded consent as untrusted. No decision or restoration occurred. Owner
+`a6dfcd2b-ac78-4d4f-a56d-6c512130e217` verified that refusal and already asked the
+actual user for narrow fresh action-boundary approval. Preserve the recovery hold
+without a duplicate question or workaround. This does not block Work and
+Integration's clean owned convergence and checks. The approval-propagation
+incident is retained against existing `TASK-owner-agent-chat`.
+
+The same owner message reports a successful non-force rewrite push at `330ec1a`
+and unchanged remote main at `a468`, with root test 194 PASS / four explicit skips
+and check/lint PASS. These are arbiter-reported remote/root results, not a manager
+push or qualification of the specialist's future convergence commit.
+
 Precise next specialist sessions for the arbiter: Work and Integration for
 convergence and all four exact checks; QA for the bounded recovery decision and
 independent review of the resulting artifact candidate. Kernel recovery follows
