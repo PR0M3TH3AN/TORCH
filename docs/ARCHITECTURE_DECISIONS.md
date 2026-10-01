@@ -464,6 +464,106 @@ an older launcher is unsupported until an explicit, recovery-tested migration
 exists. This is a compatibility boundary, not permission to install, activate,
 or start a runtime.
 
+## ADR-025: Reviewed reservation-state recovery and writer isolation
+
+**Status:** proposed; design-only pending independent QA and Session Manager
+review.
+
+This decision records the recovery design required by
+`TASK-125dd886-6859-4e3c-a0c7-abbfde9eac24`. It does not authorize an
+installation change, a runtime start, a database mutation, a migration retry,
+or another qualification gate.
+
+### Observed writer inventory
+
+The clean candidate `be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2` has the only
+reservation-aware initializer: `src/control-plane/service.mjs` declares schema
+version 3, defines the twelve-column `runtime_launch_reservations` table, and
+creates both its active-identity and unique-attempt indexes. Its CLI
+(`src/cli.mjs`), MCP server (`src/mcp/server.mjs`), and Console server
+(`src/console/server.mjs`) all open that control-plane service.
+
+The current canonical checkout and installed active runtime are incompatible
+writers. Canonical `src/control-plane/service.mjs` and active
+`~/.local/share/torch/runtime/active` (a link to
+`versions/0.1.0-alpha.2`) unconditionally execute `PRAGMA user_version = 2`
+after their shared-table initializer. The installed `torch` launcher resolves
+to that active alpha.2 runtime. Its CLI, MCP server, and Console server also
+open their version-2 control-plane service. Any of those writers can relabel a
+reservation-bearing database after the candidate has initialized it. A
+reservation-aware candidate alone therefore cannot safely repair the state.
+
+### Required read-only preflight and backup contract
+
+The future recovery command must first emit a digest-bound, read-only plan. It
+must record the project manifest and `project.json` identities, repository and
+runtime source hashes, active-launcher target, candidate commit, database file
+and WAL/SHM hashes, and the exact observed writer set. It must reject an
+unresolved or untrusted writer rather than infer that a process is absent.
+
+The plan must validate all of the following before it can name a database
+recoverable:
+
+- `PRAGMA integrity_check` succeeds and `PRAGMA foreign_key_check` is empty.
+- The reservation table SQL, all twelve columns, and both expected indexes
+  exactly match the schema-3 contract; a missing, extra, or substituted object
+  is an incomplete-schema refusal.
+- The recorded schema version is 2, the table is present, and every
+  reservation-state count is zero. Any `starting`, `held`, `succeeded`,
+  `failed`, or otherwise unrecognized row refuses recovery; held rows are
+  never cleared or reclassified.
+- Project identity, local-state path, and database provenance bind to the
+  requested installation. A copied, forged, newer-than-supported, or
+  cross-project database refuses recovery.
+- A filesystem-consistent backup of `state.db`, `state.db-wal`, and
+  `state.db-shm`, when present, is made outside the project tree and described
+  by a hash manifest before any future mutation. Backup success is necessary
+  but never itself an authorization to apply recovery.
+
+Writer isolation is a separate, independently verified prerequisite. The
+future recovery implementation must verify a reservation-aware installed
+engine and refuse while any alpha.2/canonical version-2 CLI, MCP, Console, or
+arbiter-owned service can write this state root. A caller-supplied boolean or
+free-text claim that executors are stopped is insufficient. Runtime/version
+activation remains a separately owned and reviewed operation.
+
+### Proposed future interface (not implemented or invoked)
+
+The supported path should be two explicit commands implemented only after
+review:
+
+```text
+torch control-plane reservation-recovery plan --area project-kernel --target-schema 3 --json
+torch control-plane reservation-recovery apply --plan <plan-digest> \
+  --backup-manifest <backup-digest> --writer-attestation <trusted-record> --yes --json
+```
+
+`plan` is read-only. `apply` must be unavailable until the plan, immutable
+backup manifest, and a verifier-backed writer attestation all match current
+state. In one immediate write transaction it must repeat every validation,
+record an audit event, and only then advance the version label from 2 to 3.
+It must never create a missing reservation table, drop/rebuild an index, delete
+a row, clear a lease, or accept a different schema shape as a recovery
+shortcut. A changed hash, concurrent writer, or transaction contention aborts
+without a partial relabel.
+
+### Required deterministic scenarios before any implementation
+
+- Empty, exact twelve-column version-2 reservation state plus a trusted
+  reservation-aware writer produces a plan, backup manifest, and one atomic
+  relabel only after a separately reviewed apply.
+- A held row, active row, unknown state, nonzero data count, forged table SQL,
+  missing/altered index, newer schema, or version-3 state missing its table
+  refuses with no database change.
+- A v2 writer attempt racing the plan/apply boundary invalidates the writer
+  attestation or transaction precondition; recovery does not relabel and no
+  duplicate runtime reservation is created.
+- A forged caller evidence record cannot stand in for trusted writer isolation
+  or a verified backup manifest.
+
+These scenarios are additive future QA work under the existing strict consent;
+they do not relax ADR-024's fail-closed guard or change existing assertions.
+
 ## Consequences
 
 These decisions keep the first usable release local-first and provider-
