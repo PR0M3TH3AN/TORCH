@@ -732,7 +732,7 @@ function renderAttention(groups) {
   const definitions = [
     ['owner', 'Waiting on you', 'Only requests that name the project owner as decision-maker.'],
     ['fleet', 'Fleet handling', 'A named domain owns the next step; unknown ownership stays explicit.'],
-    ['arbiter', 'Arbiter handling', 'Serialized execution and installation decisions stay with the arbiter.'],
+    ['arbiter', 'Arbiter handling', 'No observed item has structured evidence assigning its next step exclusively to an arbiter.'],
   ];
   const total = Object.values(groups).reduce((sum, items) => sum + items.length, 0);
   setText('#attention-count', `${total} ${total === 1 ? 'item' : 'items'}`);
@@ -743,7 +743,7 @@ function renderAttention(groups) {
       ${items.length ? items.map((item) => `<article class="attention-item tone-${escapeHtml(item.tone)}">
         <span class="attention-mark" aria-hidden="true"></span><div class="attention-copy">
           <strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
-          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)} · ${escapeHtml(item.evidence)}</small>
+          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''} · ${escapeHtml(item.evidence)}</small>
           <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
           ${item.requestOwner ? `<a href="#owner-request-form" data-attention-recipient="${escapeHtml(item.requestOwner)}">Request review from ${escapeHtml(item.owner)}</a>` : ''}
         </div></article>`).join('') : `<p class="attention-empty">${escapeHtml(description)}</p>`}

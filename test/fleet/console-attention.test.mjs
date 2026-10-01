@@ -12,7 +12,7 @@ test('SCN-console-attention-ownership: only owner-addressed pending decisions en
     ],
     approvalRequests: { items: [
       { id: 'owner-review', status: 'pending', approver: 'owner', requester: 'provider-runtime',
-        title: 'Review executor boundary', task: 'TASK-RUNTIME', evidence: 'receipt:17', summary: 'Confirm the bounded scope.' },
+        title: 'Review executor boundary', task: 'TASK-RUNTIME', evidence: 'receipt:17', createdAt: '2026-10-01T06:00:00Z', summary: 'Confirm the bounded scope.' },
       { id: 'qa-review', status: 'pending', approver: 'qa', requester: 'owner-console',
         title: 'Confirm scenario path', summary: 'Review the owned test path.' },
     ] },
@@ -21,6 +21,7 @@ test('SCN-console-attention-ownership: only owner-addressed pending decisions en
   assert.deepEqual(groups.owner.map((item) => item.title), ['Review executor boundary']);
   assert.equal(groups.owner[0].href, '#approval-owner-review');
   assert.match(groups.owner[0].detail, /bounded scope/);
+  assert.equal(groups.owner[0].waitSince, '2026-10-01T06:00:00Z');
   assert.equal(groups.fleet[0].owner, 'Independent QA');
   assert.equal(groups.fleet[0].action, 'Open approval details');
   assert.doesNotMatch(JSON.stringify(groups.fleet), /Approve|Reject/);
@@ -47,20 +48,25 @@ test('SCN-console-attention-worktrees: findings group by owning area and disting
     doctor: { findings: [
       { severity: 'warning', code: 'WORKTREE_PROBLEM', area: 'provider-runtime', path: '/work/provider', problem: 'unique-commits:2' },
       { severity: 'warning', code: 'WORKTREE_PROBLEM', areaId: 'provider-runtime', path: '/work/provider', problem: 'worktree-dirty' },
+      { severity: 'warning', code: 'WORKTREE_PROBLEM', area: 'project-kernel', path: '/work/kernel', problem: 'unique-commits:1' },
       { severity: 'error', code: 'WORKTREE_PROBLEM', area: 'qa', path: '/work/qa', problem: 'git-operation:REBASE_HEAD' },
     ] },
     worktrees: [
       { area: 'provider-runtime', branch: 'runtime/fix', path: '/work/provider', ahead: 2, behind: 0 },
+      { area: 'project-kernel', branch: 'kernel/change', path: '/work/kernel', ahead: 1, behind: 0 },
       { area: 'qa', branch: 'qa/audit', path: '/work/qa', ahead: 0, behind: 0 },
     ],
   });
 
-  assert.equal(groups.fleet.length, 2);
+  assert.equal(groups.fleet.length, 3);
   const runtime = groups.fleet.find((item) => item.owner === 'Provider Runtime');
   assert.equal(runtime.tone, 'review');
-  assert.match(runtime.detail, /retained work progress, not a broken repository/);
+  assert.match(runtime.detail, /Ahead commits are retained work progress, not a broken repository/);
   assert.match(runtime.evidence, /runtime\/fix · \/work\/provider/);
   assert.equal(runtime.requestOwner, 'provider-runtime');
+  const kernel = groups.fleet.find((item) => item.owner === 'project-kernel');
+  assert.equal(kernel.tone, 'info');
+  assert.match(kernel.detail, /owning specialist or manager/);
   const qa = groups.fleet.find((item) => item.owner === 'qa');
   assert.equal(qa.tone, 'urgent');
   assert.match(qa.title, /worktree needs review/);
@@ -76,10 +82,29 @@ test('SCN-console-attention-wait-reasons: recovery and blocked task evidence kee
   });
 
   const recovery = groups.fleet.find((item) => item.title === 'Off-machine recovery copy is not verified');
-  assert.equal(recovery.owner, 'Release and Self-host');
+  assert.equal(recovery.owner, 'Responsible domain not recorded');
   assert.match(recovery.detail, /single disk failure could remove/);
   assert.match(recovery.evidence, /ONE-DISK · abcdef012/);
   assert.match(groups.fleet.find((item) => item.evidence === 'TASK-BLOCKED').detail, /no image was saved/);
+});
+
+test('SCN-console-attention-authority: roster titles name owners and integration stays with Fleet unless arbiter authority is explicit', () => {
+  const groups = project({
+    agents: [{ areaId: 'coordinator-7', title: 'Delivery Coordinator' }],
+    integration: [
+      { state: 'awaiting-checks', sourceArea: 'build-team', sourceCommit: '1234567890abcdef', authorizedBy: 'coordinator-7' },
+      { state: 'queued', sourceArea: 'docs-team', sourceCommit: 'abcdef0123456789' },
+    ],
+    managerWakes: { blockingCount: 1, reservations: [{ managerId: 'coordinator-7', scheduleId: 'nightly-review',
+      outcome: 'reserved', blocksManagerWake: true }] },
+  });
+
+  assert.equal(groups.fleet.length, 3);
+  assert.equal(groups.fleet[0].owner, 'Delivery Coordinator');
+  assert.match(groups.fleet[0].evidence, /authorized by Delivery Coordinator/);
+  assert.equal(groups.fleet[1].owner, 'Integration authority not recorded');
+  assert.equal(groups.fleet[2].owner, 'Delivery Coordinator');
+  assert.deepEqual(groups.arbiter, []);
 });
 
 test('SCN-console-attention-empty: an unavailable signal does not manufacture owner work', () => {

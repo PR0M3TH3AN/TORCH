@@ -24,12 +24,17 @@ test_integrity_note:
       given: "Approval evidence is unavailable and no queue or doctor finding is observed"
       when: "Attention items are projected"
       then: "No synthetic owner decision or operational issue is created"
+    - id: SCN-console-attention-authority
+      given: "Integration records may name a manager as authorizer while other runtime records lack an arbiter grant"
+      when: "Attention ownership is projected from the live roster"
+      then: "Roster titles supply display names, integration remains Fleet handling, and no arbiter-only authority is inferred"
   observable_outcomes:
     - "Attention groups distinguish owner decisions, Fleet work, and arbiter work"
     - "Approval action ownership follows the named approver"
     - "Repeated message queue evidence produces one item"
     - "Worktree progress and unsafe Git state have distinct descriptions"
     - "Unknown evidence stays explicit rather than gaining an invented owner"
+    - "Manager-authorized integration is not mislabeled as an owner or arbiter decision"
   determinism_controls:
     - "Tests pass fixed in-memory snapshots; no clock, network, or filesystem is consulted"
   anti_cheat_rationale:

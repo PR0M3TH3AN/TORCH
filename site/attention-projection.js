@@ -1,12 +1,5 @@
 (function (global) {
   const shortCommit = (value) => value ? String(value).slice(0, 9) : '—';
-const ownerDomainNames = {
-  'release-self-host': 'Release and Self-host',
-  'work-integration': 'Work and Integration',
-  'project-kernel': 'Project Kernel',
-  'session-manager': 'Session Manager',
-};
-
 function worktreeProblemLabel(problem) {
   if (problem === 'worktree-dirty') return 'Uncommitted changes are present';
   if (problem === 'worktree-missing') return 'The managed worktree is missing';
@@ -19,7 +12,7 @@ function worktreeProblemLabel(problem) {
 function attentionGroups(snapshot) {
   const groups = { owner: [], fleet: [], arbiter: [] };
   const agents = new Map((snapshot.agents ?? []).map((agent) => [agent.areaId, agent]));
-  const agentName = (id) => ownerDomainNames[id] ?? agents.get(id)?.title ?? id ?? 'Owner not recorded';
+  const agentName = (id) => agents.get(id)?.title ?? id ?? 'Owner not recorded';
   const add = (group, item) => groups[group].push(item);
   const approvals = (snapshot.approvalRequests?.items ?? []).filter((approval) => approval.status === 'pending');
 
@@ -31,6 +24,7 @@ function attentionGroups(snapshot) {
       owner: isOwner ? 'Project owner' : agentName(approval.approver),
       detail: `${agentName(approval.requester)} is waiting on ${isOwner ? 'your decision' : agentName(approval.approver)}. ${approval.summary || 'Request consequence and options are not recorded.'}`,
       evidence: [approval.task, approval.evidence].filter(Boolean).join(' · ') || 'Request evidence not recorded',
+      waitSince: approval.createdAt ?? null,
       href: `#approval-${encodeURIComponent(approval.id)}`,
       action: isOwner ? 'Review request and evidence' : 'Open approval details',
     });
@@ -73,7 +67,7 @@ function attentionGroups(snapshot) {
       tone: !hasUnsafeProblem ? 'info' : item.problems.some((problem) => problem.startsWith('git-operation:') || problem === 'worktree-missing') ? 'urgent' : 'review',
       title: !hasUnsafeProblem ? `${identity} has work ahead of main` : `${identity} worktree needs review`,
       owner: identity,
-      detail: `${labels.join('; ')}.${hasAhead ? ' Ahead commits are retained work progress, not a broken repository.' : ''} ${hasUnsafeProblem ? 'Review the exact worktree before deciding on recovery.' : 'Ask the owner to review a safe convergence plan.'}`,
+      detail: `${labels.join('; ')}.${hasAhead ? ' Ahead commits are retained work progress, not a broken repository.' : ''} ${hasUnsafeProblem ? 'Review the exact worktree before deciding on recovery.' : 'Ask the owning specialist or manager to review a safe convergence plan.'}`,
       evidence: [worktree?.branch, worktree?.path ?? item.path, worktree?.ahead != null ? `${worktree.ahead} ahead / ${worktree.behind ?? 0} behind` : null].filter(Boolean).join(' · ') || 'Branch and path not recorded',
       href: `#worktree-${encodeURIComponent(item.area)}`, action: 'Inspect this worktree',
       requestOwner: item.area !== 'unknown-owner' ? item.area : null,
@@ -88,7 +82,7 @@ function attentionGroups(snapshot) {
       : finding.code.replaceAll('_', ' ').toLowerCase().replace(/^./, (letter) => letter.toUpperCase());
     add('fleet', {
       tone: finding.severity === 'error' ? 'urgent' : 'review', title: humanTitle,
-      owner: recoveryGap ? 'Release and Self-host' : finding.area ? agentName(finding.area) : 'Responsible domain not recorded',
+      owner: finding.area ? agentName(finding.area) : 'Responsible domain not recorded',
       detail: recoveryGap
         ? `${finding.recommendation ?? 'Configure and synchronize an off-machine canonical Git boundary.'} A single disk failure could remove the only recorded recovery copy.`
         : finding.message ?? finding.recommendation ?? 'Review this condition with the responsible domain; its consequence is not recorded.',
@@ -105,25 +99,31 @@ function attentionGroups(snapshot) {
   });
 
   const waitingIntegration = (snapshot.integration ?? []).filter((item) => !['landed', 'rejected', 'superseded'].includes(item.state));
-  for (const item of waitingIntegration) add('arbiter', {
-    tone: 'review', title: `Integration ${item.state}`, owner: 'Session Manager / integration authority',
-    detail: 'Landing is serialized. The arbiter must check the exact candidate and required receipts before proceeding.',
-    evidence: `${item.sourceArea} · ${shortCommit(item.sourceCommit)} · ${item.reason ?? 'reason not recorded'}`,
+  for (const item of waitingIntegration) add('fleet', {
+    tone: 'review', title: `Integration ${item.state}`, owner: item.authorizedBy ? agentName(item.authorizedBy) : 'Integration authority not recorded',
+    detail: 'Review the exact candidate and required receipts under the current named landing authority. Queue state does not establish that a separate owner decision is required.',
+    evidence: [item.sourceArea, shortCommit(item.sourceCommit), item.authorizedBy ? `authorized by ${agentName(item.authorizedBy)}` : null, item.reason ?? 'reason not recorded'].filter(Boolean).join(' · '),
     href: '#delivery', action: 'Inspect integration queue',
   });
 
   const unknownWakes = snapshot.managerWakes?.blockingCount ?? 0;
-  if (unknownWakes) add('arbiter', {
-    tone: 'urgent', title: `${unknownWakes} manager launch${unknownWakes === 1 ? '' : 'es'} need inspection`,
-    owner: 'Session Manager', detail: 'An unknown launch blocks another scheduled wake. Inspect recorded runtime evidence; no automatic restart is available.',
-    evidence: 'A reserved launch does not prove the provider is still running.',
-    href: '#manager-wakes', action: 'Inspect manager launches',
-  });
+  if (unknownWakes) {
+    const reservations = (snapshot.managerWakes?.reservations ?? []).filter((item) => item.blocksManagerWake);
+    const wakeOwners = [...new Set(reservations.map((item) => agentName(item.managerId)))];
+    add('fleet', {
+      tone: 'urgent', title: `${unknownWakes} scheduled manager wake${unknownWakes === 1 ? '' : 's'} need inspection`,
+      owner: wakeOwners.join(', ') || 'Scheduled wake owner not recorded',
+      detail: 'A recorded reservation blocks another wake. Inspect current runtime evidence before acting; this record does not prove a provider is still running or establish who may restart it.',
+      evidence: reservations.map((item) => [item.scheduleId, item.reservedAt, item.outcome].filter(Boolean).join(' · ')).join('; ') || 'Reservation detail unavailable',
+      href: '#manager-wakes', action: 'Inspect manager launches',
+    });
+  }
 
   const unresolvedDelivery = (snapshot.deliveryOperations ?? []).filter((operation) => ['running', 'unknown', 'succeeded'].includes(operation.state));
-  if (unresolvedDelivery.length) add('arbiter', {
+  if (unresolvedDelivery.length) add('fleet', {
     tone: 'urgent', title: `${unresolvedDelivery.length} delivery operation${unresolvedDelivery.length === 1 ? '' : 's'} need review`,
-    owner: 'Release and Self-host', detail: 'Inspect recorded attempts and external state before considering recovery. Do not repeat effects automatically.',
+    owner: [...new Set(unresolvedDelivery.map((operation) => operation.actor ? agentName(operation.actor) : 'Operation owner not recorded'))].join(', '),
+    detail: 'Inspect recorded attempts and external state before considering recovery. Do not repeat effects automatically.',
     evidence: unresolvedDelivery.map((operation) => `${operation.operation} · ${operation.state} · ${shortCommit(operation.commit)}`).join('; '),
     href: '#operation-outcomes', action: 'Inspect operation outcomes',
   });
