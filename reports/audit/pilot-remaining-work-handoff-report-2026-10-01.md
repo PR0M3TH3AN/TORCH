@@ -1,5 +1,46 @@
 # Current pilot remaining-work handoff
 
+## Closing qualification gates at 08:09 UTC
+
+Manager's actual latest guarded merge is clean
+`002c13f72b0e97919397dc74484422e133c2c0de`, preserving37 unique Manager commits
+and canonical07a2bc ancestry after checkpointb560b61. JSON/diff integrity checked;
+coordination-only Manager requiredChecks remain empty. Canonical remains clean
+07a2bc with actual Runtime and Kernel landings/closures and next assignments below.
+
+Release actual native message `2bb686dd` reports guarded merge
+`28c941d1ecbc3da8908a84f96c06ac0b929d4b19` to canonical07a2bc. Manager independently
+verified exact clean native HEAD/ancestry and four fresh PASS/no-invalid receipts:
+test `2184043e-1f69-49f3-b4b1-9316801fb4b5`, check
+`a84bd57c-c39a-4cc6-8a88-61a73a098c5d`, dashboard
+`423c705b-df55-4fcd-a40f-e8d7652d3ebc`, lint
+`8702ca28-9e0a-4476-9366-4f7c37cb0536`. SAME alpha.3 task is **verification
+revision8**, pending new independent QA; no request or candidate plan/build yet.
+Olde0e94/0fca acceptance remains history. Runtime CLI consent is still pending its
+exact diff; no owner relay, installation/restart/wakes or inferred remote push.
+
+Owner `f722d04c` reports Console candidate366e3 produced dashboard receipt
+`75afe67b-8494-45bd-968f-0addacba8b4d` INCOMPLETE/worktree-changed-during-check.
+Manager independently read that exact receipt (exitStatus1) and old candidate
+engine source lacking isolation, while canonical contains
+TORCH_CHECK_ARTIFACT_DIR propagation. Candidate CLI alone is insufficient if the
+branch lacks the fix. Historical four changed PNGs are activity-review,
+check-evidence, operation-outcomes and owner-briefing-desktop. Native Console/QA
+messages `60133f3b`/`cae068b8` require byte preservation, public clean-before-run
+proof, immutable external archives/manifest and exact independent disposition
+before any restoration; no rerun of old engine or updated golden expectations.
+
+Latest live Console HEAD is **b600fc8beee2d15e68779b1a5939fcebc6047d33**, status
+clean, latest commit changes only attention-projection.js. Native blocker
+`c01ed23b` cites a different full b600 hash and retains artifact/visual waits.
+Manager message `b6e4af7f` asks exact current/archive/baseline hashes, public
+recovery provenance/actor and actual named QA decision or guard outcome. Current
+cleanliness does not prove qualified recovery; original receipt/bytes/history
+must remain recoverable. SAME task remains in_progress5, incomplete, with owned
+convergence/new engine/full gates/QA and actual desktop/mobile visual acceptance
+still open. Connected browser discovery remains unavailable. No peer file edits,
+cross-worktree recovery or external approval guard bypass by Manager.
+
 ## Authoritative landing and dispatch readback at 08:04 UTC
 
 **Canonical is now clean `07a2bc0fc97f66bf1d6f9933d117cfaf25f342a5`.** Actual
