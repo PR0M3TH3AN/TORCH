@@ -2715,3 +2715,52 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Console attention advisory cohorts (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-attention-advisory-cohort-cardinality-and-exact-references
+      given: "A fixed 49-task snapshot with equivalent stale or missing observed-commit findings in doctor and backlogHealth"
+      when: "The read-only attention projection groups those findings"
+      then: "Exactly one separately labelled advisory/recheck cohort contains the exact 49 task references and retains each owner, observedAt, current observed commit, and UNKNOWN reproduction status"
+    - id: SCN-attention-advisory-provenance-and-semantic-conflicts
+      given: "Doctor and backlogHealth findings that either match or differ in task, code, owner, observedAt, current observed commit, or reproduction status"
+      when: "The cohort uses the complete semantic fingerprint"
+      then: "Equal findings retain both provenance sources once; any differing fingerprint field remains a separate visible observation"
+    - id: SCN-attention-advisory-does-not-hide-owner-or-fleet-risks
+      given: "An advisory warning alongside an unsafe error, schema error, unknown wake, delivery operation, and owner-addressed pending decision"
+      when: "Attention is projected"
+      then: "Only the intended stale/missing warnings enter Advisory; the owner decision remains Owner action and all unsafe, schema, wake, and delivery findings remain Fleet action"
+    - id: SCN-attention-advisory-projection-is-read-only
+      given: "A frozen snapshot containing an advisory finding and a revisioned owner decision preview boundary"
+      when: "The attention projection runs"
+      then: "Snapshot, decision evidence, preview token, revision, and draft remain unchanged; projection invokes no acknowledgement, close, recovery, or decision action"
+    - id: SCN-attention-advisory-unknown-fields-stay-unknown
+      given: "A stale/missing observation whose owner, observedAt, and current commit provenance are absent"
+      when: "The advisory drilldown is formed"
+      then: "The task reference remains visible while missing owner and provenance remain null and reproduction is labelled UNKNOWN"
+  observable_outcomes:
+    - "One 49-reference advisory cohort replaces duplicated stale/missing attention cards while preserving exact drilldown references"
+    - "A populated advisory group remains enumerable and JSON-serializable; an empty projection preserves its original owner/fleet/arbiter object shape"
+    - "Each deduplicated observation retains doctor and backlogHealth provenance; conflicting records are never merged by code alone"
+    - "Owner decisions, unsafe recovery, schema errors, unknown wakes, delivery operations, and same-code errors remain in their existing action groups"
+    - "Observed source/revision displays the exact observedAt SHA without presenting it as a clock timestamp"
+    - "Projection does not mutate snapshot data or invoke state-changing actions, and existing owner quick-action preview/revision/draft assertions remain unchanged"
+    - "Source/scenario qualification is not actual live desktop/mobile visual acceptance"
+  determinism_controls:
+    - "Fixed hermetic task IDs, owner values, observedAt values, observed commit, finding codes, and provenance inputs"
+    - "Deep-frozen projection snapshots and an isolated demo serving one fixed in-memory snapshot; no existing fixture source, network, live project mutation, retries, or sleeps"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded cohort counts that omit or invent task references"
+      - "Deduplication by code alone that merges conflicting observations"
+      - "Discarding one source while presenting a deduplicated observation"
+      - "Hiding unsafe errors or owner decisions inside advisory summaries"
+      - "Changing preview, revision, draft, or acknowledgement behavior while rendering evidence"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
