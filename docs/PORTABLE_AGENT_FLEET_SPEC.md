@@ -2006,6 +2006,29 @@ binding, durable attempt identity, sealed artifact-manifest digest, and actual
 terminal outcome. Product-storage metadata must never be interpreted as a
 control-plane migration request.
 
+#### Proposed `CandidateAttemptStore/v1` and result records
+
+`CandidateAttemptStore/v1` would be registered control-plane receipt storage,
+not product storage. Its `AttemptRecord` would contain: `id`,
+`protocolVersion`, `tupleDigest`, state (`issued`, `executing`, `sealed`, or
+`finalized`), authenticated project and area, the E digest set, tagged S union,
+the A digest/schema set, frozen definition and input digests, guard and lease
+bindings, `artifactManifestDigest`, observed terminal state, `processFence`, and
+created/finalized timestamps. The proposed state machine is only
+`issued -> executing -> sealed -> finalized`; a final state never reopens.
+
+The proposed `ResultRecord` would contain `attemptId`, terminal
+`PASS|FAIL|INCOMPLETE`, attributable outcome proof, seal digest, and optional
+`receiptId`. `UNKNOWN` has no `ResultRecord` and remains nonfinalized attempt
+evidence with its guards. The missing store is not created by a source check,
+candidate engine, or receipt adapter. A future Kernel-approved provisioner
+would need separately reviewed receipt-schema qualification and explicit owner
+authorization to create it; that future provisioner is distinct from this
+proposal and is not a live migration or activation. `ReceiptAdapter/v1` would
+open only an already-compatible registered receipt schema and perform DML only;
+missing or incompatible storage must refuse before execution without adapter
+DDL, migration, relabeling, or root redirection.
+
 The registered-root authenticator, rather than a caller, would derive the
 registered area, project/install identity, clean managed subject, exact product
 commit, and root binding. The initial proposed CLI therefore accepts no caller
@@ -2045,29 +2068,37 @@ frozen definition, the bounded command arguments, and an explicit environment
 allowlist. The proposed baseline gives it per-attempt `HOME`, `TMPDIR`,
 `XDG_CACHE_HOME`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, and `XDG_STATE_HOME`, a
 dedicated artifact directory, and no inherited registered-state locations or
-provider credential variables. The adapter-owned collector accepts only
-regular artifacts beneath that attempt directory, refuses path traversal and
-links, and hashes a sealed manifest.
+provider credential variables. It receives no registered root, manifest,
+database, adapter identity, writable receipt path, or migration capability. A
+proposed process fence records direct-child and process-group observation;
+cancellation alone is not terminal proof. The adapter-owned collector accepts
+only an `ArtifactManifestV1` of canonically sorted relative paths, SHA-256, and
+byte lengths for regular files beneath its adapter-created attempt directory.
+Links, traversal, special files, overwrite, post-seal digest drift, or a
+noncanonical manifest refuse. The sealed manifest is write-once adapter
+evidence, not worker-controlled receipt storage.
 
-The proposed lifecycle is: durable guarded attempt creation; one worker
-transport; execution; adapter-observed proven terminal outcome; manifest
-sealing; then one atomic compare-and-swap finalization that consumes the attempt
-and persists its sealed result record after full tuple revalidation. A fully
-revalidated `PASS` inserts its registered receipt in that same action; a proven
-non-PASS atomically persists its terminal evidence record, which cannot satisfy
-a passing receipt or gate. There is never a durable consumed attempt without its
-corresponding receipt or terminal-evidence record. `PASS`, `FAIL`, and proven
-`INCOMPLETE` are distinct terminal outcomes. `FAIL` and `INCOMPLETE` remain
-observable durable evidence. Error, signal, timeout, ENOBUFS,
-malformed transport, input/subject drift, and zero-exit mutation are
-`INCOMPLETE` when proven; interruption, cancellation, or an ambiguous commit
-without a proven terminal outcome is `UNKNOWN`. `UNKNOWN` creates no receipt,
-does not consume-and-lose the attempt, and retains sealed evidence plus existing
-resource/worktree guards for exact-identity reconciliation without replay.
-Cancellation and `UNKNOWN` permit neither automatic replay nor release. A
-proven terminal failure is not `UNKNOWN`; with durable evidence and no live
-descendants, it may enter existing-policy scoped cleanup, not a newly authorized
-automatic release. Consumed or replayed attempt identifiers fail closed.
+`FinalizeV1` would require the exact tuple, active guard and lease bindings,
+process-fence evidence, and a sealed `ArtifactManifestV1`. It would use one
+`BEGIN IMMEDIATE` compare-and-swap transaction to move only that sealed open
+attempt to `finalized`, insert its `ResultRecord`, and, for `PASS`, insert its
+receipt in the same transaction. A duplicate, wrong tuple, inactive/mismatched
+guard or lease, nonsealed attempt, or already-finalized attempt fails closed.
+There is never a durable consumed/finalized attempt without the corresponding
+PASS receipt or non-PASS result record.
+
+`PASS`, `FAIL`, and proven `INCOMPLETE` are distinct terminal outcomes. `FAIL`
+and `INCOMPLETE` remain observable durable evidence even though neither is
+receipt-eligible for a passing gate. Error, signal, timeout, ENOBUFS, malformed
+transport, input/subject drift, and zero-exit mutation are `INCOMPLETE` only
+when proven. Interruption, cancellation, ambiguous commit, or uncertain
+persistence without proven terminal outcome is `UNKNOWN`: it has no terminal
+`ResultRecord`, retains sealed evidence, guards, leases, and resources for
+exact-identity reconciliation, and permits no replay, retry, or release. A
+proven `FAIL` or `INCOMPLETE` with durable attribution and no live descendants
+may perform only existing-policy scoped cleanup, recorded separately from
+receipt eligibility; it never becomes `PASS`. Consumed or replayed attempt IDs
+fail closed.
 
 Withholding those handles and capabilities is an **authority boundary**, not
 an operating-system filesystem sandbox. It prevents an authorized interface
@@ -2172,11 +2203,13 @@ protection or credential isolation is defense in depth when available.
 **Status: proposed design contribution only.** This interpretation does not
 modify the preceding integration requirements or authorize a new check,
 receipt, command, landing, or policy decision. If a future implementation
-accepts a candidate-source result, it would be eligible only for the exact
-unlanded commit and the complete proposed tuple in section 18; it would remain
-distinct from an installed operational result and would require a fresh
-operational run wherever that subject is required. Fixture attestations remain
-nonpromotable and cannot satisfy an integration requirement.
+accepts an explicitly reviewed candidate-source result, it could feed a
+prelanding integration requirement only for the exact unlanded commit and the
+complete proposed tuple in section 18. This does not require a post-landing
+operational subject to prove that prelanding condition, which would be circular.
+Operational gates remain distinct and require their own independently
+authenticated operational-runtime subject. Fixture attestations are always
+nonpromotable and cannot satisfy any integration requirement.
 
 The current registered schema/engine guard remains authoritative: the observed
 Project Kernel reservation candidate `be1ae951` initializes `ControlPlane`,

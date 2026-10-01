@@ -661,6 +661,20 @@ guard/resource binding, durable attempt identity, sealed artifact-manifest
 digest, and actual terminal outcome. Product-storage schema metadata is not a
 registered receipt/control-plane schema change.
 
+The proposed `CandidateAttemptStore/v1` is registered control-plane receipt
+storage, not product storage. `AttemptRecord` would bind `id`, protocol and
+tuple digests, `issued|executing|sealed|finalized` state, authenticated project
+and area, E/S/A sets, frozen definition/input digests, guard and lease bindings,
+artifact-manifest digest, observed terminal, process fence, and timestamps.
+`ResultRecord` would bind `attemptId`, `PASS|FAIL|INCOMPLETE`, attributable
+outcome proof, seal digest, and optional `receiptId`; `UNKNOWN` has no
+`ResultRecord` and remains nonfinalized guarded evidence. A separately reviewed
+and owner-authorized Kernel provisioner—not a source check, candidate engine,
+or adapter—would have to create the store under a qualified registered receipt
+schema. Until then, missing or incompatible storage refuses; it is not silently
+created, migrated, or activated. `ReceiptAdapter/v1` opens an already-compatible
+registered schema and performs DML only.
+
 The Kernel would derive a native candidate context from the registered
 manifest/root, registered area, and exact clean managed candidate, rather than
 accepting caller paths, manifests, database handles, receipt adapters, commits,
@@ -683,30 +697,43 @@ manifest/root, and XDG state. It may return a permanently nonpromotable
 relabeled into registered receipt storage, and Integration, Backlog, and
 Delivery would not consume it as a gate result.
 
+That fixture nonpromotion does not make every source subject unusable. A future
+explicitly reviewed candidate-source result may satisfy a prelanding integration
+requirement for its exact unlanded subject; requiring an independently
+authenticated post-landing operational subject for that same prelanding
+condition would be circular. Operational gates still require their own
+independently authenticated operational-runtime subject.
+
 The proposed worker transport is an adapter-created opaque fresh single-use
 attempt with a dedicated artifact directory. The worker would receive only a
 verified immutable snapshot, frozen definition, bounded arguments, an explicit
 environment allowlist, and per-attempt `HOME`, `TMPDIR`, and XDG homes; it
 would receive neither registered root/manifest/database locations nor provider
-credential variables. The adapter-owned collector would accept regular files
-only below the attempt directory, reject links and traversal, and seal a hashed
-artifact manifest.
+credential variables. It would receive no registered root, manifest, database,
+adapter identity, writable receipt path, or migration capability. A process
+fence would record direct-child and process-group observation; cancellation
+alone is `UNKNOWN`. The adapter-created attempt directory would yield only a
+write-once `ArtifactManifestV1`: canonical sorted relative paths, SHA-256, and
+byte lengths for regular files. Links, traversal, special files, overwrite, or
+post-seal digest drift would refuse.
 
-The proposed lifecycle is durable guarded-attempt creation, execution over one
-opaque worker transport, adapter observation of an actual terminal outcome,
-manifest sealing, and an atomic compare-and-swap transaction that consumes the
-attempt while persisting its sealed result record after full tuple
-revalidation. A fully revalidated `PASS` inserts its registered receipt in that
-same transaction; proven non-PASS terminal evidence is atomically retained for
-observability but cannot qualify a passing gate. No consumed attempt persists
-without its associated receipt or terminal-evidence record. `PASS`, `FAIL`, and
-proven `INCOMPLETE` stay distinct. A non-proven interruption, cancellation, or
-ambiguous commit is `UNKNOWN`: it creates no receipt, is not consumed-and-lost,
-and retains sealed evidence and guards for exact-identity reconciliation without
-replay or automatic release. A proven terminal failure is not `UNKNOWN`; where
-it has durable evidence and no live descendants, existing policy may scope its
-cleanup without creating a new automatic-release authority. Consumed or replayed
-identifiers fail closed.
+`FinalizeV1` would require exact tuple, active guard/lease bindings,
+process-fence evidence, and sealed `ArtifactManifestV1`. One `BEGIN IMMEDIATE`
+compare-and-swap transaction would finalize only the matching sealed open
+attempt, insert `ResultRecord`, and insert a PASS receipt in that same
+transaction only for PASS. Duplicate, wrong-tuple, inactive-binding, nonsealed,
+or finalized attempts fail closed; no durable finalization exists without its
+PASS receipt or non-PASS result record.
+
+`PASS`, `FAIL`, and proven `INCOMPLETE` remain distinct terminal evidence;
+non-PASS is durable observable evidence but cannot pass a gate. Error, signal,
+timeout, ENOBUFS, malformed transport, drift, and zero-exit mutation are
+INCOMPLETE only when proven. Unproven interruption, cancellation, ambiguous
+commit, or uncertain persistence is `UNKNOWN`: no terminal ResultRecord, no
+receipt, no replay/retry/release, and retained evidence, guards, leases, and
+resources for exact-identity reconciliation. A proven FAIL or INCOMPLETE with
+durable attribution and no live descendants may take only existing-policy scoped
+cleanup, separately recorded from receipt eligibility; it never becomes PASS.
 
 These withheld capabilities are an authority boundary, not an OS filesystem
 sandbox. They stop the proposed interfaces from granting registered-root or
