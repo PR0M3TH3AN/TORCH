@@ -60,6 +60,21 @@ test('SCN-console-view-title-mapping: Overview retains its dashboard title while
   await assertSelectedView(page, 'overview', 'Overview');
 });
 
+test('SCN-console-owner-briefing-evidence-limitation-stays-visible: collapsed provenance keeps the warning visible', async (t) => {
+  const { page } = await openDemo(t, { width: 1280, height: 900 });
+  await page.locator('.console-rail a[href="#owner-briefing"]').click();
+  const publication = page.locator('#owner-briefing-content .briefing-publication');
+  const warning = publication.locator(':scope > p.briefing-muted').filter({ hasText: 'Recorded evidence, not independent live verification.' });
+  const provenance = publication.locator('details.briefing-provenance').filter({ hasText: 'Publication time and reporting window' });
+  assert.equal(await warning.count(), 1);
+  assert.equal(await warning.isVisible(), true);
+  assert.match(await page.locator('#owner-briefing').innerText(), /not independent live verification/);
+  assert.equal(await provenance.count(), 1);
+  assert.equal(await provenance.evaluate((details) => details.open), false);
+  assert.equal(await provenance.locator('time').count(), 1, 'the exact publication time remains in compact metadata');
+  assert.equal(await provenance.locator('time').isVisible(), false, 'publication time stays inside the closed disclosure');
+});
+
 test('SCN-console-secondary-deeplink-focus-and-history: direct fragments and history land on the actual target', async (t) => {
   const { page } = await openDemo(t, { width: 390, height: 844 });
   const base = `http://127.0.0.1:${new URL(page.url()).port}/console?demo=1`;

@@ -25,7 +25,12 @@ async function selectView(page, view) {
   const link = page.locator(`.console-rail a[href="#${view}"]`);
   assert.equal(await link.count(), 1, `the ${view} view must have one supported fragment link`);
   if (await link.getAttribute('aria-current') !== 'page') await link.click();
-  await page.locator(`.console-workspace > [data-console-view="${view}"]`).waitFor({ state: 'visible' });
+  const viewSections = page.locator(`.console-workspace > [data-console-view="${view}"]`);
+  const visibleSections = page.locator(`.console-workspace > [data-console-view="${view}"]:not([hidden])`);
+  const sectionCount = await viewSections.count();
+  assert.ok(sectionCount > 0, `${view} must have a fragment-addressable workspace section`);
+  await visibleSections.first().waitFor({ state: 'visible' });
+  assert.equal(await visibleSections.count(), sectionCount, `all ${view} sections must be visible together`);
 }
 
 async function selectViewFor(page, selector) {

@@ -182,7 +182,16 @@ function compactOwnerBriefingProvenance() {
       timestamp.textContent = ageLabel(timestamp.getAttribute('datetime'));
       timestamp.title = exactTime.textContent;
     }
-    if (window) disclosure.append(window);
+    if (window) {
+      const limitation = 'Recorded evidence, not independent live verification.';
+      if (window.textContent.includes(limitation)) {
+        const visibleLimitation = window.cloneNode(false);
+        visibleLimitation.textContent = limitation;
+        window.textContent = window.textContent.replace(limitation, '').trim();
+        window.after(visibleLimitation);
+      }
+      disclosure.append(window);
+    }
     publication.append(disclosure);
   }
 

@@ -2590,6 +2590,10 @@ test_integrity_note:
       given: "The Console loads Overview and a reader selects each other supported view"
       when: "The reader returns to Overview after visiting contextual views"
       then: "Overview has the exact title TORCH Dashboard on initial and return navigation; all other views keep their exact contextual titles"
+    - id: SCN-console-owner-briefing-evidence-limitation-stays-visible
+      given: "The sample Console has a published owner briefing with reporting provenance"
+      when: "The owner briefing is rendered without opening compact provenance details"
+      then: "The warning that recorded evidence is not independent live verification remains visible, while exact publication time and reporting-window details stay in the collapsed disclosure"
     - id: SCN-console-secondary-deeplink-focus-and-history
       given: "The Console is loaded at the organization-proposals or approval-request-list fragment"
       when: "The reader opens either direct link and uses browser Back and Forward"
@@ -2606,6 +2610,7 @@ test_integrity_note:
     - "An unchanged current-revision preview, confirmation boundary, and draft retained after refresh"
     - "A regenerated preview token and displayed revision bound to N+1"
     - "Exact Overview and contextual view titles, plus focused in-viewport secondary targets across direct loads and browser history"
+    - "Visible recorded-evidence limitation beside owner briefing content while exact provenance remains compact and collapsed"
     - "No browser requests to live project APIs and no changes to tracked screenshot expectations"
   determinism_controls:
     - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
