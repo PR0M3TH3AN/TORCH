@@ -1,5 +1,34 @@
 # Current pilot remaining-work handoff
 
+## Integrated Work review received at 12:33 UTC
+
+Actual Work **cc6a8118** full integrated design-lead contract received/read and
+acknowledged. It verifies exact674 proposed two-document scope and specifies
+engine E, authenticated subject S (product storage schema as immutable metadata),
+registered authority A (receipt/current control-plane schema), definition/input/
+guard/terminal/sealed-artifact digests. The review now separates product schema
+from required engine/adapter schema and retains legitimate legacy tuples plus
+current native3/2 refusal. Fixture attestations remain permanently nonpromotable;
+source receipts and post-landing operational acceptance are separate.
+
+Work adopts sealed-artifact then atomic consumed+receipt transaction, unknown
+interruptions guarded with no fabricated receipt/automatic retry/resource release.
+Manager routes actual integrated review to Kernel/Release/QA. Exact engine source
+commit/loaded module/runtime bytes must remain independent of subject product
+commit. Supported durable atomic store contract, cancellation/terminal fence,
+artifact sealing/confinement and ambiguous persistence reconciliation remain
+concrete peer-review choices before implementation.
+
+Owner d6 has already settled initial derived-subject/no-selection/no expected-
+commit design; Release must confirm presentation/refusal details, not request
+another owner selector decision. Kernel revised proposed-doc commit and actual
+QA lifecycle/schema/capability contribution verdict remain open. Exact674 is a
+reviewable proposal, not final design acceptance, qualified native receipt,
+landing or operational acceptance. Manager checkpoint **386913f** retains strict
+same-task Console continuity and stale-wait evidence, clean before this final
+review record. No source, gate, provider, installation, schema or host changes.
+
+
 ## Current proposed amendment, resolved scope and protocol review at 12:30 UTC
 
 Actual Kernel **ce742a86** delivered clean **674d2418572026692e08307c5e9c71ae89c219d8**:
