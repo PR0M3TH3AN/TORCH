@@ -24,7 +24,7 @@
   ],
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": "Immutable test-integrity evidence",
-  "milestone": "Corrected V1 oracle and approved QA record ownership application",
+  "milestone": "QA-consented V1 schema; record ownership and implementation prerequisites",
   "state": "blocked",
   "owner": "work-integration",
   "evidence": [
@@ -46,8 +46,8 @@
   "integrationRequest": null,
   "blockedReason": "Read-only preparation complete. Actionable INTERNAL Work/QA contract decision: return concrete version-pinned record schema/canonical preimage/exact YAML/test paths/scenarios requested by actual QA1e477 (owner4646), then obtain named contributor/gate consent and sequence bounded implementation. Historical61de permits evidence preparation only. This is not an owner strategic permission hold; no code/migration/acceptance or automatic dependency unblocking.",
   "createdAt": "2026-10-01T07:36:25.425Z",
-  "updatedAt": "2026-10-01T18:39:45.725Z",
-  "revision": 8,
+  "updatedAt": "2026-10-01T18:49:09.682Z",
+  "revision": 9,
   "history": [
     {
       "from": null,
@@ -111,6 +111,19 @@
       "to": {
         "feature": "Immutable test-integrity evidence",
         "milestone": "Corrected V1 oracle and approved QA record ownership application"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:49:09.682Z",
+      "reason": "Actual QA5eab128e consents corrected Work packet only: positive955/903157 legacy:null plus original941/a80 invalid mandatory negative, explicitabcLFsourceSHA independently verified,61/14/PATH_UNOWNED remain. This resolves concrete oracle/scenario review, not code/migration/record authority. Complete addressed6038 read and Manager reproduced. Existing APPROVEDb103 named Kernel .torch two-config prefix amendment still needs safe continuity/qualifiedlanding/liveownerreadback; no new human request. Preserve blocked/Work owner/full criteria and every original failedpacket/history; current classification reason supersedes old pendingcorrectedQA wording.",
+      "from": {
+        "feature": "Immutable test-integrity evidence",
+        "milestone": "Corrected V1 oracle and approved QA record ownership application"
+      },
+      "to": {
+        "feature": "Immutable test-integrity evidence",
+        "milestone": "QA-consented V1 schema; record ownership and implementation prerequisites"
       }
     }
   ]

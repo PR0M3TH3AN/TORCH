@@ -1,5 +1,79 @@
 # Current pilot remaining-work handoff
 
+## Converged Release candidate and actual required-check failure, 18:58 UTC
+
+Actual Release41dee503 returns clean merged5b9e041cd4b1f5998130ccad5fbe2f8ecabeca44,
+direct parentsaccepted8fb/canonical0c2. Normal guarded convergence reached the
+preconsented sole TIN conflict; exact QA622/b69 resolution retained fullcanonical
+prefix165536bytes/SHAb82379a9 plus unchangedRelease suffix10141/SHA14264fcc, result
+175677/SHA0cbaafca611f11a43722d07a1aefa686264b4771238fdba92116fd39580450ab.
+Three changed paths only, runtime/test blobs unchanged fromaccepted8fb. Manager
+independently reads clean exactReleaseHEAD and strict real systemd parser scenario.
+
+Actual fresh native result: check04c0/test-dashboard857d/lintc7ee PASS; required
+test3fd75331 FAIL exit1,263pass/1fail/5skip, SCN-systemd-native-unit cannot initialize
+user systemd manager because RuntimeDirectory lookup returns No such device/address.
+Nine focused PASS and11 immutable dashboard artifacts do not waive that failure.
+Final exact source/provenance QA094e138d is routed separately from native readiness;
+Release retains output and classifies actual execution context with named QA/Runtime.
+No retry/test weakening/environment change or integration request. Workflowrevision28
+records actual gate disposition; no stale convergence/peer consent dependency claim.
+Fresh required PASS/current guards/final QA remain mandatory before ONE request.
+No host/service activation, schema repair, installation75 or source landing inferred.
+
+## Actual consent and implementation handoff, 18:54 UTC
+
+Owner7f3ff1a9 authorizes SAME Work B2 six-source-path phase; actual freshbrief,
+nextresume and liveownership checks precede native verification18->in_progress19.
+Instruction9e61c2d9 preserves all seven criteria,316/native receipt history and
+unique commits. No new assignment/provider launch. Named Kernel parser/parent
+contribution coordinated3af802bb; actual live policy/config registration remains
+separate. See PhaseB18:54 exact paths, independent complete framing vectors and
+owner74c3 A=receiptAdapter/M=outputs decision. Real Node/Chromium metadata exceeds
+productS64MiB quota: separate bounded E streaming caps proposed to named QA;
+product64/512 quota and FD3 admission64KiB unchanged. Browser executablePath is
+metadata, not actual headless-shell execution proof. Full native/store/consumer
+qualification still required, not a fixture-only/all-refusal endpoint.
+
+Actual QAb69cb44f RESOLVES exact Release TIN conflict consent: fullcanonical0c2
+plus8fb suffixoffset161664,175677bytes/SHA0cbaafca…450ab verified by QA. Routed
+Release94a3a507. SQLite mutable planning guard remains; guarded lossless convergence
+and fresh resulting SHA/four nativegates/11 artifacts/finalQA/ONErequest remain.
+No stale QA conflict permission hold or old-base integration acceptance.
+
+Actual QA5eab128e CONSENTS corrected Work integrity schema/scenario packet only;
+955/903157 positive and941/a80 missinglegacy negative are mandatory independent
+oracles, explicitabcLFsourceSHA/61/14/PATH_UNOWNED preserved. Actual QAe48f74b2
+consents B2 append-only TIN bound six existing aebbf test paths. Complete exact
+allowlist copy requested; implementer must read its actual QA-addressed consent
+before test edits. Neither consent grants live record ownership/migration/native
+acceptance. a655revision9 stays blocked on approved named-Kernel b103 application/
+qualification/readback and bounded implementation sequence, not generic human wait.
+
+Owner6fb30ef5 reports distinct actual RUNTIME_UPDATE_BUSY: global update.lock is
+acquired before provider freshness inspection, delaying Kernel during a legitimate
+configured Codex refresh. Source93 independently confirms order. This is separate
+from arbiter's earlier --version probe fault. SAME proposed update-startpaths
+revision2 now records acceptance requirement: one shared freshness flight or
+bounded durable coordination validating completed activation, with exact freshness,
+version validation, owner policy, rollback and wake guards preserved. No silent
+old-binary fallback, unsafe lock reap or unconditional retry. Runtimeaaef112d gets
+precise future contribution after sole assignede440; no parallel implementation,
+actual provider update or launch authorized by Manager.
+
+Independent owner-digest Console timestamp/coverage hunk and QA scenarios remain
+selected and precisely routed a4f1e68b/88aecb41; no response/consent is inferred.
+Health/mobile/thread UX and canonical one-path TODO remain existing future requests.
+All56 roadmap items and full criteria retained:39proposed/9blocked/6completed/
+1in_progress/1assigned after only the legitimate authorized Work phase transition.
+Workflowrevision27 remains blocked on actual installed/live/browser criteria;
+Overview0c2 landed/pushed is uninstalled. Only human75pending is activation-specific,
+five-PNG consent already satisfied, automatic wakesOFF. Native slots and actual
+session starts remain arbiter-controlled, not heartbeat-inferred.
+
+Earlier18:40/18:42 pending vector/corrected-QA/TIN summaries below are dated history,
+superseded by these actual recipient decisions, without deleting failed receipts.
+
 ## Current addressed decisions and next owned actions, 18:40 UTC
 
 Current briefd7e6d69, explicitly addressed unread100, all56 task records, native

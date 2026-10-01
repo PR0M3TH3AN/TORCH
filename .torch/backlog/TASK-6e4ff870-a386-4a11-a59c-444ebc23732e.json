@@ -24,8 +24,8 @@
   ],
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check execution provenance and state isolation",
-  "milestone": "B2 registered policy and no-write native planning admission",
-  "state": "verification",
+  "milestone": "B2 corrected policy framing and native composition review",
+  "state": "in_progress",
   "owner": "work-integration",
   "evidence": [
     "message:28f03fa6-ff6e-4af8-87e0-631218f1ec55:owner-bounded-design-document-phase",
@@ -90,14 +90,19 @@
     "message:7921552a-15f6-4335-b81e-a447ed365efe:current-reviewed-decision-see-17:57-handoff",
     "message:e137bf05-115c-4868-a1bf-2bc0f0df35b1:current-reviewed-decision-see-17:57-handoff",
     "message:056cbde7-b080-44a5-bff8-00ffe9992fc2:current-reviewed-decision-see-17:57-handoff",
-    "message:28e814a2-9742-4a40-a156-1b9e39dedc26:actual-existing-Work-read-only-contract-WIP"
+    "message:28e814a2-9742-4a40-a156-1b9e39dedc26:actual-existing-Work-read-only-contract-WIP",
+    "message:7f3ff1a9-8729-4ea2-912a-396d09bdb926:arbiter-exact-B2-Work-implementation-phase-authorization",
+    "message:e2435195-2419-470b-a209-48bf11986794:exact-six-Work-source-path-contribution",
+    "message:c10696f6-dbef-45d6-a68f-733c007744b3:private-native-admission-delta",
+    "message:f1eab31b-e64f-4880-8fbc-27a8a5cbde81:complete-policy-framing-fixture-independently-reproduced",
+    "message:e48f74b2-484a-4df2-85a4-458a572f1c20:QA-B2-append-only-TIN-consent"
   ],
   "commit": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T18:42:58.762Z",
-  "revision": 17,
+  "updatedAt": "2026-10-01T18:52:30.678Z",
+  "revision": 19,
   "history": [
     {
       "from": null,
@@ -203,6 +208,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T18:15:19.000Z",
       "note": "Record actual owner28 existing Work read-only contract turn WIP; no new assignment/status/schema field, implementation permission, consent assumption or lifecycle change. All original source/criteria/history/refusals preserved; concrete returned contract and QA contributor decisions remain required."
+    },
+    {
+      "from": "verification",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:52:30.678Z",
+      "note": "Resume SAME Work task/owner after actual owner7f3ff1a9 B2 implementation authorization, currentbriefd7 and native nextresumeTHISverification18; live ownership all six paths Work. ONLY NEW candidate-source-bootstrap/input-snapshot/source-execution/execution-fence/private-fence-init modules under src/checks, plus existing checks/service.mjs admission-only hunk per e243/c106. Ratified optional registered policy/native private admission, actual frozen npm/Node/Chromium/dependency bytes, observed namespace closure/UNKNOWN, strict input/output/artifact quotas. Read own actual QAaebbf/f67b/e48 exactsix testpaths/scenarios and appendTIN consent before those edits; preserve old assertions. Coordinate named Kernel existingconfig parser/newopaqueparent source contract separately, no .torch registration/DDL/schema/writer/receiptconsumer/CLIlegacy changes. All seven fullcriteria/old316candidate+landedrequest/history/legacy2/current3vs2refusals preserved; B2local source is not native or fulltaskacceptance. No newassignment/secondWorkitem/providerstart/wakes/install75/publication."
     }
   ],
   "classificationHistory": [
@@ -230,6 +242,19 @@
       "to": {
         "feature": "Check execution provenance and state isolation",
         "milestone": "B2 registered policy and no-write native planning admission"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:49:16.479Z",
+      "reason": "Actual Kernelf1eab31b supplies missing literals package.json/vector, complete executable fixture bytes/framepreimage. Manager independently reproduces1347/a1f4b211ddf04d499d1c68c2a872f2b58e6a64bf9b93edb7f3d845a6d81c5f4b and trailing-space negative1348/035487e603fbefa2e6cdac4dc343d9bf5fefc58afd1f30ff2c10fb8335f8624f; all frame lengths/Node60/npm59/package104 hashes match. Retain prior932 history, fixture framing not realprovenance. Actual QAe48f74b2 consents appendTIN bound six existingaebbf paths; exactallowlistcopy requested, no code inferred. Work071bedff ratification/artifact-vs-adapterA decision pending; Kernelproposedapplier needs reviewed actualregistration authority. Same6e4 no-writeplanning requirement remains. Preserve verification seven full frozen4gate/nativeadapter/consumers/operationalcriteria, legacy2/current3/2refusal.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 registered policy and no-write native planning admission"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 corrected policy framing and native composition review"
       }
     }
   ]

@@ -16,7 +16,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Owner-reviewed first development backlog",
+  "milestone": "Observed concurrent provider freshness flight and fail-closed recovery",
   "state": "proposed",
   "owner": null,
   "evidence": [],
@@ -24,8 +24,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.624Z",
-  "updatedAt": "2026-09-30T19:30:23.624Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T18:49:05.655Z",
+  "revision": 2,
   "history": [
     {
       "from": null,
@@ -33,6 +33,21 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.624Z",
       "note": "Task created."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:49:05.655Z",
+      "reason": "Actual owner6fb30ef5 incident: legitimate configured Codex freshness activation0.159.2->0.159.3 held global update.lock; Kernel failed RUNTIME_UPDATE_BUSY because lock acquired before per-provider freshness. Owner verified terminal/lock absence and retried existing identity; no lock deletion, old-binary fallback or policy change. Same task acceptance requirement: concurrent starts share one freshness flight or durable bounded coordination with independently validated completed activation, retain freshness/version validation/rollback/owner policy/wake guards; unknown interruption refuses, no unsafe reaping/unconditional retry. Separate prior arbiter --version output-probe fault2f3 (not installed executor bug). Source93 audited. Preserve proposed/unassigned full original criteria; Runtimee440 remains sole assigned item, no extra implementation/start. Named Runtime/Kernel future contribution and QA deterministic concurrency scenarios, no live updates authorized.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-reviewed first development backlog"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Observed concurrent provider freshness flight and fail-closed recovery"
+      }
     }
   ]
 }

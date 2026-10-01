@@ -22,7 +22,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Release correction source accepted; guarded lossless convergence and exact final QA",
+  "milestone": "Converged Release source review; required systemd-native test FAIL",
   "state": "blocked",
   "owner": "owner-console",
   "evidence": [
@@ -122,8 +122,8 @@
   "integrationRequest": "cb83a211-9f3f-4688-98fe-3faaece76da6",
   "blockedReason": "Exact scoped Overview0c2 source independently QAe454 accepted and single native cb83a211 landed18:06:20; canonical clean0c2 independently observed. Prior accepted4fa/e8 source and histories preserved. Full task remains blocked on actual live/installed desktop/mobile owner flow, truthful served UI/API engine provenance and current durable blockedReason visibility; generated demo/native artifacts do not qualify installed/live acceptance. Human runtime75 remains pending, browser disconnected, alpha3 pointer switch alone cannot fix missing fields. Later93b health/mobile UX is separately proposed; Release9a0 actually QA-rejected invalid-pointer privacy edge; same three-path correction already active, future exact QA/post-advance convergence required. No installation/host/provider/wake/schema/publication.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T18:39:51.779Z",
-  "revision": 26,
+  "updatedAt": "2026-10-01T18:57:51.449Z",
+  "revision": 28,
   "history": [
     {
       "from": null,
@@ -313,6 +313,32 @@
       "to": {
         "feature": "Self-host development readiness",
         "milestone": "Release correction source accepted; guarded lossless convergence and exact final QA"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:49:13.379Z",
+      "reason": "Actual QAb69cb44f consents ONLY exact TIN formula canonical0c2 complete bytes +8fb suffixoffset161664, independently175677bytes/SHA0cbaafca...450ab. Routed Release94a3a507, peer conflict permission resolved. SQLite planning writer guard remains separate; normal supported guarded convergence needs legitimate scoped tool approval/arbiter reentry. Fresh resultingexactSHA four nativegates/immutable11artifacts/finalQA/one request stillrequired; old8fb sourceacceptance not mergedcandidate/install/fullworkflow. Preserve blockedConsole ownership0c2/cb83/fullcriteria and allrejections/queue records/human75.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Release correction source accepted; guarded lossless convergence and exact final QA"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "QA-consented lossless Release convergence; exact merged qualification"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:57:51.449Z",
+      "reason": "Actual Release41dee503 returns clean merged5b9e041 (8fb+canonical0c2) exact3paths/preconsentedTIN175677/SHA0cbaafca611f11a43722d07a1aefa686264b4771238fdba92116fd39580450ab. Ninefocus pass, actual currentnativecheck04c0/dashboard857d/lintc7ee PASS, requiredtest3fd75331 FAIL263pass1fail5skip at SCN-systemd-native-unit RuntimeDirectoryNo such device/address. Manager independently reads cleanHEAD/teststrictrealparser boundary; no retries/assertion weakening/environmentchanges. Finalexactsource QA094e138d requested separately from nativequalification. No request/authorization/landing until actualrequiredPASS evidence/currentguards; preservefailures and livewholeworkflowblockedCriteria/0c2sourcehistory/human75.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "QA-consented lossless Release convergence; exact merged qualification"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Converged Release source review; required systemd-native test FAIL"
       }
     }
   ]

@@ -10,6 +10,42 @@ no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
 ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
+## Current B2 implementation phase, 18:54 UTC
+
+Actual owner7f3ff1a9 authorizes EXISTING Workfull6e4 bounded B2 implementation.
+Fresh briefd7/native nextresumeTHISverification18 and six live Work-owned source
+paths were checked; supported transition to in_progress19 preserves owner, old316
+candidate/landed request, every prior evidence/history entry and all seven criteria.
+Exact instruction9e61c2d9: five NEW checks modules (bootstrap/input-snapshot/source-
+execution/fence/private-fence-init) and ONLY the existing service admission hunk
+from e243/c106. Work must read actual own QAaebbf/f67b/e48 six-test-path allowlist
+before test edits; no invented paths. Actual QAe48 consents bound append-only TIN.
+No new assignment/session start, .torch policy registration, live DDL/schema,
+legacy receipt/consumer behavior change, native acceptance or full-task closure.
+Named Kernel parser/opaque parent contribution is coordinated directly3af802bb;
+no extra context-module hunk without exact agreement. Arbiter controls re-entry.
+
+Kernel f1eab31b now supplies complete missing package_json_path=package.json and
+package_script_name=vector plus executable fixture bytes. Manager independently
+reproduces all11 frame lengths, positive1347/SHAa1f4b211ddf04d499d1c68c2a872f2b58e6a64bf9b93edb7f3d845a6d81c5f4b
+and raw-script trailing-space negative1348/SHA035487e603fbefa2e6cdac4dc343d9bf5fefc58afd1f30ff2c10fb8335f8624f;
+Node60/npm59/package104 literal hashes match. Omitted-vector-fields hold is resolved;
+the prior932 proposal remains history. This is framing fixture evidence only.
+
+Owner74c3c3f2 resolves A as the actual registered receipt ADAPTER identity/content/
+interface/schema; call Phase-A output manifest M/artifactManifest. Frozen B2
+execution cannot claim receipt-adapter or native qualification before owned B2c
+composition. Owner metadata measurements (no browser launch) Node124835376bytes
+and Chromium executablePath269778136bytes exceed productS64MiB/file; E is separate.
+Preserve S64MiB/file512MiBtotal. Narrow E cap proposal to Work/QA/Kernel: streaming
+64KiB chunks,512MiB/file,4GiBtotal,32768records,4096UTF8path,16MiB canonicalmanifest;
+FD3 admission64KiB remains digests only. These quantitative E caps require actual
+QA decision/ratification before becoming implementation policy, not a blanket
+code halt. Exact-cap/+1, streaming actual >64MiB binary, tree/manifest/drift and
+real headless-shell selection scenarios must remain strict. Browser metadata path
+does not prove consumed binary/runtime/transitive identity. No unbounded read,
+PATH/cache fallback, S relaxation or permanent all-real-gates refusal endpoint.
+
 ## Current B2 owned decisions and remaining registration seam, 17:53 UTC
 
 ### Addressed native admission and policy delta, 18:40 UTC
