@@ -1,5 +1,17 @@
 # Current pilot remaining-work handoff
 
+Latest reviewed Release handoff **0c4ea57c** returns clean exact
+**8fb58b232ed5e854f00125a3b96922a2c8615b98**, same three paths,9/9 focused reported,
+null invalid-pointer target/version with retained typed refusal, strict absolute/
+escaping serialized privacy and useful-fact preservation. Manager independently
+reads four exact native PASS c74c/ba6c/f961/033e with invalidReason null; implementer
+reports11 immutable artifact hashes and unchanged170135-byte TIN prefixSHA47082be.
+Correction source is NOT yet independently accepted. Concrete exact review is
+routed existing QA; arbiter controls manual review re-entry, Manager starts none.
+Release still has base4fa against landed/pushed canonical0c2: after actual correction
+verdict, clean guarded convergence preserving histories/new exact gates/artifacts/
+final QA precede ONE request. No current Release request/landing or full live claim.
+
 Current owner **28e814a2** confirms arbiter actually resumed EXISTING Work read-only
 for the concrete integrity-record and B2 native plan/bootstrap/private-init decisions
 against the pinned17:53 packet. This replaces the prospective Work re-entry below:
