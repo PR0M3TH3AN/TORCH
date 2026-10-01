@@ -298,7 +298,7 @@ try {
   assert.equal(await livePage.locator('#task-create-form [name="title"]').inputValue(), 'My unfinished task');
   await livePage.locator('#refresh-console').click();
   assert.equal(await livePage.locator('#runtime-profile-model').inputValue(), 'owner-draft-model');
-  await selectViewFor(livePage, '.approval-decision-form');
+  await selectView(livePage, 'flow-watch');
   await livePage.screenshot({ path: screenshotPath('torch-dashboard-live-refresh.png') });
   await livePage.close();
 
