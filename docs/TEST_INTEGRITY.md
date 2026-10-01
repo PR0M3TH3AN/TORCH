@@ -140,6 +140,37 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
+## 2026-09-30 — Generated exact-check artifacts
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-generated-check-artifacts
+      given: A clean managed worktree and an exact check that emits evidence
+      when: The same check runs twice through TORCH
+      then: Each pass retains separate external bytes and hashes bound to candidate commit, check definition, and run ID while the tested tree stays clean
+    - id: SCN-generated-check-mutation
+      given: A clean managed worktree and an exact check that emits external evidence
+      when: The command exits zero after mutating a tracked source file
+      then: The receipt remains incomplete and cannot qualify despite retained output
+  observable_outcomes:
+    - Recoverable output paths, byte counts, SHA-256 hashes, candidate/check/run provenance, and exact-pass qualification
+    - Git worktree status and incomplete receipt for a zero-exit source mutation
+  determinism_controls:
+    - Disposable local Git fixtures, deterministic run IDs, fixed evidence bytes, and no network or provider calls
+    - No retries, sleeps, baseline updates, stashes, restores, or source cleanup
+  anti_cheat_rationale:
+    prevents:
+      - Treating exit zero as an exact-check pass after a tracked expectation changes
+      - Losing or overwriting generated evidence between sequential check runs
+      - Claiming provenance without retained bytes and a content hash
+      - Hiding source mutations through automatic restore or cleanup
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Exact observed-file ownership evidence
 
 ```yaml

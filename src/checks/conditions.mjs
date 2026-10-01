@@ -18,7 +18,7 @@ function inspectReport(policy, report, subject) {
   return null;
 }
 
-function probe({ definition, subject, cwd, executor, clock }) {
+function probe({ definition, subject, cwd, executor, clock, environment = {} }) {
   const policy = definition.conditions;
   const startedAt = clock().toISOString();
   let result;
@@ -26,7 +26,8 @@ function probe({ definition, subject, cwd, executor, clock }) {
     result = executor(policy.command, policy.args ?? [], {
       cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
       timeout: (policy.timeout_seconds ?? 30) * 1000, maxBuffer: MAX_REPORT_BYTES,
-      env: { ...process.env, TORCH_CHECK_COMMIT: subject.commit, TORCH_CHECK_INPUT_DIGEST: subject.inputDigest ?? '' },
+      env: { ...process.env, ...environment,
+        TORCH_CHECK_COMMIT: subject.commit, TORCH_CHECK_INPUT_DIGEST: subject.inputDigest ?? '' },
     });
   } catch (error) {
     return { valid: false, reason: 'condition-probe-executor-failed', startedAt,
@@ -60,7 +61,7 @@ export function validConditionEvidence({ definition, conditions, commit }) {
     && (before.runtimeId === undefined || after.runtimeId === before.runtimeId);
 }
 
-export function executeConditionedCheck({ definition, subject, cwd, executor, clock }) {
+export function executeConditionedCheck({ definition, subject, cwd, executor, clock, environment = {} }) {
   const conditions = definition.conditions ? {
     provenance: 'project-reported', subject,
     required: definition.conditions.required, before: null, after: null,
@@ -68,7 +69,7 @@ export function executeConditionedCheck({ definition, subject, cwd, executor, cl
   let result;
   let invalidReason = null;
   if (conditions) {
-    conditions.before = probe({ definition, subject, cwd, executor, clock });
+    conditions.before = probe({ definition, subject, cwd, executor, clock, environment });
     if (!conditions.before.valid) return {
       result: { status: null, stdout: `TORCH_CHECK_CONDITIONS ${JSON.stringify(conditions.before)}\n`,
         stderr: conditions.before.reason },
@@ -78,7 +79,8 @@ export function executeConditionedCheck({ definition, subject, cwd, executor, cl
   try {
     result = executor(definition.command, definition.args ?? [], {
       cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, TORCH_CHECK_COMMIT: subject.commit, TORCH_CHECK_INPUT_DIGEST: subject.inputDigest ?? '' },
+      env: { ...process.env, ...environment,
+        TORCH_CHECK_COMMIT: subject.commit, TORCH_CHECK_INPUT_DIGEST: subject.inputDigest ?? '' },
     });
     if (result.error || result.signal) invalidReason = 'executor-failed';
   } catch (error) {
@@ -86,7 +88,7 @@ export function executeConditionedCheck({ definition, subject, cwd, executor, cl
     invalidReason = 'executor-failed';
   }
   if (conditions) {
-    conditions.after = probe({ definition, subject, cwd, executor, clock });
+    conditions.after = probe({ definition, subject, cwd, executor, clock, environment });
     if (conditions.after.valid && conditions.before.report.runtimeId !== undefined
       && conditions.after.report.runtimeId !== conditions.before.report.runtimeId) {
       conditions.after = { ...conditions.after, valid: false, reason: 'condition-runtime-changed' };

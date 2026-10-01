@@ -2,6 +2,39 @@
 
 Repository state outranks conversation memory. Query ownership before crossing a domain boundary.
 
+## Fresh owner authorization: guarded integration and continued development (2026-10-01)
+
+The owner explicitly answered the arbiter's two held decisions: "yes do whatever
+you need to do. And you can push commits to." This supersedes the earlier
+no-landing/no-push restrictions ONLY for continued TORCH development on
+rewrite/portable-agent-fleet and task-owned specialist branches. It is fresh
+human consent, not an automatic goal continuation.
+
+Session Manager may resolve owner approval 2b2dfb35-46ac-4adb-ac14-5680f7a85e80,
+authorize and land exact request cce22c51-1fa8-4324-8e28-bf8cbfc56165 through
+TORCH's guarded serialized integration path after checking clean canonical state,
+exact candidate, ancestry and required PASS receipts. Subsequent QA-accepted
+development candidates may use that same checked path; never waive gates.
+The arbiter may push verified commits to origin/rewrite/portable-agent-fleet
+without force, after checking the remote boundary and test evidence.
+
+QA may retry interrupted decision 406ff30e-b317-4733-b39e-f63c9a57506d. QA must
+independently recheck the exact five PNG paths, candidate HEAD, current/archive
+hashes and clean-before-run provenance. Only Project Kernel may apply an approved
+five-path restoration; keep the archive and old unqualified receipts. The earlier
+c2a1702b rejection stays rejected. This is not arbitrary cleanup authority.
+
+Continue resolving the existing development backlog under domain ownership,
+assignment continuity, peer consent and independent QA. Finish the reliability
+dependencies first. Manager coordinates and records actual outcomes; the arbiter
+still controls provider starts and installation changes. Automatic wakes remain
+paused until executor qualification and an explicit safe activation decision.
+No default-main/legacy changes, deployment, package publication, spending/model
+changes, destructive cleanup, arbitrary new identities or hierarchy activation
+are granted. Preserve existing unique commits and user changes. Read this current
+canonical brief before acting; old conversation restrictions cannot conceal this
+new consent, and this consent cannot conceal failed checks.
+
 ## Routine work stays inside the fleet
 
 The owner authorizes routine coordination within existing task/role authority:

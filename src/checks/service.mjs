@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
@@ -33,6 +33,55 @@ function safeOutput(value, max = 256_000) {
 
 function definitionHash(definition) {
   return createHash('sha256').update(JSON.stringify(definition)).digest('hex');
+}
+
+function createCheckArtifactDirectory(stateRoot, runId) {
+  const root = realpathSync(stateRoot);
+  const parent = join(root, 'checks');
+  mkdirSync(parent, { recursive: true, mode: 0o700 });
+  const ownedParent = realpathSync(parent);
+  if (relative(root, ownedParent).startsWith('..') || lstatSync(ownedParent).isSymbolicLink()
+    || !lstatSync(ownedParent).isDirectory()) {
+    throw new TorchError('Check artifact parent is not an owned state directory', { code: 'CHECK_ARTIFACT_INVALID' });
+  }
+  const directory = join(ownedParent, runId);
+  if (resolve(directory) !== directory || relative(ownedParent, directory).startsWith('..')) {
+    throw new TorchError('Check artifact directory escapes local state', { code: 'CHECK_ARTIFACT_INVALID' });
+  }
+  mkdirSync(directory, { mode: 0o700 });
+  const generatedDirectory = join(directory, 'generated');
+  mkdirSync(generatedDirectory, { mode: 0o700 });
+  return { directory, generatedDirectory };
+}
+
+function captureGeneratedArtifacts({ generatedDirectory, commit, checkId, definition, runId }) {
+  const files = [];
+  function visit(current, path = '') {
+    for (const name of readdirSync(current).sort()) {
+      const absolute = join(current, name);
+      const entryPath = path ? `${path}/${name}` : name;
+      const stat = lstatSync(absolute);
+      if (stat.isSymbolicLink()) throw new TorchError('Generated check artifact cannot be a symlink', {
+        code: 'CHECK_ARTIFACT_INVALID', details: { path: entryPath },
+      });
+      if (stat.isDirectory()) visit(absolute, entryPath);
+      else if (stat.isFile()) {
+        const bytes = readFileSync(absolute);
+        files.push({ path: entryPath, bytes: bytes.length,
+          sha256: createHash('sha256').update(bytes).digest('hex') });
+      } else throw new TorchError('Generated check artifact must be a regular file', {
+        code: 'CHECK_ARTIFACT_INVALID', details: { path: entryPath },
+      });
+    }
+  }
+  visit(generatedDirectory);
+  return {
+    directory: generatedDirectory,
+    candidate: { commit },
+    check: { id: checkId, definitionHash: definitionHash(definition) },
+    run: { id: runId },
+    files,
+  };
 }
 
 export class CheckService {
@@ -145,6 +194,7 @@ export class CheckService {
     }
     const receiptId = this.idFactory();
     const startedAt = this.clock().toISOString();
+    const artifacts = createCheckArtifactDirectory(this.stateRoot, receiptId);
     beginWorktreeGuard(this.controlPlane, {
       areaId: plan.areaId, type: 'check', reason: `Running ${checkId}`,
       clock: this.clock, idFactory: this.idFactory,
@@ -155,6 +205,7 @@ export class CheckService {
       execution = executeConditionedCheck({
         definition: plan.definition, subject: { commit: plan.commit }, cwd: plan.worktree,
         executor: this.executor, clock: this.clock,
+        environment: { TORCH_CHECK_ARTIFACT_DIR: artifacts.generatedDirectory },
       });
       result = execution.result;
     } finally {
@@ -174,19 +225,27 @@ export class CheckService {
       status = 'incomplete';
       invalidReason = 'worktree-changed-during-check';
     }
-    const artifactDirectory = join(this.stateRoot, 'checks', receiptId);
-    mkdirSync(artifactDirectory, { recursive: false });
-    const artifactPath = join(artifactDirectory, 'output.json');
+    let generatedArtifacts;
+    try {
+      generatedArtifacts = captureGeneratedArtifacts({ generatedDirectory: artifacts.generatedDirectory,
+        commit: plan.commit, checkId, definition: plan.definition, runId: receiptId });
+    } catch (error) {
+      status = 'incomplete';
+      invalidReason = error.code ?? 'check-artifact-invalid';
+      generatedArtifacts = { directory: artifacts.generatedDirectory, error: invalidReason };
+    }
+    const artifactPath = join(artifacts.directory, 'output.json');
     writeFileSync(artifactPath, `${JSON.stringify({
       stdout: safeOutput(result.stdout), stderr: safeOutput(result.stderr),
       conditions: execution.conditions, measurementsExecuted: execution.measurementsExecuted,
+      generatedArtifacts,
     }, null, 2)}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
     const receipt = {
       id: receiptId, projectId: this.controlPlane.projectId, checkId, areaId: plan.areaId,
       definition: plan.definition, worktree: plan.worktree, commit: plan.commit,
       startedAt, finishedAt, exitStatus: result.status ?? null, result: status,
       artifactPath, invalidReason,
-      conditions: execution.conditions,
+      conditions: execution.conditions, generatedArtifacts,
     };
     this.controlPlane.database.prepare(`
       INSERT INTO check_receipts (
@@ -278,11 +337,14 @@ export class CheckService {
     if (claimed.changes !== 1) throw new TorchError('Prepared check was claimed concurrently', {
       code: 'PREPARED_CHECK_UNAVAILABLE',
     });
+    const receiptId = this.idFactory();
+    const artifacts = createCheckArtifactDirectory(this.stateRoot, receiptId);
     const startedAt = this.clock().toISOString();
     const execution = executeConditionedCheck({
       definition: item.definition,
       subject: { commit: item.snapshot.commit, inputDigest: item.snapshot.digest },
       cwd: item.snapshot.inputRoot, executor: this.executor, clock: this.clock,
+      environment: { TORCH_CHECK_ARTIFACT_DIR: artifacts.generatedDirectory },
     });
     const result = execution.result;
     let invalidReason = execution.invalidReason;
@@ -296,11 +358,19 @@ export class CheckService {
       invalidReason = 'resource-lease-lost-during-check';
     }
     const finishedAt = this.clock().toISOString();
-    const receiptId = this.idFactory();
     const status = invalidReason ? 'incomplete' : result.status === 0 ? 'pass' : 'fail';
-    const artifactDirectory = join(this.stateRoot, 'checks', receiptId);
-    mkdirSync(artifactDirectory, { recursive: false });
-    const artifactPath = join(artifactDirectory, 'output.json');
+    let receiptStatus = status;
+    let receiptInvalidReason = invalidReason;
+    let generatedArtifacts;
+    try {
+      generatedArtifacts = captureGeneratedArtifacts({ generatedDirectory: artifacts.generatedDirectory,
+        commit: item.snapshot.commit, checkId: item.checkId, definition: item.definition, runId: receiptId });
+    } catch (error) {
+      receiptStatus = 'incomplete';
+      receiptInvalidReason = error.code ?? 'check-artifact-invalid';
+      generatedArtifacts = { directory: artifacts.generatedDirectory, error: receiptInvalidReason };
+    }
+    const artifactPath = join(artifacts.directory, 'output.json');
     const snapshotEvidence = {
       preparedId: item.id, inputDigest: item.snapshot.digest, commit: item.snapshot.commit,
       files: item.snapshot.files, provenance: item.snapshot.provenance,
@@ -309,13 +379,14 @@ export class CheckService {
     writeFileSync(artifactPath, `${JSON.stringify({
       stdout: safeOutput(result.stdout), stderr: safeOutput(result.stderr), snapshot: snapshotEvidence,
       conditions: execution.conditions, measurementsExecuted: execution.measurementsExecuted,
+      generatedArtifacts,
     }, null, 2)}\n`, { mode: 0o600, flag: 'wx' });
     const receipt = {
       id: receiptId, projectId: this.controlPlane.projectId, checkId: item.checkId, areaId: area,
       definition: item.definition, worktree: item.snapshot.sourceWorktree, commit: item.snapshot.commit,
-      startedAt, finishedAt, exitStatus: result.status ?? null, result: status,
-      artifactPath, invalidReason, snapshot: snapshotEvidence,
-      conditions: execution.conditions,
+      startedAt, finishedAt, exitStatus: result.status ?? null, result: receiptStatus,
+      artifactPath, invalidReason: receiptInvalidReason, snapshot: snapshotEvidence,
+      conditions: execution.conditions, generatedArtifacts,
     };
     this.controlPlane.database.prepare(`INSERT INTO check_receipts
       (id, project_id, check_id, definition, definition_hash, area_id, worktree, commit_sha,
@@ -323,13 +394,13 @@ export class CheckService {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
       .run(receipt.id, receipt.projectId, receipt.checkId, JSON.stringify(receipt.definition),
         definitionHash(receipt.definition), area, receipt.worktree, receipt.commit,
-        startedAt, finishedAt, receipt.exitStatus, status, artifactPath, invalidReason,
+        startedAt, finishedAt, receipt.exitStatus, receiptStatus, artifactPath, receiptInvalidReason,
         execution.conditions ? JSON.stringify(execution.conditions) : null);
     this.controlPlane.database.prepare(`UPDATE prepared_checks SET state = 'finished', receipt_id = ? WHERE id = ?`)
       .run(receiptId, item.id);
     this.controlPlane.audit({
       actorId: area, operation: 'check.run-prepared', entityType: 'check-receipt', entityId: receiptId,
-      details: { preparedId: item.id, checkId: item.checkId, commit: receipt.commit, result: status },
+      details: { preparedId: item.id, checkId: item.checkId, commit: receipt.commit, result: receiptStatus },
     });
     disposeCheckSnapshot(item.snapshot, { stateRoot: this.stateRoot });
     return receipt;
