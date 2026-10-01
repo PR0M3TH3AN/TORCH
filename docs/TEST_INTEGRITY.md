@@ -1,5 +1,50 @@
 # Test Integrity Notes
 
+## 2026-10-01 — Candidate attempt-store B0 fixture schema
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-store-canonical-schema
+      given: The B0 internal ordered CREATE and INDEX schema statements and version framing
+      when: Their UTF-8/LF DDL and schema preimages are produced
+      then: Independently assembled bytes and SHA-256 digests match, without self-referential stored metadata
+    - id: SCN-candidate-store-fixture-provisioning
+      given: A harness-created empty synthetic fixture target and opaque capability
+      when: B0 provisions and read-only verifies candidate-store metadata
+      then: Foreign keys are enabled on the verifier connection, user_version is 1, and no root, manifest, database, or raw handle is exposed
+    - id: SCN-candidate-store-fixture-nonpromotion
+      given: A provisioned B0 fixture attestation
+      when: Its public module surfaces are inspected
+      then: It remains permanently nonpromotable and exposes no lifecycle, receipt, or native PASS authority
+    - id: SCN-candidate-store-fixture-authority
+      given: Foreign, closed, reused, nonempty, or registered-relationship fixture inputs
+      when: Provisioning is attempted
+      then: It refuses before usable metadata, and no caller-supplied root, database, manifest, or DDL is accepted
+    - id: SCN-candidate-store-metadata-drift
+      given: A provisioned fixture with one enumerated bounded test corruption
+      when: Read-only metadata verification runs
+      then: DDL or metadata drift is rejected with a stable code and no lifecycle, receipt, or native PASS behavior exists
+  observable_outcomes:
+    - Canonical version-framed DDL/schema bytes and independently computed digests
+    - Read-only metadata, per-connection foreign-key status, schema version, and nonpromotable fixture attestation
+    - Stable refusals for authority expiry/reuse, preexisting bytes, registered relationships, malformed metadata, and schema drift
+  determinism_controls:
+    - Harness-owned mkdtemp target, generated synthetic identity, private WeakMap capability, fixed created_at, and enumerated internal corruption only
+    - No registered project root, live control-plane database, network, provider, retry, sleep, dashboard, or mutable golden data
+  anti_cheat_rationale:
+    prevents:
+      - Replacing canonical DDL or its framing while updating expectations from the implementation under test
+      - Accepting a caller-selected root, database, manifest, DDL, or raw SQLite handle
+      - Reusing, forging, or extending a fixture authority after close or first provisioning attempt
+      - Treating fixture evidence as a receipt, lifecycle result, native PASS, or consumer eligibility
+      - Ignoring per-connection foreign-key setup, schema-version drift, or malformed metadata
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-01 — Atomic runtime identity reservations
 
 ```yaml
