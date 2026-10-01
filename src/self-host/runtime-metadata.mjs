@@ -42,7 +42,6 @@ const PACKAGE_ROOT = resolve(MODULE_DIRECTORY, '..', '..');
 const DATA_HOME = process.env.XDG_DATA_HOME || join(homedir(), '.local', 'share');
 const TORCH_DATA_HOME = join(DATA_HOME, 'torch');
 const RUNTIME_DIRECTORY = join(TORCH_DATA_HOME, 'runtime');
-const VERSIONS_DIRECTORY = join(RUNTIME_DIRECTORY, 'versions');
 const NOFOLLOW = fsConstants.O_NOFOLLOW;
 const NONBLOCK = fsConstants.O_NONBLOCK ?? 0;
 
