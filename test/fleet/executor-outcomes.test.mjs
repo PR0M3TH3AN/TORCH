@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { createCodexAdapter } from '../../src/adapters/codex.mjs';
+import { executeRuntimeLaunch } from '../../src/cli.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
@@ -12,6 +13,8 @@ import { inspectRepository } from '../../src/kernel/git.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { startFleet } from '../../src/runtime/lifecycle.mjs';
 import { ScheduleService } from '../../src/schedules/service.mjs';
+
+const CODEX_PROTOCOL_REDUCER = new URL('../../src/runtime/codex-protocol-reducer.mjs', import.meta.url).pathname;
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), 'torch-executor-outcomes-'));
@@ -72,10 +75,16 @@ function expectInterruptedStart({ context, result, expectedReason, plan = planFo
   } finally { control.close(); }
 }
 
-test('SCN-executor-interrupted-outcomes: a graceful timeout, signal, or ENOBUFS cannot create an idle turn or disclose output', () => {
+test('SCN-executor-interrupted-outcomes: a graceful ready timeout, signal, or ENOBUFS cannot create an idle turn or disclose output', () => {
+  const readyDirectory = mkdtempSync(join(tmpdir(), 'torch-executor-ready-'));
+  const readyPath = join(readyDirectory, 'ready');
   const timeout = spawnSync(process.execPath, [
-    '-e', 'process.on("SIGTERM", () => process.exit(0)); setInterval(() => {}, 1000);',
-  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 1_000, killSignal: 'SIGTERM' });
+    '-e', 'const fs = require("node:fs"); fs.writeFileSync(process.env.TORCH_READY_PATH, "ready"); process.on("SIGTERM", () => process.exit(0)); setInterval(() => {}, 1000);',
+  ], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 1_000, killSignal: 'SIGTERM',
+    env: { ...process.env, TORCH_READY_PATH: readyPath },
+  });
+  assert.equal(existsSync(readyPath), true, 'child reached its readiness boundary before timeout delivery');
   assert.equal(timeout.status, 0);
   assert.equal(timeout.error?.code, 'ETIMEDOUT');
   expectInterruptedStart({ context: fixture(), result: timeout, expectedReason: 'executor-error-ETIMEDOUT' });
@@ -106,6 +115,111 @@ test('SCN-executor-interrupted-outcomes: a graceful timeout, signal, or ENOBUFS 
     },
     expectedReason: 'executor-error-ENOBUFS',
   });
+});
+
+test('SCN-codex-streaming-protocol-reduction: screenshot-heavy successful turns retain only bounded lifecycle facts', () => {
+  const childProgram = [
+    'const records = [JSON.stringify({type:"thread.started",thread_id:"streamed-thread"}), JSON.stringify({type:"item.completed",image_url:"data:image/png;base64," + "x".repeat(40000)}), JSON.stringify({type:"turn.completed"})].join("\\n") + "\\n";',
+    'process.stdout.write(records);',
+    'process.stderr.write("private reasoning=fixture-analysis token=fixture-token\\n");',
+  ].join('');
+  const result = spawnSync(process.execPath, [CODEX_PROTOCOL_REDUCER, process.execPath, '-e', childProgram], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, '{"type":"thread.started","thread_id":"streamed-thread"}\n{"type":"turn.completed"}\n');
+  assert.ok(Buffer.byteLength(result.stdout) < 256);
+  assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /image\/png|fixture-analysis|fixture-token|x{512}/);
+  const context = fixture();
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  try {
+    startFleet({
+      plan: planFor(context, { runtimeSessionId: null, requiresRuntimeIdCapture: true }), controlPlane: control,
+      adapters: new Map([['codex', createCodexAdapter()]]), executor: () => result,
+    });
+    assert.equal(control.identity(context.worker).state, 'idle');
+    assert.equal(control.identity(context.worker).runtimeSessionId, 'streamed-thread');
+  } finally { control.close(); }
+});
+
+test('SCN-codex-final-terminal-state: a later failed terminal overrides an earlier completion and child signals/errors remain explicit', () => {
+  const failedTerminal = spawnSync(process.execPath, [CODEX_PROTOCOL_REDUCER, process.execPath, '-e', [
+    'process.stdout.write([JSON.stringify({type:"thread.started",thread_id:"terminal-thread"}), JSON.stringify({type:"turn.completed"}), JSON.stringify({type:"turn.failed",code:"MODEL_NOT_SUPPORTED",message:"private reasoning=hidden"})].join("\\n") + "\\n");',
+  ].join('')], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  assert.equal(failedTerminal.status, 0, failedTerminal.stderr);
+  assert.equal(failedTerminal.stdout, '{"type":"thread.started","thread_id":"terminal-thread"}\n{"type":"turn.failed","code":"MODEL_NOT_SUPPORTED"}\n');
+  const context = fixture();
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  try {
+    assert.throws(() => startFleet({
+      plan: planFor(context, { runtimeSessionId: null, requiresRuntimeIdCapture: true }), controlPlane: control,
+      adapters: new Map([['codex', createCodexAdapter()]]), executor: () => failedTerminal,
+    }), (error) => error.code === 'FLEET_START_FAILED'
+      && error.details.executorOutcome.reason === 'codex-terminal-event-missing'
+      && error.details.diagnostic.code === 'MODEL_NOT_SUPPORTED');
+    assert.equal(control.identity(context.worker).runtimeSessionId, 'terminal-thread');
+    assert.equal(control.identity(context.worker).state, 'working');
+  } finally { control.close(); }
+
+  const signalled = spawnSync(process.execPath, [CODEX_PROTOCOL_REDUCER, process.execPath,
+    '-e', 'process.kill(process.pid, "SIGTERM")'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  assert.equal(signalled.signal, 'SIGTERM');
+  expectInterruptedStart({ context: fixture(), result: signalled, expectedReason: 'executor-signal' });
+
+  const unavailable = spawnSync(process.execPath, [CODEX_PROTOCOL_REDUCER, '/definitely/missing-torch-runtime'], {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  assert.equal(unavailable.status, 1);
+  assert.equal(unavailable.stdout, '{"type":"error","code":"ENOENT"}\n');
+});
+
+test('SCN-cli-codex-protocol-routing: the CLI routes Codex launch output through the bounded protocol reducer', () => {
+  const result = executeRuntimeLaunch(spawnSync, {
+    runtime: 'codex', command: process.execPath,
+    args: ['-e', 'process.stdout.write("{\\"type\\":\\"thread.started\\",\\"thread_id\\":\\"cli-thread\\"}\\n{\\"type\\":\\"turn.completed\\"}\\n")'],
+  }, { cwd: process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1024 });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, '{"type":"thread.started","thread_id":"cli-thread"}\n{"type":"turn.completed"}\n');
+});
+
+test('SCN-scheduled-manager-wake-terminal-failure: the real manager-check-in boundary fails rather than invoking a successful wake receipt', () => {
+  const context = fixture();
+  const configPath = join(context.root, '.torch', 'torch.yaml');
+  const config = JSON.parse(readFileSync(configPath, 'utf8'));
+  config.runtime_wake_budget = { max_invocations_per_day: 1 };
+  config.schedules.push({
+    id: 'manager-check-in', title: 'Manager check-in', owner: 'session-manager', lifetime: 'system',
+    trigger: { type: 'manual' }, behavior: 'coordination', required_authority: ['owner'],
+    action: { type: 'manager-check-in', manager_id: 'session-manager', wake: { enabled: true, budget_mode: 'invocation-count' } },
+    retry: { max_attempts: 1 }, failure_recipient: 'owner', source_of_truth: 'test fixture',
+  });
+  writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const control = openControlPlane({ repositoryRoot: context.root, env: context.env });
+  try {
+    const service = new ScheduleService({
+      repositoryRoot: context.root, controlPlane: control,
+      wakeManager: {
+        plan: ({ managerId }) => ({ plan: {
+          canProceed: true, actions: [{ areaId: managerId, runtime: 'codex' }],
+        }, adapters: new Map([['codex', createCodexAdapter()]]) }),
+        invoke: ({ managerId, prepared }) => startFleet({
+          plan: {
+            canProceed: true, projectId: 'executor-outcomes-fixture', actions: [{
+              areaId: managerId, runtime: 'codex', runtimeSessionId: null, requiresRuntimeIdCapture: true,
+              completionState: 'idle', mode: 'create', promptFile: join(context.root, 'manager-prompt.md'),
+              instructionText: 'manager wake', launch: { command: 'codex', args: [], cwd: context.root },
+            }],
+          }, controlPlane: control, adapters: prepared.adapters,
+          executor: () => ({ status: 0, stdout: '{"type":"thread.started","thread_id":"manager-interrupted"}\n' }),
+        }),
+      },
+    });
+    const run = service.run({ scheduleId: 'manager-check-in', actorId: 'owner', approved: true });
+    assert.equal(run.result, 'failed');
+    assert.equal(control.identity('session-manager').state, 'working');
+    assert.equal(control.identity('session-manager').runtimeSessionId, 'manager-interrupted');
+    assert.equal(service.wakeReservations({ managerId: 'session-manager' })[0].outcome, 'failed');
+  } finally { control.close(); }
 });
 
 test('SCN-scheduled-executor-failure: a zero-status executor error records failure and keeps output bounded and redacted', () => {

@@ -15,7 +15,7 @@ import { defaultManagerCheckInSchedule, organizationGraphFromConfig } from '../.
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { ResourceService } from '../../src/resources/service.mjs';
 import {
-  createFleetBrief, detachFleet, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
+  createFleetBrief, detachFleet, planAreaUp, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
 } from '../../src/runtime/lifecycle.mjs';
 
 function fleetFixture({ workerRuntime = 'claude', hierarchy = false } = {}) {
@@ -331,7 +331,7 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   const started = startFleet({
     plan, controlPlane: control, adapters,
     executor: (launch) => launch.areaId === fixture.worker
-      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-worker-1"}\n' }
+      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-worker-1"}\n{"type":"turn.completed"}\n' }
       : { status: 0, stdout: 'claude-manager-1\n' },
   });
   assert.deepEqual(started.started.map((item) => item.runtimeSessionId), [
@@ -358,6 +358,34 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   });
   assert.deepEqual(stoppedRuntimes, ['claude']);
   assert.equal(control.identity(fixture.worker).state, 'offline');
+  control.close();
+});
+
+test('SCN-codex-terminal-completion: a captured Codex identity is not a completed turn without terminal evidence', () => {
+  const fixture = fleetFixture({ workerRuntime: 'codex' });
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const adapters = new Map([
+    ['claude', createClaudeAdapter()],
+    ['codex', createCodexAdapter({ executable: 'codex' })],
+  ]);
+  const plan = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true });
+  assert.throws(() => startFleet({
+    plan, controlPlane: control, adapters,
+    executor: (launch) => launch.areaId === fixture.worker
+      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-interrupted-1"}\n' }
+      : { status: 0, stdout: 'claude-manager-1\n' },
+  }), (error) => error.code === 'FLEET_START_FAILED'
+    && error.details.executorOutcome.reason === 'codex-terminal-event-missing');
+  assert.equal(control.identity(fixture.worker).state, 'working');
+  assert.equal(control.identity(fixture.worker).runtimeSessionId, 'codex-interrupted-1');
+  const duplicate = planAreaUp({
+    repositoryRoot: fixture.root, controlPlane: control, areaId: fixture.worker, adapters,
+  });
+  assert.equal(duplicate.canProceed, false);
+  assert.deepEqual(duplicate.blockers, [{
+    areaId: fixture.worker, code: 'RUNTIME_IDENTITY_ACTIVE', state: 'working',
+    runtimeSessionId: 'codex-interrupted-1',
+  }]);
   control.close();
 });
 

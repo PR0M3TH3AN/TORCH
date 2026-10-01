@@ -1,5 +1,80 @@
 # Test Integrity Notes
 
+## 2026-09-30 — Codex terminal completion correction
+
+```yaml
+test_integrity_note:
+  change_type: spec_correction
+  scenarios:
+    - id: SCN-mixed-runtime
+      given: A status-zero Codex protocol stream containing thread.started and turn.completed
+      when: Fleet startup captures the provider-specific durable identity
+      then: The completed turn may record idle with the captured identity
+    - id: SCN-codex-terminal-completion
+      given: A status-zero Codex stream containing thread.started but no turn.completed
+      when: Fleet startup evaluates terminal evidence
+      then: Startup fails, retains the captured identity as working, and area startup refuses a duplicate
+    - id: SCN-provider-update-cli
+      given: The managed-provider fixture simulates a successful status-zero Codex exec stream
+      when: Startup follows an approved provider update
+      then: The fixture includes turn.completed after thread.started, preserving strict successful-turn evidence
+  observable_outcomes:
+    - Durable runtime state and captured Codex thread identifier
+    - FLEET_START_FAILED outcome and public area-start blocker
+  determinism_controls:
+    - Disposable local Git fixture and fixed JSON protocol records
+    - No provider calls, network, retries, sleeps, or timeout changes
+  anti_cheat_rationale:
+    prevents:
+      - Treating identity creation as successful turn completion
+      - Returning idle from a status-zero stream missing terminal evidence
+      - Launching a duplicate over an uncertain captured identity
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+Spec basis: a native successful Codex protocol probe emitted ten records ending
+in `turn.completed`; `thread.started` establishes identity only, not completion.
+
+## 2026-09-30 — Bounded Codex executor qualification
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-streaming-protocol-reduction
+      given: A successful Codex stream containing an initial identity, a multi-megabyte image record, private stderr, and terminal completion
+      when: The bounded reducer and lifecycle process the stream
+      then: Only identity and terminal records cross the boundary and idle is recorded without private output
+    - id: SCN-cli-codex-protocol-routing
+      given: A Codex launch planned by the CLI
+      when: The CLI invokes the executor
+      then: It launches the bounded reducer instead of collecting provider stdout directly
+    - id: SCN-codex-final-terminal-state
+      given: A stream whose final terminal failure follows an earlier completion, plus real child signal and spawn-error cases
+      when: The reducer and lifecycle classify the child outcome
+      then: Only the final failed terminal is retained, signals remain uncertain, and a safe spawn-error code is preserved
+    - id: SCN-scheduled-manager-wake-terminal-failure
+      given: An owner-authorized manager check-in with a planned Codex wake whose stream lacks terminal completion
+      when: The actual ScheduleService invokes the wake boundary
+      then: The schedule and wake reservation are failed while the manager identity remains working
+  observable_outcomes:
+    - Bounded reducer stdout, durable runtime state, schedule result, and reservation outcome
+  determinism_controls:
+    - Disposable Git/control-plane fixtures and fixed protocol records
+    - Local SIGTERM-aware child with a readiness marker; no provider, network, retries, or sleeps
+  anti_cheat_rationale:
+    prevents:
+      - Solving image overflow only by shrinking a parent buffer
+      - Marking a missing-terminal manager wake as invoked or successful
+      - Accepting an earlier completed event after a later failed terminal
+      - Retaining private image, token, or reasoning material in durable evidence
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Executor terminal-outcome integrity
 
 ```yaml
