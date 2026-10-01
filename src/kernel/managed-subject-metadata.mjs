@@ -76,11 +76,10 @@ function capturedBytes(value) {
   if (!(Buffer.isBuffer(value) || value instanceof Uint8Array)) {
     fail('Metadata must be captured bytes', 'MANAGED_SUBJECT_METADATA_INVALID');
   }
-  const bytes = Buffer.from(value);
-  if (!bytes.length || bytes.length > MANAGED_SUBJECT_METADATA_MAX_FRAME_BYTES) {
+  if (!value.byteLength || value.byteLength > MANAGED_SUBJECT_METADATA_MAX_FRAME_BYTES) {
     fail('Metadata frame exceeds the v1 bound', 'MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE');
   }
-  return bytes;
+  return Buffer.from(value);
 }
 
 function parseFrames(bytes) {

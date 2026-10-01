@@ -89,6 +89,21 @@ test('SCN-check-subject-context-v1-refusal: parent, native, loaded-engine, V2, s
   expectCode(() => parseManagedSubjectMetadataV1(Buffer.concat([bytes, frame('native-eligible', 'true')])), 'MANAGED_SUBJECT_METADATA_INVALID');
   expectCode(() => parseManagedSubjectMetadataV1(Buffer.alloc(MANAGED_SUBJECT_METADATA_MAX_FRAME_BYTES + 1)), 'MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE');
 
+  const oversized = Buffer.alloc(MANAGED_SUBJECT_METADATA_MAX_FRAME_BYTES + 1);
+  const originalBufferFrom = Buffer.from;
+  let copiedBytes = 0;
+  Buffer.from = (...args) => {
+    copiedBytes += 1;
+    return originalBufferFrom(...args);
+  };
+  try {
+    expectCode(() => parseManagedSubjectMetadataV1(oversized), 'MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE');
+    expectCode(() => checkSubjectEsaDigestV1(oversized), 'MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE');
+  } finally {
+    Buffer.from = originalBufferFrom;
+  }
+  assert.equal(copiedBytes, 0, 'oversized captured bytes must refuse before a copy, hash, or frame parse');
+
   let bytesRead = false;
   const selectorBeforeParse = { root: '/tmp/not-authority', get metadataBytes() { bytesRead = true; return bytes; } };
   expectCode(() => createCheckSubjectFixtureHarnessV1(selectorBeforeParse), 'CHECK_SUBJECT_CONTEXT_INPUT_INVALID');

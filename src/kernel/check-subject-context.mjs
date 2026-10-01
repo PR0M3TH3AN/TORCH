@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { TorchError } from './errors.mjs';
 import {
+  MANAGED_SUBJECT_METADATA_MAX_FRAME_BYTES,
   canonicalManagedSubjectMetadataBytesV1,
   parseManagedSubjectMetadataV1,
 } from './managed-subject-metadata.mjs';
@@ -90,9 +91,14 @@ export function canonicalCheckSubjectEsaBytesV1(value) {
 }
 
 export function checkSubjectEsaDigestV1(value) {
-  const bytes = Buffer.isBuffer(value) || value instanceof Uint8Array
-    ? Buffer.from(value)
-    : canonicalCheckSubjectEsaBytesV1(value);
+  if (Buffer.isBuffer(value) || value instanceof Uint8Array) {
+    if (!value.byteLength || value.byteLength > MANAGED_SUBJECT_METADATA_MAX_FRAME_BYTES) {
+      fail('Metadata frame exceeds the v1 bound', 'MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE');
+    }
+    parseManagedSubjectMetadataV1(value);
+    return sha256(Buffer.from(value));
+  }
+  const bytes = canonicalCheckSubjectEsaBytesV1(value);
   parseManagedSubjectMetadataV1(bytes);
   return sha256(bytes);
 }
