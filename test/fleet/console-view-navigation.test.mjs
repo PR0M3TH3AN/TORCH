@@ -141,6 +141,17 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
     await assertManagerWakes();
 
     await page.locator('.console-rail a[href="#work"]').click();
+    await page.evaluate(() => {
+      globalThis.__scrollTrace = [];
+      const nativeScrollTo = globalThis.scrollTo.bind(globalThis);
+      globalThis.scrollTo = (...args) => {
+        globalThis.__scrollTrace.push({ type: 'scrollTo', args, y: scrollY });
+        return nativeScrollTo(...args);
+      };
+      for (const type of ['wheel', 'pointerdown', 'hashchange', 'popstate', 'scroll', 'scrollend']) {
+        globalThis.addEventListener(type, () => globalThis.__scrollTrace.push({ type, hash: location.hash, y: scrollY }), { passive: true });
+      }
+    });
     const scrollSettled = page.evaluate(() => new Promise((resolve) => {
       globalThis.addEventListener('scrollend', resolve, { once: true });
     }));
@@ -155,7 +166,11 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
     await assertSelectedView(page, 'work', 'Work');
     assert.notEqual(await page.evaluate(() => document.activeElement?.id), 'manager-wakes');
     assert.equal(await page.evaluate(() => scrollY), beforeRefreshRender,
-      'a later refresh must retain the user’s scrolled position');
+      `a later refresh must retain the user’s scrolled position: ${JSON.stringify({
+        before: beforeRefreshRender,
+        after: await page.evaluate(() => scrollY),
+        trace: await page.evaluate(() => globalThis.__scrollTrace),
+      })}`);
   }
 });
 
