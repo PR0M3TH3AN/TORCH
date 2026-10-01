@@ -1,5 +1,43 @@
 # Test Integrity Notes
 
+## 2026-10-01 — Atomic runtime identity reservations
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-launch-reservation
+      given: A fresh or resumed identity with a durable launch-attempt token and executor-issued lifecycle evidence
+      when: A launch is reserved, held as unknown, settled, or reconciled
+      then: Attempts cannot replay, known provider IDs persist, only reservation-bound evidence changes state, and unknown launches remain held
+    - id: SCN-runtime-launch-contention
+      given: Independent manual and scheduled-dispatch contender processes connected to the same SQLite project state
+      when: Both request a fresh reservation for one identity at the same release boundary
+      then: Exactly one durable reservation exists and the other contender observes the active-reservation refusal
+    - id: SCN-runtime-launch-schema-compatibility
+      given: Fresh, migratable legacy, downgraded, and newer local control-plane databases
+      when: The reservation-capable engine opens their persistent state
+      then: It migrates only safe older state and refuses both an old-engine relabel with retained leases and a newer unsupported schema
+  observable_outcomes:
+    - Durable reservation token, state, expected and captured provider identity, and stable refusal codes
+    - Persisted identity state after rejected resume, unknown hold, terminal settlement, and trusted stopped-process reconciliation
+    - Exactly one persisted reservation across independent process connections
+    - Recorded schema version and stable refusal codes for downgrade or newer-engine incompatibility
+  determinism_controls:
+    - Disposable Git and SQLite fixture, fixed evidence timestamps, and injected executor provenance boundary
+    - Parent IPC releases two local child processes only after both report readiness; no provider calls, network, retries, sleeps, or timeout assertions
+  anti_cheat_rationale:
+    prevents:
+      - Reusing a settled lifecycle token to dispatch a second provider
+      - Clearing or replacing a known provider ID during a fresh reservation or rejected resume
+      - Releasing an unknown launch from a caller-supplied boolean, free-form text, or forged process proof
+      - Passing a same-process-only lock test while separate dispatch connections can double-reserve
+      - Relabelling reservation-bearing state after an older engine has ignored its lease guard
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Bounded routine coordination
 
 ```yaml
@@ -2527,6 +2565,33 @@ test_integrity_note:
       - "Displaying unrelated MCP noise instead of a structured model rejection"
       - "Leaking raw prompt or credential values through diagnostics"
       - "Treating malformed or oversized stdout as trusted structured evidence"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Runtime launch reservations (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-launch-reservation
+      given: "An installed deterministic project with fresh and resumed runtime launch attempts"
+      when: "A launch reserves, is held without terminal evidence, settles with attributable evidence, or presents a mismatched resumed ID or attempt"
+      then: "Exactly one per-project identity reservation blocks contenders; fresh launches may bind only a post-dispatch captured ID; unknown launches remain guarded; mismatches fail closed; only explicit reconciliation or terminal evidence releases presence"
+  observable_outcomes:
+    - "Durable reservation rows, refusal codes, audit events and externally observable identity presence"
+    - "Fresh null provider IDs, captured ID binding, guarded unknown state and offline terminal failure"
+  determinism_controls:
+    - "Disposable Git and XDG fixtures with direct local control-plane calls"
+    - "Fixed attempt and provider IDs; no timers, retries, sleeps, real providers or wake execution"
+  anti_cheat_rationale:
+    prevents:
+      - "Creating duplicate starts while a fresh provider ID is not yet capturable"
+      - "Treating unknown completion or elapsed time as permission to restart"
+      - "Binding a captured provider ID to a different resumed attempt"
+      - "Hiding provider or wake invocation behind reservation acquisition"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

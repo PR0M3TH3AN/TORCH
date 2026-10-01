@@ -451,6 +451,19 @@ failure. Planning alone never invokes a provider. Legacy
 `session_manager.start_last: true` remains accepted in existing configs but is
 ignored in favor of the active organization graph.
 
+## ADR-024: Runtime reservation schema compatibility
+
+**Status:** accepted.
+
+Runtime reservation leases require control-plane schema version 3 or later.
+An engine may migrate state that predates reservations, but it must refuse a
+reservation-bearing database relabelled by an older engine and must refuse a
+database with a newer schema. Runtime and Release must keep the reservation-
+capable engine active for any project that has reservation state; rollback to
+an older launcher is unsupported until an explicit, recovery-tested migration
+exists. This is a compatibility boundary, not permission to install, activate,
+or start a runtime.
+
 ## Consequences
 
 These decisions keep the first usable release local-first and provider-

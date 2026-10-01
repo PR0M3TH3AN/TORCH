@@ -17,6 +17,8 @@ const MESSAGE_KINDS = new Set([
   'approval-request', 'approval-decision',
 ]);
 
+const CONTROL_PLANE_SCHEMA_VERSION = 3;
+
 function readJson(path, code) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
@@ -37,6 +39,40 @@ function requiredText(value, name) {
 function optionalText(value, name) {
   if (value === undefined || value === null || value === '') return null;
   return requiredText(value, name);
+}
+
+function requiredRecord(value, name) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TorchError(`${name} must be a structured record`, {
+      code: 'INVALID_RUNTIME_LAUNCH_EVIDENCE', details: { field: name },
+    });
+  }
+  return value;
+}
+
+function requiredEvidenceField(record, field) {
+  if (!Object.hasOwn(record, field)) {
+    throw new TorchError(`Runtime launch evidence requires ${field}`, {
+      code: 'INVALID_RUNTIME_LAUNCH_EVIDENCE', details: { field },
+    });
+  }
+  return record[field];
+}
+
+function boundedEvidenceText(value, name) {
+  const text = requiredText(value, name);
+  if (text.length > 240) {
+    throw new TorchError(`${name} exceeds the bounded executor-evidence limit`, {
+      code: 'INVALID_RUNTIME_LAUNCH_EVIDENCE', details: { field: name, maximum: 240 },
+    });
+  }
+  return text;
+}
+
+function boundedEvidenceValue(value, name) {
+  if (value === null) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  return boundedEvidenceText(value, name);
 }
 
 function normalizeReferences(references = {}) {
@@ -132,6 +168,28 @@ function rowToMessage(row) {
 }
 
 function initializeSchema(database) {
+  const currentVersion = database.prepare('PRAGMA user_version').get().user_version;
+  const reservationTable = database.prepare(`
+    SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'runtime_launch_reservations'
+  `).get();
+  if (currentVersion > CONTROL_PLANE_SCHEMA_VERSION) {
+    throw new TorchError('Local control-plane state requires a newer engine', {
+      code: 'CONTROL_PLANE_SCHEMA_NEWER_THAN_ENGINE',
+      details: { currentVersion, supportedVersion: CONTROL_PLANE_SCHEMA_VERSION },
+    });
+  }
+  if (currentVersion < CONTROL_PLANE_SCHEMA_VERSION && reservationTable) {
+    throw new TorchError('Local runtime reservation state was opened by an older engine and cannot be relabelled', {
+      code: 'CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED',
+      details: { currentVersion, requiredVersion: CONTROL_PLANE_SCHEMA_VERSION },
+    });
+  }
+  if (currentVersion === CONTROL_PLANE_SCHEMA_VERSION && !reservationTable) {
+    throw new TorchError('Local control-plane schema is incomplete for its recorded version', {
+      code: 'CONTROL_PLANE_SCHEMA_CORRUPT',
+      details: { currentVersion, missingTable: 'runtime_launch_reservations' },
+    });
+  }
   database.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
@@ -213,21 +271,46 @@ function initializeSchema(database) {
       decided_by TEXT,
       decision_note TEXT
     );
+    CREATE TABLE IF NOT EXISTS runtime_launch_reservations (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      area_id TEXT NOT NULL,
+      runtime TEXT NOT NULL,
+      attempt_id TEXT NOT NULL,
+      mode TEXT NOT NULL CHECK (mode IN ('fresh', 'resume')),
+      expected_runtime_session_id TEXT,
+      captured_runtime_session_id TEXT,
+      state TEXT NOT NULL CHECK (state IN ('starting', 'held', 'succeeded', 'failed', 'reconciled-stopped')),
+      evidence TEXT,
+      created_at TEXT NOT NULL,
+      settled_at TEXT
+    );
     CREATE INDEX IF NOT EXISTS approval_requests_pending_approver
       ON approval_requests(project_id, approver_id, status, created_at, id);
     CREATE INDEX IF NOT EXISTS approval_requests_pending_requester
       ON approval_requests(project_id, requester_id, status, created_at, id);
     CREATE INDEX IF NOT EXISTS messages_recipient_created
       ON messages(recipient_id, created_at, id);
-    PRAGMA user_version = 2;
+    CREATE INDEX IF NOT EXISTS runtime_launch_reservations_active_identity
+      ON runtime_launch_reservations(project_id, area_id, state, created_at, id);
+    CREATE UNIQUE INDEX IF NOT EXISTS runtime_launch_reservations_unique_attempt
+      ON runtime_launch_reservations(project_id, area_id, attempt_id);
+    PRAGMA user_version = ${CONTROL_PLANE_SCHEMA_VERSION};
   `);
 }
 
 export class ControlPlane {
-  constructor({ repositoryRoot, env = process.env, clock = () => new Date(), idFactory = randomUUID } = {}) {
+  constructor({
+    repositoryRoot,
+    env = process.env,
+    clock = () => new Date(),
+    idFactory = randomUUID,
+    verifyRuntimeLaunchEvidence = () => false,
+  } = {}) {
     this.repositoryRoot = resolve(repositoryRoot ?? process.cwd());
     this.clock = clock;
     this.idFactory = idFactory;
+    this.verifyRuntimeLaunchEvidence = verifyRuntimeLaunchEvidence;
     this.manifest = readInstallManifest(this.repositoryRoot);
     this.config = loadProjectConfig(this.repositoryRoot);
     this.roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'INVALID_TORCH_ROSTER');
@@ -483,6 +566,286 @@ export class ControlPlane {
       details: { state: normalizedState },
     });
     return this.identity(id);
+  }
+
+  runtimeLaunchReservations({ areaId } = {}) {
+    const clauses = ['project_id = ?'];
+    const values = [this.projectId];
+    if (areaId !== undefined) {
+      clauses.push('area_id = ?');
+      values.push(this.assertIdentity(areaId));
+    }
+    return this.database.prepare(`
+      SELECT * FROM runtime_launch_reservations WHERE ${clauses.join(' AND ')}
+      ORDER BY created_at ASC, id ASC
+    `).all(...values).map((row) => ({
+      id: row.id, projectId: row.project_id, areaId: row.area_id, runtime: row.runtime,
+      attemptId: row.attempt_id, mode: row.mode,
+      expectedRuntimeSessionId: row.expected_runtime_session_id ?? null,
+      capturedRuntimeSessionId: row.captured_runtime_session_id ?? null,
+      state: row.state, evidence: row.evidence ?? null, createdAt: row.created_at,
+      settledAt: row.settled_at ?? null,
+    }));
+  }
+
+  runtimeLaunchEvidence({ evidence, reservation, outcome, terminal, kind }) {
+    const record = requiredRecord(evidence, 'evidence');
+    const source = boundedEvidenceText(record.source, 'evidence.source');
+    const evidenceAttemptId = boundedEvidenceText(record.attemptId, 'evidence.attemptId');
+    const evidenceReservationId = boundedEvidenceText(record.reservationId, 'evidence.reservationId');
+    const observedAt = boundedEvidenceText(record.observedAt, 'evidence.observedAt');
+    if (source !== 'runtime-executor'
+      || evidenceAttemptId !== reservation.attempt_id
+      || evidenceReservationId !== reservation.id) {
+      throw new TorchError('Runtime executor evidence is not attributable to this reservation', {
+        code: 'RUNTIME_LAUNCH_EVIDENCE_MISMATCH', details: { reservationId: reservation.id },
+      });
+    }
+    if (record.outcome !== outcome || record.terminal !== terminal) {
+      throw new TorchError('Runtime executor evidence has the wrong lifecycle outcome', {
+        code: 'RUNTIME_LAUNCH_EVIDENCE_MISMATCH', details: { reservationId: reservation.id },
+      });
+    }
+    for (const field of ['status', 'signal', 'errorCode']) requiredEvidenceField(record, field);
+    const status = boundedEvidenceValue(record.status, 'evidence.status');
+    const signal = boundedEvidenceValue(record.signal, 'evidence.signal');
+    const errorCode = boundedEvidenceValue(record.errorCode, 'evidence.errorCode');
+    const reason = terminal === false ? boundedEvidenceText(record.reason, 'evidence.reason') : undefined;
+    const verified = (() => {
+      try {
+        return this.verifyRuntimeLaunchEvidence({ kind, evidence: record, reservation });
+      } catch {
+        return false;
+      }
+    })();
+    if (verified !== true) {
+      throw new TorchError('Runtime launch evidence was not issued by the executor boundary', {
+        code: 'RUNTIME_LAUNCH_EVIDENCE_UNVERIFIED', details: { reservationId: reservation.id, kind },
+      });
+    }
+    return {
+      source, attemptId: evidenceAttemptId, reservationId: evidenceReservationId, observedAt,
+      outcome, terminal, status, signal, errorCode, ...(reason ? { reason } : {}),
+    };
+  }
+
+  runtimeLaunchStoppedProof({ proof, reservation }) {
+    const record = requiredRecord(proof, 'proof');
+    const attemptId = boundedEvidenceText(record.attemptId, 'proof.attemptId');
+    const reservationId = boundedEvidenceText(record.reservationId, 'proof.reservationId');
+    const observedAt = boundedEvidenceText(record.observedAt, 'proof.observedAt');
+    const processId = boundedEvidenceText(record.processId, 'proof.processId');
+    const processStart = boundedEvidenceText(record.processStart, 'proof.processStart');
+    const verifier = boundedEvidenceText(record.verifier, 'proof.verifier');
+    if (record.kind !== 'process-proof'
+      || attemptId !== reservation.attempt_id
+      || reservationId !== reservation.id) {
+      throw new TorchError('Stopped-process proof is not attributable to this reservation', {
+        code: 'RUNTIME_LAUNCH_RECONCILIATION_BLOCKED', details: { reservationId: reservation.id },
+      });
+    }
+    const verified = (() => {
+      try {
+        return this.verifyRuntimeLaunchEvidence({ kind: 'process-proof', evidence: record, reservation });
+      } catch {
+        return false;
+      }
+    })();
+    if (verified !== true) {
+      throw new TorchError('Stopped-process proof was not issued by the executor boundary', {
+        code: 'RUNTIME_LAUNCH_RECONCILIATION_BLOCKED', details: { reservationId: reservation.id },
+      });
+    }
+    return { kind: 'process-proof', attemptId, reservationId, observedAt, processId, processStart, verifier };
+  }
+
+  reserveRuntimeLaunch({ areaId, runtime, attemptId, mode, runtimeSessionId } = {}) {
+    const id = this.assertIdentity(areaId);
+    const normalizedRuntime = requiredText(runtime, 'runtime');
+    const normalizedAttempt = requiredText(attemptId, 'attemptId');
+    const normalizedMode = requiredText(mode, 'mode');
+    if (!['fresh', 'resume'].includes(normalizedMode)) {
+      throw new TorchError('Runtime launch mode must be fresh or resume', { code: 'INVALID_RUNTIME_LAUNCH_MODE' });
+    }
+    const requestedRuntimeSessionId = optionalText(runtimeSessionId, 'runtimeSessionId');
+    if (normalizedMode === 'resume' && !requestedRuntimeSessionId) {
+      throw new TorchError('Resumed runtime launches require their expected session ID', {
+        code: 'RUNTIME_LAUNCH_SESSION_REQUIRED', details: { areaId: id, mode: normalizedMode },
+      });
+    }
+    const createdAt = this.clock().toISOString();
+    const reservation = {
+      id: this.idFactory(), projectId: this.projectId, areaId: id, runtime: normalizedRuntime,
+      attemptId: normalizedAttempt, mode: normalizedMode, expectedRuntimeSessionId: null,
+      capturedRuntimeSessionId: null, state: 'starting', evidence: null, createdAt, settledAt: null,
+    };
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const identity = this.database.prepare('SELECT * FROM identities WHERE area_id = ?').get(id);
+      const registeredRuntimeSessionId = identity?.runtime_session_id ?? null;
+      if (normalizedMode === 'resume' && registeredRuntimeSessionId !== requestedRuntimeSessionId) {
+        throw new TorchError('Resumed runtime launch does not match the registered provider session ID', {
+          code: 'RUNTIME_LAUNCH_SESSION_MISMATCH', details: { areaId: id, expected: registeredRuntimeSessionId },
+        });
+      }
+      if (normalizedMode === 'fresh' && requestedRuntimeSessionId
+        && registeredRuntimeSessionId && requestedRuntimeSessionId !== registeredRuntimeSessionId) {
+        throw new TorchError('Fresh runtime launch cannot replace a registered provider session ID', {
+          code: 'RUNTIME_LAUNCH_SESSION_MISMATCH', details: { areaId: id, expected: registeredRuntimeSessionId },
+        });
+      }
+      const replay = this.database.prepare(`
+        SELECT id FROM runtime_launch_reservations
+        WHERE project_id = ? AND area_id = ? AND attempt_id = ?
+      `).get(this.projectId, id, normalizedAttempt);
+      if (replay) {
+        throw new TorchError('A durable runtime launch attempt cannot be replayed', {
+          code: 'RUNTIME_LAUNCH_ATTEMPT_REPLAYED', details: { reservationId: replay.id, areaId: id },
+        });
+      }
+      const active = this.database.prepare(`
+        SELECT * FROM runtime_launch_reservations
+        WHERE project_id = ? AND area_id = ? AND state IN ('starting', 'held')
+        ORDER BY created_at ASC, id ASC LIMIT 1
+      `).get(this.projectId, id);
+      if (active) {
+        throw new TorchError('A runtime launch reservation already blocks this identity', {
+          code: 'RUNTIME_LAUNCH_ALREADY_RESERVED',
+          details: { reservationId: active.id, areaId: id, state: active.state },
+        });
+      }
+      reservation.expectedRuntimeSessionId = registeredRuntimeSessionId;
+      this.database.prepare(`
+        INSERT INTO runtime_launch_reservations (
+          id, project_id, area_id, runtime, attempt_id, mode, expected_runtime_session_id,
+          captured_runtime_session_id, state, evidence, created_at, settled_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 'starting', NULL, ?, NULL)
+      `).run(
+        reservation.id, reservation.projectId, reservation.areaId, reservation.runtime,
+        reservation.attemptId, reservation.mode, reservation.expectedRuntimeSessionId, reservation.createdAt,
+      );
+      this.database.prepare(`
+        UPDATE identities SET runtime = ?, runtime_session_id = ?, state = 'starting',
+          summary = ?, heartbeat_at = ?, updated_at = ? WHERE area_id = ?
+      `).run(normalizedRuntime, registeredRuntimeSessionId, 'Runtime launch reserved before provider dispatch.', createdAt, createdAt, id);
+      this.audit({
+        actorId: id, operation: 'runtime.launch.reserve', entityType: 'runtime-launch-reservation', entityId: reservation.id,
+        details: { attemptId: normalizedAttempt, mode: normalizedMode, expectedRuntimeSessionId: registeredRuntimeSessionId },
+      });
+      this.database.exec('COMMIT');
+      return reservation;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  settleRuntimeLaunch({ reservationId, attemptId, outcome, runtimeSessionId, evidence } = {}) {
+    const id = requiredText(reservationId, 'reservationId');
+    const normalizedAttempt = requiredText(attemptId, 'attemptId');
+    const normalizedOutcome = requiredText(outcome, 'outcome');
+    if (!['succeeded', 'failed'].includes(normalizedOutcome)) {
+      throw new TorchError('Runtime launch settlement must be succeeded or failed', { code: 'INVALID_RUNTIME_LAUNCH_OUTCOME' });
+    }
+    const capturedRuntimeSessionId = optionalText(runtimeSessionId, 'runtimeSessionId');
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const reservation = this.database.prepare('SELECT * FROM runtime_launch_reservations WHERE id = ? AND project_id = ?').get(id, this.projectId);
+      if (!reservation) throw new TorchError('Unknown runtime launch reservation', { code: 'RUNTIME_LAUNCH_RESERVATION_NOT_FOUND' });
+      if (!['starting', 'held'].includes(reservation.state)) throw new TorchError('Runtime launch reservation is no longer active', { code: 'RUNTIME_LAUNCH_NOT_ACTIVE' });
+      if (reservation.attempt_id !== normalizedAttempt) throw new TorchError('Runtime launch attempt does not match its reservation', { code: 'RUNTIME_LAUNCH_ATTEMPT_MISMATCH' });
+      const terminalEvidence = this.runtimeLaunchEvidence({
+        evidence, reservation, outcome: normalizedOutcome, terminal: true, kind: 'terminal',
+      });
+      if (reservation.mode === 'resume' && capturedRuntimeSessionId
+        && capturedRuntimeSessionId !== reservation.expected_runtime_session_id) {
+        throw new TorchError('Resumed runtime launch captured an unexpected provider session ID', { code: 'RUNTIME_LAUNCH_SESSION_MISMATCH' });
+      }
+      const settledAt = this.clock().toISOString();
+      const knownSessionId = reservation.captured_runtime_session_id ?? reservation.expected_runtime_session_id ?? null;
+      if (capturedRuntimeSessionId && knownSessionId && capturedRuntimeSessionId !== knownSessionId) {
+        throw new TorchError('Runtime launch captured an unexpected provider session ID', { code: 'RUNTIME_LAUNCH_SESSION_MISMATCH' });
+      }
+      const boundSessionId = capturedRuntimeSessionId ?? knownSessionId;
+      this.database.prepare(`
+        UPDATE runtime_launch_reservations SET state = ?, captured_runtime_session_id = ?, evidence = ?, settled_at = ? WHERE id = ?
+      `).run(normalizedOutcome, boundSessionId, JSON.stringify(terminalEvidence), settledAt, id);
+      this.database.prepare(`
+        UPDATE identities SET runtime_session_id = ?, state = ?, summary = ?, heartbeat_at = ?, updated_at = ? WHERE area_id = ?
+      `).run(boundSessionId, normalizedOutcome === 'succeeded' ? 'idle' : 'offline',
+        normalizedOutcome === 'succeeded' ? 'Runtime launch completed.' : 'Runtime launch failed with terminal evidence.', settledAt, settledAt, reservation.area_id);
+      this.audit({ actorId: reservation.area_id, operation: 'runtime.launch.settle', entityType: 'runtime-launch-reservation', entityId: id,
+        details: { attemptId: normalizedAttempt, outcome: normalizedOutcome, capturedRuntimeSessionId: boundSessionId } });
+      this.database.exec('COMMIT');
+      return this.runtimeLaunchReservations({ areaId: reservation.area_id }).find((entry) => entry.id === id);
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  holdRuntimeLaunch({ reservationId, attemptId, outcome, runtimeSessionId, capturedRuntimeSessionId, evidence } = {}) {
+    const id = requiredText(reservationId, 'reservationId');
+    const normalizedAttempt = requiredText(attemptId, 'attemptId');
+    if (requiredText(outcome, 'outcome') !== 'unknown') {
+      throw new TorchError('Only unknown runtime interruptions may be held', { code: 'INVALID_RUNTIME_LAUNCH_HOLD' });
+    }
+    const runtimeSession = optionalText(runtimeSessionId, 'runtimeSessionId');
+    const capturedSession = optionalText(capturedRuntimeSessionId, 'capturedRuntimeSessionId');
+    if (runtimeSession && capturedSession && runtimeSession !== capturedSession) {
+      throw new TorchError('Runtime launch hold received conflicting captured provider IDs', { code: 'RUNTIME_LAUNCH_SESSION_MISMATCH' });
+    }
+    const observedRuntimeSessionId = capturedSession ?? runtimeSession;
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const reservation = this.database.prepare('SELECT * FROM runtime_launch_reservations WHERE id = ? AND project_id = ?').get(id, this.projectId);
+      if (!reservation) throw new TorchError('Unknown runtime launch reservation', { code: 'RUNTIME_LAUNCH_RESERVATION_NOT_FOUND' });
+      if (reservation.state !== 'starting') throw new TorchError('Only starting runtime launches may be held', { code: 'RUNTIME_LAUNCH_NOT_ACTIVE' });
+      if (reservation.attempt_id !== normalizedAttempt) throw new TorchError('Runtime launch attempt does not match its reservation', { code: 'RUNTIME_LAUNCH_ATTEMPT_MISMATCH' });
+      const unknownEvidence = this.runtimeLaunchEvidence({
+        evidence, reservation, outcome: 'unknown', terminal: false, kind: 'unknown',
+      });
+      const knownSessionId = reservation.captured_runtime_session_id ?? reservation.expected_runtime_session_id ?? null;
+      if (observedRuntimeSessionId && knownSessionId && observedRuntimeSessionId !== knownSessionId) {
+        throw new TorchError('Runtime launch captured an unexpected provider session ID', { code: 'RUNTIME_LAUNCH_SESSION_MISMATCH' });
+      }
+      const boundSessionId = observedRuntimeSessionId ?? knownSessionId;
+      const updatedAt = this.clock().toISOString();
+      this.database.prepare('UPDATE runtime_launch_reservations SET state = ?, captured_runtime_session_id = ?, evidence = ? WHERE id = ?')
+        .run('held', boundSessionId, JSON.stringify(unknownEvidence), id);
+      this.database.prepare(`UPDATE identities SET runtime_session_id = ?, state = 'working', summary = ?, heartbeat_at = ?, updated_at = ? WHERE area_id = ?`)
+        .run(boundSessionId, 'Runtime executor completion is unknown; duplicate launch is blocked pending reconciliation.', updatedAt, updatedAt, reservation.area_id);
+      this.audit({ actorId: reservation.area_id, operation: 'runtime.launch.hold', entityType: 'runtime-launch-reservation', entityId: id,
+        details: { attemptId: normalizedAttempt } });
+      this.database.exec('COMMIT');
+      return this.runtimeLaunchReservations({ areaId: reservation.area_id }).find((entry) => entry.id === id);
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  reconcileRuntimeLaunch({ reservationId, proof } = {}) {
+    const id = requiredText(reservationId, 'reservationId');
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const reservation = this.database.prepare('SELECT * FROM runtime_launch_reservations WHERE id = ? AND project_id = ?').get(id, this.projectId);
+      if (!reservation) throw new TorchError('Unknown runtime launch reservation', { code: 'RUNTIME_LAUNCH_RESERVATION_NOT_FOUND' });
+      if (reservation.state !== 'held') throw new TorchError('Only held runtime launches require reconciliation', { code: 'RUNTIME_LAUNCH_RECONCILIATION_NOT_ALLOWED' });
+      const stoppedProof = this.runtimeLaunchStoppedProof({ proof, reservation });
+      const settledAt = this.clock().toISOString();
+      this.database.prepare('UPDATE runtime_launch_reservations SET state = ?, evidence = ?, settled_at = ? WHERE id = ?')
+        .run('reconciled-stopped', JSON.stringify(stoppedProof), settledAt, id);
+      this.database.prepare(`UPDATE identities SET state = 'offline', summary = ?, heartbeat_at = ?, updated_at = ? WHERE area_id = ?`)
+        .run('Runtime stopped by explicit reconciliation evidence.', settledAt, settledAt, reservation.area_id);
+      this.audit({ actorId: reservation.area_id, operation: 'runtime.launch.reconcile', entityType: 'runtime-launch-reservation', entityId: id,
+        details: { attemptId: reservation.attempt_id, proof: 'process-proof' } });
+      this.database.exec('COMMIT');
+      return this.runtimeLaunchReservations({ areaId: reservation.area_id }).find((entry) => entry.id === id);
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
   }
 
   writeReport({ areaId, kind, summary, task, evidence } = {}) {

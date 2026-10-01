@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, fork } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { diagnoseProject } from '../../src/kernel/doctor.mjs';
@@ -87,6 +88,228 @@ test('SCN-install-doctor-purge: a fresh install is healthy and exactly reversibl
   assert.equal(existsSync(join(root, '.torch')), false);
   assert.equal(existsSync(installed.stateRoot), false);
   assert.equal(readFileSync(join(root, 'index.js'), 'utf8'), 'export const ready = true;\n');
+});
+
+test('SCN-runtime-launch-reservation: durable attempts, provider identities, and unknown launches fail closed', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const proposal = approvedProposal(repository);
+  installProject({ repository, proposal, env, projectId: 'reservation-project' });
+  const areaId = proposal.domains[0].id;
+  const trustedExecutorRecords = new WeakSet();
+  const control = openControlPlane({
+    repositoryRoot: root,
+    env,
+    verifyRuntimeLaunchEvidence: ({ evidence, reservation }) => trustedExecutorRecords.has(evidence)
+      && evidence.reservationId === reservation.id && evidence.attemptId === reservation.attempt_id,
+  });
+  const executorEvidence = (reservation, outcome, extra = {}) => {
+    const evidence = {
+      source: 'runtime-executor', attemptId: reservation.attemptId, reservationId: reservation.id,
+      observedAt: '2026-10-01T00:00:00.000Z', outcome, terminal: outcome !== 'unknown',
+      status: null, signal: null, errorCode: null, ...extra,
+    };
+    trustedExecutorRecords.add(evidence);
+    return evidence;
+  };
+  const stoppedProof = (reservation) => {
+    const proof = {
+      kind: 'process-proof', attemptId: reservation.attemptId, reservationId: reservation.id,
+      observedAt: '2026-10-01T00:01:00.000Z', processId: 'fixture-process-1',
+      processStart: '2026-10-01T00:00:00.000Z', verifier: 'fixture-executor',
+    };
+    trustedExecutorRecords.add(proof);
+    return proof;
+  };
+  try {
+    const fresh = control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: 'fresh-attempt', mode: 'fresh',
+    });
+    assert.equal(fresh.expectedRuntimeSessionId, null, 'fresh launches reserve before a provider ID exists');
+    assert.equal(control.identity(areaId).state, 'starting');
+    assert.equal(control.identity(areaId).runtimeSessionId, null);
+    assert.throws(() => control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: 'competing-attempt', mode: 'fresh',
+    }), (error) => error.code === 'RUNTIME_LAUNCH_ALREADY_RESERVED');
+
+    const held = control.holdRuntimeLaunch({
+      reservationId: fresh.id, attemptId: fresh.attemptId, outcome: 'unknown',
+      evidence: executorEvidence(fresh, 'unknown', { reason: 'executor-interrupted' }),
+    });
+    assert.equal(held.state, 'held');
+    assert.equal(held.capturedRuntimeSessionId, null, 'an unknown launch without an ID remains guarded without inventing one');
+    assert.equal(control.identity(areaId).state, 'working', 'unknown fresh launch remains guarded rather than offline');
+    assert.throws(() => control.reconcileRuntimeLaunch({
+      reservationId: fresh.id,
+      proof: {
+        kind: 'process-proof', attemptId: fresh.attemptId, reservationId: fresh.id,
+        observedAt: '2026-10-01T00:01:00.000Z', processId: 'forged-process',
+        processStart: '2026-10-01T00:00:00.000Z', verifier: 'untrusted-caller',
+      },
+    }), (error) => error.code === 'RUNTIME_LAUNCH_RECONCILIATION_BLOCKED');
+    assert.equal(control.reconcileRuntimeLaunch({
+      reservationId: fresh.id, proof: stoppedProof(fresh),
+    }).state, 'reconciled-stopped');
+    assert.throws(() => control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: fresh.attemptId, mode: 'fresh',
+    }), (error) => error.code === 'RUNTIME_LAUNCH_ATTEMPT_REPLAYED');
+
+    const captured = control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: 'fresh-captured', mode: 'fresh',
+    });
+    assert.equal(control.holdRuntimeLaunch({
+      reservationId: captured.id, attemptId: captured.attemptId, outcome: 'unknown',
+      capturedRuntimeSessionId: 'captured-after-dispatch',
+      evidence: executorEvidence(captured, 'unknown', { reason: 'executor-disconnected' }),
+    }).capturedRuntimeSessionId, 'captured-after-dispatch');
+    assert.equal(control.identity(areaId).runtimeSessionId, 'captured-after-dispatch');
+    assert.equal(control.reconcileRuntimeLaunch({ reservationId: captured.id, proof: stoppedProof(captured) }).state, 'reconciled-stopped');
+
+    control.reportStatus({
+      areaId, state: 'idle', runtime: 'codex', runtimeSessionId: 'registered-provider-id', summary: 'Registered provider persists.',
+    });
+    const preservingFresh = control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: 'preserving-fresh', mode: 'fresh',
+    });
+    assert.equal(preservingFresh.expectedRuntimeSessionId, 'registered-provider-id');
+    assert.equal(control.identity(areaId).runtimeSessionId, 'registered-provider-id');
+    assert.equal(control.settleRuntimeLaunch({
+      reservationId: preservingFresh.id, attemptId: preservingFresh.attemptId, outcome: 'succeeded',
+      evidence: executorEvidence(preservingFresh, 'succeeded'),
+    }).capturedRuntimeSessionId, 'registered-provider-id');
+    assert.throws(() => control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: preservingFresh.attemptId, mode: 'fresh',
+    }), (error) => error.code === 'RUNTIME_LAUNCH_ATTEMPT_REPLAYED');
+
+    assert.throws(() => control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: 'wrong-resume', mode: 'resume', runtimeSessionId: 'wrong-provider-id',
+    }), (error) => error.code === 'RUNTIME_LAUNCH_SESSION_MISMATCH');
+    assert.equal(control.identity(areaId).runtimeSessionId, 'registered-provider-id', 'a rejected resume cannot rebind identity state');
+    assert.equal(control.identity(areaId).state, 'idle', 'a rejected resume cannot mutate presence state');
+
+    const resumed = control.reserveRuntimeLaunch({
+      areaId, runtime: 'codex', attemptId: 'resume-attempt', mode: 'resume', runtimeSessionId: 'registered-provider-id',
+    });
+    assert.throws(() => control.settleRuntimeLaunch({
+      reservationId: resumed.id, attemptId: resumed.attemptId, outcome: 'succeeded',
+      runtimeSessionId: 'different-provider-id', evidence: executorEvidence(resumed, 'succeeded'),
+    }), (error) => error.code === 'RUNTIME_LAUNCH_SESSION_MISMATCH');
+    assert.throws(() => control.settleRuntimeLaunch({
+      reservationId: resumed.id, attemptId: 'wrong-attempt', outcome: 'succeeded',
+      runtimeSessionId: 'registered-provider-id', evidence: executorEvidence(resumed, 'succeeded'),
+    }), (error) => error.code === 'RUNTIME_LAUNCH_ATTEMPT_MISMATCH');
+    assert.equal(control.settleRuntimeLaunch({
+      reservationId: resumed.id, attemptId: resumed.attemptId, outcome: 'failed',
+      runtimeSessionId: 'registered-provider-id', evidence: executorEvidence(resumed, 'failed'),
+    }).state, 'failed');
+    assert.equal(control.identity(areaId).state, 'offline');
+  } finally {
+    control.close();
+  }
+});
+
+test('SCN-runtime-launch-contention: independent contender processes reserve one durable launch token', async () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const proposal = approvedProposal(repository);
+  installProject({ repository, proposal, env, projectId: 'reservation-contention-project' });
+  const areaId = 'session-manager';
+  const initializer = openControlPlane({ repositoryRoot: root, env });
+  initializer.close();
+  const workerPath = join(root, 'reservation-contender.mjs');
+  const serviceUrl = new URL('../../src/control-plane/service.mjs', import.meta.url).href;
+  writeFileSync(workerPath, `
+    import { openControlPlane } from ${JSON.stringify(serviceUrl)};
+    process.on('message', (input) => {
+      const control = openControlPlane({ repositoryRoot: input.root, env: input.env });
+      let result;
+      try {
+        result = { ok: true, reservation: control.reserveRuntimeLaunch({
+          areaId: input.areaId, runtime: 'codex', attemptId: input.attemptId, mode: 'fresh',
+        }).id };
+      } catch (error) {
+        result = { ok: false, code: error.code };
+      } finally {
+        control.close();
+      }
+      process.send(result, () => process.disconnect());
+    });
+    process.send({ ready: true });
+  `);
+
+  const contender = (attemptId) => {
+    const child = fork(workerPath, [], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+    let resolveReady;
+    let resolveResult;
+    const ready = new Promise((resolve) => { resolveReady = resolve; });
+    const result = new Promise((resolve, reject) => {
+      resolveResult = resolve;
+      child.once('error', reject);
+      child.on('exit', (code) => {
+        if (code !== 0) reject(new Error(`reservation contender exited ${code}`));
+      });
+    });
+    child.on('message', (message) => {
+      if (message.ready) resolveReady();
+      else resolveResult(message);
+    });
+    return { child, ready, result, input: { root, env, areaId, attemptId } };
+  };
+
+  const first = contender('manual-dispatch-attempt');
+  const second = contender('scheduled-dispatch-attempt');
+  await Promise.all([first.ready, second.ready]);
+  first.child.send(first.input);
+  second.child.send(second.input);
+  const outcomes = await Promise.all([first.result, second.result]);
+  assert.equal(outcomes.filter((outcome) => outcome.ok).length, 1, 'exactly one process may reserve the identity');
+  assert.deepEqual(outcomes.filter((outcome) => !outcome.ok).map((outcome) => outcome.code), ['RUNTIME_LAUNCH_ALREADY_RESERVED']);
+  const control = openControlPlane({ repositoryRoot: root, env });
+  try {
+    const reservations = control.runtimeLaunchReservations({ areaId });
+    assert.equal(reservations.length, 1);
+    assert.equal(reservations[0].state, 'starting');
+  } finally {
+    control.close();
+  }
+});
+
+test('SCN-runtime-launch-schema-compatibility: reservation state migrates forward and rejects engine downgrades', () => {
+  const { root, env } = fixture();
+  const repository = inspectRepository(root);
+  const installed = installProject({ repository, proposal: approvedProposal(repository), env, projectId: 'reservation-schema-project' });
+  const databasePath = join(installed.stateRoot, 'state.db');
+  const initial = openControlPlane({ repositoryRoot: root, env });
+  initial.close();
+  const database = new DatabaseSync(databasePath);
+  try {
+    assert.equal(database.prepare('PRAGMA user_version').get().user_version, 3);
+    database.exec('DROP TABLE runtime_launch_reservations; PRAGMA user_version = 2;');
+  } finally {
+    database.close();
+  }
+  const migrated = openControlPlane({ repositoryRoot: root, env });
+  migrated.close();
+  const downgraded = new DatabaseSync(databasePath);
+  try {
+    downgraded.exec('PRAGMA user_version = 2;');
+  } finally {
+    downgraded.close();
+  }
+  assert.throws(
+    () => openControlPlane({ repositoryRoot: root, env }),
+    (error) => error.code === 'CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED',
+  );
+  const newer = new DatabaseSync(databasePath);
+  try {
+    newer.exec('PRAGMA user_version = 4;');
+  } finally {
+    newer.close();
+  }
+  assert.throws(
+    () => openControlPlane({ repositoryRoot: root, env }),
+    (error) => error.code === 'CONTROL_PLANE_SCHEMA_NEWER_THAN_ENGINE',
+  );
 });
 
 test('SCN-existing-repository-preservation: install and purge preserve history, branches, config, and untracked files', () => {
