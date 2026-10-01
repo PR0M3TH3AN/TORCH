@@ -65,14 +65,15 @@
     "message:5c58c875-8c7f-419b-9838-3bc1c02d9235:exact-two-sitepath-source-delta-preparation-not-newtask",
     "message:7eb98498-8ac0-4c55-9ae3-9f9c35bc19a9:actual15:14:01.981-canonical316-live-snapshot-projection-owner1-fleet67-arbiter0-49cards-plusduplicatecohort",
     "message:e9b0b72b-bad6-4fc7-9cab-e094d323a4c8:exact-QA-newcohortfile-TIN-named-consent-request",
-    "message:21ffbd96-c4af-4693-a735-6ac30c047ddf:measured49-distincttask-preservation-scenario-evidence-handoff"
+    "message:21ffbd96-c4af-4693-a735-6ac30c047ddf:measured49-distincttask-preservation-scenario-evidence-handoff",
+    "message:cc973f42-47d5-4c42-aab9-dc7273fe1b80:usable-exact-fourpath-cohort-QA-contributor-consent-five-strict-scenarios-not-implementation-authorization"
   ],
   "commit": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "integrationRequest": "9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b",
   "blockedReason": "Source cb145e56 landed through guarded integration after four exact PASS receipts and independent QA f21b0c38/eb5a356c/all11 artifact hashes. Actual live desktop/mobile browser acceptance remains unavailable and required for full completion; generated artifacts are not visual PASS. Preserve old75afe INCOMPLETE/lost history and current owner/candidate/receipts. Current owner5c58/source inspection and owner7eb measured49-card-plusduplicatecohort reproduction show advisory grouping criterion is ALSO unimplemented source. Bounded two-sitepath/one-new-QA-test/TIN preparation is routed for exact named QA consent; no implementation dispatch or completed criterion inferred.",
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T15:17:17.000Z",
-  "revision": 12,
+  "updatedAt": "2026-10-01T15:18:14.955Z",
+  "revision": 13,
   "history": [
     {
       "from": null,
@@ -157,6 +158,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T15:17:17.000Z",
       "note": "Reviewed metadata-only amendment expectedrev11 at actual owner5c58/7eb request; no metadata API or lifecycle transition. Preserve all15criteria/state/owner/candidate/request/history; append exact15:14 projection reproduction owner1/fleet67/arbiter0 and49 distinct taskcards plus duplicate49cohort to existing criterion/scenario evidence. Source criterion is actual unimplemented behavior, not only browser blocker. Current briefd7 read, exactConsole/QApaths ownership queried and Console nextidle (noactiveassignment, not processabsence). Proposed ONLYtwo site projection/rendererpaths plusnewQAcohorttest/appendTIN, CSS only after exactnecessary consent; QA namedconsent pending. No newtask/activeassignment/providerstart/autoack/close/recovery/warningdiscard or KernelB0 interference. Full desktop/mobile/live/native acceptance staysopen; source grouping can be reviewed separately."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T15:18:14.955Z",
+      "note": "Reviewed metadata-only currentQA consent reconciliation expectedrev12, no lifecycle transition/new activeassignment. ActualQAcc973 grants USABLE exact site/attention-projection.js/site/console.js/newtest/fleet/console-attention-cohorts.test.mjs/appendTIN contributor/scenario consent; CSS/drivers/goldens/fixtures/backendexcluded. Five strict49ref/provenance/conflictingobservation/unsafeclassification/read-onlyno-side-effect scenarios preserveallassertions. QA waitresolved, not source/native/visual acceptance. Arbiter implementationauthorization separate, no providerlaunch/selfclaim or fullclosure. State/owner/fullcriteria/history/exactcandidate retained."
     }
   ]
 }

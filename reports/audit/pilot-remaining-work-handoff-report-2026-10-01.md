@@ -2,6 +2,15 @@
 
 ## Concrete Console attention preparation at 15:15 UTC
 
+Actual **QAcc973f42**15:18 grants USABLE named contribution/scenario consent for
+ONLY two site projection/renderer paths, new console-attention-cohorts test and
+append-only TIN. CSS/drivers/goldens/fixtures/backend excluded. Five strict scenarios
+pin one advisory cohort/exact49-reference set, semantic observation fingerprint,
+both provenance origins, conflicts/unsafe classification and read-only side effects;
+preserve all old assertions. QA wait resolved; arbiter implementation decision
+remains separate, no dispatch/selfclaim/provider launch. SAMEattention metadata13
+records exact decision and preserves blocked history/fullcriteria/live acceptance.
+
 Actual owner7eb supplies measured15:14:01.981 live4174snapshot->canonical316 pure
 projection owner1/fleet67/arbiter0,49 individual stale/missing cards PLUS duplicate
 49-record cohort. No mutation; not browser visual PASS. Exact evidence attached
