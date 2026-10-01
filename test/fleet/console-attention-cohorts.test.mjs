@@ -7,7 +7,6 @@ import '../../site/attention-projection.js';
 import '../../site/attention-actions.js';
 
 const project = (snapshot) => globalThis.TorchAttentionProjection.groups(snapshot);
-const recheckCodes = ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'];
 const taskId = (index) => `TASK-COHORT-${String(index).padStart(2, '0')}`;
 
 function deepFreeze(value) {
