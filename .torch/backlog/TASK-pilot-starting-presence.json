@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-pilot-starting-presence",
   "title": "Publish live startup presence before invoking a provider",
-  "description": "During the first development trial the real Sol process ran and used TORCH tools for several minutes while the Console still reported offline. startFleet currently records final presence only after the blocking executor returns. Record a durable guarded starting state before launch, capture execution identity/lease where available, and conservatively reconcile success/failure/unknown interruption. Do not let scheduler or manual startup duplicate a still-running manager or turn unknown launch into offline. This task is proposed only; do not expand the current diagnostics pilot without arbiter approval.",
+  "description": "During the first development trial the real Sol process ran and used TORCH tools for several minutes while the Console still reported offline. startFleet currently records final presence only after the blocking executor returns. Record a durable guarded starting state before launch, capture execution identity/lease where available, and conservatively reconcile success/failure/unknown interruption. Do not let scheduler or manual startup duplicate a still-running manager or turn unknown launch into offline. This task is proposed only; do not expand the current diagnostics pilot without arbiter approval. Owner25e645bf current live4174 incident: healthy/status ok plus aggregate MESSAGE_BACKLOG101 and stale idle rows disagreed with separately observed running sessions. The additive timestamp/freshness/recipient/availability criteria capture that observation without granting implementation, startup, host or activation authority; historical scope and full roadmap remain.",
   "priority": "high",
   "affectedDomains": [
     "provider-runtime",
@@ -13,7 +13,9 @@
   "acceptanceCriteria": [
     "Actual startup is visible as starting/running rather than falsely offline before its executor returns",
     "Concurrent timer/manual starts cannot duplicate one identity and unknown interruption remains guarded",
-    "Failure/completion and process absence are distinguished with bounded attributable evidence; regression tests cover the race"
+    "Failure/completion and process absence are distinguished with bounded attributable evidence; regression tests cover the race",
+    "Presence observations identify their timestamp, evidence source and freshness; stale idle/offline heartbeats are unknown about current execution and never establish verified process absence.",
+    "Timer, lease, runtime receipt and attributable process evidence disagreements remain visible with exact evidence/task and responsible-domain links; unknown outcomes retain existing startup guards."
   ],
   "observedAt": "c940a343c357",
   "feature": "Self-host development readiness",
@@ -27,14 +29,15 @@
     "TASK-pilot-executor-outcomes:completed:revision14",
     "message:7795f324-452c-43b0-892b-5b204784eb2c:KernelAPI-concrete-unqualified-defects",
     "message:3c7427d8-8c6f-4bd0-8826-318f9fdb8a26:new-schema/capability-qualification-gate",
-    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:ff285-actual-recovery-not-candidate-acceptance"
+    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:ff285-actual-recovery-not-candidate-acceptance",
+    "message:25e645bf-db6a-4df8-9107-3b82f15e27d8:incident-backed-presence-health-message-classification-criteria"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": "Waiting for corrected Kernel reservation API candidate from TASK-125dd886: exact ff285ffd currently requires fresh QA-authorized five-PNG recovery, clean convergence and independent exact qualification/landing; old engines ignore new leases. Existing Runtime e976 peer contract handoff retained. Preserve owned pending implementation/history; no provider start or unguarded identity workaround.",
   "createdAt": "2026-09-30T19:55:23.203Z",
-  "updatedAt": "2026-10-01T09:23:52.546Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T12:08:24.703Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -63,6 +66,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:23:52.546Z",
       "note": "Record actual unresolved peer API/evidence gate, not completion or fabricatedblocker to freequeue. Kernel recoveredcandidate/strictchecks still pending; Runtime sameowner/task retained. This truthful blocked handoff permits Manager to legally reconcile historicaldiagnostics acceptance without two simultaneousRuntimeactiveitems; resume SAME startingitem after correctedAPI gate clears. No elapsed-time inactivity inference or provider/wake action."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:08:24.703Z",
+      "note": "Reviewed owned-ledger metadata-only amendment explicitly requested by owner25e645bf. Append strict incident-backed presence freshness, separate availability/health and recipient/age/actionability criteria as applicable. Preserve existing criteria, state, owner, candidate, integration request, dependencies and all history. Native service has no metadata-amend operation; no lifecycle transition, duplicate task, assignment, qualification, warning suppression, mass acknowledgement or host/provider authority inferred."
     }
   ]
 }

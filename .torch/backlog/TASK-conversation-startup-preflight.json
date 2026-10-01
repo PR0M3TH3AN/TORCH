@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-conversation-startup-preflight",
   "title": "Show exact runtime/model/auth preflight in setup and Console",
-  "description": "The first launch selected Codex 0.158.0 while the current session used 0.159.2. Provider managed-update selection exists; expose exact resolved executable/version/model/reasoning and available authentication evidence before approving startup. Distinguish offline metadata from a paid live model probe.",
+  "description": "The first launch selected Codex 0.158.0 while the current session used 0.159.2. Provider managed-update selection exists; expose exact resolved executable/version/model/reasoning and available authentication evidence before approving startup. Distinguish offline metadata from a paid live model probe. Owner25e645bf current live4174 incident: healthy/status ok plus aggregate MESSAGE_BACKLOG101 and stale idle rows disagreed with separately observed running sessions. The additive timestamp/freshness/recipient/availability criteria capture that observation without granting implementation, startup, host or activation authority; historical scope and full roadmap remain.",
   "priority": "high",
   "affectedDomains": [
     "provider-runtime",
@@ -15,20 +15,24 @@
   "acceptanceCriteria": [
     "Installed setup and Console display the actual future launch profile and executable",
     "Missing auth or model support is actionable and unknown is not called supported",
-    "Preview is offline and live probes require separate explicit approval"
+    "Preview is offline and live probes require separate explicit approval",
+    "Offline runtime availability/profile evidence is separate from fresh authenticated execution/presence evidence and actionable Fleet health; last idle heartbeat or doctor ok cannot prove no running process.",
+    "Conflicting or stale startup/timer/process observations show timestamp, source, freshness/unknown status and the existing starting-presence task/domain rather than imply verified current availability or absence."
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
   "state": "proposed",
   "owner": null,
-  "evidence": [],
+  "evidence": [
+    "message:25e645bf-db6a-4df8-9107-3b82f15e27d8:incident-backed-presence-health-message-classification-criteria"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.612Z",
-  "updatedAt": "2026-09-30T19:30:23.612Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T12:08:24.703Z",
+  "revision": 2,
   "history": [
     {
       "from": null,
@@ -36,6 +40,13 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.612Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:08:24.703Z",
+      "note": "Reviewed owned-ledger metadata-only amendment explicitly requested by owner25e645bf. Append strict incident-backed presence freshness, separate availability/health and recipient/age/actionability criteria as applicable. Preserve existing criteria, state, owner, candidate, integration request, dependencies and all history. Native service has no metadata-amend operation; no lifecycle transition, duplicate task, assignment, qualification, warning suppression, mass acknowledgement or host/provider authority inferred."
     }
   ]
 }

@@ -25,15 +25,20 @@
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check execution provenance and state isolation",
   "milestone": "Reviewed reliability dependencies",
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
+  "state": "assigned",
+  "owner": "work-integration",
+  "evidence": [
+    "message:28f03fa6-ff6e-4af8-87e0-631218f1ec55:owner-bounded-design-document-phase",
+    "message:7f3964b1-7c4e-464e-8d8e-8cdb8e7e61b8:Kernel-owned-interface-reviewed",
+    "message:9f974c64-0d46-4825-97b4-5a9b02cab30a:three-axis-draft",
+    "message:0c3462cf-d312-407c-9b09-eacda53ad080:tuple-scoped-compatibility-and-artifact-transport-correction"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T10:14:01.401Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T12:17:15.519Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -41,6 +46,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T10:14:01.401Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:16:11.562Z",
+      "note": "Current brief d7e6d69 reread. Owner28f authorizes only bounded DESIGN-DOCUMENT phase, not source implementation or governing policy. Work lead retains engine/result proposal review; named Kernel contributor alone may add clearly PROPOSED nonnormative amendment inside docs/PORTABLE_AGENT_FLEET_SPEC.md sections18/20 and additive docs/ARCHITECTURE_DECISIONS.md ADR, preserving all current normative paragraphs, ADR024/025, legacy compatible receipts and actual downgrade refusals. Exact contributor paths and interfaces pinned before edits; actual Release and QA interface/scenario reviews remain required before acceptance or code. No torch.yaml/schema/src/test edits, native receipt semantics change, qualified-landing waiver, live initialization/recovery/install/wake/provider/host/publication action. Existing full task criteria and histories retained; dependency390 completed7; fresh Work nextidle/no active."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:17:15.519Z",
+      "note": "Assign ONE bounded DESIGN-DOCUMENT phase under owner28f, after native Work nextreadyTHIS/noactive. Work is design lead/reviewer, not code implementer in this phase. Named contributor Project Kernel alone drafts two owned paths: nonnormative clearly PROPOSED additions inside docs/PORTABLE_AGENT_FLEET_SPEC.md sections18/20, additive next-free ADR in docs/ARCHITECTURE_DECISIONS.md; do not rewrite accepted rules/ADR024 or existing proposedADR025. Work pins/reviews versioned engine/result envelope and immutable digests, Kernel authenticated subject/no-DDL registered adapter/opaque fresh attempt transport, Release CLI worker/env/artifact boundary, QA strict scenario/interface truth. Mark missing policy decisions explicitly. No src/schema/config/test edit, live DB/control-plane initialization, gate-semantic change, fixture promotion, operational acceptance, install/provider/wake/host action. Kernel inbox565 blocked7 at a4 and inventory/reservation histories remain blocked, not reactivated or duplicated. Runtime e440 and Console workflow remain their existing single implementations. Return exact proposed amendment and named peer decisions for final review before any code scope."
     }
   ]
 }

@@ -1,6 +1,194 @@
 # Current pilot remaining-work handoff
 
-## Current evidence and reviewed-context waits at 11:53 UTC
+## Current design-document phase and Console route failure at 12:20 UTC
+
+Explicit own unread100 was reread after current tasks; owner **12360913/defac915**,
+Kernel **7f3964b1**, owner **28f03fa6**, Release **0b57d4e9**, owner **63afc86c**
+and scheduled check-in were read individually, understood and acknowledged.
+The check-in was refreshed from live durable state before acting. Presence idle
+is still not proof of process absence or task completion.
+
+Owner **28f03fa6** authorizes a bounded DESIGN-DOCUMENT phase. After current
+brief d7e6d69, dependency390 completed7, ownership queries and fresh Work next
+idle then readyTHIS, existing **TASK-6e4 assigned3** has Work as design lead.
+Explicit named Kernel contribution **25dca26c** permits only clearly PROPOSED
+nonnormative additions in spec sections18/20 and an additive next-free ADR in
+its two owned docs. Preserve normative paragraphs, accepted ADR024, proposed
+ADR025, compatible legacy receipts and all blocked histories. Work **272550aa**
+reviews the exact engine/result contract; Release **9a9aaeaf** and QA **3fb2f5bf**
+retain exact interface/scenario decisions. This is one active design phase,
+not code, schema or qualification-policy authority. No second implementation
+assignment, new task, provider launch or activation was created.
+
+Kernel **7f3964b1** accepts three independent axes and per engine/adapter/subject/
+current-schema compatibility. Proposed Kernel-owned check-subject-context and
+no-DDL check-receipt-adapter derive authenticated subjects and opaque fresh
+attempt-scoped artifact transport. Withholding a DB handle/capability is an
+authority boundary, not an OS filesystem sandbox guarantee: the proposed draft
+must document actual worker/environment/artifact restrictions, no candidate
+ControlPlane initialization and unresolved enforcement decisions. The draft is
+not yet delivered or accepted; current native gates remain governing.
+
+Release **0b57d4e9** actual interface verdict supports this design only against
+its older clean cb145 checkout, not current-canonical source qualification.
+Primary proposed CLI path is src/cli.mjs; thin bin/torch.mjs needs no change
+absent a later explicit entrypoint decision. Single-use authenticated bounded
+attempt transport, no child registered root/manifest/DB/migration authority,
+nonpromotable fixtures and legacy tuple compatibility are retained. Actual
+Release decision routed to Work **5b72781d** and Kernel **76ec2c89**; exact QA
+scenario/interface review and final proposed-document review remain open.
+
+Owner **12360913/defac915** observed uncommitted warning correction probe PASS
+and expanded navigation8/8 (zero skips). These are separately attributed focused
+diagnostics, not native qualification. Initial probe targeted nonexistent
+#briefing and was corrected to actual #owner-briefing; that targeting error is
+not a source defect. Incident task metadata now natively reads presence blocked5,
+attention blocked9, preflight proposed2; the owner's earlier snapshot predates
+those recorded edits. Original criteria/state/owner/candidate/history remain.
+
+Owner **63afc86c** reports a new genuine exact6988 route failure. Native receipts
+independently read: test **e6b4bf22** PASS, check **41e9b023** PASS, dashboard
+**d983c1ca-dfed-4fd2-92da-2d76779b18f8** FAIL exit1. That driver cannot select
+#manager-wakes because Operations/details has no owning data-console-view.
+Actual current source HEAD moved to **8ba1af611c6b7109528785f6970e93d9480ea3f5**;
+Manager independently read its HTML and confirms the direct workspace child
+still leaves worktrees/resources/schedules/providers/decisions/context outside
+all selected views. Current exact8ba1 receipt lookup is empty. No old receipt
+qualifies a new SHA, and no final source/live visual acceptance follows.
+
+Owner requests explicit owned markup scope: all Operations panels belong to
+Fleet, with a second appropriately identified section retaining existing ten
+views. Manager **26ec7f6b** routes exact source/layout amendment on SAME active
+Console workflow10 after live ownership confirms site/console.html. QA
+**eb10c2fd** requests narrow additive contributor/scenario decision: Fleet owns
+all operational panels, unrelated views hide them, secondary links select Fleet,
+open ancestor details and focus/scroll the actual target. Preserve every original
+assertion/capture, warning fix, prior receipts and artifact protections; no
+fallback/show-all, fixture/backend change or new Console assignment. Fresh clean
+final candidate four gates, independent QA and actual live desktop/mobile
+acceptance remain mandatory and distinct.
+
+Ledger still55 tasks:38 proposed,8 blocked,6 completed,2 assigned (Runtime inbox3
+and Work design3),1 in_progress (Console workflow10). Kernel inbox565 remains
+blocked7 at exact a4bba018: independently focused narrow test integrity accepted,
+actual native schema2/3 refusal preserved. Kernel inventory1e688 blocked4,
+Runtime dormant API2b4 proposed1 and Release persistent operations blocked5
+retain full implementation/qualification phases. Fleet assessments refreshed:
+eight recurring domain sets, nine hierarchy sets and eleven historical manager
+requests; retain six coherent owners and improve exact contracts/process first.
+Fleet changes remain empty. No wakes, installation switch, live schema recovery,
+host activation, extra identities or provider launches.
+
+
+## Current Console source failure and QA boundaries at 12:08 UTC
+
+New actual owner **25e645bf** live4174 incident: tool doctor healthy/statusok,
+MESSAGE_BACKLOG101 and all seven stale idle presence rows disagreed with owner-
+inspected running systemd sessions. These are separately attributed observations,
+not a Manager process census. Owner explicitly requests strict criteria recorded
+on existing artifacts, not duplicate tasks. Manager reviewed metadata-only
+amendments to **starting-presence blocked5**, **attention-actions blocked9** and
+**startup-preflight proposed2**; native readback confirms those revisions. Existing
+states/owners/candidates/requests/dependencies/history and every original criterion
+were preserved. Added timestamp/source/freshness/unknown presence evidence, no
+idle-heartbeat-as-process-absence claim, separate runtime availability/actionable
+health, actual recipient/routine-versus-owner-decision/age classification and
+exact timer/process/task/domain links. No warning suppression or mass ack.
+Console workflow10 and Runtime e4403 retain their sole active assignments; new
+criteria do not authorize another implementation or host/provider action.
+
+Work **9f974c64** now supplies the actual three-axis protocol revision, replacing
+the post-landing-only restriction: exact engine provenance, independent candidate
+versus operational subject, and separate registered authenticated versus fixture
+receipt authority. Owner **0c3462cf** accepts design progress only and identifies
+two remaining refinements: incompatibility must be scoped per engine/adapter/subject/
+current-schema tuple, and artifact transport to the trusted adapter must use an
+opaque attempt-scoped capability without arbitrary registered root/DB/control-plane
+opening. Kernel a4bba/be1 schema3-dependent execution still refuses against current2;
+this does not globally invalidate legitimate existing schema2 source receipts.
+Exact891 three PASS/dashboard FAIL and canonical0fdf four PASS remain attributable
+existing records. Historical nonqualifying frozen MCP examples are specific
+provenance failures, not a blanket verdict on native candidate checks.
+
+Manager **f1e8beae**, Kernel **82eca42a**, Release **47069e2e** and QA **bb951d7d**
+route the actual correction, exact interface/path/spec-policy and artifact-capability
+review before code. No new adapter is claimed implemented or compatible. Work6e4
+remains proposed1/unassigned; current native landing gates remain unchanged.
+Three new own-addressed messages were individually acknowledged after understanding;
+their peer review waits remain open. Console's source is now dirty only in its own
+console.js and consented narrow driver while the warning correction proceeds;
+Manager preserves those files. Owner focused7/7 and QA visible-warning consent
+are routed through **233875c7/11c85c44**, not full acceptance or a new UI task.
+
+Canonical brief remains `d7e6d69`; narrowly authorized exact retry succeeded after
+the startup read-only SQLite failure. Manager begins clean49ab221, canonical clean0fdf.
+Current tasks then explicit own unread100 were read; requested owner44512241 WAL
+and eca7ded3 exact Overview decisions were reread from addressed history without
+inferring unread completeness. Kernel a4bba018 narrow proof acceptance and real
+native schema2/3 refusal remain separate, as current QA8e241 confirms. No resolved
+test-consent hold, new Kernel assignment or fixture/native receipt promotion follows.
+
+Owner **5b3f61d9** reports current Console candidate
+**8916038215f7d4e46d0616ba4e7143575aadf70c** source regression. Manager confirms
+clean exact Git state and inspects compaction: console.js moves the whole Window
+paragraph, including **Recorded evidence, not independent live verification**, into
+closed metadata details. The unchanged dashboard driver line93 requires that warning
+visible. Native exact-commit receipt read (without foreign-area impersonation) shows:
+
+- test **8616af38-f2b4-404c-9681-90d1f06b2d9c** PASS;
+- check **bc8c5737-f56a-4afc-a5d1-1d7ce35a7938** PASS;
+- lint **ab0ac97e-3d02-4a55-b4b5-9c4af8b26239** PASS;
+- dashboard **02a76db2-d8aa-40e9-ac93-03139ceca568** FAIL, exit1 at unchanged line93.
+
+Manager read the actual dashboard output: measurementsExecuted true, generatedArtifacts
+key present, stderr confirms the hidden-warning assertion. This is an actual source
+failure, not a failed fixture contract or permission hold. All prior receipts remain;
+none can qualify a future amended commit. Native ready integration queue is empty.
+Console **0f1aec55** independently reports the same exact failure and no integration
+request. Manager **ba12fa23/2449971b** routes the narrow source correction and QA review:
+keep evidence limitations visible, compact timestamp/window metadata only, retain
+the shared renderer, fixtures, original assertion/captures and artifact protections.
+
+Owner **ac4c7bcf** independently observed exact891 hermetic navigation7/7 PASS,
+no skips: titles, secondary fragments/history/focus, stale N→N+1 invalidation,
+draft retention across navigation/second refresh, current-preview retention,
+selected view/mobile destinations and unsent owner drafts. Separate no-screenshot
+probe confirms revision2, no stale token/Confirm, preserved draft after refresh3
+and focused target138px. These focused diagnostic results are NOT native receipts,
+full dashboard acceptance or actual live computer-use qualification.
+
+Actual QA **8e241adf** grants a narrow visible-warning scenario within existing
+Console consent: BEFORE opening metadata, owner-briefing must visibly show exact
+**Recorded evidence, not independent live verification.** Original driver assertion
+and capture ordering stay strict. No shared owner-digest/backend/helper/fixture
+changes or live acceptance; exact891 is not accepted as fully source-gated.
+Manager routes the actual consent to the SAME active Console workflow; contributor
+scope needs no human relay. Title/draft/deep-link and unchanged-current preview
+requirements remain intact. Existing task evidence and complete visual roadmap
+are preserved, no duplicate Console assignment or provider launch.
+
+Work6e4 remains proposed1/unassigned; prior concrete three-axis review waits stand:
+exact execution engine provenance, candidate/installed subject scope and registered
+compatible/isolated fixture receipt authority. Native authority can qualify a
+legitimate unlanded candidate source check under reviewed context/adapter policy;
+post-install operational acceptance is separate. Actual unsupported mixed schema
+still refuses, and current native landing gates cannot be waived by prose. Exact
+Kernel/Release/QA interfaces and policy authority remain pending before code.
+Dormant Kernel inventory1e688 blocked4 and Runtime API2b4 proposed1 retain their
+named phases behind qualified inbox work; service/pipeline/QA-record roadmap is
+retained without duplicate active implementations or speculative dispatch.
+
+Current ledger55 tasks:39 proposed,8 blocked,6 completed,Runtime e440 assigned3,
+Console workflow in_progress10. Health37 stale-observed and two resolved-dependency
+warnings remain observational. Fleet evolution eight recurring sets/hierarchy nine
+sets and eleven historical coordination requests favor exact process/contracts
+within existing six specialists; Fleet changes empty, no new role/identity.
+Owner-only runtime switch75 remains pending; latest five-PNG consent covers only
+completed exact Runtime recovery. No wakes, installation switch, live schema recovery,
+host activation, extra identities or provider launches. Current inbox/check-in
+and candidate evidence must refresh again before final acceptance.
+
+## Historical evidence and reviewed-context waits at 11:53 UTC
 
 Canonical brief still matches `d7e6d69`. Default startup brief again failed at
 the SQLite read-only sandbox boundary. Its exact escalation first timed out in

@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-console-attention-actions",
   "title": "Make attention findings specific, deduplicated and actionable",
-  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly. Owner 9590d8b1 (2026-10-01) authorizes bounded implementation using the committed observed desktop audit findings while TASK-console-ux-audit remains blocked and incomplete. Full-audit completion is no longer an implementation-start prerequisite; actual browser desktop/mobile visual acceptance remains required before completion. Scope: separate Waiting on you (genuine authenticated owner decision with consequence/options), Fleet handling (named responsible domain and next step), and Arbiter handling (provider starts/install activation). Do not rewrite the dashboard architecture or hide unresolved risks. QA path consent is required before assignment; existing frozen assertions, ownership and verification controls remain enforced.",
+  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly. Owner 9590d8b1 (2026-10-01) authorizes bounded implementation using the committed observed desktop audit findings while TASK-console-ux-audit remains blocked and incomplete. Full-audit completion is no longer an implementation-start prerequisite; actual browser desktop/mobile visual acceptance remains required before completion. Scope: separate Waiting on you (genuine authenticated owner decision with consequence/options), Fleet handling (named responsible domain and next step), and Arbiter handling (provider starts/install activation). Do not rewrite the dashboard architecture or hide unresolved risks. QA path consent is required before assignment; existing frozen assertions, ownership and verification controls remain enforced. Owner25e645bf current live4174 incident: healthy/status ok plus aggregate MESSAGE_BACKLOG101 and stale idle rows disagreed with separately observed running sessions. The additive timestamp/freshness/recipient/availability criteria capture that observation without granting implementation, startup, host or activation authority; historical scope and full roadmap remain.",
   "priority": "high",
   "affectedDomains": [
     "owner-console",
@@ -19,7 +19,11 @@
     "Regression covers stale decision, wrong approver, duplicate findings, no available action, failure and refresh while editing",
     "Waiting on you contains only a genuine owner-addressed decision with evidence/options/consequence; routine domain waits show Fleet handling with responsible owner/next step; arbiter-reserved execution/install work is labelled Arbiter handling.",
     "Unavailable browser and last actual visual capture remain explicit verification dependencies; source/API/scenario evidence cannot be labelled visual PASS, and final desktop/mobile acceptance remains incomplete until real browser evidence exists.",
-    "Implementation uses existing observed desktop audit evidence without marking the audit completed; preserve dark mode, TORCH branding, owner authority, independent QA consent and exact candidate checks."
+    "Implementation uses existing observed desktop audit evidence without marking the audit completed; preserve dark mode, TORCH branding, owner authority, independent QA consent and exact candidate checks.",
+    "Runtime/tool availability and actionable Fleet health are displayed separately; doctor healthy/status ok does not erase unresolved message, presence, timer or qualification findings.",
+    "Presence rows show timestamped source/freshness/unknown evidence; a last idle heartbeat is never presented as verified current process absence.",
+    "Unacknowledged message attention is classified by actual recipient, routine peer coordination versus genuine owner decision, and age; aggregate backlog counts do not make the owner responsible for every message, and no suppression or mass acknowledgement occurs.",
+    "Timer/process/presence disagreements link exact observed evidence, the existing task and responsible domain without silently resolving or activating services."
   ],
   "observedAt": "0224abf2e08d",
   "feature": null,
@@ -51,14 +55,15 @@
     "integration:9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b:landed:cb145e56",
     "message:eb5a356c-3c27-47cb-99d5-3c366179644e:QA-exact-code-hashes-accepted-only",
     "receipt:558d8598-0332-49eb-9296-9f68b5880604:correct-check-id-preserved;prior-revision7-transcription-49aa-is-not-a-receipt",
-    "message:799d0275-c113-45cd-a0cb-06ca78f9c71f:land-code-retain-visual-blocker"
+    "message:799d0275-c113-45cd-a0cb-06ca78f9c71f:land-code-retain-visual-blocker",
+    "message:25e645bf-db6a-4df8-9107-3b82f15e27d8:incident-backed-presence-health-message-classification-criteria"
   ],
   "commit": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "integrationRequest": "9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b",
   "blockedReason": "Source cb145e56 landed through guarded integration after four exact PASS receipts and independent QA f21b0c38/eb5a356c/all11 artifact hashes. Actual live desktop/mobile browser acceptance remains unavailable and required for full completion; generated artifacts are not visual PASS. Preserve old75afe INCOMPLETE/lost history and current owner/candidate/receipts.",
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T09:12:38.721Z",
-  "revision": 8,
+  "updatedAt": "2026-10-01T12:08:24.703Z",
+  "revision": 9,
   "history": [
     {
       "from": null,
@@ -115,6 +120,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:12:38.721Z",
       "note": "Authorized exact code landing verified canonical clean/current cb145e56. Auto-close policy disabled; no Closes completion inferred. Same task blocked on actual unresolved browser acceptance, fullcriteria/history retained. Next domain lookup before any next assignment; no install/provider/wake/default-main changes."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:08:24.703Z",
+      "note": "Reviewed owned-ledger metadata-only amendment explicitly requested by owner25e645bf. Append strict incident-backed presence freshness, separate availability/health and recipient/age/actionability criteria as applicable. Preserve existing criteria, state, owner, candidate, integration request, dependencies and all history. Native service has no metadata-amend operation; no lifecycle transition, duplicate task, assignment, qualification, warning suppression, mass acknowledgement or host/provider authority inferred."
     }
   ]
 }
