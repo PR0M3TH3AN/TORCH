@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
-import { mkdirSync } from 'node:fs';
 import { once } from 'node:events';
 import { chromium } from '@playwright/test';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createConsoleServer } from '../src/console/server.mjs';
+import { createDashboardArtifactDirectory, describeDashboardArtifacts } from './dashboard-artifacts.mjs';
 
-const screenshotDirectory = process.env.TORCH_CHECK_ARTIFACT_DIR || 'reports/design-system';
+const artifacts = createDashboardArtifactDirectory({
+  repositoryRoot: fileURLToPath(new URL('..', import.meta.url)),
+});
+const screenshotDirectory = artifacts.directory;
 function screenshotPath(name) {
   return join(screenshotDirectory, name);
 }
@@ -41,12 +45,10 @@ try {
   assert.equal(await page.locator('#operation-outcomes button').count(), 0);
   await page.locator('#operation-outcomes .check-evidence').last().locator('summary').click();
   assert.match(await page.locator('#operation-outcomes').innerText(), /transient failure.*effects unknown/s);
-  mkdirSync(screenshotDirectory, { recursive: true });
   await page.locator('#operation-outcomes').screenshot({ path: screenshotPath('torch-dashboard-operation-outcomes.png') });
   await page.locator('#activity-review > summary').click();
   assert.match(await page.locator('#activity-review').innerText(), /4 days without a named commit/);
   assert.match(await page.locator('#activity-review').innerText(), /waiting may be expected/);
-  mkdirSync(screenshotDirectory, { recursive: true });
   await page.locator('#activity-review').screenshot({ path: screenshotPath('torch-dashboard-activity-review.png') });
   assert.match(await page.locator('#check-list').innerText(), /Running — completion unconfirmed/);
   await page.locator('#check-list .check-evidence').filter({ hasText: 'interrupted-browser' }).locator('summary').click();
@@ -57,13 +59,11 @@ try {
   await page.locator('#check-list .check-evidence').filter({ hasText: 'recovery-scenario' }).locator('summary').click();
   assert.match(await page.locator('#check-list').innerText(), /clockMoving.*true/s);
   assert.match(await page.locator('#check-list').innerText(), /not independent sensor truth/);
-  mkdirSync(screenshotDirectory, { recursive: true });
   await page.locator('#check-list').screenshot({ path: screenshotPath('torch-dashboard-check-evidence.png') });
   assert.match(await page.locator('#owner-briefing').innerText(), /Choose the project home layout/);
   assert.match(await page.locator('#owner-briefing').innerText(), /not independent live verification/);
   await page.locator('#owner-briefing .briefing-detail').first().locator('summary').click();
   assert.match(await page.locator('#owner-briefing').innerText(), /Landed — not necessarily deployed/);
-  mkdirSync(screenshotDirectory, { recursive: true });
   await page.locator('#owner-briefing').screenshot({ path: screenshotPath('torch-dashboard-owner-briefing-desktop.png') });
   assert.match(await page.locator('#attention-list').innerText(), /manager launch needs inspection/);
   await page.locator('#attention-list a[href="#manager-wakes"]').click();
@@ -99,7 +99,6 @@ try {
   await conclusion.locator('[data-review-confirm]').waitFor();
   await conclusion.getByText('Exact proposal and evidence in this decision', { exact: true }).click();
   assert.match(await conclusion.locator('[data-review-scope]').innerText(), /schedulesRetained/);
-  mkdirSync(screenshotDirectory, { recursive: true });
   await conclusion.screenshot({ path: screenshotPath('torch-dashboard-pilot-conclusion.png') });
   await conclusion.locator('[data-review-confirm]').click();
   await page.locator('#organization-action-status').filter({ hasText: 'recorded as reversed' }).waitFor();
@@ -155,7 +154,6 @@ try {
   await page.locator('[data-review-confirm]').click();
   await page.locator('#organization-action-status').filter({ hasText: 'recorded as approved' }).waitFor();
 
-  mkdirSync(screenshotDirectory, { recursive: true });
   await pilotPanel.locator(':scope > summary').click();
   await pilotPanel.screenshot({ path: screenshotPath('torch-dashboard-pilot-review.png') });
   await page.locator('#manager-wakes').screenshot({ path: screenshotPath('torch-dashboard-manager-wakes.png') });
@@ -250,4 +248,5 @@ try {
 } finally {
   await browser?.close();
   await new Promise((resolve) => server.close(resolve));
+  console.log(JSON.stringify(describeDashboardArtifacts(artifacts)));
 }
