@@ -1,5 +1,49 @@
 # Current pilot remaining-work handoff
 
+## Concrete served metadata proposal and next peer decisions, 16:38 UTC
+
+Actual Release **5d37742b** complete no-argument reader refinement and **d79126c4**
+fixed synthetic byte vectors are read and recorded on SAME workflow19. Exact
+future contribution, corrected by actual owner **ee430c77**, is only NEW
+src/self-host/runtime-metadata.mjs, NEW QA-owned test/fleet/runtime-metadata.test.mjs
+and append-only docs/TEST_INTEGRITY.md; proposed test/fleet/TEST_INTEGRITY.md is excluded.
+No source/test implementation permission yet. Existing QA receives full contract
+7b6623f3 plus exact corrections/vectors02981960, Kernel83cb229d checks display-only
+native exclusion, Consoled1750568 checks fixed14 asset allowlist/consumer boundary.
+Release9adfc75d receives actual corrections; no owner clarification loop required.
+
+Sole readLoadedRuntimeMetadataV1() captures its own module URL/fixed artifact root
+at evaluation, returns frozen startup observations separately from fresh bounded
+current-disk Console assets and active-pointer/registry/journal observations.
+Parseable local versions/declared commit/raw hashes/tree consistency stay visible
+with authenticationConfidence unknown; loadedMemoryCodeDigest/deliveredBytesProof
+remain null. No repositoryHEAD substitution, selector/callback, VersionService/
+status/reconcile/DB/ControlPlane import or write. Fixed regular reads are no-follow,
+bounded before allocation and pre/post identity checked; intended active-pointer
+link is read as a fixed link, never arbitrary traversal. Concurrent same-user
+directory changes remain detection limits, not atomic containment proof.
+
+Actual source src/self-host/service.mjs inventory/treeHash confirms recursive
+per-directory localeCompare name ordering and traversal, path+NUL+type+NUL+
+String(mode&0777)+NUL+raw bytes or link text+NUL. Exclude every .git and only root
+.torch-validation.json for installed validation. A global UTF8-sorted record manifest
+would change existing hash meaning and is excluded. Independent nested filenames,
+case and punctuation vectors must catch it. JSON64KiB, tree8192 entries/64MiBfile/
+512MiBtotal, UI64 files/4MiBfile/16MiBtotal caps must reject before unbounded allocation
+or truncation; partial results cannot be match. Fixed14 assets and per-file hashes
+retain mixed-disk evidence. Seven proposed scenarios cover fixed raw preimages,
+held-startup pointer advancement, malformed/oversize/tamper/partial journal,
+allowlist/disk change, every cap boundary+1, no DB/reconcile/write and synthetic
+old-vs-later feature bytes without live blockedReason claim. Synthetic alpha4 is
+only a test vector, not an installed or qualified release.
+
+Owner **1291e000** reports independent correctedb375 focused file PASS and existing
+QA manually resumed exact review; source verdict remains pending. Kernel prior
+implementation handle is reported terminal; no Manager start or duplicate review
+session. Real parent/input/fence/native consumer next phase follows actual B1 verdict,
+preserving full6e4 criteria rather than promoting fixture success. Human75 and real
+live desktop/mobile acceptance remain open; full56 roadmap preserved.
+
 ## Corrected exact B1 handoff and clean Manager checkpoint, 16:34 UTC
 
 Actual Kernel9cced188 reports fixture B1 candidate9b4 with local focused gates;

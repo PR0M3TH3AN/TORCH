@@ -85,14 +85,22 @@
     "message:3e8c4e1e:Console-complete7c434-owned-consumer-proposal-request",
     "message:aebd82f9:Kernel-no-signing-prerequisite-debug-semantics",
     "message:9ab0e108-ac63-4de8-87fe-8986ec05cf21:owner-generated1440x1000-artifact-compactOverview-fullqueue-proposal-no-current-scope-expansion",
-    "integration:0d46fb5c-1027-4ead-b969-f760afb72e9f:separate-attention4fa-landed-livecriteria-still-open"
+    "integration:0d46fb5c-1027-4ead-b969-f760afb72e9f:separate-attention4fa-landed-livecriteria-still-open",
+    "message:5d37742b-6a34-4358-83d5-f71d5d8cb3f3:complete-Release-noargs-runtime-metadata-readonly-proposal",
+    "message:d79126c4-c762-40ed-8b10-f58e8cb54256:exact-synthetic-LF-byte-vectors-not-installed-claims",
+    "message:ee430c77-3924-4204-8163-a3c3bb437f0a:owner-exact-threepath-docsTIN-and-recursive-localeCompare-treeHash-correction-no-codeauthority",
+    "message:7b6623f3-5ebd-4dda-93cd-8954fad27b58:QA-complete-refinement-contributor-review-request",
+    "message:83cb229d-9d46-4cc2-ab38-7f0387792ec7:Kernel-displayonly-native-authority-exclusion-request",
+    "message:d1750568-6205-4bd6-912c-dd03dadf36ab:Console-fixed14allowlist-and-consumer-review-request",
+    "message:9adfc75d-69eb-4da3-b8bc-d081fcb1f63f:Release-exact-scope/hash/vector-corrections",
+    "message:02981960-924b-40ac-817f-6052adaeabc5:QA-exact-threepath/vector-scenario-request-after-existing-B1-review"
   ],
   "commit": "e8c4c4249e49d91393394ac205d918826ddd1891",
   "integrationRequest": "6cbac9cb-445f-45d7-8bb1-10902e840211",
   "blockedReason": "Exact e8c source QA acceptance and native6cb serialized landing remain RESOLVED with four native PASS/11 hashes. Attention cohort exact4fa is independently QA accepted and natively landed once0d46; canonical4fa is clean as observed16:27, not whole-workflow acceptance. Actualownereb1 live4174 eight blocked entries omit blockedReason: activealpha2 and immutablealpha3 omit a field already present canonical316. Served UI/APIengine exact version/artifact/source provenance must be distinct from repositoryHEAD and truthful for mixed/stale/unknown state; alpha3switch75 alone cannot qualify current UI. Full workflow remains blocked on later qualified current release and actual live/installed/desktop/mobile owner-flow/full-criteria acceptance; current owner browser list remains empty. Source/demo artifact PASS is not live acceptance. Human75 remains pending revision1; PNG recovery is not activation. No install/restart/hotpatch/host/provider/wake/schema action.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T16:28:00.000Z",
-  "revision": 18,
+  "updatedAt": "2026-10-01T16:38:00.000Z",
+  "revision": 19,
   "history": [
     {
       "from": null,
@@ -219,6 +227,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T16:28:00.000Z",
       "note": "Reviewed metadata-only amendment expected revision17, owner9ab/d2ed current requirements and Release proposals. Append useful observed version/declared commit/hash consistency separately from authentication unknown, no signing prerequisite or memory/browser byte proof. Record compact Overview/full queue/advisory counts proposal on EXISTING workflow, not current implementation expansion. Preserve original criteria/owner/state/e8 candidate/request/history; source integration resolved, genuine later live blockedReason/provenance/desktop/mobile criteria open. No duplicate task or activation75 decision."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:38:00.000Z",
+      "note": "Metadata-only expectedrev18 records complete actual Release5d377 proposal/vector addendum and owner ee430 precise scope/spec corrections. Future exact contribution only new src/self-host/runtime-metadata.mjs, new QA-owned test/fleet/runtime-metadata.test.mjs, append-only docs/TEST_INTEGRITY.md; excludes proposed test/fleet/TIN. Preserve actual candidate recursive per-directory localeCompare inventory traversal and raw hash preimage, any.git/rootvalidation exclusions; independent nested/case/punctuation vectors reject changed ordering. Full contract forwarded existing QA/Kernel/Console with no code authority/new task/assignment. Useful observations separate authentication unknown, no native E/S/A/memory/deliveredbyte claim, no DB/status/reconcile. All state/owner/e8/request/sevencriteria/history retained."
     }
   ]
 }
