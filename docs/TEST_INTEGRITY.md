@@ -2531,3 +2531,31 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Standalone dashboard artifact isolation (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-dashboard-artifacts
+      given: "The dashboard test runs without an artifact environment, with an external runner directory, or with a repository/worktree target"
+      when: "It chooses the screenshot output boundary before the browser or screenshot writer starts"
+      then: "The default is a retained fresh external directory with provenance and hashes; explicit external output is honored; repository, temporary-root, pre-existing and symlink-resolved targets fail before protected bytes change"
+  observable_outcomes:
+    - "Printed artifact directory, provenance, relative names, byte counts and SHA-256 hashes"
+    - "Refusal code for direct, temporary-root, existing-file and symlink-resolved tracked-worktree destinations"
+    - "Unchanged tracked baseline and external user bytes after refusal"
+  determinism_controls:
+    - "Disposable Git worktrees and temporary directories"
+    - "Fixed fixture bytes and SHA-256 assertions; no browser, network, sleep or retry is needed for the boundary scenarios"
+  anti_cheat_rationale:
+    prevents:
+      - "Silently falling back to tracked golden-image paths"
+      - "Bypassing repository protection through a symlink"
+      - "Claiming runner output without exact retained evidence provenance"
+      - "Masking a protected-write failure by changing golden assertions"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
