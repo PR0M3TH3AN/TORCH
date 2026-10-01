@@ -1,5 +1,26 @@
 # Current pilot remaining-work handoff
 
+## Independent artifact acceptance at 10:00 UTC
+
+This supersedes the pending artifact acceptance in the 09:57 snapshot.
+Console `9c6724f8` independently ACCEPTS exact `0fdfcb3`, all eleven preflighted
+screenshot call paths, strict byte preservation and provenance. Arbiter
+`45775b02` independently ACCEPTS the same source boundary after focused tests,
+Unicode linked-worktree refusal, four exact PASS receipts and all eleven PNG
+hashes. The same QA task is now **ready_to_integrate revision 6**. Manager
+handoff `843f826a` asks QA to submit the exact request through its own bound
+identity; no request, authorization or landing is claimed. Old failed candidate
+`014bdb4`, archives and scope limits remain intact. Canonical remains `cb145e56`.
+
+Console `3f23bf3d` separately confirms actual addressed QA consent `6ce049e1`
+but reports an earlier blocked5/idle read. Manager's fresh native task read
+still shows **assigned revision 6**, updated09:52:53. Handoff `ea037924` asks
+Console to refresh and return exact resolved backlog path/revision if the
+discrepancy persists; no cache/inactivity explanation is assumed. The authorized
+implementation scope and full browser qualification hold are unchanged.
+Local reviewed Manager checkpoint `a6de547` contains the preceding dispatch;
+this subsequent acceptance update remains a local coordination checkpoint.
+
 ## Reconciled dispatch and retained gates at 09:57 UTC
 
 Canonical startup and pre-item briefs match

@@ -20,7 +20,7 @@
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check artifact safety",
   "milestone": "Owner-reviewed reliability follow-up",
-  "state": "verification",
+  "state": "ready_to_integrate",
   "owner": "qa",
   "evidence": [
     "message:97e2a19a-080a-4865-9c33-2204e842626a:explicit-QA-owned-safe-default-followup",
@@ -34,14 +34,16 @@
     "receipt:44ba4ca3-69fa-40b9-b231-7b54aebef3d7:check:PASS:0fdfcb3",
     "receipt:f28e9756-3789-4857-967c-92a7229292f4:lint:PASS:0fdfcb3",
     "receipt:aa5da076-f68f-444b-84f3-a5ec6315ded2:test-dashboard:PASS:0fdfcb3",
-    "message:ddbf82fa-a355-41f9-943b-acc51311fdfc:independent-Work-compatibility-PASS/not-final-acceptance"
+    "message:ddbf82fa-a355-41f9-943b-acc51311fdfc:independent-Work-compatibility-PASS/not-final-acceptance",
+    "message:9c6724f8-22bc-4068-9786-4aa52b0de73b:independent-Console-exact-callcoverage/ACCEPT",
+    "message:45775b02-d387-41b4-a059-595ffc36f90d:independent-arbiter-source-ACCEPT/focused3PASS/Unicode/all11-rehash"
   ],
   "commit": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T09:21:25.674Z",
-  "updatedAt": "2026-10-01T09:54:30.020Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T10:00:31.642Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -77,6 +79,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:54:30.020Z",
       "note": "Same QA task moves to verification on independently read clean 0fdfcb3 and four immutable exact PASS receipts with null invalidReason. Original014bdb4 and unsafe-counterexample evidence remain unaccepted/preserved. Work compatibility verdict is limited; final independent Console/Work acceptance and native exact integration still required. No self-acceptance, completion, full visual qualification, activation or provider launch."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:00:31.642Z",
+      "note": "Actual independent Console ACCEPT plus arbiter exact source acceptance received after prior checkpoint, supplement limited Work compatibility review. Four current exact0fdf receipts PASS/nullinvalidReason, clean candidate and canonical ancestry; acceptance limited to artifact-output safety/provenance, not live visuals/release/activation. QA must submit exact request as own bound identity; Manager may authorize/land only native current gate/cleanliness/ancestry/readiness. Old014 failures and all archives/history preserved, no QA selfacceptance or gate waiver."
     }
   ]
 }
