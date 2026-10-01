@@ -57,14 +57,22 @@
     "message:78cdac6d-0546-472d-b8c6-de1619f9e27e:conditional-broaderprotocol-consent-not-actionable",
     "message:03e2b4ed-0735-4de6-b599-5a5a5633bf9b:usable-narrow-B0-fourpath-five-scenario-contributor-consent",
     "message:cc6c43ab-c8f6-484b-8ff9-d796d016a16f:arbiter-exact-named-Kernel-B0-implementation-authorization-same-task",
-    "message:50d37f26-49cb-4561-bb97-f656df11549d:exact-B0-authorization-handoff-to-existing-Kernel-no-Manager-launch"
+    "message:50d37f26-49cb-4561-bb97-f656df11549d:exact-B0-authorization-handoff-to-existing-Kernel-no-Manager-launch",
+    "message:e8436ed6-27cf-4ef3-af73-02e72b8df4e6:historical613-public-DB-PRAGMA-CREATE-bypass-rejected",
+    "message:48969798-d7dc-4a8e-a7e4-bc9a781006a5:197-rejected-only-scenario-protection-independent-zeroexec-passed",
+    "message:ccca1680-ac5e-4665-a454-9c67e0da0f04:correctedc08-terminal-local5PASS-only",
+    "message:3cf79613-9aad-4f01-af27-822f50b0d774:independent-QA-c08-ACCEPTED-narrow-fixture-only-fourpath-source-not-native-wholebranch-integration",
+    "message:061d87cd-5931-427d-a688-98e275084e4f:B1-exact-fourpath-five-scenario-QA-consent-request-not-granted",
+    "message:e5999013-a1f0-4cac-955f-11efe48bbc4d:B1-Work-parent-binding-protocol-agreement-request",
+    "message:b8840bd7-0fe2-4b5c-8592-dbf86051aeed:B1-Kernel-reachable-issuer-composition-request-no-codepermission",
+    "report:reports/protocol/candidate-source-phase-b-proposal-2026-10-01.md:concrete-B1-proposal-after-actual-B0-QA-acceptance"
   ],
   "commit": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T15:12:30.000Z",
-  "revision": 8,
+  "updatedAt": "2026-10-01T15:49:38.000Z",
+  "revision": 9,
   "history": [
     {
       "from": null,
@@ -121,6 +129,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T15:12:30.000Z",
       "note": "Reviewed metadata-only same-task phase amendment expectedrev7; no lifecycle transition, second active assignment or ownership transfer. Actual QA03e2 grants usable exact B0 contributor/scenario consent; actual arbitercc6c authorizes named EXISTING Kernel B0 contribution and controls resume. Current phase ONLY new src/control-plane/candidate-attempt-store.mjs internal canonical schema/digest/read-only metadata verifier; new candidate-attempt-store-provisioner.mjs private own-mkdtemp synthetic fixture; new test/fleet/candidate-attempt-store.test.mjs; append-only docs/TEST_INTEGRITY.md. Five strict QA scenarios/TIN/no relaxation preserved. This supersedes historical PhaseA-only/noB0permission prose solely for B0. No context/parent/adapter/Work protocol/lifecycle/CAS/result/receipt/consumer/CLI implementation, registered/liveDDL/schema migration, install75/host/provider/wake action. Actual immutable-check consumption and enforceable descendant coverage remain mandatory broader protocol gates; pipe receipt/group emptiness cannot discharge them. Preserve full state/owner/criteria/dependencies/history/exact316/a178/sourceaccepted/oldcce/c532/c178; no B0 code completion/native receipt/acceptance/fulltask claim or Manager provider start. Independent exact clean candidate QA and fresh native guarded qualification later remain required."
+    },
+    {
+      "from": "verification",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T15:49:38.000Z",
+      "note": "Reviewed metadata-only expectedrev8 after actualQA3cf narrowly ACCEPTS c08 B0 fixture-only fourpath source. Preserve613 rawDB and197 denylist rejections; independent focused allowlists/issuedclones/foreignDBzeroexec/lexicalmeta evidence not native receipts. Full state/Work owner/seven criteria/dependencies/PhaseA316/a178/all history unchanged. Current native3/current2 still refuses; whole316..c08 Kernel branch unlanded/unaccepted, no integration eligibility/duplicatec532landing/c178dispatch. Concrete B1 two new Kernel metadata/context modules plus newQAfile/appendTIN proposed only after actualB0 acceptance; QA061 namedconsent, Worke599 parentbinding protocol, Kernelb884 reachablepureissuer decisions required before separate arbiter codeauthority. Existing initializedMCP cannot become pureauth by labels. Fixture validation is not real parent composition/immutableinputuse/fencing/nativeconsumer/escaped-descendant proof. No new activeassignment/source edits/registeredDB/liveDDL/75/install/host/provider/wake/publication."
     }
   ]
 }

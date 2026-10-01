@@ -9,7 +9,94 @@ no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
 ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
+## Current narrow B0 acceptance and proposed B1, 15:47 UTC
+
+Actual **QA3cf79613** independently ACCEPTS exact clean
+**c08ca349c8e98b5b967b91bc25a6830039a0a612**, fixture-only cumulative four-path B0
+source. Namespace allowlists, issued clones, foreign selectors/zero DB calls,
+semantic and lexical corruption and exact focused syntax/scenarios PASS; TIN is
+append-only without relaxation. This supersedes the pending c08 review below,
+not the old613 raw-DB and197 denylist rejections. No whole316..c08 branch acceptance,
+native receipt, integration eligibility or operational qualification. Native
+required3/current2 still refuses, full6e4 remains verification9 at landed316 after
+metadata-only evidence reconciliation preserving its state/owner/full criteria.
+
+The next **B1 proposal**, after this actual B0 verdict, is a named Kernel
+contribution on SAME6e4, with Work retaining full-task ownership. It is not code
+permission, an assignment, or a generic design review. Four proposed paths only:
+
+| Path | Contributor | Bounded behavior |
+| --- | --- | --- |
+| src/kernel/managed-subject-metadata.mjs | Project Kernel | Read-only metadata validation and immutable observation: project/config/install/worktree relationships, exact version/source/artifact bytes and explicit missing/mixed/unknown state; no ControlPlane construction or DB initialization. |
+| src/kernel/check-subject-context.mjs | Project Kernel | Versioned immutable context descriptor and strict admission at an independently reviewed binding interface. Caller claims may verify a captured binding, never issue authority or redirect roots/DB/schema/engine/area. Missing genuine issuer/composition refuses native admission. |
+| test/fleet/check-subject-context.test.mjs, NEW | QA-named contribution required | Additive deterministic boundary and mutation scenarios below; existing tests remain unchanged. |
+| docs/TEST_INTEGRITY.md, append-only | QA-named contribution required | new_tests scenarios, fixed data, no retries or relaxed expectations; disclose fixture-only positive proof. |
+
+**Real composition must be pinned before code.** Current canonical MCPserver
+opens ControlPlane before assertIdentity; claimedIdentity depends on that already
+initialized instance. ControlPlane constructor validates manifest/config/local
+project metadata but then opens state.db and initializes schema. This is not a
+side-effect-free authenticator to reuse. Kernel must specify a reachable private
+issuer/reader composition and exact allowed public surface, with Work agreeing
+on the trusted parent binding input. Matching JSON, cwd/env, copied capabilities,
+or a caller-supplied verifier are not authority. If current installed parent
+cannot issue the reviewed binding without initialization, B1 must return a
+specific missing-composition refusal; no registered/native eligibility may be
+claimed. An isolated synthetic composition can exercise descriptor validation
+but remains tagged fixture-only/nonpromotable. Module capabilities protect the API
+surface; they do not prove same-user filesystem/process isolation.
+
+Candidate versus installed/served identity stays separate: E denotes actually
+loaded engine bytes/interface, S exact clean product subject, A actual adapter
+bytes/interface/observed schema. No E/A digest is inferred from repository HEAD,
+package label or a copied attestation. B1 may expose unknown observations and
+strict mismatch refusal; receipts, worker launch, leases, CAS/results, input
+execution/consumption and terminal coverage are outside this phase. Later real
+parent/consumer wiring requires separately owned implementation, independent
+native qualification and untouched existing gates. B0 fixture DDL is not a
+registered-store provisioner, and schema2 metadata is not a schema3 receipt.
+
+Requested strict B1 scenarios:
+
+1. Given captured synthetic managed metadata, reading/validating preserves every
+   input file byte and produces immutable versioned observations; malformed,
+   missing, foreign or contradictory project/install/area/worktree relationships
+   produce bounded refusal before DB constructor/schema/writer/worker calls.
+2. Given a genuine issued test capability, spread/JSON clones, wrong issuer,
+   expired binding and every caller root/DB/DDL/engine/adapter/area selector are
+   rejected; exact Object.keys export allowlists reject renamed authority seams.
+3. Given exact separate E/S/A observations, candidate/engine/adapter mutation,
+   stale commit, dirty candidate, mismatched digest/interface/schema or unknown
+   required field fails closed. Fixed framed preimages and independent expected
+   digests prevent deriving the expected value from the implementation.
+4. Given repository316 but servedalpha2 or immutablealpha3 source28c, metadata
+   observations preserve mismatch/unknown; repositoryHEAD or pointer relabel cannot
+   claim loaded/served equivalence or repair omitted blockedReason. This is a
+   metadata contract scenario, not active Console source expansion or live UI PASS.
+5. Given no independently qualified native parent issuer, context admission
+   explicitly refuses; fixture positives never return native eligibility/receipt.
+   Current3/current2 refusal, legacy2 receipt meaning and no-live-DDL remain intact.
+
+Entry decisions: QA exact path/scenario consent, Kernel precise reachable issuer
+composition and Work parent/engine protocol agreement; Release consulted for
+loaded-versus-immutable metadata semantics. Only after these actual decisions may
+the arbiter authorize B1. No current consumer/CLI/MCP/self-host edits, registered
+provisioning/live state reads or DDL, installation75/service restart, source
+landing, provider start, wake/host change or publication in this proposal.
+
 ## Current complete contract review: Kernel b681, 15:04 UTC
+
+Current QA489 verdict **rejects197 for scenario protection only**; independent
+197 caller DB zero-exec checks pass. Preserve old613 bypass separately. Kernelccca
+corrective **c08ca349c8e98b5b967b91bc25a6830039a0a612** supplies exact Object.keys
+allowlists, actual issued-capability clones and lexical malformed metadata while
+retaining fixed preimages/zero-digest drift and strict assertions. Local five PASS
+are contributor evidence; owner26d confirms existing QA resumed for exact verdict,
+Manager e812/Work7f191 route current evidence. B1 concrete metadata/context scope
+follows actual B0 acceptance and requires its own named QA contribution consent,
+Work protocol agreement and arbiter implementation decision. No new assignment or
+broad branch/native/operational acceptance is inferred. Current3/current2 guard
+and full6e4 actual immutable inputs/lease fencing/consumer criteria remain intact.
 
 Current corrective handoff **cf842edc**, 15:26:54, names exact
 **1976208bfabb58038ebe83f87e56ab11eeba6be2**. Manager read its four-path diff:

@@ -1,5 +1,72 @@
 # Current pilot remaining-work handoff
 
+## Current exact B0 verdict and next B1 handoff at 15:47 UTC
+
+Actual **QA3cf79613** ACCEPTS narrowly clean exactc08 B0 fixture-only cumulative
+four-path source after independently checking namespace allowlists, issued clones,
+caller-selector zero-exec and semantic/lexical corruption. Historical613 raw-DB
+bug and197 denylist gap stay rejected; no retroactive PASS. Independent focused
+source evidence is resolved, not a stale owner/QA hold. Native3/current2, unlanded
+whole Kernel branch, integration and full6e4 remain separate. Manager45d4 relays
+actual verdict; metadata-only verification9 records narrow B0 acceptance and B1
+handoffs, preserving landed316 and all original criteria/history. QA061d87cd,
+Worke5999013 and Kernelb8840bd7 receive the exact B1 proposal for their decisions.
+
+After this actual acceptance, the protocol report now contains a concrete B1
+four-path proposal: two new pure Kernel metadata/context modules, one new QA
+scenario file and append-only TIN. Five strict metadata/no-side-effect, capability/
+allowlist, E/S/A mismatch, served-versus-repository and fixture nonpromotion
+scenarios. Real trusted issuer/parent composition must be agreed before code:
+current MCP opens ControlPlane first, so its identity seam cannot be relabelled as
+pure authority. Unknown composition explicitly refuses native admission. Exact
+QA consent/Kernel composition/Work protocol and arbiter decision remain bounded
+entry gates, not new assignments or consumer/CLI/schema/activation permission.
+
+## Current coordination at 15:43 UTC
+
+Brief d7e6d69, addressed unread100, all56 current tasks and direct-report check-in
+were refreshed. Kernel197 is **REJECTED** by actual QA489 only for scenario
+protection: renamed exports evade forbidden-name checks, issued-capability clones
+need actual scenarios and zero digest is not lexical malformed metadata. QA's
+independent197 zero-caller-DB execution checks passed; old613 raw-DB bypass remains
+its separate historical rejection. Ownerce828 resumed SAME four-path Kernel repair;
+no extra assignment or approval hold. Terminal **Kernelccca** now reports corrected
+**c08ca349c8e98b5b967b91bc25a6830039a0a612** with exact allowlists/issued clones/
+lexical corruption and local five focused PASS. Manager read exact197..c08 path
+stat: only approved provisioner/new test/append-only TIN delta. Existing QA receives
+**e812cb0a** exact correction; Work **7f19101f** receives current task evidence.
+Actual owner **26d13ada** confirms correction session terminal, arbiter five focused
+PASS/zero skips and existing QA resumed for exactc08. Independent verdict is still
+required; no whole Kernel branch/source/native qualification or integration.
+
+Existing Console SAMEattention remains in_progress14. Current actual peer tree at
+15:41:48 is base316 with only owned two site paths dirty; owner26d reports current
+session3407302 active. Preserve those files; old idle badge is stale. Fullworkflow
+metadata-only blocked16->blocked17 appends actual **ownereb1dfa78** incident and
+strict served UI/API engine provenance/version versus repositoryHEAD and actual
+live blockedReason criteria. Current canonical316 line141 includes blockedReason;
+owner independently reports live4174 all eight blocked entries, activealpha2 and
+immutablealpha3 source28c omit it. This is runtime/source divergence: alpha3switch75
+alone cannot qualify current UI. No duplicate codefix/task or active cohort scope
+expansion. Release **2d68604c** and Kernel **759e396f** receive future owned interface
+proposal requests; Console **aabe8d04** receives unchanged-scope notification.
+
+56 tasks remain 39 proposed/eight blocked/six completed/one verification/one
+assigned/one in_progress. Fresh check-in15:43 findings/structured waits are empty
+after addressed routes; this does not close real waits. Approval75 independently
+remains pending1/owner. Current native queue preserves a178 landed316, c532 ready
+duplicate/unlanded, oldcce needs_convergence and c178 proposed; no another landing.
+Hierarchy ten/evolution eight measured signals are advisory: keep coherent existing
+ownership and strict interfaces/scenarios, no identity or coordination-role change.
+Health49 stale/two resolved-dependency warnings are surfaced, never auto-fixed.
+
+Next exact handoff: actual existing QA c08 verdict through arbiter, then concrete
+B1 pure managed metadata/context scope and named consent/protocol decisions on
+SAME6e4. B0 fixture proof is not real composition or actual check-input/fence/
+native-consumer/escaped-descendant proof. No live DDL, source/test edits, installation,
+host/provider/wake changes or publication. Full live/browser/mobile criteria and
+current required3/current2 refusal remain, legacy2 evidence retained.
+
 ## Current corrective candidate and durable handoff at 15:29 UTC
 
 Fresh brief retains d7e6d69; addressed unread100 and current all-task evidence

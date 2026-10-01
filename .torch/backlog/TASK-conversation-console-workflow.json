@@ -12,7 +12,9 @@
   "acceptanceCriteria": [
     "Controls show target; effect; authority and current evidence before confirmation",
     "Stale/replayed previews cannot modify a newer task or session",
-    "Live refresh and artifact review retain focused drafts and distinguish recorded from live state"
+    "Live refresh and artifact review retain focused drafts and distinguish recorded from live state",
+    "Live owner flow exposes served UI and API engine version plus exact immutable artifact/source provenance separately from repository HEAD; mixed loaded versions, stale immutable candidates and unavailable provenance are explicitly truthful, never inferred from source PASS or pointer labels",
+    "A later independently qualified current release and actual desktop/mobile live owner flow display each current blocked task's durable blockedReason with provenance; missing or stale runtime fields remain explicit unknown/mismatch. Canonical316 source already contains blockedReason, while reported activealpha2 and immutablealpha3 omit it; alpha3 pointer switch alone does not satisfy this criterion"
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
@@ -70,14 +72,18 @@
     "queue:cce22c51-1fa8-4324-8e28-bf8cbfc56165:needs_convergence-unchanged-no-override",
     "message:9242963d-3432-49aa-8720-74bb997caa40:actual-browser-binding-disconnected-discovery-empty-live-acceptance-unproven",
     "message:9f4288f7-c984-4851-8452-1b06490209e7:source-landed-live-session-handoff-no-install/provider",
-    "approval:75a8ebae-54f8-47da-9a5a-fbe647d0baaf:refreshed-pending-owner-revision1-not-PNG-recovery"
+    "approval:75a8ebae-54f8-47da-9a5a-fbe647d0baaf:refreshed-pending-owner-revision1-not-PNG-recovery",
+    "message:eb1dfa78-94a7-4c1c-a350-079d5e6eccfb:live4174-eightblockedentries-omitblockedReason-activealpha2-and-immutablealpha3-omit-canonical316-present-repositoryHEAD-not-servedengine",
+    "message:2d68604c-0bbc-47a9-86b5-10b2d24b2890:Release-future-owned-provenance-interface-proposal-request-no-install",
+    "message:759e396f-caaa-469e-80ba-a85b5d9b4ebd:Kernel-future-pure-metadata-boundary-no-active-scope-expansion",
+    "message:aabe8d04-d992-4af8-94da-e0c07ca6ae9b:Console-existing-workflow-livecriteria-active-cohort-scope-unchanged"
   ],
   "commit": "e8c4c4249e49d91393394ac205d918826ddd1891",
   "integrationRequest": "6cbac9cb-445f-45d7-8bb1-10902e840211",
-  "blockedReason": "Exact source QA acceptance and native serialized integration are RESOLVED: actual4ff2 accepts e8c4c424, all four exact native PASS and 11 artifact hashes qualified; request6cbac9cb landed13:59:37.393 UTC through session-manager authority with canonical plan canProceed true/no blockers. Canonical and Console are clean exact e8c. Full workflow remains genuinely blocked on actual live/installed/desktop/mobile and owner full-criteria acceptance; owner9242963d refreshed browser binding disconnected/discovery[] and no computer-use connection available. Source/demo artifact acceptance never proves live UI or installed runtime acceptance. Alpha3activation approval75 remains pending owner revision1, completed exact PNG recovery is not activation. No task completion, installation switch, host/browser changes, provider/wake or schema recovery.",
+  "blockedReason": "Exact e8c source QA acceptance and native6cb serialized landing remain RESOLVED with four native PASS/11 hashes. Current canonical316 is clean; Console is separately developing authorized SAMEattention cohort at base316, not whole-workflow acceptance. Actualownereb1 live4174 eight blocked entries omit blockedReason: activealpha2 and immutablealpha3 omit a field already present canonical316. Served UI/APIengine exact version/artifact/source provenance must be distinct from repositoryHEAD and truthful for mixed/stale/unknown state; alpha3switch75 alone cannot qualify current UI. Full workflow remains blocked on later qualified current release and actual live/installed/desktop/mobile owner-flow/full-criteria acceptance; current owner browser list remains empty. Source/demo artifact PASS is not live acceptance. Human75 remains pending revision1; PNG recovery is not activation. No install/restart/hotpatch/host/provider/wake/schema action.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T14:04:28.022Z",
-  "revision": 16,
+  "updatedAt": "2026-10-01T15:41:48.000Z",
+  "revision": 17,
   "history": [
     {
       "from": null,
@@ -190,6 +196,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T14:04:28.022Z",
       "note": "Explicit current owner directs actual queue/source acceptance metadata reconciliation only. Fresh blocked15, QA4ff2 and native6cb authorized/plan/land result independently checked; source review and landing resolved. Preserve owner/state/candidate/full criteria/dependencies and every history/failure receipt. Record actual landed integration linkage without full workflow closure; browser924 disconnected/live installed desktop/mobile gates remain. No lifecycle churn/automatic closure or gate bypass."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T15:41:48.000Z",
+      "note": "Reviewed metadata-only append at expectedrev16 from actualownereb1 incident; existing source acceptance/landing stays resolved. Add strict separate servedUI/APIengine versus repositoryHEAD immutable artifact/source/version provenance and actual current live blockedReason criteria. Activealpha2 and immutablealpha3 source28c omit field already present canonical316; alpha3switch75 alone cannot qualify. Preserve every prior criterion/history/receipt, owner/state/candidate/integration/dependencies; no duplicate task or lifecycle dispatch. Release2d686/Kernel759e future interface proposal only, Consoleaabe activeattention fourpath scope unchanged. Current canonical316 clean; historical14:04 e8 clean assertion is dated evidence, not current source/runtime identity. Human75 pending, no hotpatch/install/restart/schema/native gate waiver."
     }
   ]
 }
