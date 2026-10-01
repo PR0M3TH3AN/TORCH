@@ -2635,3 +2635,83 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Candidate engine and artifact sealing Phase A (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-engine-pure-fixture
+      given: Hermetic frozen fixture descriptors, bounded command data, explicit environment and a fixture artifact directory
+      when: The isolated Phase-A engine observes a child execution
+      then: Only bounded parent-observed terminal data and a nonpromotable SourceAttestation are returned
+    - id: SCN-artifact-manifest-seal
+      given: Fixed regular artifact bytes in a hermetic temporary directory
+      when: The parent seals the directory
+      then: Canonical sorted paths, byte lengths and SHA-256 values are write-once and verify unchanged
+  observable_outcomes:
+    - Raw exit, error, signal, timeout and overflow observations; zero exit plus overflow is not success
+    - No receipt identity, writer capability, registered-state handle or consumer eligibility
+    - Capped canonical manifests and refusals for links, traversal, special files, overwrite and post-seal drift
+  determinism_controls:
+    - Fixed bytes, injected executors and isolated temporary directories
+    - No retries, sleeps, network, registered control-plane state or provider process
+  anti_cheat_rationale:
+    prevents:
+      - Hard-coded PASS or fixture receipt promotion
+      - Ambient environment or registered-state capability leakage
+      - Snapshot/golden rubber-stamping and unbounded output masking
+      - Link, traversal, overwrite or post-seal artifact substitution
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Candidate engine and artifact sealing Phase A corrective boundaries (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-engine-boundary-limits
+      given: "A fixture run with candidate execution limits"
+      when: "A required bound is missing, zero, oversized, or supplied to the injected native-shaped executor"
+      then: "Execution refuses before start or receives finite timeout and output caps without ambient defaults"
+    - id: SCN-candidate-engine-utf8-overflow
+      given: "A parent observes multi-byte UTF-8 output larger than its byte cap"
+      when: "The child exits zero with output overflow"
+      then: "Only a valid byte-bounded prefix is retained and the terminal observation is non-success"
+    - id: SCN-candidate-engine-immutable-input-and-environment
+      given: "A candidate input byte snapshot and explicit deterministic environment"
+      when: "The digest or byte length is absent or mismatched, an unallowlisted environment is requested, or caller data mutates"
+      then: "The run refuses before execution or preserves its independent immutable snapshot"
+    - id: SCN-artifact-manifest-bytewise-and-caps
+      given: "Fixed artifacts with bytewise-distinct UTF-8 paths and configured evidence limits"
+      when: "The parent seals files at or beyond count, file, aggregate, path, and manifest limits"
+      then: "Canonical UTF-8 byte ordering is stable and every over-limit artifact refuses"
+    - id: SCN-artifact-manifest-root-and-manifest-boundaries
+      given: "A candidate artifact root or final manifest path"
+      when: "A link, directory/special node, pre-existing seal, or oversized manifest is encountered"
+      then: "No path is followed or parsed as evidence and write-once sealing refuses"
+    - id: SCN-artifact-manifest-complete-drift
+      given: "A previously sealed manifest"
+      when: "An artifact is added or the manifest is replaced"
+      then: "Verification rejects drift or an invalid seal"
+  observable_outcomes:
+    - "UTF-8 retained bytes never exceed maxOutputBytes; overflow including exit zero is non-success"
+    - "Missing or mismatched input byte snapshots, unallowlisted environment names, and invalid bounds do not invoke the executor"
+    - "Manifest lstat/open/read caps, path ordering, link/special refusal, and seal-drift errors are externally observable"
+  determinism_controls:
+    - "Injected fixture executor, fixed byte buffers, temporary directories, and no ambient environment inheritance"
+    - "No network, registered control-plane state, provider process, or live receipt adapter"
+  anti_cheat_rationale:
+    prevents:
+      - "Character-count truncation retaining more bytes than the declared cap"
+      - "Ambient or syntactically valid but unapproved environment capability leakage"
+      - "Caller-supplied digest labels impersonating verified immutable input"
+      - "Link-following, unbounded manifest parsing, locale-dependent ordering, or post-seal substitution"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
