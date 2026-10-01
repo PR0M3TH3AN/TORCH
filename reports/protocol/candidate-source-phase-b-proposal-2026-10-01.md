@@ -12,6 +12,12 @@ ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
 ## Actual B1 four-path authorization and real composition roadmap, 16:29 UTC
 
+Latest16:39 **QAc73fb0f6** REJECTS b375 narrowly for append-only TIN placement:
+move exact23-line allocation correction block from line48 to document end, unchanged.
+Independent10/10 focused/syntax/clean and zero-copy direct probe pass technically,
+not source acceptance. Routine same-scope correction routed existing Kernel/Work;
+new exact candidate requires QA. Preserve all source/test assertions and histories.
+
 Current16:34 implementation evidence: initial9b4 localPASS claim did not establish
 bounded parsing; owner465 independently instruments1MiB+1 input and observes copy
 before refusal. Corrected **b375037a9ca5c20704204b52e9ffb3d8060494d9** checks original

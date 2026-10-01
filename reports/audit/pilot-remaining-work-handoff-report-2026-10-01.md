@@ -1,5 +1,21 @@
 # Current pilot remaining-work handoff
 
+## Actual B1 QA verdict and exact corrective handoff, 16:39 UTC
+
+Actual **QAc73fb0f6** narrowly REJECTS exactb375 only for TIN placement: the
+23-line allocation-bound correction block was inserted at docs/TEST_INTEGRITY.md:48
+rather than appended. QA independently verifies exactfourpath delta,10/10 focused,
+syntax, clean-after-run and direct1MiB+1 zero-copy parse/digest probe with restored
+instrumentation. Technical behavior evidence passes; source acceptance does not.
+Existing Kernel/Work receive the concrete corrective decision: move ONLY that exact
+unchanged block to document end beside B1 provenance, preserving source/tests and
+every original assertion. Same original authorized contribution, no owner scope
+question/new assignment/Manager launch. Arbiter resumes existing Kernel after terminal;
+new clean exact candidate needs independent QA. SAME6e4 verification12 preserves
+9b allocation failure and b375 technical PASS/TIN rejection; all seven full criteria,
+Work owner and landed316/a178 stay unchanged. Real parent/input/fence/native consumer
+phase follows actual B1 acceptance, not technical-only evidence or fixture promotion.
+
 ## Concrete served metadata proposal and next peer decisions, 16:38 UTC
 
 Actual Release **5d37742b** complete no-argument reader refinement and **d79126c4**

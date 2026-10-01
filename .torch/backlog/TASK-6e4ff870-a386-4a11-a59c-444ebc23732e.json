@@ -77,14 +77,15 @@
     "message:865c8290-30e9-4048-8a73-7198faf3d894:corrected-b375-localPASS-zero-copy-regression-awaits-QA",
     "git:project-kernel:clean-b375037a9ca5c20704204b52e9ffb3d8060494d9:fourpath-c08-delta-diffcheck-observed16:33",
     "message:bec5581a-bac8-4e49-b1fa-30aba2abdbe9:existing-QA-exact-b375-independent-review-request",
-    "message:5c0378fa-d323-4808-a6f4-cb834c64acf6:Work-exact-b375-protocol-review-handoff"
+    "message:5c0378fa-d323-4808-a6f4-cb834c64acf6:Work-exact-b375-protocol-review-handoff",
+    "message:c73fb0f6-78bf-40c5-87ae-a61c629f382c:QA-b375-REJECTED-only-TIN-placement-independent10/10-zero-copy-technicalPASS-not-sourceacceptance"
   ],
   "commit": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T16:34:00.000Z",
-  "revision": 11,
+  "updatedAt": "2026-10-01T16:39:30.000Z",
+  "revision": 12,
   "history": [
     {
       "from": null,
@@ -162,6 +163,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T16:34:00.000Z",
       "note": "Metadata-only expectedrev10 checkpoint exact implemented B1 candidate and independent defect/correction, no source acceptance or lifecycle change. Earlier9b4 localPASS claim superseded after owner instrumented1MiB+1 prebound-copy defect; corrected b375 clean exactfourpathdelta/diffcheck observed, implementer focused/eslint/syntax PASS and zero-copy regression handed to existing QA/Work. Independent exact verdict pending, not owner permission. Full owner/state/landed316/a178/sevencriteria/history/native3vs2refusal retained; no native receipts/integration eligibility or fulltask acceptance from fixtures."
+    },
+    {
+      "from": "verification",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:39:30.000Z",
+      "note": "Metadata-only exact QA verdict reconciliation expectedrev11. QAc73 narrowly rejects b375 for inserted23line allocation-correction TIN block at line48 violating append-only rule; independently10/10 focused/syntax/clean/namespace/direct1MiB+1 zero-copy technical evidence passes. Same original scope correction only move exact unchanged block to document end; source/test semantics unchanged, existing Kernel through arbiter and exact resulting QA review. No stale source-acceptance wait/owner permission request or full native acceptance. Preserve9b failure,b375 technicalPASS/rejection,state/owner/316a178/sevencriteria/history."
     }
   ]
 }
