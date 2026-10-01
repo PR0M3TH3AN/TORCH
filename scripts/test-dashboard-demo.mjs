@@ -332,14 +332,28 @@ try {
     'revision N preview must not remain presented after revision N+1 is refreshed');
   assert.equal(await refreshedForm.locator('[data-priority-confirm]').count(), 0,
     'the stale revision N preview cannot be confirmed as current');
+  assert.equal(await refreshedForm.locator('[name="priority"]').inputValue(), 'urgent', 'the unsent priority choice must survive invalidation');
+  assert.equal(await refreshedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.',
+    'the unsent reason must survive invalidation');
+  assert.equal(await refreshedForm.locator('[name="priority"]').isDisabled(), false, 'the preserved priority choice remains editable');
+  assert.equal(await refreshedForm.locator('[name="reason"]').isDisabled(), false, 'the preserved reason remains editable');
+  assert.match(await refreshedForm.locator('.priority-change-status').innerText(), new RegExp(`revision ${revisionN1}`),
+    'the visible status identifies current task evidence');
   await refreshedTicket.locator('.priority-change > summary').click();
-  await refreshedForm.locator('[name="priority"]').selectOption('urgent');
-  await refreshedForm.locator('[name="reason"]').fill('Review again using the refreshed task evidence.');
   await refreshedForm.getByRole('button', { name: 'Review change', exact: true }).click();
   await refreshedForm.locator('[data-priority-confirm]').waitFor();
   assert.equal(await refreshedForm.locator('[data-priority-preview]').locator('dd').nth(2).innerText(), String(revisionN1));
   assert.notEqual(await refreshedForm.getAttribute('data-preview-token'), staleToken,
     'a current preview must be regenerated from revision N+1');
+  const currentToken = await refreshedForm.getAttribute('data-preview-token');
+  await stalePage.locator('#refresh-console').click();
+  await stalePage.locator('#live-refresh-status[data-generation="3"]').waitFor();
+  assert.equal(await refreshedForm.getAttribute('data-preview-token'), currentToken,
+    'unchanged current evidence must retain its active preview');
+  assert.equal(await refreshedForm.locator('[data-priority-preview]').isVisible(), true);
+  assert.equal(await refreshedForm.locator('[data-priority-confirm]').isVisible(), true);
+  assert.equal(await refreshedForm.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await refreshedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
   await stalePage.close();
   assert.deepEqual(errors, []);
   assert.deepEqual(apiRequests, [], 'demo must never contact live project APIs');

@@ -2570,10 +2570,14 @@ test_integrity_note:
       given: "The existing dashboard scenarios and eleven screenshot destinations run in their established order"
       when: "The driver selects each target section's supported fragment immediately before its unchanged checks and captures"
       then: "Each original assertion and capture executes against the selected view without changing capture order, viewport coverage, artifact destination, or artifact safeguards"
-    - id: SCN-dashboard-draft-preview-invalidates-on-newer-evidence
-      given: "A task priority preview is created from task evidence revision N"
-      when: "A separate confirmed sample action advances that task to authoritative revision N+1, the owner navigates away and back, and refresh loads the newer evidence"
-      then: "The revision N token, preview, and confirmation control are absent; only a newly generated preview bound to revision N+1 can be presented"
+    - id: SCN-console-priority-preview-invalidates-on-newer-evidence
+      given: "A task priority preview and unsent priority and reason values are created from task evidence revision N"
+      when: "A separate confirmed sample API action advances that task to authoritative revision N+1 and Console refresh loads the newer evidence"
+      then: "The revision N token, preview, and confirmation control are absent; revision N+1 is visible, the unsent values remain intact and editable, and only a newly generated preview bound to N+1 can be presented"
+    - id: SCN-console-current-preview-and-draft-survive-unchanged-refresh
+      given: "A task has an active priority preview and unsent priority and reason values bound to its current evidence revision"
+      when: "Console refresh returns the same task revision"
+      then: "The preview token, review panel, confirmation boundary, and unsent field values remain available unchanged"
     - id: SCN-console-view-navigation
       given: "The Console has addressable work, fleet, evidence, and flow-watch views"
       when: "A reader opens fragments, follows navigation, and uses browser Back and Forward"
@@ -2582,6 +2586,14 @@ test_integrity_note:
       given: "The Console is rendered at a 390x844 viewport"
       when: "Each supported destination is selected"
       then: "Every navigation destination remains visible and the document and navigation have no horizontal overflow"
+    - id: SCN-console-view-title-mapping
+      given: "The Console loads Overview and a reader selects each other supported view"
+      when: "The reader returns to Overview after visiting contextual views"
+      then: "Overview has the exact title TORCH Dashboard on initial and return navigation; all other views keep their exact contextual titles"
+    - id: SCN-console-secondary-deeplink-focus-and-history
+      given: "The Console is loaded at the organization-proposals or approval-request-list fragment"
+      when: "The reader opens either direct link and uses browser Back and Forward"
+      then: "Exactly the matching view is selected and the actual secondary target is focused inside the viewport"
     - id: SCN-console-view-drafts
       given: "A task draft and an owner approval preview are present"
       when: "The reader changes views and refreshes the sample Console"
@@ -2589,11 +2601,15 @@ test_integrity_note:
   observable_outcomes:
     - "Selected fragment, visible view, original assertion results, and the unchanged ordered screenshot set"
     - "Revision N+1 displayed after refresh, with the old preview token and confirmation control unavailable"
+    - "Unsent priority and reason values retained and editable after newer evidence invalidates the old preview"
+    - "An unchanged current-revision preview, confirmation boundary, and draft retained after refresh"
     - "A regenerated preview token and displayed revision bound to N+1"
+    - "Exact Overview and contextual view titles, plus focused in-viewport secondary targets across direct loads and browser history"
     - "No browser requests to live project APIs and no changes to tracked screenshot expectations"
   determinism_controls:
     - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
     - "Newer evidence is introduced through the sample's supported preview/confirm API before an explicit refresh"
+    - "The browser test advances only the isolated sample API; it never submits the priority form or mutates a live project"
     - "No network, live project mutation, retry, sleep, timeout, golden update, or direct fixture-source change"
   anti_cheat_rationale:
     prevents:

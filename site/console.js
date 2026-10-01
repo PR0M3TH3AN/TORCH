@@ -45,15 +45,19 @@ function installConsoleViewRouting() {
     });
     const workspace = document.querySelector('.console-workspace');
     if (workspace) workspace.dataset.currentView = view;
-    document.title = `${definition.title} | TORCH Local Fleet Console`;
+    document.title = view === 'overview' ? 'TORCH Dashboard' : `${definition.title} | TORCH Local Fleet Console`;
     const announcement = document.querySelector('#console-view-status');
     if (announcement) announcement.textContent = `Viewing ${definition.title}.`;
 
     if (focus) {
       const targetId = decodeHash(hash);
       const target = document.getElementById(targetId);
-      if (target && target.dataset.consoleView !== view && target.closest('[data-console-view]')) {
-        target.scrollIntoView?.({ block: 'start' });
+      const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
+      if (target && targetId !== view && targetView === view) {
+        if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
+          target.tabIndex = -1;
+        }
+        target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
         target.focus?.({ preventScroll: true });
       } else {
         const labelledBy = visible[0]?.getAttribute('aria-labelledby');
@@ -91,6 +95,39 @@ const refreshProtection = globalThis.TorchLiveRefresh.createProtection(document)
 refreshProtection.remember();
 let renderingSnapshot = false;
 let heldPanels = 0;
+
+function invalidateStalePriorityPreviews(tasks = []) {
+  const currentById = new Map(tasks.map((task) => [task.id, task]));
+  for (const form of document.querySelectorAll('.priority-change-form[data-preview-token]')) {
+    const task = currentById.get(form.dataset.taskId);
+    const currentRevision = Number(task?.revision);
+    const previewRevision = Number(form.dataset.revision);
+    if (!task || !Number.isSafeInteger(currentRevision) || currentRevision === previewRevision) continue;
+
+    const ticket = form.closest('.task-ticket');
+    if (!ticket) continue;
+    const priority = form.querySelector('[name="priority"]')?.value;
+    const reason = form.querySelector('[name="reason"]')?.value;
+    const openDetails = new Set([...ticket.querySelectorAll('details[open]')]
+      .map((details) => details.querySelector(':scope > summary')?.textContent));
+    const template = document.createElement('template');
+    template.innerHTML = taskCard(task, currentBacklogHealth).trim();
+    const refreshedTicket = template.content.firstElementChild;
+    if (!refreshedTicket) continue;
+    const refreshedForm = refreshedTicket.querySelector('.priority-change-form');
+    if (refreshedForm) {
+      const priorityField = refreshedForm.querySelector('[name="priority"]');
+      const reasonField = refreshedForm.querySelector('[name="reason"]');
+      if (priorityField && priority) priorityField.value = priority;
+      if (reasonField) reasonField.value = reason ?? '';
+      priorityStatus(refreshedForm, `Task evidence advanced to revision ${currentRevision}. The older preview was cleared; review the current task before previewing again.`);
+    }
+    refreshedTicket.querySelectorAll('details').forEach((details) => {
+      if (openDetails.has(details.querySelector(':scope > summary')?.textContent)) details.open = true;
+    });
+    ticket.replaceWith(refreshedTicket);
+  }
+}
 
 const escapeHtml = (value) => {
   const element = document.createElement('span');
@@ -1044,6 +1081,7 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     heldPanels = 0;
     renderingSnapshot = true;
     try { render(snapshot); } finally { renderingSnapshot = false; }
+    invalidateStalePriorityPreviews(snapshot.backlog ?? []);
     refreshProtection.remember({ preserve: editedBeforeRender });
     $('#console-error').hidden = true;
     const status = $('#live-refresh-status');
