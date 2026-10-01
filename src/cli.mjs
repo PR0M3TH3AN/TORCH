@@ -52,7 +52,10 @@ const CODEX_PROTOCOL_REDUCER = fileURLToPath(new URL('./runtime/codex-protocol-r
 export function executeRuntimeLaunch(spawn, launch, options = {}) {
   // Tests and adapter qualification inject a deterministic executor. The real
   // synchronous CLI boundary alone needs protocol reduction before buffering.
-  if (launch.runtime === 'codex' && spawn === spawnSync) {
+  // A tagged guard may delegate to native spawnSync after asserting hermetic
+  // launch preconditions; it must opt in rather than changing fake executors.
+  const usesNativeSpawn = spawn === spawnSync || spawn?.torchNativeSpawnGuard === true;
+  if (launch.runtime === 'codex' && usesNativeSpawn) {
     return spawn(process.execPath, [CODEX_PROTOCOL_REDUCER, launch.command, ...launch.args], options);
   }
   return spawn(launch.command, launch.args, options);

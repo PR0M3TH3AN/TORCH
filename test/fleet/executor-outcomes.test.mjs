@@ -148,6 +148,23 @@ async function captureStdout(action) {
   }
 }
 
+function nativeSpawnGuard({ expectedEnv, expectedMarker, delegate } = {}) {
+  const calls = [];
+  const guard = (command, args, options) => {
+    calls.push({ command, args, options });
+    assert.equal(command, process.execPath, 'Codex must launch through the real protocol reducer process');
+    assert.equal(args[0], CODEX_PROTOCOL_REDUCER);
+    assert.equal(args[1], 'codex');
+    assert.equal(options.env, expectedEnv, 'runCli must forward the exact injected environment');
+    assert.equal(options.env.PATH, expectedEnv.PATH);
+    assert.equal(options.env.TORCH_FAKE_CODEX_INVOCATION_MARKER, expectedMarker);
+    if (!expectedMarker) throw new Error('fixture guard rejected missing Codex invocation marker before spawn');
+    return delegate(command, args, options);
+  };
+  guard.torchNativeSpawnGuard = true;
+  return { guard, calls };
+}
+
 test('SCN-executor-interrupted-outcomes: a graceful ready timeout, signal, or ENOBUFS cannot create an idle turn or disclose output', () => {
   const readyDirectory = mkdtempSync(join(tmpdir(), 'torch-executor-ready-'));
   const readyPath = join(readyDirectory, 'ready');
@@ -322,20 +339,30 @@ test('SCN-cli-codex-real-executable: an actual runCli invocation reaches the iso
     'worktrees', '--parent', worktreeParent, '--yes', '--json',
   ], cliOptions));
   assert.equal(worktrees.status, 0, worktrees.output);
+  const missingEnv = { ...context.env, PATH: `${bin}:${process.env.PATH}` };
+  const missingMarkerGuard = nativeSpawnGuard({
+    expectedEnv: missingEnv, expectedMarker: undefined, delegate: spawnSync,
+  });
   const missingMarker = await captureStdout(() => runCli([
     'up', '--fresh', '--only', context.worker, '--yes', '--json',
   ], {
     cwd: context.root,
-    env: { ...context.env, PATH: `${bin}:${process.env.PATH}` },
+    env: missingEnv,
+    spawn: missingMarkerGuard.guard,
   }));
-  assert.equal(missingMarker.status, 2, missingMarker.output);
-  assert.equal(JSON.parse(missingMarker.output).error, 'FLEET_START_FAILED');
+  assert.equal(missingMarker.status, 1, missingMarker.output);
+  assert.equal(JSON.parse(missingMarker.output).error, 'UNEXPECTED_ERROR');
+  assert.equal(missingMarkerGuard.calls.length, 1, 'guard must reject before any native child starts');
   assert.equal(existsSync(marker), false, 'fake executable must fail before it can claim invocation without its marker');
   assert.ok(Buffer.byteLength(missingMarker.output) < 4 * 1024, 'failed CLI response must remain bounded');
+  const validGuard = nativeSpawnGuard({
+    expectedEnv: cliOptions.env, expectedMarker: marker, delegate: spawnSync,
+  });
   const captured = await captureStdout(() => runCli([
     'up', '--fresh', '--only', context.worker, '--yes', '--json',
-  ], cliOptions));
+  ], { ...cliOptions, spawn: validGuard.guard }));
   assert.equal(captured.status, 0, captured.output);
+  assert.equal(validGuard.calls.length, 1, 'valid guard must delegate exactly one native reducer launch');
   assert.equal(process.env[markerEnv], inheritedMarker, 'runCli must not mutate the process environment');
   const invocation = JSON.parse(readFileSync(marker, 'utf8'));
   assert.equal(invocation.args.includes('exec'), true, 'the isolated executable must receive the Codex exec invocation');

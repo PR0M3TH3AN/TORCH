@@ -129,7 +129,7 @@ test_integrity_note:
     - Actual CLI JSON response and persisted identity state from a fake executable on an isolated PATH
   determinism_controls:
     - Local child process signal handshake driven by receipt of thread.started; a bounded watchdog only terminates and awaits the owned fixture on failed emission, never retries or asserts product timing
-    - Disposable Git/XDG fixtures and a hermetic executable; no provider, network, or account access
+    - Disposable Git/XDG fixtures and a hermetic executable; a tagged guard rejects an absent or mismatched env before native spawn, then delegates unchanged to native spawnSync only for the validated fake path
   anti_cheat_rationale:
     prevents:
       - Delaying identity output until child close and losing it on interruption
