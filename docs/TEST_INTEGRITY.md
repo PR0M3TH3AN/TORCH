@@ -2735,3 +2735,39 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+## 2026-10-01 — Check-subject context B1 fixture-only provenance boundary
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-check-subject-context-canonical-E-S-A
+      given: Independently framed captured engine, subject, and adapter observations
+      when: B1 canonicalizes and parses the bounded UTF-8/LF v1 payload
+      then: Exact framed bytes and digest bind the three observations without treating product or engine content as framed bytes
+    - id: SCN-check-subject-context-fixture-authority
+      given: An issued fixture harness or copied, foreign, expired, and reused variants
+      when: Fixture context admission or inspection is requested
+      then: Only the issued single-use WeakMap authority succeeds, and its result remains nonpromotable, non-native, and receipt-ineligible
+    - id: SCN-check-subject-context-schema-and-native-refusal
+      given: Readable schema-2 legacy observations and no registered parent issuer
+      when: A required-schema-3/current-schema-2 or otherwise registered v1 admission is requested
+      then: The incompatibility or missing-composition refusal occurs with no ControlPlane, database, or write path
+  observable_outcomes:
+    - Exact public namespace allowlists and independent E/S/A preimage bytes
+    - Refusal of selectors before parsing, V2-shaped fields, parent/native/loaded-engine claims, issued-object clones, drift, and repository-head relabeling
+    - Fixture-only classification with no native candidate or receipt-like promotion surface
+    - "V2 dependency-manifest, compatibility-declaration, snapshot-policy, and frozen-input-manifest bindings remain reserved for a separately reviewed version rather than being reinterpreted as V1"
+  determinism_controls:
+    - Fixed captured observations, independently assembled UTF-8/LF frames, private WeakMap authorities, and no network, provider, database, ControlPlane, retry, or sleep
+  anti_cheat_rationale:
+    prevents:
+      - Minting registered authority through caller JSON, roots, callbacks, readers, verifiers, or selectors
+      - Reinterpreting V1 fixture observations as a loaded engine, native parent binding, or V2 snapshot/dependency attestation
+      - Promoting an isolated fixture result into a native candidate or PASS receipt
+      - Inferring actual product, engine, or adapter bytes from repository HEAD or a mutable active pointer
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
