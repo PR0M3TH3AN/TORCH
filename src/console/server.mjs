@@ -28,6 +28,8 @@ const ROUTES = new Map([
   ['/check-evidence.js', 'check-evidence.js'],
   ['/task-activity.js', 'task-activity.js'],
   ['/operation-outcomes.js', 'operation-outcomes.js'],
+  ['/attention-projection.js', 'attention-projection.js'],
+  ['/attention-actions.js', 'attention-actions.js'],
   ['/live-refresh.js', 'live-refresh.js'],
 ]);
 const TYPES = new Map([
