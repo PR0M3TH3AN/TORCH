@@ -1,7 +1,7 @@
 # Console UX audit: Owner Console evidence and coverage addendum
 
-Task: `TASK-console-ux-audit` (blocked, revision 5)  
-Audit target: `http://127.0.0.1:4174/console`  
+Task: `TASK-console-ux-audit` (blocked, revision 5)
+Audit target: `http://127.0.0.1:4174/console`
 Local branch: `torch/owner-console`
 
 ## Current status
