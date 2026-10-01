@@ -53,6 +53,29 @@ pending1/approverowner; no activation attempt. Only local report documents were
 edited through apply_patch; no tests/source/DDL execution, consumer/CLI wiring,
 provider/host/runtime/wake action, task lifecycle change or another landing.
 
+Current owner **08f9** directs a narrow B0 review target, not permission: same6e4
+named Kernel contributor, only new store schema/metadata verification and fixture
+provisioner modules, one new QA store test and append-only TIN. No context/parent/
+adapter/Work protocol code or lifecycle/result/receipt activation. Manager b0f9
+requests actual actionable narrow QA consent; Kernel478 receives exact internal
+executable DDL/framed digest/private harness requirements and Work4ec receives
+current protocol/source-reference handoff request. Conditional78 is not substituted
+for consent; arbiter implementation decision follows actual QA reply. Owner's two
+existing snapshot-helper tests PASS remain narrow evidence. No agreed next scope,
+task reassignment/duplicate or code permission recorded from owner08f alone.
+
+Actual **QA03e2** at15:08:48 now grants USABLE narrow B0 contributor/scenario
+consent for the two store/provisioner modules, one new store test and append-only
+TIN under corrected contract. Five strict scenarios cover independent canonical
+DDL/schema digest preimages, per-connection FK/user_version verification, reachable
+private own-mkdtemp harness/no selectors, expired/reused/drift/registered rejection,
+permanent fixture nonpromotion/no lifecycle/CAS/result/receipt/nativePASS/CLI.
+Manager152 relays exact permission to Kernel; no implementation authorization.
+Protocol report records consent verbatim in scope and its required TIN/exclusions.
+Work's direct current protocol agreement and Kernel exact executable corrected
+contract remain open; conditional six-path review was not broadly upgraded.
+No agreed code scope or parallel assignment is claimed from QA permission alone.
+
 ## Final source-sync and Manager checkpoint at 14:53 UTC
 
 Actual own unread100 delivered owner548: arbiter independently inspected exact316
