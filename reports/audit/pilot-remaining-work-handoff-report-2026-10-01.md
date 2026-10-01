@@ -1,5 +1,21 @@
 # Current pilot remaining-work handoff
 
+## Authorized bounded Overview source work, 17:10 UTC
+
+Actual owner **6a6e4830** now authorizes existing Console's exact six-path compact
+Overview contribution under actual QAa6b consent: four site paths, NEW density
+test and appenddocsTIN only. This is current bounded source WIP, not an idle
+whole-workflow hold. Arbiter manually resumes existing Console; Manager starts none.
+Workflow22/attention21 retain blocked full live/installed/API/browser/blockedReason
+criteria with WIP explicitly recorded in existing description/evidence/history,
+not a new unreviewed status field or assignment. Preserve ten destinations/safe
+actions/drafts/cohort49refs/Work347 baseline and old tones; exact crowded49+17
+1440x1000/390x844 geometry/accessibility and full View all evidence required.
+Return clean task-named candidate, four fresh native gates/immutable artifacts,
+independent QA then ONE guarded request. Release's active three-path diagnostic
+implementation is separate; metadata consumer remains unimplemented/proposed.
+Native/source/live acceptance and human75 boundaries unchanged.
+
 ## Actual usable Overview consent and current browser boundary, 17:07 UTC
 
 Actual **QAa6b8dfa4** grants named Console contribution on four site paths plus

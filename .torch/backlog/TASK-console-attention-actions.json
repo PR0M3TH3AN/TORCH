@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-console-attention-actions",
   "title": "Make attention findings specific, deduplicated and actionable",
-  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly. Owner 9590d8b1 (2026-10-01) authorizes bounded implementation using the committed observed desktop audit findings while TASK-console-ux-audit remains blocked and incomplete. Full-audit completion is no longer an implementation-start prerequisite; actual browser desktop/mobile visual acceptance remains required before completion. Scope: separate Waiting on you (genuine authenticated owner decision with consequence/options), Fleet handling (named responsible domain and next step), and Arbiter handling (provider starts/install activation). Do not rewrite the dashboard architecture or hide unresolved risks. QA path consent is required before assignment; existing frozen assertions, ownership and verification controls remain enforced. Owner25e645bf current live4174 incident: healthy/status ok plus aggregate MESSAGE_BACKLOG101 and stale idle rows disagreed with separately observed running sessions. The additive timestamp/freshness/recipient/availability criteria capture that observation without granting implementation, startup, host or activation authority; historical scope and full roadmap remain.",
+  "description": "Owner sees six vague attention cards: MESSAGE_BACKLOG, three indistinguishable WORKTREE_PROBLEM, ONE-DISK RECOVERABILITY and duplicate unacknowledged message count. Show human-readable problem, owning agent, branch/path, severity and actual consequence. Deduplicate the same message queue, group worktree issues by identity, distinguish normal ahead/unique commits from broken operations or unprotected work. Offer contextual quick actions when supported: owner approval/rejection with existing preview-confirm/revision/evidence checks, open exact message/thread, inspect exact worktree, request owning-agent review or retry a qualified operation. Non-owner approvals must not gain approve buttons. No generic dismiss, mass acknowledgement, automatic merge/cleanup or silent remote push. Actions must preserve drafts under refresh and report pending/error/unknown honestly. Owner 9590d8b1 (2026-10-01) authorizes bounded implementation using the committed observed desktop audit findings while TASK-console-ux-audit remains blocked and incomplete. Full-audit completion is no longer an implementation-start prerequisite; actual browser desktop/mobile visual acceptance remains required before completion. Scope: separate Waiting on you (genuine authenticated owner decision with consequence/options), Fleet handling (named responsible domain and next step), and Arbiter handling (provider starts/install activation). Do not rewrite the dashboard architecture or hide unresolved risks. QA path consent is required before assignment; existing frozen assertions, ownership and verification controls remain enforced. Owner25e645bf current live4174 incident: healthy/status ok plus aggregate MESSAGE_BACKLOG101 and stale idle rows disagreed with separately observed running sessions. The additive timestamp/freshness/recipient/availability criteria capture that observation without granting implementation, startup, host or activation authority; historical scope and full roadmap remain.\n\nCurrent bounded Console Overview source phase WIP is authorized by actual owner6a6e4830 under exact QAa6b consent: ONLY site/console.html, site/console.js, site/attention-projection.js, site/styles.css, NEW test/fleet/console-overview-density.test.mjs, append-only docs/TEST_INTEGRITY.md. Arbiter manually resumes existing Console; no Manager launch/new task/assignment. Preserve ten destinations/safe actions/drafts/Work347 refresh/old attention tones/cohort49 references. Compact owner/urgent first bounded Fleet preview with exact totals and full View all evidence; 1440x1000/390x844 crowded49+17 strict scenarios. Fresh clean exactcandidate four native gates/immutable artifacts and independent QA precede one guarded submission. Separate active Release helper and unimplemented provenance consumer excluded. Overall blocked state reflects incomplete actual live/installed/browser/APIengine/blockedReason acceptance, not absence of ongoing scoped source work.",
   "priority": "high",
   "affectedDomains": [
     "owner-console",
@@ -87,14 +87,15 @@
     "message:1b4836fd-2c3c-4983-957d-daf17cb0e45b:QA-concrete-Overview-positive-fullqueue/guards-scenario-request",
     "message:d2feed55-f6dc-4c72-92c3-9b55a39af808:message-cohort/newestdecision/supersession-fullhistory-requirement",
     "message:a6b8dfa4-a8b4-43b9-908d-bc8d13f84e1f:usable-Overview-sixpath-five-strict-scenario-consent-crowded49plus17-density1440/390-not-sourceauthority",
-    "message:06f94f44-4789-47f9-a689-1c6b5c9429d6:actual-current-source-uniqueinfo/Work347baseline-preserve-no-duplicatefix-browser-disconnected-Releaseactive"
+    "message:06f94f44-4789-47f9-a689-1c6b5c9429d6:actual-current-source-uniqueinfo/Work347baseline-preserve-no-duplicatefix-browser-disconnected-Releaseactive",
+    "message:6a6e4830-f8be-4dea-aeca-fc106bdd1f77:owner-existing-Console-Overview-exact-sixpath-implementation-authorized-WIP-not-fulltaskacceptance"
   ],
   "commit": "4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1",
   "integrationRequest": "0d46fb5c-1027-4ead-b969-f760afb72e9f",
   "blockedReason": "Exact 4fa9 source independently accepted by QA33d44dad/6dfa and landed once via native request0d46 at16:25:59 with authorized Manager plan no blockers/four native PASS/eleven hashes. Source review and integration are resolved. Full acceptance remains blocked on actual live/installed desktop/mobile owner flow and served UI/API provenance; generated demo artifact checks do not establish live visual acceptance. Pending human runtime75 is separate from satisfied PNG recovery; pointer switch alone cannot qualify missing blockedReason. No installation, host, provider, wakes, schema or publication action.",
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T17:07:00.000Z",
-  "revision": 20,
+  "updatedAt": "2026-10-01T17:10:00.000Z",
+  "revision": 21,
   "history": [
     {
       "from": null,
@@ -235,6 +236,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T17:07:00.000Z",
       "note": "Metadata-only actualQAa6b usable exact Overview four-sitepath/newdensitytest/appendTIN consent resolves routine contributor hold; five strict scenarios/crowded49+17/density1440x1000/390x844 preserve Work347 baseline and existing Fleet3/runtime.review/kernel.info/qa.urgent. Owner06 confirms unique-info already implemented, no duplicate fix/test relaxation. Later exact arbiter source scope separate; no implementation authority/newassignment/state/sourcecommit change. Actual browser disconnected/full liveacceptance remains open; separate Release implementation active."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:10:00.000Z",
+      "note": "Metadata-only current sourcephase WIP after actual owner6a6e and QAa6b consent, expectedrev20. Record named existing Console exactsixpath Overview implementation, separate Releasehelper/consumer scopes; no newassignment/start/sourcecandidate/acceptance inferred. Preserve wholeblocked live/API/browser/blockedReason criteria and source4fa history/current owner. No new schema/statusfield or authority expansion."
     }
   ]
 }
