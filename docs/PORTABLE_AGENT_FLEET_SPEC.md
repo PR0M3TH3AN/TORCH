@@ -1977,12 +1977,14 @@ axes in every newly-versioned result:
    dependency-resolution digest, source-tree digest, runtime/build bytes, and
    versioned interface contract. Matching engine bytes do not themselves grant
    receipt authority.
-2. **Check subject scope (S)** identifies either an authenticated, clean,
-   unlanded product-source commit or an installed operational runtime. It also
-   carries immutable product-storage schema metadata (digest or explicit null),
-   which is subject/input evidence rather than registered receipt/control-plane
-   schema authority. Candidate-source evidence is not an operational acceptance
-   and must not stand in for the post-landing operational subject.
+2. **Check subject scope (S)** is a tagged union. A `candidate-source` subject
+   contains an authenticator-derived, clean managed product commit and root; an
+   `operational-runtime` subject contains its own authenticated runtime/install
+   identity and never uses a candidate-commit placeholder. Each carries
+   immutable product-storage schema metadata (digest or explicit null), which
+   is subject/input evidence rather than registered receipt/control-plane schema
+   authority. Candidate-source evidence is not an operational acceptance and
+   must not stand in for the post-landing operational subject.
 3. **Receipt authority (A)** identifies the registered receipt adapter that
    independently validated and stored the result, including its exact adapter
    bytes, `registeredReceiptSchemaVersion`, and compatible registered
@@ -2023,11 +2025,12 @@ migration, schema relabel, or root redirection. A future product-schema-3
 subject may be qualified hermetically by genuinely pure, schema-agnostic engine
 bytes and an authenticated schema-2-compatible adapter only when the reviewed
 tuple explicitly supports that combination. That possibility does not alter the
-current candidate CLI/engine, which initializes `ControlPlane`, requires schema
-3, and must continue to refuse against registered schema 2. Existing exact
-source receipts valid under a schema-2-compatible legacy adapter remain
-evaluated under their recorded legacy contract; they are neither globally
-invalidated nor silently upgraded to this proposed tuple.
+observed Project Kernel reservation candidate `be1ae951`, which initializes
+`ControlPlane`, requires schema 3, and must continue to refuse against
+registered schema 2. This does not make every candidate CLI schema-3-bound.
+Existing exact source receipts valid under a schema-2-compatible legacy adapter
+remain evaluated under their recorded legacy contract; they are neither
+globally invalidated nor silently upgraded to this proposed tuple.
 
 A future fixture context would use an independently authenticated, unique
 fixture project identity, manifest digest, state root, and XDG data root. Its
@@ -2048,19 +2051,23 @@ links, and hashes a sealed manifest.
 
 The proposed lifecycle is: durable guarded attempt creation; one worker
 transport; execution; adapter-observed proven terminal outcome; manifest
-sealing; then one atomic persistence action that consumes the attempt and
-persists terminal evidence after full tuple revalidation. A fully revalidated
-`PASS` inserts its registered receipt in that same atomic action; non-PASS
-evidence cannot satisfy a passing receipt or gate. `PASS`, `FAIL`, and proven
+sealing; then one atomic compare-and-swap finalization that consumes the attempt
+and persists its sealed result record after full tuple revalidation. A fully
+revalidated `PASS` inserts its registered receipt in that same action; a proven
+non-PASS atomically persists its terminal evidence record, which cannot satisfy
+a passing receipt or gate. There is never a durable consumed attempt without its
+corresponding receipt or terminal-evidence record. `PASS`, `FAIL`, and proven
 `INCOMPLETE` are distinct terminal outcomes. `FAIL` and `INCOMPLETE` remain
 observable durable evidence. Error, signal, timeout, ENOBUFS,
 malformed transport, input/subject drift, and zero-exit mutation are
 `INCOMPLETE` when proven; interruption, cancellation, or an ambiguous commit
 without a proven terminal outcome is `UNKNOWN`. `UNKNOWN` creates no receipt,
-does not consume-and-lose the attempt, and retains evidence plus existing
-resource/worktree guards for reviewed recovery. Neither cancellation nor any
-unknown or failed state permits automatic replay or release; consumed or
-replayed attempt identifiers fail closed.
+does not consume-and-lose the attempt, and retains sealed evidence plus existing
+resource/worktree guards for exact-identity reconciliation without replay.
+Cancellation and `UNKNOWN` permit neither automatic replay nor release. A
+proven terminal failure is not `UNKNOWN`; with durable evidence and no live
+descendants, it may enter existing-policy scoped cleanup, not a newly authorized
+automatic release. Consumed or replayed attempt identifiers fail closed.
 
 Withholding those handles and capabilities is an **authority boundary**, not
 an operating-system filesystem sandbox. It prevents an authorized interface
@@ -2171,14 +2178,15 @@ distinct from an installed operational result and would require a fresh
 operational run wherever that subject is required. Fixture attestations remain
 nonpromotable and cannot satisfy an integration requirement.
 
-The current registered schema/engine guard remains authoritative: the current
-candidate CLI/engine initializes `ControlPlane`, requires schema 3, and must
-refuse when the registered control plane is schema 2. A future product-schema-3
-subject does not by itself require registered schema 3: a genuinely pure,
-schema-agnostic engine plus authenticated schema-2-compatible adapter may be
-considered only through an explicitly reviewed compatible tuple. This narrow
-distinction must not globally invalidate existing schema-2 receipts that were
-recorded under a compatible legacy adapter and their own exact-source contract.
+The current registered schema/engine guard remains authoritative: the observed
+Project Kernel reservation candidate `be1ae951` initializes `ControlPlane`,
+requires schema 3, and must refuse when the registered control plane is schema
+2. A future product-schema-3 subject does not by itself require registered
+schema 3: a genuinely pure, schema-agnostic engine plus authenticated
+schema-2-compatible adapter may be considered only through an explicitly
+reviewed compatible tuple. This narrow distinction must not globally invalidate
+existing schema-2 receipts that were recorded under a compatible legacy adapter
+and their own exact-source contract.
 
 The proposed initial CLI subject rule is resolved: it derives the authenticated
 registered area and clean managed subject internally, with no caller selector

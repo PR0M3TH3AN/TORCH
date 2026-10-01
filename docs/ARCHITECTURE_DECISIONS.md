@@ -646,9 +646,12 @@ must not be bypassed by fixtures, alternate roots, or a source runner.
 A future versioned result would bind three independent axes. **Engine
 provenance (E)** is the exact engine source commit, module path,
 dependency-resolution and source-tree digests, runtime/build bytes, and
-interface version. **Subject scope (S)** is the authenticated clean product
-commit or installed operational runtime, with immutable
-`subjectProductStorageSchemaDigest` (or explicit null) as subject metadata.
+interface version. **Subject scope (S)** is a tagged union:
+`candidate-source` contains an authenticator-derived clean managed product
+commit and root, while `operational-runtime` has its own authenticated
+runtime/install identity and never uses a candidate-commit placeholder. Each
+has immutable `subjectProductStorageSchemaDigest` (or explicit null) as subject
+metadata.
 **Receipt authority (A)** is the adapter identity/digest/interface, declared
 compatible registered receipt schemas, `registeredReceiptSchemaVersion`, and
 `observedControlPlaneSchemaVersion`. E is independently recorded and is not
@@ -667,11 +670,12 @@ validate the tuple and compatible schema before performing receipt DML; the
 adapter would not perform DDL, migration, schema relabel, or root redirection.
 A future product-schema-3 subject can be considered with genuinely pure,
 schema-agnostic engine bytes and an authenticated schema-2-compatible adapter
-only when the reviewed tuple explicitly supports it. The current candidate
-CLI/engine actually initializes `ControlPlane`, requires schema 3, and must
-continue to refuse against registered schema 2. This is tuple-specific: valid
-schema-2 legacy source receipts remain valid under their recorded compatible
-adapter contract and are not retroactively invalidated or promoted.
+only when the reviewed tuple explicitly supports it. The observed Project
+Kernel reservation candidate `be1ae951` actually initializes `ControlPlane`,
+requires schema 3, and must continue to refuse against registered schema 2; it
+does not imply every candidate CLI is schema-3-bound. This is tuple-specific:
+valid schema-2 legacy source receipts remain valid under their recorded
+compatible adapter contract and are not retroactively invalidated or promoted.
 
 Fixture execution would use a separately authenticated fixture identity,
 manifest/root, and XDG state. It may return a permanently nonpromotable
@@ -690,15 +694,19 @@ artifact manifest.
 
 The proposed lifecycle is durable guarded-attempt creation, execution over one
 opaque worker transport, adapter observation of an actual terminal outcome,
-manifest sealing, and an atomic transaction that consumes the attempt while
-persisting terminal evidence after full tuple revalidation. A fully revalidated
-`PASS` inserts its registered receipt in that same transaction; non-PASS
-terminal evidence is retained for observability but cannot qualify a passing
-gate. `PASS`, `FAIL`, and proven `INCOMPLETE` stay distinct. A non-proven
-interruption, cancellation, or ambiguous commit is
-`UNKNOWN`: it creates no receipt, is not consumed-and-lost, retains its guards
-and evidence, and permits neither automatic replay nor automatic release.
-Consumed or replayed identifiers fail closed.
+manifest sealing, and an atomic compare-and-swap transaction that consumes the
+attempt while persisting its sealed result record after full tuple
+revalidation. A fully revalidated `PASS` inserts its registered receipt in that
+same transaction; proven non-PASS terminal evidence is atomically retained for
+observability but cannot qualify a passing gate. No consumed attempt persists
+without its associated receipt or terminal-evidence record. `PASS`, `FAIL`, and
+proven `INCOMPLETE` stay distinct. A non-proven interruption, cancellation, or
+ambiguous commit is `UNKNOWN`: it creates no receipt, is not consumed-and-lost,
+and retains sealed evidence and guards for exact-identity reconciliation without
+replay or automatic release. A proven terminal failure is not `UNKNOWN`; where
+it has durable evidence and no live descendants, existing policy may scope its
+cleanup without creating a new automatic-release authority. Consumed or replayed
+identifiers fail closed.
 
 These withheld capabilities are an authority boundary, not an OS filesystem
 sandbox. They stop the proposed interfaces from granting registered-root or
