@@ -231,7 +231,7 @@ try {
   await page.locator('#owner-briefing .briefing-detail').first().locator('summary').click();
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'expanded briefing evidence must fit mobile width');
   await page.locator('#reset-demo').click();
-  await selectView(page, 'flow-watch');
+  await selectViewFor(page, '#approval-request-count');
   await page.locator('#approval-request-count').filter({ hasText: '1 open' }).waitFor();
   assert.equal(await page.locator('.priority-urgent').count(), 0);
   assert.equal(await page.locator('.agent-row').count(), 6);
@@ -360,7 +360,10 @@ try {
   assert.equal(await preservedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
   assert.equal(await preservedForm.locator('[name="priority"]').isDisabled(), false);
   assert.equal(await preservedForm.locator('[name="reason"]').isDisabled(), false);
-  await preservedTicket.locator('.priority-change > summary').click();
+  const priorityDetails = preservedTicket.locator('.priority-change');
+  if (!(await priorityDetails.evaluate((details) => details.open))) {
+    await priorityDetails.locator(':scope > summary').click();
+  }
   await preservedForm.getByRole('button', { name: 'Review change', exact: true }).click();
   await preservedForm.locator('[data-priority-confirm]').waitFor();
   assert.equal(await preservedForm.locator('[data-priority-preview]').locator('dd').nth(2).innerText(), String(revisionN1));

@@ -2620,13 +2620,14 @@ test_integrity_note:
   determinism_controls:
     - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
     - "Manager-wakes routing uses the existing isolated sample Console, a deterministic two-frame first-generation layout-completion marker, and browser fragment history without changing project state"
-    - "The later-refresh viewport baseline is measured after the browser's scrollend event confirms the explicit wheel input has settled"
+    - "The test establishes a fixed nonzero numeric scroll baseline, observes that exact position, dispatches the actual non-scrolling Refresh button event, waits for generation two, and retains the exact scroll-position equality assertion"
     - "Newer evidence is introduced through the sample's supported preview/confirm API before an explicit refresh"
     - "The browser test advances only the isolated sample API; it never submits the priority form or mutates a live project"
     - "No network, live project mutation, retry, sleep, timeout, golden update, or direct fixture-source change"
   anti_cheat_rationale:
     prevents:
       - "Capturing a view other than the one named by the scenario while retaining a passing screenshot call"
+      - "Passing scroll-preservation coverage because an unsettled smooth-scroll or Playwright auto-scroll masks refresh movement"
       - "Reusing a revision N preview after authoritative task evidence advances to N+1"
       - "Treating an unchanged preview on refresh as proof of stale-preview invalidation"
       - "Passing because of changed screenshot expectations, weakened assertions, or bypassed artifact provenance"

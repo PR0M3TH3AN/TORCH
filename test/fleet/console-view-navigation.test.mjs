@@ -141,23 +141,11 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
     await assertManagerWakes();
 
     await page.locator('.console-rail a[href="#work"]').click();
-    await page.evaluate(() => {
-      globalThis.__scrollTrace = [];
-      const nativeScrollTo = globalThis.scrollTo.bind(globalThis);
-      globalThis.scrollTo = (...args) => {
-        globalThis.__scrollTrace.push({ type: 'scrollTo', args, y: scrollY });
-        return nativeScrollTo(...args);
-      };
-      for (const type of ['wheel', 'pointerdown', 'hashchange', 'popstate', 'scroll', 'scrollend']) {
-        globalThis.addEventListener(type, () => globalThis.__scrollTrace.push({ type, hash: location.hash, y: scrollY }), { passive: true });
-      }
+    const beforeRefreshRender = await page.evaluate(() => {
+      window.scrollTo({ top: 347, behavior: 'instant' });
+      return window.scrollY;
     });
-    const scrollSettled = page.evaluate(() => new Promise((resolve) => {
-      globalThis.addEventListener('scrollend', resolve, { once: true });
-    }));
-    await page.mouse.wheel(0, 180);
-    await scrollSettled;
-    const beforeRefreshRender = await page.evaluate(() => scrollY);
+    assert.equal(beforeRefreshRender, 347, 'the deterministic scroll stimulus must establish its exact nonzero baseline');
     await page.locator('#refresh-console').evaluate((button) => {
       button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -166,11 +154,7 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
     await assertSelectedView(page, 'work', 'Work');
     assert.notEqual(await page.evaluate(() => document.activeElement?.id), 'manager-wakes');
     assert.equal(await page.evaluate(() => scrollY), beforeRefreshRender,
-      `a later refresh must retain the user’s scrolled position: ${JSON.stringify({
-        before: beforeRefreshRender,
-        after: await page.evaluate(() => scrollY),
-        trace: await page.evaluate(() => globalThis.__scrollTrace),
-      })}`);
+      'a later refresh must retain the exact pre-refresh user scroll position');
   }
 });
 
