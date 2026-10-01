@@ -105,6 +105,41 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
+## 2026-09-30 — Early identity and safe no-code diagnostics
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-interrupted-identity
+      given: A real local helper whose child emits thread.started then remains alive
+      when: The parent observes the reduced bounded identity and sends SIGTERM to the helper
+      then: The helper closes by SIGTERM without a terminal success, while lifecycle retains the identity as working and uncertain
+    - id: SCN-codex-code-less-diagnostics
+      given: Code-less structured model, authentication, or quota errors containing prompt, reasoning, and image adversarial fields
+      when: The bounded reducer and adapter classify startup failure
+      then: Only the allowlisted category crosses the boundary; no free-form diagnostic or adversarial field remains
+    - id: SCN-cli-codex-real-executable
+      given: An installed disposable project and an isolated executable named codex
+      when: The actual runCli up command starts the selected domain
+      then: The reducer carries identity and terminal completion through the CLI boundary and durable identity becomes idle
+  observable_outcomes:
+    - Real helper close signal, exact reduced protocol bytes, and working retained runtime identity
+    - Safe diagnostic category with no prompt, reasoning, image, or free-form message
+    - Actual CLI JSON response and persisted identity state from a fake executable on an isolated PATH
+  determinism_controls:
+    - Local child process signal handshake driven by receipt of thread.started; a bounded watchdog only terminates and awaits the owned fixture on failed emission, never retries or asserts product timing
+    - Disposable Git/XDG fixtures and a hermetic executable; no provider, network, or account access
+  anti_cheat_rationale:
+    prevents:
+      - Delaying identity output until child close and losing it on interruption
+      - Treating code-less model/auth/quota errors as successful or retaining their raw text
+      - Testing only an injected launch helper instead of the CLI execution boundary
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Exact observed-file ownership evidence
 
 ```yaml

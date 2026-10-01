@@ -1122,7 +1122,7 @@ export async function runCli(argv = process.argv.slice(2), {
         print(startFleet({
           plan, controlPlane: control, adapters,
           executor: (launch) => executeRuntimeLaunch(spawn, launch, {
-            cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+            cwd: launch.cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
             maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES,
           }),
         }), { json });
@@ -1456,7 +1456,7 @@ export async function runCli(argv = process.argv.slice(2), {
           print(startFleet({
             plan, controlPlane: control, adapters,
             executor: (launch) => executeRuntimeLaunch(spawn, launch, {
-              cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+              cwd: launch.cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
               maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES,
             }),
           }), { json });
@@ -1631,7 +1631,7 @@ export async function runCli(argv = process.argv.slice(2), {
               return startFleet({
                 plan, controlPlane: control, adapters,
                 executor: (launch) => executeRuntimeLaunch(spawn, launch, {
-                  cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+                  cwd: launch.cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
                   timeout: 300_000, maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES, killSignal: 'SIGTERM',
                 }),
               });
