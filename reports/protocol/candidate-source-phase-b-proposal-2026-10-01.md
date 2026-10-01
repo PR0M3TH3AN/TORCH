@@ -1,8 +1,9 @@
 # Proposed Phase B: authenticated candidate context and receipt adapter
 
-Status: proposal reviewed by arbiter66e70; isolated direction agreed, concrete
-contracts and consent still pending. No implementation or activation authority.
-The arbiter resumed existing Kernel read-only contract review only.
+Status: broad Phase B remains proposed. Actual QA03e2 grants usable narrow B0
+consent; actual arbitercc6c authorizes that named Kernel implementation contribution
+only. No broader protocol or operational activation authority. Earlier no-code
+reviews below are retained chronologically and superseded solely for exact B0.
 This is a phase of existing TASK-6e4ff870-a386-4a11-a59c-444ebc23732e;
 no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
@@ -62,6 +63,21 @@ the full task's frozen-input/native consumption criterion remains unproved, not
 weakened by relabelling this bounded prototype. No next code scope is agreed yet.
 
 ## Entry conditions and scope decision
+
+Current **arbitercc6c43ab** (15:10:28) authorizes B0 after actual usable QA03e2,
+within SAME6e4 named Kernel contribution: only the two new store/provisioner
+modules, new store test and append-only TIN under five strict scenarios. Arbiter
+reports existing Kernel clean6fdb88ea/no prior active handle and controls resume;
+Manager launches nothing and creates no second assignment. Work stays full-task
+owner; current metadata-only verification8 preserves all criteria/history/exact316.
+Manager50d/d1e routes actual scope and independent QA follow-up. There is no stale
+conditional QA/owner wait for B0. Broader Work parent/engine protocol agreement,
+real immutable-check input consumption and enforceable descendant coverage remain
+separate future gates; B0 does not implement or claim them. No context/parent/
+adapter/lifecycle/CAS/result/receipt/consumer/CLI/registeredDDL/schema/installation/
+host/wake change. Actual clean task-named candidate and independent QA must precede
+any source qualification; fixture provision is never a native receipt or full-task
+completion. This records authorization, not observed implementation or acceptance.
 
 Owner **08f9a5f0** supplies a narrower next review target: B0 only, same6e4 named
 Kernel contribution, two new store/provisioner modules, one store test and

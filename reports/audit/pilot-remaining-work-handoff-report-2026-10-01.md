@@ -1,5 +1,52 @@
 # Current pilot remaining-work handoff
 
+## Concrete Console attention preparation at 15:15 UTC
+
+New actual owner5c58 requests preparation on existing attentionblocked11, no new
+task. Before this item currentbriefd7 refreshed, ownership queried exact two site
+paths and new QA test path, native Console next lookup idle (no active assignment,
+not proof of process absence). Source inspection confirms generic warning loop in
+attention-projection emits every stale/missing backlog observation individually
+and final staleEvidence cohort again; BACKLOG_ACTIVITY aggregate also enters the
+generic loop. Thus measured rev11 criterion is actually unimplemented source, not
+only an unavailable-browser gate. Manager proposes owner-console-only projection/
+renderer delta and asks QA exact new console-attention-cohorts test/TIN consent.
+CSS excluded unless exact necessary path/consent is named.
+
+Strict scenarios: one labelled Advisory/recheck record for semantic duplicate
+doctor/backlogHealth evidence retaining both origins; conflicting observations
+stay distinct; per-task owner/observedAt/current/age/unknown drilldown; actual
+owner decisions and unsafe Fleet/schema/wake/delivery conditions/actions retained;
+collapse never autoack/close/recover/hide unsafe evidence. Existing frozen tests
+unchanged, additive scenarios only; no plain npm tracked artifact overwrite.
+Exact QA/Console durable handoffs retain wait; no new task/lifecycle/implementation
+dispatch/provider launch. Full attention desktop/mobile/live/native criteria and
+blocked workflow16 history stay open. Kernel B0 proceeds independently under
+actualcc6 authorization; do not stop/overlap it or imply alpha3approval75.
+
+## Actual narrow B0 authorization at 15:12 UTC
+
+Current own addressed unread supplied **arbitercc6c43ab**15:10:28 after actual
+usable **QA03e2**15:08:48. B0 IMPLEMENTATION is now authorized for EXISTING Kernel
+as named contributor within SAME6e4: only new store canonical-schema/digest/
+read-only metadata verifier, new private synthetic-fixture provisioner, new store
+test and append-only TIN. Five strict scenarios and exact four paths are recorded
+in proposal report. Arbiter inspected clean6fdb/no prior activehandle and controls
+Kernel resume. Manager50d/d1e sends actual scope and future independent QA handoff,
+acknowledges read owner decision, launches no provider/identity and duplicates no
+active item. Reviewed ledger metadata-only verification7->verification8 records
+scope/evidence; owner/fullcriteria/dependencies/history/exact316/a178 preserved.
+
+This supersedes prior conditional/no-code waits solely for narrow B0. Actual B0
+implementation/candidate/acceptance is not yet observed. Broader six-path Work
+parent/engine agreement and actual immutable-check consumption/enforceable terminal
+coverage remain future gates, not a B0 permission blocker or satisfied criterion.
+No lifecycle/CAS/result/receipt/context/parent/adapter/consumer/CLI/liveDDL/registered
+provisioning/schema/installation75/host/wake action. Full56 roadmap open, c178
+proposed, a178landed/c532unauthorized/oldcce preserved; no second landing. Next
+concrete return is task-named clean B0 candidate plus corrected executable contract
+and five-scenario/TIN evidence for independent QA, then guarded native qualification.
+
 ## Complete current Kernel contract review at 15:04 UTC
 
 Authoritative brief d7e6d69 refreshed by exact narrowly approved retry after normal

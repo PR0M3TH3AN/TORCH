@@ -52,14 +52,19 @@
     "receipt:d0981f67-deee-4016-a65d-cba1212198eb:exact316-dashboard-PASS-11PNG",
     "receipt:ddc79b34-c400-4a2e-8b36-c9fd7f352b8f:exact316-lint-PASS",
     "integration:c5328d31-30f3-473d-9b4d-fab80220012a:duplicate-ready-unauthorized-native-evaluate14:45-preserved-not-landed",
-    "message:959d86f6-fb73-4ed3-a220-9d11f68b24db:PhaseB-readonly-contract-review-missing-issuer/reader/DDL/CAS-nocodeconsent"
+    "message:959d86f6-fb73-4ed3-a220-9d11f68b24db:PhaseB-readonly-contract-review-missing-issuer/reader/DDL/CAS-nocodeconsent",
+    "message:b6818413-798a-450c-ad20-dfca25f45f77:complete-sixpath-DDL-issuer-reader-parent-CAS-proof-review",
+    "message:78cdac6d-0546-472d-b8c6-de1619f9e27e:conditional-broaderprotocol-consent-not-actionable",
+    "message:03e2b4ed-0735-4de6-b599-5a5a5633bf9b:usable-narrow-B0-fourpath-five-scenario-contributor-consent",
+    "message:cc6c43ab-c8f6-484b-8ff9-d796d016a16f:arbiter-exact-named-Kernel-B0-implementation-authorization-same-task",
+    "message:50d37f26-49cb-4561-bb97-f656df11549d:exact-B0-authorization-handoff-to-existing-Kernel-no-Manager-launch"
   ],
   "commit": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T14:46:56.262Z",
-  "revision": 7,
+  "updatedAt": "2026-10-01T15:12:30.000Z",
+  "revision": 8,
   "history": [
     {
       "from": null,
@@ -109,6 +114,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T14:46:56.262Z",
       "note": "Reviewed metadata-only amendment at expectedrev6; native service lacks metadata amend. Actual guarded clean316 convergence, QA c841 exact bounded PhaseA source/nativegate ACCEPT and 11 verified PNGs (correct Work10), four exact current-definition PASS receipts and original a178 native landed14:44:26 recorded. Request creation14:32 preceded QA14:36; authorization14:44 followed verdict. Full state remains verification, not ready/fulltaskcomplete; owner/fullcriteria/dependencies/all earlierhistory/b1/994rejection/oldcce preserved. Later duplicatec532 stillready/unauthorized after nativeevaluate; no secondland/manualstate/delete. Prototype does not establish childinputconsumption/OScontainment/atomic snapshot/native adapter receipt wiring/operational acceptance. PhaseB read-only API review requires exactpureissuer/reader/fullDDL/CAS/scenarios/QAconsent before code; no newassignment/store/schema/installation/host/provider/wake activation."
+    },
+    {
+      "from": "verification",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T15:12:30.000Z",
+      "note": "Reviewed metadata-only same-task phase amendment expectedrev7; no lifecycle transition, second active assignment or ownership transfer. Actual QA03e2 grants usable exact B0 contributor/scenario consent; actual arbitercc6c authorizes named EXISTING Kernel B0 contribution and controls resume. Current phase ONLY new src/control-plane/candidate-attempt-store.mjs internal canonical schema/digest/read-only metadata verifier; new candidate-attempt-store-provisioner.mjs private own-mkdtemp synthetic fixture; new test/fleet/candidate-attempt-store.test.mjs; append-only docs/TEST_INTEGRITY.md. Five strict QA scenarios/TIN/no relaxation preserved. This supersedes historical PhaseA-only/noB0permission prose solely for B0. No context/parent/adapter/Work protocol/lifecycle/CAS/result/receipt/consumer/CLI implementation, registered/liveDDL/schema migration, install75/host/provider/wake action. Actual immutable-check consumption and enforceable descendant coverage remain mandatory broader protocol gates; pipe receipt/group emptiness cannot discharge them. Preserve full state/owner/criteria/dependencies/history/exact316/a178/sourceaccepted/oldcce/c532/c178; no B0 code completion/native receipt/acceptance/fulltask claim or Manager provider start. Independent exact clean candidate QA and fresh native guarded qualification later remain required."
     }
   ]
 }
