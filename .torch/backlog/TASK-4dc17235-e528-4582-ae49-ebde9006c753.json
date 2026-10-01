@@ -24,7 +24,7 @@
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": null,
   "milestone": null,
-  "state": "verification",
+  "state": "in_progress",
   "owner": "release-self-host",
   "evidence": [
     "message:f286a236-77f8-4bc6-a2a3-a4c45d33fa76:TORCH-engine-scope",
@@ -39,14 +39,24 @@
     "message:a77c34ab-bb0a-439f-ad9f-a06a4f3e0922:QA-accepts-exacte0e94da",
     "integration:454b7a55-c9ee-4268-8dfe-7e2035f2cc1d:landed286",
     "message:1e5eb708-1f26-4983-b8b7-d9f39754bf1b:convergence-requalification",
-    "message:2bb686dd-625a-42fd-83c5-a2491b9b5151:fresh-guarded-release-convergence"
+    "message:2bb686dd-625a-42fd-83c5-a2491b9b5151:fresh-guarded-release-convergence",
+    "message:434b23f6-43e8-4d04-b78b-46caa74888b4:QA-accepts-exact-28c941d",
+    "receipt:2184043e-1f69-49f3-b4b1-9316801fb4b5:pass",
+    "receipt:a84bd57c-c39a-4cc6-8a88-61a73a098c5d:pass",
+    "receipt:423c705b-df55-4fcd-a40f-e8d7652d3ebc:pass",
+    "receipt:8702ca28-9e0a-4476-9366-4f7c37cb0536:pass",
+    "merge:07a2bc0fc97f66bf1d6f9933d117cfaf25f342a5:28c941d1ecbc3da8908a84f96c06ac0b929d4b19",
+    "message:e2b45734-0ed1-4ab2-b3e3-2bf467794a64:QA-exact-acceptance",
+    "message:9fca81ef-e8e2-4298-acac-22f22cb0bb51:prioritize-qualified-metadata-landing",
+    "integration:f71e4202-fad8-4e65-a9db-fbbd0886269d:landed-2026-10-01T08:21:54.593Z",
+    "git:canonical-clean-rewrite-28c941d:independent-readback"
   ],
   "commit": "28c941d1ecbc3da8908a84f96c06ac0b929d4b19",
-  "integrationRequest": null,
+  "integrationRequest": "f71e4202-fad8-4e65-a9db-fbbd0886269d",
   "blockedReason": null,
   "createdAt": "2026-10-01T06:52:30.704Z",
-  "updatedAt": "2026-10-01T08:08:22.802Z",
-  "revision": 8,
+  "updatedAt": "2026-10-01T08:22:33.087Z",
+  "revision": 10,
   "history": [
     {
       "from": null,
@@ -103,6 +113,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T08:08:22.802Z",
       "note": "Native Release guarded merge28c941 to actual canonical07a2bc independently cleanHEAD/ancestry verified. Four fresh exact candidate CLI PASS/noinvalidReason receipts independently read. Same item enters new exact independent QA review; olde0e94/0fca history preserved. No request/qualified landing/build/activation inferred. Runtime exact CLI diff consent stays peer-owned."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "release-self-host",
+      "at": "2026-10-01T08:15:59.291Z",
+      "note": "Latest canonical 07a2bc0 cleanly converged through TORCH; exact merged candidate is clean, preserves alpha3 metadata and rollback-safe schema; all four new exact candidate CLI gates PASS/no invalidReason; QA independently accepted exact 28c941d. Ready for serialized integration request. No candidate build/activation inferred."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:22:33.087Z",
+      "note": "Qualified metadata source actually landed through authorized serialized path, all4 exact PASS plus independent QA; canonical clean28c941d verified. Resume SAME item for remaining acceptance criteria: read-only exact landed-source candidate/rollback plan, conflict-free reviewed plan before bounded isolated build. No task completion, installed version switch, restart, wakes or provider freshness inferred."
     }
   ]
 }

@@ -25,21 +25,25 @@
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "work-integration",
   "evidence": [
     "message:d9705044-5bce-4806-b72a-b225bc617f50:explicit-preparation-authorization",
     "approval:61de48f4-bf5f-49d8-8aee-8df4f49f3025:approved:revision2:read-only-evidence-only",
     "TASK-pilot-executor-outcomes:completed:revision14",
     "TASK-bounded-routine-coordination:completed:revision18",
-    "owner:d9705044-5bce-4806-b72a-b225bc617f50:preparation-only"
+    "owner:d9705044-5bce-4806-b72a-b225bc617f50:preparation-only",
+    "message:3d41bc12-0adb-4d94-9250-d14a93a518fa:read-only-preparation-complete",
+    "message:6a93540b-8ae0-4966-87d6-13d1ceba6775:existing-QA-contract-review",
+    "message:157b01bd-2c90-42fc-8ac4-81a97442fa38:bounded-QA-followup",
+    "baseline:07a2bc:TEST_INTEGRITY:sha256:239fb5539e9f7cfc8562ac5351c61e7e1d345f00737a557ce9fa1b6d702e941a"
   ],
   "commit": null,
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Read-only preparation complete; awaiting named QA schema/record/scenario path review of existing6a93540b and reviewed implementation-phase authorization. Current61de approval permits durable evidence only, no repository edits/migration/enforcement; full task criteria remain unsatisfied.",
   "createdAt": "2026-10-01T07:36:25.425Z",
-  "updatedAt": "2026-10-01T08:08:14.259Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T08:24:30.299Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -68,6 +72,13 @@
       "actorId": "work-integration",
       "at": "2026-10-01T08:08:14.259Z",
       "note": "Beginning the assigned read-only preparation phase: inventory existing integrity-note provenance and propose a lossless record/index and fail-closed discovery contract in durable TORCH evidence only."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:24:30.299Z",
+      "note": "Record actual completed preparation and actual remaining phase gates, not full task completion or new implementation assignment. Preserve owner Work Integration, QA scenario/record authority, immutable full criteria and all evidence. Existing peer request followed up without duplicate approval/queue."
     }
   ]
 }

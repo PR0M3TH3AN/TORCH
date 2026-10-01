@@ -1,5 +1,105 @@
 # Current pilot remaining-work handoff
 
+## Durable resume and exact metadata landing at 08:28 UTC
+
+Current canonical brief digest is `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
+Startup brief hit readonly SQLite in the sandbox; only that exact installed brief
+command was retried with narrow approved escalation. No state copy, DB permission
+change or guard bypass. Current instructions supersede historical restrictions
+and status below. Manager read the canonical TODO/handoff, own inbox, current
+tasks, ownership, exact Git state, receipts and direct-report check-in.
+
+**Release metadata actually landed:** native request
+`f71e4202-fad8-4e65-a9db-fbbd0886269d` landed at **08:21:54.593 UTC**, exact
+`28c941d1ecbc3da8908a84f96c06ac0b929d4b19`, target `rewrite/portable-agent-fleet`.
+Manager independently verified clean canonical07a2bc/source28c941, ancestry,
+three version-only metadata paths, the four fresh PASS/no-invalid receipts listed
+below and direct QA `e2b45734-0ed1-4ab2-b3e3-2bf467794a64`. Authorized guard plan
+had no blockers/canProceed true; post-land canonical readback was clean exact28c941.
+Closure preview had no candidates; full Release task is **in_progress revision10**,
+with exact landed request bound, because remaining candidate/rollback evidence is
+not implied by source landing. Earlier ready/pending metadata statements are history.
+
+Owner `74ff2d68` independently reports non-force push of exact28c941 to origin
+rewrite and unchanged default main. This is arbiter-reported remote evidence;
+Manager did not push. Arbiter reviewed an exact conflict-free candidate plan:
+git-commit28c941, `0.1.0-alpha.3`, source digest
+`2dafa8483df597d2d94e5ca9cdda52014bf0fc63b02c5333c239bba9ee3c7040`,
+4829 files/47137426 bytes, conflicts[], v1alpha1 reads/writes rollback_safe:true.
+Arbiter reports isolated build/acceptance command handle68073 already live.
+Manager handoff `c418465a` tells Release **no duplicate build**; actual immutable
+candidate acceptance/source/digest/rollback result remains pending. No active
+installation switch, Console restart, provider freshness or wake activation is
+inferred from plan review or source qualification. Earlier pending-plan handoff
+`4d180b2a` is superseded by this actual arbiter-started build context.
+
+**Console:** direct QA `6e5dfa19` permits guarded clean convergence retaining
+canonical artifact isolation, with mechanical merged-source capability preflight
+BEFORE fresh four exact gates. Manager independently rechecked clean fullb600fc8
+and routed actual disposition in `2f7990a2`. Native Console `3caafcaf` identifies
+the restore actor/tool: its own session ran public local `git restore` on four
+named PNG paths before any archive. Generated75afe bytes are irretrievably lost;
+there was no archive/manifest/current-byte capture/clean-before-run capture.
+Historical75afe remains INCOMPLETE permanently; committed originals are not its
+lost output evidence. Native plan/guards failed readonly SQLite, without bypass.
+Console's existing Work Integration consent for retaining already-landed
+`src/checks/conditions.mjs` and `service.mjs` is pending; Manager bounded followup
+`0e1c15db` requests exact peer response before coordinating clean guarded merge
+to latest28c941. No merge/rerun/recovery was performed by Manager. SAME attention
+task stays in_progress5; browser audit and final actual desktop/mobile acceptance
+remain incomplete. Mechanical executing-engine preflight/enforcement followup is
+still separate from alpha.3 metadata and immutable-integrity preparation.
+
+**Runtime/Kernel:** latest next lookup returns resume for Runtime starting-presence
+assigned3 and Kernel reservation contract assigned3. No new item was dispatched.
+Owner `4722a2cf` identifies a concrete contract incompatibility: mandatory nonempty
+provider runtimeSessionId at reservation would block first-time launches. Manager
+independently read existing lifecycle's fresh/resume split and post-dispatch ID
+capture, and routed correction directly through `e01db79b`, `7ad14e24`, `df7d3d83`.
+Require areaId/runtime/attemptId; fresh launch may lack provider ID. Reservation
+and attempt guard duplicates before capture; bind captured ID only to that pair.
+Resumed ID/attempt mismatches fail closed; unknown fresh interruption with no ID
+retains durable guard, never elapsed-time offline or a placeholder ID. Runtime
+must return explicit compatible semantics to Kernel before owned edits, with QA
+exact consent for fresh-no-ID success, held-open launch, unknown-no-ID interruption
+and mismatched resumed-ID/attempt scenarios. Four-operation boundary, named owners,
+strict historical notes and independent qualification remain intact. This is a
+peer contract wait, not a request for the owner to repeat an existing decision.
+
+**Integrity records preparation:** Work Integration `3d41bc12` completed ONLY
+read-only preparation and sent QA existing review `6a93540b`. SAME task
+`TASK-a65500ed-a505-4664-badc-a1483d6f6f11` is now **blocked revision5**, preserving
+owner/full criteria/evidence, on named QA record/schema/scenario review plus
+reviewed implementation-phase authority. Current QA61de permits durable evidence
+only, no repository files, source/tests/records/migration/enforcement edits.
+Manager followed up QA `157b01bd` and Work `452081f3`, creating no duplicate
+approval or queue. Baseline07a2bc TEST_INTEGRITY is 143955 bytes, sha256
+`239fb5539e9f7cfc8562ac5351c61e7e1d345f00737a557ce9fa1b6d702e941a`;
+Work reports61 top-level identities/14 reachable file-history commits. Manager
+independently verified landed28c941 has byte-identical baseline. Proposed computed
+fail-closed `src/checks/integrity-records.mjs` is live-owned by Work Integration;
+QA keeps record/scenario authority. Preparation alone satisfies no implementation
+or full-task completion gate. Work and QA next return idle; that does not resolve
+their retained peer waits or authorize another implementation item.
+
+**Fleet evolution judgment:** startup assessment has seven recurring multi-domain
+signals; hierarchy assessment has31 recurrences/10 direct coordination requests
+in30 days. Backlog health is healthy with no findings, bounded history explicitly
+incomplete; Fleet changes and own pending structured approvals are empty. Retain
+six specialists. Current friction has coherent owners: Kernel durable reservation,
+Runtime launch lifecycle, QA specification, Work exact gates/discovery and Release
+candidate provenance. Prefer precise peer contracts and lossless evidence records
+before adding a domain, promoting an identity or a coordination role; none yet
+demonstrates a distinct integrated outcome worth added coordination cost. No
+proposal/activation/retirement/start occurs from advisory thresholds.
+
+Latest08:27 check-in has no structured findings/approval waits; idle badges are
+not completion evidence. Explicit task waits above persist. Own understood
+messages are acknowledged individually after routing; acknowledgements do not
+close waits. Automatic wakes remain paused, starts/installation remain arbiter
+controlled. Manager's durable report/checkpoint is local coordination evidence,
+not source acceptance, release qualification or remote publication.
+
 ## Console preservation failure reconciled at 08:12 UTC
 
 Owner `daf0c497` conveys native Console `c3d87385` admission: the four generated
