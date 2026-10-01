@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-conversation-console-workflow",
   "title": "Complete scoped owner workflow controls and live dashboard qualification",
-  "description": "Existing Console supports several previewed actions and live refresh. Audit remaining desired owner controls (assignment/routing, lifecycle, integration and release views) against spec and current capabilities; implement only individually authorized operations. Qualify real provider activity and native background/back-cache refresh while preserving edits and private artifact provenance.",
+  "description": "Existing Console supports several previewed actions and live refresh. Audit remaining desired owner controls (assignment/routing, lifecycle, integration and release views) against spec and current capabilities; implement only individually authorized operations. Qualify real provider activity and native background/back-cache refresh while preserving edits and private artifact provenance.\n\nCurrent partial Release contribution is authorized by owner15c48fa3 under actual QA818/f0bad: ONLY NEW src/self-host/runtime-metadata.mjs, NEW test/fleet/runtime-metadata.test.mjs, append-only docs/TEST_INTEGRITY.md after guarded clean convergence to4fa. Console retains full owner. Inventory-only internal relative links hash bounded link text without target content traversal; metadata/UI file links refuse; fixed active pointer separate. readerModuleEvaluation reports only reader/local artifact observations, authunknown and memory/delivery null. Native authority and Console consumer/source UI changes excluded. Four exact native source gates/immutable artifacts and independent QA precede single guarded integration. Separate future Overview four-sitepath/newdensitytest and snapshot.mjs consumer proposals require their own exact QA scopes; no code authority from this metadata recording.",
   "priority": "normal",
   "affectedDomains": [
     "owner-console",
@@ -16,7 +16,8 @@
     "Live owner flow exposes served UI and API engine version plus exact immutable artifact/source provenance separately from repository HEAD; mixed loaded versions, stale immutable candidates and unavailable provenance are explicitly truthful, never inferred from source PASS or pointer labels",
     "A later independently qualified current release and actual desktop/mobile live owner flow display each current blocked task's durable blockedReason with provenance; missing or stale runtime fields remain explicit unknown/mismatch. Canonical316 source already contains blockedReason, while reported activealpha2 and immutablealpha3 omit it; alpha3 pointer switch alone does not satisfy this criterion",
     "Observed local runtime version, declared source commit and recomputed artifact/UI hash consistency remain useful visible diagnostic observations separately from authentication unknown. Local unsigned metadata is not loaded-memory or delivered-browser-byte proof; absent signing infrastructure does not erase observations or prevent bounded dashboard diagnostics. Mixed/stale/unavailable provenance and actual live blockedReason coverage remain explicit.",
-    "Later independently reviewed compact Overview prioritizes genuine owner decisions and urgent hazards with safe existing quick actions, summary counts and explicit View all Fleet handling destination/filter. Bounded previews retain every item and full evidence in dedicated queue/detail views; advisory/recheck counts are separate from actionable named-next-step counts. Preserve drafts, unsafe risks and show-all access. Owner9ab observed generated1440x1000 d469 desktop artifact, not actual live desktop/mobile acceptance; exact paths/scenarios/QA holdout and authorization precede later edits."
+    "Later independently reviewed compact Overview prioritizes genuine owner decisions and urgent hazards with safe existing quick actions, summary counts and explicit View all Fleet handling destination/filter. Bounded previews retain every item and full evidence in dedicated queue/detail views; advisory/recheck counts are separate from actionable named-next-step counts. Preserve drafts, unsafe risks and show-all access. Owner9ab observed generated1440x1000 d469 desktop artifact, not actual live desktop/mobile acceptance; exact paths/scenarios/QA holdout and authorization precede later edits.",
+    "Future reviewed message/thread UX supports version-pinned shared contract or artifact references with concise attributable recipient-specific decision/delta, exact permission provenance/current task revision and explicit supersession, retaining all recipients/history/failed decisions and full referenced content. Grouping never auto-acknowledges/resolves/discards messages or hides older failures; newest actionable decisions remain accessible. Pagination/unread completeness uses existing Kernel565/Runtimee440 identity-bound observation contract. Ownerd2feed aggregate115messages/275123bodybytes/22repeatedgroups-cover57 since16:00 is local traffic evidence, not provider token/cost data or proof multi-recipient copies are invalid."
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
@@ -93,14 +94,24 @@
     "message:83cb229d-9d46-4cc2-ab38-7f0387792ec7:Kernel-displayonly-native-authority-exclusion-request",
     "message:d1750568-6205-4bd6-912c-dd03dadf36ab:Console-fixed14allowlist-and-consumer-review-request",
     "message:9adfc75d-69eb-4da3-b8bc-d081fcb1f63f:Release-exact-scope/hash/vector-corrections",
-    "message:02981960-924b-40ac-817f-6052adaeabc5:QA-exact-threepath/vector-scenario-request-after-existing-B1-review"
+    "message:02981960-924b-40ac-817f-6052adaeabc5:QA-exact-threepath/vector-scenario-request-after-existing-B1-review",
+    "message:8184bc03-40b8-431e-b7ec-86b3949148ff:actual-Release-threepath-eightscenario-contributor-consent",
+    "message:f0bad6b0-8769-420d-bc1e-3424f41770ef:usable-inventorylinktext-hash-vs-metadata/UIlink-refusal-addendum",
+    "message:15c48fa3-ec5d-4358-95e5-4356e125de26:owner-exact-threepath-Release-implementation-authorized-after-guardedconvergence-no-consumeredits",
+    "message:e7fa7fe6-0b2b-40e0-88a0-7699e5eb11ce:existing-Release-exact-authorization-handoff",
+    "message:1ece397d-ac61-4d5b-8500-4c26cf7ddc8b:concrete-Console-four-sitepath-Overview-vs-separate-snapshotconsumer-proposal",
+    "message:1b4836fd-2c3c-4983-957d-daf17cb0e45b:QA-newdensitytest/appendTIN-and-distinct-consumer-scope-decision-request",
+    "message:2cf2c03c-a290-42f8-91cb-5c5496fe37ba:readerModuleEvaluation-not-Consoleloadedengine-claim",
+    "message:d2feed55-f6dc-4c72-92c3-9b55a39af808:aggregate-local115messages275123bodybytes22repeatedgroups57messages-since16:00-not-providercost",
+    "message:a6b8dfa4-a8b4-43b9-908d-bc8d13f84e1f:usable-Overview-sixpath-five-strict-scenario-consent-crowded49plus17-density1440/390-not-sourceauthority",
+    "message:06f94f44-4789-47f9-a689-1c6b5c9429d6:actual-current-source-uniqueinfo/Work347baseline-preserve-no-duplicatefix-browser-disconnected-Releaseactive"
   ],
   "commit": "e8c4c4249e49d91393394ac205d918826ddd1891",
   "integrationRequest": "6cbac9cb-445f-45d7-8bb1-10902e840211",
   "blockedReason": "Exact e8c source QA acceptance and native6cb serialized landing remain RESOLVED with four native PASS/11 hashes. Attention cohort exact4fa is independently QA accepted and natively landed once0d46; canonical4fa is clean as observed16:27, not whole-workflow acceptance. Actualownereb1 live4174 eight blocked entries omit blockedReason: activealpha2 and immutablealpha3 omit a field already present canonical316. Served UI/APIengine exact version/artifact/source provenance must be distinct from repositoryHEAD and truthful for mixed/stale/unknown state; alpha3switch75 alone cannot qualify current UI. Full workflow remains blocked on later qualified current release and actual live/installed/desktop/mobile owner-flow/full-criteria acceptance; current owner browser list remains empty. Source/demo artifact PASS is not live acceptance. Human75 remains pending revision1; PNG recovery is not activation. No install/restart/hotpatch/host/provider/wake/schema action.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T16:38:00.000Z",
-  "revision": 19,
+  "updatedAt": "2026-10-01T17:07:00.000Z",
+  "revision": 21,
   "history": [
     {
       "from": null,
@@ -234,6 +245,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T16:38:00.000Z",
       "note": "Metadata-only expectedrev18 records complete actual Release5d377 proposal/vector addendum and owner ee430 precise scope/spec corrections. Future exact contribution only new src/self-host/runtime-metadata.mjs, new QA-owned test/fleet/runtime-metadata.test.mjs, append-only docs/TEST_INTEGRITY.md; excludes proposed test/fleet/TIN. Preserve actual candidate recursive per-directory localeCompare inventory traversal and raw hash preimage, any.git/rootvalidation exclusions; independent nested/case/punctuation vectors reject changed ordering. Full contract forwarded existing QA/Kernel/Console with no code authority/new task/assignment. Useful observations separate authentication unknown, no native E/S/A/memory/deliveredbyte claim, no DB/status/reconcile. All state/owner/e8/request/sevencriteria/history retained."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:03:00.000Z",
+      "note": "Metadata-only expectedrev19. Actual QA818/f0bad resolves Release contributor/link precision; actual owner15c48 grants bounded named Release implementation on SAMEworkflow, not fullowner transfer/lifecycle/new assignment or consumer edits. Preserve blocked state/e8 request/fullcriteria/history and actual live/API/browser gaps. Record concrete Console separate Overview/consumer scopes and ownerd2feed message UX requirement; existing roadmap only, no source/schema permission or summary replacing attributable authority."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:07:00.000Z",
+      "note": "Metadata-only actualQAa6b usable exact Overview four-sitepath/newdensitytest/appendTIN consent resolves routine contributor hold; five strict scenarios/crowded49+17/density1440x1000/390x844 preserve Work347 baseline and existing Fleet3/runtime.review/kernel.info/qa.urgent. Owner06 confirms unique-info already implemented, no duplicate fix/test relaxation. Later exact arbiter source scope separate; no implementation authority/newassignment/state/sourcecommit change. Actual browser disconnected/full liveacceptance remains open; separate Release implementation active."
     }
   ]
 }

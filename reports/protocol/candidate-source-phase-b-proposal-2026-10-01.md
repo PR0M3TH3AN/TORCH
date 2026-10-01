@@ -10,6 +10,118 @@ no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
 ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
+## Current B1 acceptance and concrete B2 implementation packet, 17:02 UTC
+
+Actual QA **a13b5c37-12a3-4757-832c-1938b392f962** ACCEPTS only clean exact
+**955672c1db15ebde99788eaa87759b6020de5d25** B1 fixture source:10/10 strict scenarios,
+156398-byte c08 document prefix unchanged, three B1 source/test blobs unchanged,
+allocation correction body unchanged and physically final. Preserve9b pre-copy
+failure and b375 placement rejection. Owner29e verifies the prefix/blob proof only
+after a legitimate retry of initial child-git spawnSync EPERM; the earlier9982
+claim preceded completed verification and is not retrospective PASS evidence.
+No native/whole-branch/integration/full-task acceptance follows. Full6e4 remains
+Work-owned verification at landed316/a178; B1 acceptance closes this source review.
+
+The following is a concrete proposed implementation packet on SAME task, with
+named peer decisions requested82157432/6797e181/239ebf46. It grants no code authority.
+It advances real composition; fixtures and blanket refusals are not the endpoint.
+Each row requires exact contributor/scenario consent and separate arbiter scope
+authorization. No new assignment, registered DDL or host activation is requested.
+
+| Phase | Exact proposed source paths | Owner and deliverable | Exact proposed QA paths |
+| --- | --- | --- | --- |
+| B2a parent and input composition | NEW src/kernel/candidate-source-parent.mjs; additive explicitly V2 surface in src/kernel/check-subject-context.mjs; NEW src/checks/candidate-input-snapshot.mjs; NEW src/checks/candidate-source-execution.mjs | Kernel fixed no-args parent/binding; Work bounded file snapshot and real child consumption. Do not change existing fixtureV1 or existing CheckService/CLI consumers. | NEW test/fleet/candidate-source-parent.test.mjs; NEW test/fleet/candidate-input-consumption.test.mjs; additive V2-only cases in test/fleet/check-subject-context.test.mjs; append docs/TEST_INTEGRITY.md |
+| B2b attributable terminal coverage | NEW src/checks/candidate-execution-fence.mjs; only its reviewed integration seam in new candidate-source-execution.mjs | Work fixed fence backend, parent-only observed exit/coverage proof and strict UNKNOWN handling. No resource/lease policy edits. | NEW test/fleet/candidate-execution-fence.test.mjs; append docs/TEST_INTEGRITY.md |
+| B2c store/adapter and native transport | src/control-plane/candidate-attempt-store.mjs; src/control-plane/candidate-attempt-store-provisioner.mjs; NEW src/control-plane/check-receipt-adapter.mjs | Kernel exact versioned no-DDL finalizer/adapter and compatibility/provisioner qualification. B0 fixture issuance is not registered authority. | additive test/fleet/candidate-attempt-store.test.mjs; NEW test/fleet/check-receipt-adapter.test.mjs; append docs/TEST_INTEGRITY.md |
+| B2d actual consumers and release qualification | later separately scoped src/checks/service.mjs, src/integration/service.mjs and src/cli.mjs | Work existing consumer/gate semantics; Release fixed CLI-to-parent binding, only after actual compatible native transport proves exact receipts. | QA independently pins actual service/CLI/integration scenarios before any edits |
+
+Ownership queries confirm Kernel src/kernel/** and src/control-plane/**, Work
+src/checks/**, Console src/observability/**/src/console/**, QA test/**. The specific
+future check-receipt-adapter name preserves the existing reviewed map, not the
+alternative candidate-receipt-adapter sketch. Existing files outside the listed
+later rows remain excluded; no implicit permission to wire a consumer.
+
+B2a contract to pin before source: openCandidateSourceParentV1() has zero caller
+arguments; derives its fixed installed module and actual startup working directory,
+validates install/project/managed common-dir/registered branch/clean source, and
+retains opaque parent state. A registered identity issuer must be an actual reviewed
+bound native seam; branch labels, caller JSON, private WeakMaps and same-user access
+are not authentication. CanonicalCheckSubjectEsaBytesV2 or explicitly named successor
+binds E interface/module plus fixed entry and dependency-manifest length/SHA; A
+declaration bytes/schema/interface plus actual adapter entry/dependency length/SHA;
+S project/commit/clean tree, snapshot-policy and frozen-manifest digests, total input
+bytes/count. Inputs include definition/args/allowlisted env and run/guard generations
+at admission. private inputRoot never crosses caller serialization. Pre/post fixed
+E/A reads detect substitution; disk re-read is not loaded-memory attestation.
+
+Work's snapshot is a NEW bounded stream/copy seam, not a declaration that existing
+snapshot.mjs or PhaseA input.directory is qualified. Proposed concrete maxima to
+ratify:8192 input records,64MiB per regular file,512MiB aggregate,4096 UTF8 path bytes,
+1MiB descriptor/manifest frame. Enforce original lengths/counters before allocation,
+no symlink/special/traversal, owned unique scratch outside source, explicit canonical
+relative-path/byte/mode records and policy-version digest. Streaming copies and
+pre/post source/frozen manifests detect drift; they do not prove an atomic directory
+snapshot or same-user filesystem containment. Worker cwd is ONLY private snapshot
+inputRoot, never caller input.directory. Fixed trusted command/dependencies come
+from reviewed parent E binding; candidate child receives no writer/DB/adapter token.
+Do not reuse copied-byte descriptor truth as proof that real files were consumed.
+
+B2b backend decision must cover escaped sessions/descendants. A proposed concrete
+candidate is an ephemeral Linux PID namespace with fixed reviewed namespace-init
+wrapper lifetime: every descendant stays in that namespace, init termination ends
+its population; parent holds namespace identity/generation and observes closure.
+This mechanism must first be supported and independently qualified in the approved
+execution environment, with bounded output/time/signal cancellation; no host-service,
+cgroup/timer setup or provider launch is authorized. Work must accept this backend
+or name a precise already available enforceable alternative and ownership. No
+fallback to process-group emptiness, kill-command exit, process name or fake fence.
+If namespace creation/coverage/lifetime is denied or unknown, return UNKNOWN with
+no TerminalProof/PASS and retain attributable run evidence. This is descendant
+lifetime coverage, not protection from a malicious same-user outside process.
+
+Positive black-box scenarios, not only forged-input refusal:
+
+1. Actual child reads known captured files via relative paths from snapshot cwd and
+   emits their contents/digest. Alter original worktree after capture via deterministic
+   barrier; child still emits original captured bytes. Include nested files and a
+   file larger than1MiB so descriptor size cannot substitute for product consumption.
+2. Alter frozen snapshot before or during execution: manifest verification yields
+   UNKNOWN/refusal and no eligible result/receipt; no source-policy relaxation.
+3. Fixed parent captures E/A, then same-ID entry/dependency bytes change before import
+   or after execution: substitution refuses. Positive unchanged pre/post tuple passes
+   context admission only with an actual issued binding; JSON/spread clones do not.
+4. Real child creates a setsid/double-fork descendant that waits beyond its direct
+   parent's exit. Supported fence observes containment/termination; parent cannot
+   finalize while coverage is open. Unknown coverage and PGID-only fake each refuse.
+5. Known-good confined run with unchanged files and sealed artifact produces one
+   attributable terminal proof. Timeout/signal/error/ENOBUFS/overflow, zero-exit drift,
+   stale generation and cancellation ambiguity cannot yield eligible PASS.
+6. Actual supported adapter on exact compatible schema/tuple finalizes one sealed
+   attempt/result/eligible receipt atomically; duplicate/replay and interrupted CAS
+   preserve history without second receipt or ambiguous retry. Wrong adapter/schema
+   and fixture authority refuse. Fixture positive transaction is separately labelled.
+
+B2c has additional executable prerequisites, not a prose waiver: exact DDL bytes
+and canonical semantic schema digest; compatible existing receipt-table/writer
+matrix; authenticated native identity/attempt transport; issued->executing->sealed
+->finalized CAS; result and eligible receipt in one short transaction; ambiguous
+commit/read-only reconcile policy; writer/lease/fence generation evidence. Inspect
+and independently qualify actual compatible registered adapter state without
+opening a migrating initializer. Current required3/schema2 refusal remains intact;
+any missing registered store or DDL recovery is a separate genuine decision with
+exact state/risk evidence. Never copy fixture receipts, assume old installed engine
+equivalence or alter exactPasses to land. Native receipts can qualify an unlanded
+clean candidate only through that supported protocol; post-landing-only receipts
+would recreate the circular gate. Full four exact source checks/current definitions,
+immutable artifacts, independent QA and native serialized landing remain required.
+
+Immediate peer decisions are concrete: Work ratifies snapshot/execution APIs,
+quotas and one supported fence backend; Kernel pins V2 bytes and real bound issuer/
+adapter transport compatibility; QA grants exact listed test/contribution scopes
+and positive barrier/descendant/CAS scenarios; Release pins later fixed parent CLI
+invocation. Source code remains unauthorized pending those decisions and the
+arbiter's bounded scope choice. This packet retains the complete real native path.
+
 ## Actual B1 four-path authorization and real composition roadmap, 16:29 UTC
 
 Latest16:39 **QAc73fb0f6** REJECTS b375 narrowly for append-only TIN placement:

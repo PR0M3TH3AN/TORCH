@@ -82,14 +82,19 @@
     "message:33d44dad-3ab1-4ac4-8b76-8017297decad:independent-exact4fa-source-native-qualification-accepted",
     "integration:0d46fb5c-1027-4ead-b969-f760afb72e9f:landed2026-10-01T16:25:59.349Z:exact4fa:manager-native-plan-no-blockers",
     "message:0bf6a212:owner-future-cleanunique-worktree-warning-vs-hazard-distinction",
-    "message:9ab0e108-ac63-4de8-87fe-8986ec05cf21:future-bounded-overview-and-advisorycount-roadmap-requirement"
+    "message:9ab0e108-ac63-4de8-87fe-8986ec05cf21:future-bounded-overview-and-advisorycount-roadmap-requirement",
+    "message:1ece397d-ac61-4d5b-8500-4c26cf7ddc8b:exact-four-sitepath-Overview/newdensitytest/appendTIN-proposal-not-implementation",
+    "message:1b4836fd-2c3c-4983-957d-daf17cb0e45b:QA-concrete-Overview-positive-fullqueue/guards-scenario-request",
+    "message:d2feed55-f6dc-4c72-92c3-9b55a39af808:message-cohort/newestdecision/supersession-fullhistory-requirement",
+    "message:a6b8dfa4-a8b4-43b9-908d-bc8d13f84e1f:usable-Overview-sixpath-five-strict-scenario-consent-crowded49plus17-density1440/390-not-sourceauthority",
+    "message:06f94f44-4789-47f9-a689-1c6b5c9429d6:actual-current-source-uniqueinfo/Work347baseline-preserve-no-duplicatefix-browser-disconnected-Releaseactive"
   ],
   "commit": "4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1",
   "integrationRequest": "0d46fb5c-1027-4ead-b969-f760afb72e9f",
   "blockedReason": "Exact 4fa9 source independently accepted by QA33d44dad/6dfa and landed once via native request0d46 at16:25:59 with authorized Manager plan no blockers/four native PASS/eleven hashes. Source review and integration are resolved. Full acceptance remains blocked on actual live/installed desktop/mobile owner flow and served UI/API provenance; generated demo artifact checks do not establish live visual acceptance. Pending human runtime75 is separate from satisfied PNG recovery; pointer switch alone cannot qualify missing blockedReason. No installation, host, provider, wakes, schema or publication action.",
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T16:28:00.000Z",
-  "revision": 18,
+  "updatedAt": "2026-10-01T17:07:00.000Z",
+  "revision": 20,
   "history": [
     {
       "from": null,
@@ -216,6 +221,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T16:28:00.000Z",
       "note": "Reviewed metadata-only expected revision17 records actual owner0bf/9ab future requirements on existing attention/workflow roadmap after single source4fa landing. No new task, current source scope expansion, assignment, cleanup or test relaxation. Preserve all original16criteria/state/owner/exact4fa/0d46/history and incomplete actual live acceptance."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:03:00.000Z",
+      "note": "Metadata-only expectedrev18. Actual Console1ece names site/console.html,site/console.js,site/attention-projection.js,site/styles.css plus newQA densitytest/appendTIN proposal; route exact contributor scenarios before later authority. Separate provenance consumer, no implementation expansion/new assignment. Preserve source4fa/0d46 blocked liveacceptance/18criteria/history. Ownerd2feed message grouping retains recipient/permission/history integrity and no massack."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:07:00.000Z",
+      "note": "Metadata-only actualQAa6b usable exact Overview four-sitepath/newdensitytest/appendTIN consent resolves routine contributor hold; five strict scenarios/crowded49+17/density1440x1000/390x844 preserve Work347 baseline and existing Fleet3/runtime.review/kernel.info/qa.urgent. Owner06 confirms unique-info already implemented, no duplicate fix/test relaxation. Later exact arbiter source scope separate; no implementation authority/newassignment/state/sourcecommit change. Actual browser disconnected/full liveacceptance remains open; separate Release implementation active."
     }
   ]
 }

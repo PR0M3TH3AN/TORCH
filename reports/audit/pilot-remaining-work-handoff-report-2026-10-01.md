@@ -1,5 +1,102 @@
 # Current pilot remaining-work handoff
 
+## Actual usable Overview consent and current browser boundary, 17:07 UTC
+
+Actual **QAa6b8dfa4** grants named Console contribution on four site paths plus
+NEW density test and appenddocsTIN, preserving five strict priority/count/fullqueue/
+draft/owner/nav scenarios and crowded49advisory+17Fleet geometry1440x1000/390x844.
+Existing driver/fixtures/goldens/tests excluded, Work347 refresh and Fleet3/runtime.review/
+kernel.info/qa.urgent unchanged. Owner06 confirms clean-unique worktree information
+already exists in current source; do not implement a duplicate fix. Workflow21 and
+attention20 record usable consent, not a source implementation decision or assignment.
+Console receives exact decision; no stale QA wait. Separate Release contribution
+is actually active per owner06, no consumer edits. User browser connection request
+is already pending through arbiter; actual browser disconnected/liveDesktopMobile
+unverified, not another user question here. Activation75 remains genuine human wait.
+
+## Current B1 verdict, concrete B2 and authorized Release slice, 17:04 UTC
+
+Fresh installed Manager brief **d7e6d69**, explicit addressed unread100 and all56
+tasks refreshed; native check-in16:55 is observational, not proof of process absence.
+Canonical remains clean **4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1**; its single
+Console0d46 landing and arbiter development-ref push are resolved. cce still
+needs_convergence, duplicatec532 ready/unauthorized and proposedc178 are preserved.
+No new landing/request or task completion occurred.
+
+Actual **QA a13b5c37** narrowly ACCEPTS B1 fixture-source exact clean
+**955672c1db15ebde99788eaa87759b6020de5d25**:10 strict scenarios, c08 document prefix
+156398 bytes unchanged, three B1 source/test blobs unchanged and exact TIN body
+relocated to end. Manager observes clean exact955 with b375..955 docs-only delta.
+Owner **29e80f3b** corrects earlier9982: initial child-git probe failed spawnSyncEPERM;
+legitimate retry subsequently verifies prefix SHA5c595f1c and unchanged blobs.
+Do not turn the earlier premature statement into PASS. Retain9b copy failure and
+b375 placement rejection. SAME6e4 verification13, Work full owner, landed316/a178
+and all seven native/operational criteria stay intact; B1 review is resolved, no
+whole-branch/native/integration/full-task acceptance.
+
+Concrete **B2a-d implementation packet** is pinned in the PhaseB report's17:02
+section: Kernel no-args candidate-source-parent and explicit contextV2, Work new
+bounded input-snapshot/source-execution/fence modules, then Kernel compatible
+store/receipt-adapter and actual Work/Release consumers. Exact paths/quotas/interfaces,
+positive real child input consumption after source mutation, snapshot UNKNOWN,
+E/A substitution and real setsid/double-fork descendant fence scenarios are named.
+Candidate fence backend is ephemeral PID namespace with fixed init lifetime,
+subject to actual platform qualification; absent coverage yields no TerminalProof,
+never PGID-only PASS or same-user containment claim. No platform activation or
+registered DDL/code permission. Existing Work82157432/Kernel6797e181/QA239ebf46
+receive concrete contributor/protocol/backend decisions, not a generic design loop.
+Future native adapter must independently prove actual compatible schema/writer/
+identity/CAS/receipt transport; legacy2 and required3/current2 refusal remain.
+Fixtures/all-refusal are not permanent substitutes for the complete real path.
+
+Actual **QA8184bc03** three-path/eight-scenario Release consent plus **f0bad6b0**
+link addendum is now usable. Seven admitted immutablealpha3 internal .bin links
+motivate hash-only inventory lstat/bounded readlink text with existing raw path/type/
+mode/link-text preimage, no target-content traversal; relative internal existing
+permitted entry only. External/absolute/dangling/invalid/oversize/special cases refuse
+without partial match. Metadata and UI files remain no-follow regular-only; fixed
+runtime/active is a separate bounded intentional link. readerModuleEvaluation does
+not prove Console server bytes; authunknown and loaded-memory/delivery null remain.
+
+Actual owner **15c48fa3** now authorizes named Release contribution on SAMEworkflow:
+guarded clean convergence to4fa, ONLY NEW src/self-host/runtime-metadata.mjs, NEW
+test/fleet/runtime-metadata.test.mjs, append docs/TEST_INTEGRITY.md, strict scenarios/
+hash ordering/caps, clean task-named commit then four fresh exact native source
+checks/immutable artifacts and independent QA before one guarded request. Manager
+**e7fa7fe6** routes that exact authority. Arbiter manually resumes existing Release;
+Manager starts none. Console retains full owner, workflow blocked20 for full live
+criteria; no consumer edits or runtime75/host/schema authorization.
+
+Actual Console **1ece397d** pins separate future Overview: four site paths
+console.html/console.js/attention-projection.js/styles.css, NEW QA density test and
+append TIN; owner/urgent first, exact actionable/advisory counts, bounded preview
+and full Fleet filter/detail reachability preserving all records, ten destinations,
+drafts/current preview/deep links/Back/Forward/mobile/unsafe hazards. Manager1b4836fd
+requests exact QA additive consent before separate implementation decision.
+Separate provenance consumer is snapshot.mjs no-args helper/display-only observeProject
+object; server.mjs snapshot transport remains unchanged. Helper cannot authenticate
+loaded API engine, and consumer needs distinct named QA scenario/path scope.
+Existing attention blocked19/source4fa and workflow20 own these phases, not duplicates.
+
+Owner **d2feed55** measures115 messages/275123 local body bytes since16:00,
+max13362 bytes,11 bodies>8000,22 repeated groups covering57 messages. These are
+aggregate local traffic, not provider token/cost measurement or invalid-copy proof.
+Existing workflow20/Runtime e440 assigned7 record version-pinned full contract
+references with concise recipient-specific decision/delta, explicit supersession
+and current permission/revision; all recipient ownership/history/failed decisions
+and unread/page completeness remain readable. Kernel565 remains blocked/native
+unqualified. No autoack/close/discard or summary-as-permission behavior is authorized.
+
+Evolution eight recurring boundaries and hierarchy ten signals favor precise
+interfaces/reference process/scenario ownership among the existing six specialists,
+over a new role, promotion, split or merge; no activation/proposal needed on current
+evidence. Health49 stale observations/two resolved-dependency warnings remain surfaced
+without auto-fix. Full56 roadmap:39 proposed,9 blocked,6 completed,1 Work verification,
+1 Runtime assigned; no extra active assignment. Human approval75 remains pending1,
+PNG recovery satisfied. Latest peer browser/live-installed-alpha2 evidence remains
+unqualified; source4fa and an alpha3 switch do not prove blockedReason/live UI.
+No peer source edits, DB/schema, installation, host/provider/wake or publication.
+
 ## Actual B1 QA verdict and exact corrective handoff, 16:39 UTC
 
 Actual **QAc73fb0f6** narrowly REJECTS exactb375 only for TIN placement: the
