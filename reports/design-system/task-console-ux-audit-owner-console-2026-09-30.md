@@ -1,8 +1,8 @@
 # Console UX audit: Owner Console evidence and coverage addendum
 
-Task: `TASK-console-ux-audit` (in progress, revision 4)  
+Task: `TASK-console-ux-audit` (blocked, revision 5)  
 Audit target: `http://127.0.0.1:4174/console`  
-Local checkout: `torch/owner-console` at `f72daadcba9f5d8d47ff4130afc6e39498e7d0d4`
+Local branch: `torch/owner-console`
 
 ## Current status
 
@@ -10,6 +10,10 @@ This is a partial, evidence-bounded addendum to the arbiter's canonical report,
 `reports/design-system/live-console-arbiter-audit-2026-09-30.md` at canonical
 commit `7b7c6584b9d315d901133cff828f26f0fcc2003f`. Its measurements remain
 attributed to that report, not to this audit.
+
+The current TORCH backlog record is blocked at revision 5 and points to this
+report and its exact viewport capture blocker. Desktop evidence is committed;
+the audit is not complete or ready for integration.
 
 I resumed the existing Brave browser binding and listed its existing Console
 tab; attaching to that tab timed out twice. A fresh agent-created tab in the
