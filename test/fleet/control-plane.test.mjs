@@ -43,7 +43,7 @@ function deterministicOptions(fixture) {
 }
 
 function writeCapableSql(sql) {
-  return /(?:^|[);]\s*)(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM)\b/i.test(sql);
+  return /(?:^\s*|[);]\s*)(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM)\b/i.test(sql);
 }
 
 function quoteIdentifier(identifier) {
@@ -221,13 +221,38 @@ test('SCN-control-plane-unread-observation-metadata: a bound inbox observation i
     assert.throws(
       () => observeWithoutDurableWrite(control, fixture,
         { recipient: fixture.worker, selection: 'unread', limit: 1 }),
-      (error) => /DML write execution/.test(error.message),
+      (error) => /DML write execution/.test(error.message)
+        && /INSERT INTO audit_events/.test(error.message),
     );
   } finally {
     control.observeMessages = originalObserveMessages;
   }
   assert.equal(control.observeMessages, originalObserveMessages,
     'the mutation wrapper must be restored after its required invariant failure');
+  control.observeMessages = function directMultilineAuditedReadMutant(input) {
+    const observed = originalObserveMessages.call(this, input);
+    this.database.prepare(`
+      INSERT INTO audit_events (id, project_id, actor_id, operation, entity_type, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(
+      'direct-multiline-diagnostic', this.projectId, input.recipient,
+      'diagnostic.direct-read-write', 'message-observation', '2026-10-01T12:00:00Z',
+    );
+    return observed;
+  };
+  try {
+    assert.throws(
+      () => observeWithoutDurableWrite(control, fixture,
+        { recipient: fixture.worker, selection: 'unread', limit: 1 }),
+      (error) => /executed 1 DML write execution/.test(error.message)
+        && /INSERT INTO audit_events/.test(error.message),
+      'a leading-whitespace direct multiline INSERT must be counted at the fixture connection boundary',
+    );
+  } finally {
+    control.observeMessages = originalObserveMessages;
+  }
+  assert.equal(control.observeMessages, originalObserveMessages,
+    'the direct multiline mutation wrapper must be restored after its required invariant failure');
   assert.deepEqual(observeWithoutDurableWrite(control, fixture,
     { recipient: fixture.worker, selection: 'unread', limit: 1 }).messages, [],
   'the restored original observation still passes the complete no-write invariant');

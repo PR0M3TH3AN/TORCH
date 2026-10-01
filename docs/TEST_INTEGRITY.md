@@ -2616,7 +2616,7 @@ test_integrity_note:
     - "requestedLimit, returnedCount, complete, truncated and pendingUnreadCount"
     - "Zero INSERT/UPDATE/DELETE/REPLACE or equivalent write executions at the fixture connection boundary"
     - "Equal message ordering, acknowledgements, audit, identity, task, ownership and all present durable-table state before and after each observation"
-    - "Original implementation passes the full invariant; a test-local post-read audit INSERT mutant fails it and is restored deterministically"
+    - "Original implementation passes the full invariant; helper-based and direct leading-whitespace multiline audit INSERT mutants both fail the fixture-connection write counter and are restored deterministically"
   determinism_controls:
     - "Disposable Git and XDG fixtures with deterministic timestamps and message IDs"
     - "No provider, host, network, live-project database or runtime activation"
@@ -2626,6 +2626,7 @@ test_integrity_note:
       - "Returning independently sampled page and count metadata"
       - "WAL-only audit or acknowledgement writes hidden by unchanged main-database bytes"
       - "A source mutation that adds a post-read write while preserving message output"
+      - "A leading-whitespace multiline write bypassing connection-boundary DML classification"
       - "Silently coercing invalid selection or limit inputs"
   relaxation:
     did_relax_any_assertion: false
