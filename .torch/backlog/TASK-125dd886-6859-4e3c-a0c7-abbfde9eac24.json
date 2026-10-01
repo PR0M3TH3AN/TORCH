@@ -23,15 +23,19 @@
   "observedAt": "286bfa72e3202ec0806f7c3075821c8057d6e132",
   "feature": null,
   "milestone": null,
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
+  "state": "assigned",
+  "owner": "project-kernel",
+  "evidence": [
+    "message:57e4712e-50a8-474b-810b-550ea150aa95:explicit-owned-reservation-phase",
+    "integration:4cfe7a5f-1a25-4233-9cc2-9233fae812a3:landed07a2bc",
+    "TASK-bounded-routine-coordination:completed:revision18"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T07:57:28.590Z",
-  "updatedAt": "2026-10-01T07:57:28.590Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T08:02:32.984Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -39,6 +43,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T07:57:28.590Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:02:24.993Z",
+      "note": "Current brief d7e6d69 reread; Kernel next idle after actual policy landing/closure. Owner explicitly authorizes bounded Kernel-owned atomic reservation contract dependency for SAME Runtime starting-presence. Exact interface agreement and QA additive path consent precede edits; no broad schema/authority/wake changes or provider starts."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:02:32.984Z",
+      "note": "Kernel next exactly ready/no active item, previous policy task completed18 at landed07a2bc. Assign bounded owner57e4712e Kernel-owned src/control-plane reservation contract/schema phase; agree exact API with Runtime before implementation and request QA exact test/integrity paths. Atomic project identity reservation, conservative unknown interruption, attributable terminal evidence; manual/scheduled callers remain Runtime-owned, CLI Release-owned. No owner-grant/approval expansion, time-only release, defaultmain, wakes/install/provider starts. Preserve all history/unique commits, four fresh exact gates/independent QA/native serial request; arbiter starts native session."
     }
   ]
 }

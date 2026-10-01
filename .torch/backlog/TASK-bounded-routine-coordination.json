@@ -22,7 +22,7 @@
   "observedAt": "7b7c6584b9d3",
   "feature": null,
   "milestone": null,
-  "state": "verification",
+  "state": "completed",
   "owner": "project-kernel",
   "evidence": [
     "npm run test: 195 passed",
@@ -53,14 +53,18 @@
     "receipt:c86a5ab6-f960-420f-8cb2-9de485a1e6e2:pass",
     "receipt:555b81c1-c91b-4af3-b077-e6a4dec3d65a:pass",
     "receipt:059d39c1-15a0-4c63-acb3-9bbeefd134f3:pass",
-    "qa-review-request:e056ae76-5c1c-41ff-882b-0772b9510d84:pending"
+    "qa-review-request:e056ae76-5c1c-41ff-882b-0772b9510d84:pending",
+    "message:91f49c70-e202-4862-a16d-7e6244fe355f:independent-QA-acceptance-exact07a2bc",
+    "message:d64621b2-4683-4388-951f-08a58cd59613:native-bound-request-ready",
+    "integration:4cfe7a5f-1a25-4233-9cc2-9233fae812a3:landed:2026-10-01T08:00:24.613Z",
+    "message:91f49c70-e202-4862-a16d-7e6244fe355f:QA-exact07a2bc-accepted"
   ],
   "commit": "07a2bc0fc97f66bf1d6f9933d117cfaf25f342a5",
-  "integrationRequest": null,
+  "integrationRequest": "4cfe7a5f-1a25-4233-9cc2-9233fae812a3",
   "blockedReason": null,
   "createdAt": "2026-09-30T23:06:51.644Z",
-  "updatedAt": "2026-10-01T07:55:35.530Z",
-  "revision": 16,
+  "updatedAt": "2026-10-01T08:01:25.039Z",
+  "revision": 18,
   "history": [
     {
       "from": null,
@@ -173,6 +177,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T07:55:35.530Z",
       "note": "Independently read clean native07a2bc HEAD and canonical286 ancestry plus all four fresh PASS/noinvalidReason receipts. Same task converged candidate enters fresh independent QA verification; olddd62 acceptance retained historical, not reused. Native reviewe056 pending, no integration request yet and no acceptance/landing inferred."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:00:11.129Z",
+      "note": "Actual independent QA accepts exact clean07a2bc strict scenarios/integrity/fourfreshPASS and all11 dashboard hashes. Native Kernel submitted bound exact request4cfe against cleancanonical286; independently verified branch/cleanHEAD/ancestry and ready evaluation. No stale acceptance or gate waiver."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "completed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:01:25.039Z",
+      "note": "Exact clean QA-accepted07a2bc actually landed by authority-checked serialized guard after cleancanonical/source/ancestry/fourfreshPASS verification; canonical readback exact07a2bc clean. Explicit Manager closure preserves unique commits, all117 strict integrity sections, old candidates/receipts/rejections and archives. Completion grants no wakes/provider starts/install/defaultmain. Next lookups required; reservation dependency can be sequenced without two active Kernel items."
     }
   ]
 }

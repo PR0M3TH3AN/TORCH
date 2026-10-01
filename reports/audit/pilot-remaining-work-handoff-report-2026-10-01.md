@@ -1,5 +1,49 @@
 # Current pilot remaining-work handoff
 
+## Authoritative landing and dispatch readback at 08:04 UTC
+
+**Canonical is now clean `07a2bc0fc97f66bf1d6f9933d117cfaf25f342a5`.** Actual
+independent QA `91f49c70` accepted this exact Kernel merge, all four fresh PASS
+receipts and eleven retained dashboard hashes. Native Kernel submitted exact
+request `4cfe7a5f-1a25-4233-9cc2-9233fae812a3`; Manager independently checked clean
+canonical286/source07a2bc, branch target, ancestry and ready evaluation, authorized,
+read guard plan with no blockers, and **landed at 08:00:24.613 UTC**. Explicit
+revision-checked closure records `TASK-bounded-routine-coordination` **completed
+revision18**. Olddd62/archives/rejections and all strict integrity notes remain.
+This supersedes every pending-Kernel-review/landing statement below. Runtime286
+executor remains completed14/landed; arbiter's verified push evidence applies to
+286 only, not an inferred remote push of newer07a2bc. Default main unchanged.
+
+Post-completion Kernel next was idle. Fresh current canonical brief d7e6d69 was
+read, then exact ready lookup preceded assignment of **TASK-125dd886-6859-4e3c-
+a0c7-abbfde9eac24 to project-kernel, revision3**. This bounded reservation API/
+storage contract is the owned dependency of SAME Runtime starting-presence item.
+Exact Kernel/Runtime interface and QA paths must be agreed before implementation;
+Runtime lifecycle/schedules and Release CLI remain with their owners. Manager
+sent actual landing/assignment handoffs `f91148f5`/`5e0ad232`. No second active
+Kernel item, ownership transfer, time-only reservation release or broad schema/
+grant expansion. Runtime starting-presence stays assigned3 with QA8fb approved2.
+
+Both reliability dependencies are now actually completed. Work Integration next
+was idle; current brief reread then exact ready lookup preceded assignment of
+**TASK-a65500ed-a505-4664-badc-a1483d6f6f11 to work-integration, revision3**. Scope
+is ONLY QA61de approved2/ownerd970 **read-only preparation**, outputs in durable
+TORCH evidence/attachments: note IDs/hashes, lossless immutable record/index and
+strict owned validation/discovery design. No repository files, source/tests/
+notes edits, migration, enforcement or implementation assignment is authorized.
+Exact next implementation paths/phase need separate reviewed consent; full task
+criteria remain open, design alone cannot complete it. Handoffs `3ef0a821`/
+`8ea5e317` preserve these restrictions. Earlier dependency-blocked unassigned
+statements below are historical; no guard was bypassed or dependency removed.
+
+Release was told actual canonical07a2bc advance via `c796d772`; SAME alpha.3 item
+needs fresh guarded merge/all4 gates/newQA/new native request before qualified
+landing and candidate plan/build. Installation alpha.2 unchanged, no activation/
+restart. Console task remains incomplete and actual browser discovery unavailable;
+no visual PASS. Diagnostics separately blocked history retained. Six specialists
+retained after Fleet/hierarchy judgment; no new identity/role. Automatic wakes
+stay paused, provider starts stay arbiter-controlled. No Manager starts/push.
+
 ## Dependency routing at 07:58 UTC
 
 QA `61de48f4` is **approved revision2**: read-only immutable-integrity preparation
