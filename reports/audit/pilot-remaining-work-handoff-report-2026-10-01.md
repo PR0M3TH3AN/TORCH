@@ -1,5 +1,22 @@
 # Current pilot remaining-work handoff
 
+## Fixed-layout diagnostic and existing integrity evidence at 13:10 UTC
+
+Final CURRENT task refresh retains the same55 counts and three active assignments.
+Explicit unread100 reads actual owner **0b4cb673**: its isolated dirty-source probe
+uses instant nonzero scroll347, actual Refresh event and generation2, preserving
+exact347 at1280x900 and390x844; true cold mobile target remains within viewport.
+This supports a strict deterministic stimulus without wheel races, retries or
+sleeps, but is not exact clean-source/native/live/changing-layout qualification.
+The historical removed assertion/integrity text incident is evidence for existing
+**TASK-a65500ed-a505-4664-badc-a1483d6f6f11 blocked5**, not a duplicate task or owner
+decision. QA **af33f393** receives the actual incident and required assertion/spec/
+Test Integrity comparison before PASS acceptance; Console **d47b7488** receives
+the focused diagnostic plus QA8009 strict consent. Acknowledged after routing.
+Exact corrected diff, native gates and independent QA remain open. No acceptance,
+task transition, new assignment, installation or runtime/host action occurred.
+
+
 ## Exact QA consent, integrity stop and revised draft at 13:08 UTC
 
 Fresh CURRENT tasks remain Runtime assigned4, Console in_progress13 and Work
