@@ -1,5 +1,55 @@
 # Current pilot remaining-work handoff
 
+## Current reconciliation after fresh authorization
+
+Updated 2026-10-01 03:33 UTC under canonical digest
+`d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
+This section supersedes the earlier hold snapshot below. Owner approval
+`2b2dfb35-46ac-4adb-ac14-5680f7a85e80` is **approved**, revision 2. Fresh human
+consent permits checked integration and continued TORCH development. There is
+no outstanding owner permission question for that consent.
+
+Canonical is clean at `330ec1a4114cdff5a1e7b566fb294adfdaf975a6` on
+`rewrite/portable-agent-fleet`. That advance invalidated the old integration
+request's convergence assumption. TORCH evaluation changed
+`cce22c51-1fa8-4324-8e28-bf8cbfc56165` to **needs_convergence** with reason
+`target-advanced-since-request`; it remains unauthorized and unlanded. Existing
+`e350` receipts and QA verdict are historical evidence, not checks of a new merge.
+
+Work and Integration's next lookup returned resume. Its same task is now
+`in_progress`, revision 7, preserving owner, candidate, previous request and
+evidence. Re-entry: arbiter resumes that specialist; it rereads the current brief,
+converges its clean branch through TORCH, runs all four required checks on the
+resulting exact commit, obtains independent QA and submits a new request. Manager
+then evaluates, authorizes, plans and lands through the serialized guarded path.
+No stale landing or competing lander is permitted. The arbiter controls verified
+non-force pushes of the rewrite branch and installation changes.
+
+QA retry of recovery approval `406ff30e-b317-4733-b39e-f63c9a57506d` is now
+authorized. The approval itself remains **pending** until QA independently checks
+the exact five PNG paths, `8350` HEAD, current/archive hashes and public pre-run
+clean provenance, then records its decision. Only Kernel may apply an approved
+five-path restoration. Rejected `c2a1702b`, archived bytes and unqualified manual
+run evidence remain preserved. Manager routed this directly to QA and Kernel.
+
+Precise next specialist sessions for the arbiter: Work and Integration for
+convergence and all four exact checks; QA for the bounded recovery decision and
+independent review of the resulting artifact candidate. Kernel recovery follows
+an actual QA approval. Runtime `5bbd81a` remains blocked on the dashboard/artifact
+dependency, with its three PASS receipts and QA scenario verdict retained.
+Console remains blocked on actual mobile capture; browser transport evidence
+and task-owned report are unchanged. No provider was started by Manager.
+
+Manager's clean branch converged through TORCH to
+`c819beec6e0f258c382af057b694711b48b122ed`, preserving all 23 unique commits.
+Manager has no configured required checks; ledger integrity and diff checks
+validate this coordination checkpoint without claiming specialist qualification.
+The Fleet remains six specialists: existing ownership covers the dependency and
+recovery boundaries. No new role or unrelated assignment is justified. Backlog:
+39 proposed, four blocked, one in progress. Automatic wakes remain paused.
+
+## Historical snapshot before fresh authorization
+
 Reconciled 2026-10-01 01:18 UTC by Session Manager under canonical instruction
 digest `0e4eafe9870c7a6d6edd406f248c86b27861a26c1a4329c3fc1d5622b2b56706`.
 This is the current coordination handoff; the existing revisioned backlog remains

@@ -20,19 +20,22 @@
   "observedAt": "94062020c767",
   "feature": null,
   "milestone": null,
-  "state": "ready_to_integrate",
+  "state": "in_progress",
   "owner": "work-integration",
   "evidence": [
     "f46c713cc9e90697d02e3e29222b3eeb7cd71d99",
     "QA acceptance a39f2c95-83a5-4cad-8b9b-8ecea0432c7b",
-    "integration request cce22c51-1fa8-4324-8e28-bf8cbfc56165 ready"
+    "integration request cce22c51-1fa8-4324-8e28-bf8cbfc56165 ready",
+    "approval:2b2dfb35-46ac-4adb-ac14-5680f7a85e80:approved:revision2",
+    "integration:cce22c51-1fa8-4324-8e28-bf8cbfc56165:needs_convergence:target-advanced-since-request",
+    "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md"
   ],
   "commit": "e35046908f741799be9e814cecc6470cf1983b86",
   "integrationRequest": "cce22c51-1fa8-4324-8e28-bf8cbfc56165",
   "blockedReason": null,
   "createdAt": "2026-09-30T20:31:08.855Z",
-  "updatedAt": "2026-09-30T23:47:05.342Z",
-  "revision": 6,
+  "updatedAt": "2026-10-01T03:33:34.098Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -75,6 +78,13 @@
       "actorId": "work-integration",
       "at": "2026-09-30T23:47:05.342Z",
       "note": "Verified candidate linked to serialized integration request; awaiting Session Manager authorization, plan, and bounded local land."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T03:33:34.098Z",
+      "note": "Fresh canonical digestd7e6d69 and ownerbb48534b authorize checked continuation; owner2b2 approvedrev2. Exact request evaluation is needs_convergence after canonical clean330ec1a advanced. Resume same owner/item for clean guarded convergence, preserve uniquee350 and oldPASS/QA/request history, rerun all4 exact checks on resulting candidate, independentQA and newrequest. No stalee350 authorization/landing or gate weakening; arbiter controls native session start and checked rewrite push."
     }
   ]
 }
