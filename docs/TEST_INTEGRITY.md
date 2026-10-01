@@ -2573,7 +2573,7 @@ test_integrity_note:
     - id: SCN-console-priority-preview-invalidates-on-newer-evidence
       given: "A task priority preview and unsent priority and reason values are created from task evidence revision N"
       when: "A separate confirmed sample API action advances that task to authoritative revision N+1, then the reader refreshes again after navigating away and back"
-      then: "The revision N token, preview, and confirmation control remain absent; revision N+1 is visible, the unsent values remain intact and editable across both refreshes, and a new preview is bound to N+1"
+      then: "The revision N token, preview, and confirmation control remain absent; revision N+1 is visible, the unsent values remain intact and editable across both refreshes, a new preview is bound to N+1, and that current preview survives another unchanged refresh"
     - id: SCN-console-current-preview-and-draft-survive-unchanged-refresh
       given: "A task has an active priority preview and unsent priority and reason values bound to its current evidence revision"
       when: "Console refresh returns the same task revision"

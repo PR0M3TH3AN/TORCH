@@ -343,30 +343,33 @@ try {
   await selectView(stalePage, 'work');
   await stalePage.locator('#refresh-console').click();
   await stalePage.locator('#live-refresh-status[data-generation="3"]').waitFor();
-  assert.equal(Number(await refreshedForm.getAttribute('data-revision')), revisionN1);
-  assert.equal(await refreshedTicket.locator('.priority').textContent(), 'low');
-  assert.equal(await refreshedForm.getAttribute('data-preview-token'), null);
-  assert.equal(await refreshedForm.locator('[data-priority-preview]').isVisible(), false);
-  assert.equal(await refreshedForm.locator('[data-priority-confirm]').count(), 0);
-  assert.equal(await refreshedForm.locator('[name="priority"]').inputValue(), 'urgent');
-  assert.equal(await refreshedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
-  assert.equal(await refreshedForm.locator('[name="priority"]').isDisabled(), false);
-  assert.equal(await refreshedForm.locator('[name="reason"]').isDisabled(), false);
-  await refreshedTicket.locator('.priority-change > summary').click();
-  await refreshedForm.getByRole('button', { name: 'Review change', exact: true }).click();
-  await refreshedForm.locator('[data-priority-confirm]').waitFor();
-  assert.equal(await refreshedForm.locator('[data-priority-preview]').locator('dd').nth(2).innerText(), String(revisionN1));
-  assert.notEqual(await refreshedForm.getAttribute('data-preview-token'), staleToken,
+  const preservedForm = stalePage.locator('.priority-change-form[data-task-id="API-08"]');
+  const preservedTicket = preservedForm.locator('xpath=../..');
+  assert.equal(Number(await preservedForm.getAttribute('data-revision')), revisionN1);
+  assert.equal(await preservedTicket.locator('.priority').textContent(), 'low');
+  assert.equal(await preservedForm.getAttribute('data-preview-token'), null);
+  assert.equal(await preservedForm.locator('[data-priority-preview]').isVisible(), false);
+  assert.equal(await preservedForm.locator('[data-priority-confirm]').count(), 0);
+  assert.equal(await preservedForm.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await preservedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
+  assert.equal(await preservedForm.locator('[name="priority"]').isDisabled(), false);
+  assert.equal(await preservedForm.locator('[name="reason"]').isDisabled(), false);
+  await preservedTicket.locator('.priority-change > summary').click();
+  await preservedForm.getByRole('button', { name: 'Review change', exact: true }).click();
+  await preservedForm.locator('[data-priority-confirm]').waitFor();
+  assert.equal(await preservedForm.locator('[data-priority-preview]').locator('dd').nth(2).innerText(), String(revisionN1));
+  assert.notEqual(await preservedForm.getAttribute('data-preview-token'), staleToken,
     'a current preview must be regenerated from revision N+1');
-  const currentToken = await refreshedForm.getAttribute('data-preview-token');
+  const currentToken = await preservedForm.getAttribute('data-preview-token');
   await stalePage.locator('#refresh-console').click();
   await stalePage.locator('#live-refresh-status[data-generation="4"]').waitFor();
-  assert.equal(await refreshedForm.getAttribute('data-preview-token'), currentToken,
+  const currentForm = stalePage.locator('.priority-change-form[data-task-id="API-08"]');
+  assert.equal(await currentForm.getAttribute('data-preview-token'), currentToken,
     'unchanged current evidence must retain its active preview');
-  assert.equal(await refreshedForm.locator('[data-priority-preview]').isVisible(), true);
-  assert.equal(await refreshedForm.locator('[data-priority-confirm]').isVisible(), true);
-  assert.equal(await refreshedForm.locator('[name="priority"]').inputValue(), 'urgent');
-  assert.equal(await refreshedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
+  assert.equal(await currentForm.locator('[data-priority-preview]').isVisible(), true);
+  assert.equal(await currentForm.locator('[data-priority-confirm]').isVisible(), true);
+  assert.equal(await currentForm.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await currentForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
   await stalePage.close();
   assert.deepEqual(errors, []);
   assert.deepEqual(apiRequests, [], 'demo must never contact live project APIs');

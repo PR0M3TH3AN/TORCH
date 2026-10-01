@@ -129,21 +129,31 @@ test('SCN-console-priority-preview-invalidates-on-newer-evidence: refresh preser
   await page.locator('.console-rail a[href="#work"]').click();
   await page.locator('#refresh-console').click();
   await page.locator('#live-refresh-status[data-generation="3"]').waitFor();
-  assert.equal(Number(await form.getAttribute('data-revision')), revisionN1);
-  assert.equal(await ticket.locator('.priority').textContent(), 'low');
-  assert.equal(await form.getAttribute('data-preview-token'), null);
-  assert.equal(await form.locator('[data-priority-preview]').isVisible(), false);
-  assert.equal(await form.locator('[data-priority-confirm]').count(), 0);
-  assert.equal(await form.locator('[name="priority"]').inputValue(), 'urgent');
-  assert.equal(await form.locator('[name="reason"]').inputValue(), 'Preserve this unsent explanation across a newer task revision.');
-  assert.equal(await form.locator('[name="priority"]').isDisabled(), false);
-  assert.equal(await form.locator('[name="reason"]').isDisabled(), false);
+  const preservedForm = page.locator('.priority-change-form[data-task-id="API-08"]');
+  const preservedTicket = preservedForm.locator('xpath=../..');
+  assert.equal(Number(await preservedForm.getAttribute('data-revision')), revisionN1);
+  assert.equal(await preservedTicket.locator('.priority').textContent(), 'low');
+  assert.equal(await preservedForm.getAttribute('data-preview-token'), null);
+  assert.equal(await preservedForm.locator('[data-priority-preview]').isVisible(), false);
+  assert.equal(await preservedForm.locator('[data-priority-confirm]').count(), 0);
+  assert.equal(await preservedForm.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await preservedForm.locator('[name="reason"]').inputValue(), 'Preserve this unsent explanation across a newer task revision.');
+  assert.equal(await preservedForm.locator('[name="priority"]').isDisabled(), false);
+  assert.equal(await preservedForm.locator('[name="reason"]').isDisabled(), false);
 
-  await form.getByRole('button', { name: 'Review change', exact: true }).click();
-  await form.locator('[data-priority-confirm]').waitFor();
-  const currentToken = await form.getAttribute('data-preview-token');
+  await preservedForm.getByRole('button', { name: 'Review change', exact: true }).click();
+  await preservedForm.locator('[data-priority-confirm]').waitFor();
+  const currentToken = await preservedForm.getAttribute('data-preview-token');
   assert.notEqual(currentToken, staleToken);
-  assert.equal(await form.locator('[data-priority-preview] dd').nth(2).innerText(), String(revisionN1));
+  assert.equal(await preservedForm.locator('[data-priority-preview] dd').nth(2).innerText(), String(revisionN1));
+  await page.locator('#refresh-console').click();
+  await page.locator('#live-refresh-status[data-generation="4"]').waitFor();
+  const currentForm = page.locator('.priority-change-form[data-task-id="API-08"]');
+  assert.equal(await currentForm.getAttribute('data-preview-token'), currentToken);
+  assert.equal(await currentForm.locator('[data-priority-preview]').isVisible(), true);
+  assert.equal(await currentForm.locator('[data-priority-confirm]').isVisible(), true);
+  assert.equal(await currentForm.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await currentForm.locator('[name="reason"]').inputValue(), 'Preserve this unsent explanation across a newer task revision.');
 });
 
 test('SCN-console-current-preview-and-draft-survive-unchanged-refresh: a current preview and its fields remain intact', async (t) => {
