@@ -141,8 +141,11 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
     await assertManagerWakes();
 
     await page.locator('.console-rail a[href="#work"]').click();
+    const scrollSettled = page.evaluate(() => new Promise((resolve) => {
+      globalThis.addEventListener('scrollend', resolve, { once: true });
+    }));
     await page.mouse.wheel(0, 180);
-    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+    await scrollSettled;
     const beforeRefreshRender = await page.evaluate(() => scrollY);
     await page.locator('#refresh-console').evaluate((button) => {
       button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
