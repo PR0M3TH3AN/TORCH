@@ -138,7 +138,8 @@ function backlog(repositoryRoot, manifest) {
       const task = json(join(root, name));
       tasks.push({
         id: task.id, title: task.title, description: task.description ?? '',
-        state: task.state, owner: task.owner ?? null, priority: task.priority ?? null,
+        state: task.state, owner: task.owner ?? null, blockedReason: task.blockedReason ?? null,
+        priority: task.priority ?? null,
         affectedDomains: task.affectedDomains ?? [], dependencies: task.dependencies ?? [],
         feature: task.feature ?? null, milestone: task.milestone ?? null,
         acceptanceCriteria: task.acceptanceCriteria ?? [], evidence: task.evidence ?? [],

@@ -706,7 +706,7 @@ function renderFlowWatch(snapshot) {
       const waitClass = approval.approver === 'owner' ? 'wait-owner'
         : approval.approver === 'session-manager' ? 'wait-manager' : '';
       const refs = [approval.task, approval.evidence].filter(Boolean).map((reference) => escapeHtml(reference)).join(' · ');
-      return `<article class="approval-item ${waitClass}">
+      return `<article class="approval-item ${waitClass}" id="approval-${escapeHtml(encodeURIComponent(approval.id))}">
         <h4>${escapeHtml(approval.title)}</h4>
         <p>${escapeHtml(requester?.title ?? approval.requester)} is waiting on <strong class="approval-target">${escapeHtml(approver)}</strong>${refs ? ` · ${refs}` : ''}</p>
         <details><summary>Request details · ${escapeHtml(ageLabel(approval.createdAt))}</summary><p>${escapeHtml(approval.summary)}</p></details>
@@ -725,60 +725,38 @@ function renderFlowWatch(snapshot) {
     : empty(approvalState?.reason ?? 'Structured approval requests are not available.'));
 }
 
-function attentionItems(snapshot) {
-  const items = [];
-  const unresolvedDelivery = (snapshot.deliveryOperations ?? []).filter((operation) => ['running', 'unknown', 'succeeded'].includes(operation.state));
-  if (unresolvedDelivery.length) items.push({ tone: 'urgent', title: `${unresolvedDelivery.length} delivery operation${unresolvedDelivery.length === 1 ? ' needs' : 's need'} review`,
-    detail: 'Inspect recorded attempts and external state before owner-approved recovery. Do not automatically repeat effects.', href: '#operation-outcomes' });
-  const neglected = (snapshot.backlogActivity?.tasks ?? []).filter((task) => task.status === 'stale' && task.ownerRequested);
-  if (neglected.length) items.push({ tone: 'review', title: `${neglected.length} owner request${neglected.length === 1 ? ' needs' : 's need'} activity review`,
-    detail: 'No named commit within the configured review window. Blocked work may be waiting as expected.', href: '#activity-review' });
-  const unknownWakes = snapshot.managerWakes?.blockingCount ?? 0;
-  if (unknownWakes) items.push({
-    tone: 'urgent', title: `${unknownWakes} manager ${unknownWakes === 1 ? 'launch needs' : 'launches need'} inspection`,
-    detail: 'An unknown launch blocks another wake. Inspect the runtime before owner-approved recovery; no automatic restart occurs.',
-    href: '#manager-wakes',
-  });
-  const findings = snapshot.doctor?.findings ?? [];
-  for (const finding of findings.filter((entry) => entry.severity === 'error' || entry.severity === 'warning').slice(0, 5)) {
-    items.push({
-      tone: finding.severity === 'error' ? 'urgent' : 'review',
-      title: finding.areaId ? `${finding.areaId}: ${finding.code}` : finding.code,
-      detail: finding.message ?? finding.recommendation ?? 'Doctor reported a project condition to review.',
-    });
-  }
-  const awaiting = snapshot.messages?.unacknowledged ?? 0;
-  if (awaiting) items.push({
-    tone: 'review', title: `${awaiting} unacknowledged ${awaiting === 1 ? 'message' : 'messages'}`,
-    detail: 'Open Conversations to inspect the latest durable inter-session handoffs.',
-    href: '#communications',
-  });
-  const ownerApprovals = (snapshot.approvalRequests?.items ?? []).filter((approval) =>
-    approval.status === 'pending' && approval.approver === 'owner');
-  if (ownerApprovals.length) items.push({
-    tone: 'decision', title: `${ownerApprovals.length} approval ${ownerApprovals.length === 1 ? 'request' : 'requests'} need your decision`,
-    detail: 'The named owner is the approver; review the request evidence in Flow watch.', href: '#flow-watch',
-  });
-  const pendingChanges = (snapshot.fleetChanges ?? []).filter((change) => !['active', 'rejected'].includes(change.state));
-  const pendingHierarchy = (snapshot.hierarchyProposals ?? []).filter((proposal) => proposal.state === 'proposed');
-  if (pendingChanges.length + pendingHierarchy.length) items.push({
-    tone: 'decision', title: `${pendingChanges.length + pendingHierarchy.length} organization ${pendingChanges.length + pendingHierarchy.length === 1 ? 'proposal' : 'proposals'}`,
-    detail: 'Organization proposals wait for owner review; they do not change the active Fleet.',
-    href: '#organization-proposals',
-  });
-  const waitingIntegration = (snapshot.integration ?? []).filter((item) => !['landed', 'rejected'].includes(item.state));
-  if (waitingIntegration.length) items.push({
-    tone: 'decision', title: `${waitingIntegration.length} integration ${waitingIntegration.length === 1 ? 'request' : 'requests'}`,
-    detail: 'Review exact source commits and required checks before landing.', href: '#delivery',
-  });
-  const staleEvidence = (snapshot.backlogHealth?.findings ?? []).filter((finding) =>
-    ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'].includes(finding.code));
-  if (staleEvidence.length) items.push({
-    tone: 'review', title: `${staleEvidence.length} task ${staleEvidence.length === 1 ? 'evidence record needs' : 'evidence records need'} refresh`,
-    detail: 'Some backlog items were observed against an old or unreachable commit. Re-check them before dispatch.',
-    href: '#backlog-board',
-  });
-  return items;
+function attentionGroups(snapshot) {
+  return globalThis.TorchAttentionProjection.groups(snapshot);
+}
+function renderAttention(groups) {
+  const definitions = [
+    ['owner', 'Waiting on you', 'Only requests that name the project owner as decision-maker.'],
+    ['fleet', 'Fleet handling', 'A named domain owns the next step; unknown ownership stays explicit.'],
+    ['arbiter', 'Arbiter handling', 'No observed item has structured evidence assigning its next step exclusively to an arbiter.'],
+  ];
+  const total = Object.values(groups).reduce((sum, items) => sum + items.length, 0);
+  setText('#attention-count', `${total} ${total === 1 ? 'item' : 'items'}`);
+  setHtml('#attention-list', definitions.map(([key, title, description]) => {
+    const items = groups[key];
+    return `<section class="attention-group attention-group-${key}" aria-labelledby="attention-${key}-title">
+      <div class="attention-group-heading"><h3 id="attention-${key}-title">${title}</h3><span>${items.length}</span></div>
+      ${items.length ? items.map((item) => `<article class="attention-item tone-${escapeHtml(item.tone)}">
+        <span class="attention-mark" aria-hidden="true"></span><div class="attention-copy">
+          <strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
+          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''}</small>
+          ${item.evidence.length > 120
+            ? `<details class="attention-evidence"><summary>Evidence and references</summary><p>${escapeHtml(item.evidence)}</p></details>`
+            : `<small class="attention-evidence-short">Evidence: ${escapeHtml(item.evidence)}</small>`}
+          <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
+          ${item.decisionApprovalId ? `<div class="attention-quick-actions" role="group" aria-label="Owner decision shortcuts for ${escapeHtml(item.title)}">
+            <button type="button" data-attention-decision="approved" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Approve</button>
+            <button type="button" class="quiet-action" data-attention-decision="rejected" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Reject</button>
+            <p class="attention-action-status" role="status" aria-live="polite" hidden></p>
+          </div>` : ''}
+          ${item.requestOwner ? `<a href="#owner-request-form" data-attention-recipient="${escapeHtml(item.requestOwner)}">Request review from ${escapeHtml(item.owner)}</a>` : ''}
+        </div></article>`).join('') : `<p class="attention-empty">${escapeHtml(description)}</p>`}
+    </section>`;
+  }).join(''));
 }
 
 function render(snapshot) {
@@ -789,7 +767,7 @@ function render(snapshot) {
   const active = tasks.filter((task) => !['completed', 'cancelled'].includes(task.state));
   const working = active.filter((task) => task.state === 'in_progress').length;
   const blocked = active.filter((task) => task.state === 'blocked').length;
-  const attention = attentionItems(snapshot);
+  const attention = attentionGroups(snapshot);
   const branch = snapshot.repository?.branch ?? 'branch not recorded';
 
   setText('#project-name', project?.name ?? project?.id ?? 'Not installed');
@@ -807,8 +785,9 @@ function render(snapshot) {
   const parts = [`${agents.length} persistent ${agents.length === 1 ? 'identity' : 'identities'}`,
     `${working} ${working === 1 ? 'task' : 'tasks'} in progress`];
   if (blocked) parts.push(`${blocked} blocked`);
+  const attentionCount = Object.values(attention).reduce((sum, items) => sum + items.length, 0);
   setText('#project-summary', snapshot.mode === 'installed'
-    ? `${parts.join(' · ')}. ${attention.length ? `${attention.length} item${attention.length === 1 ? '' : 's'} may need your review.` : 'No owner decision is currently waiting in the observed queues.'}`
+    ? `${parts.join(' · ')}. ${attentionCount ? `${attentionCount} item${attentionCount === 1 ? '' : 's'} need a named next step.` : 'No owner decision is currently waiting in the observed queues.'}`
     : 'This repository has not been installed as a TORCH Fleet. The view is showing repository intake only.');
   renderTaskCreateOptions(agents, tasks, snapshot.mode === 'installed');
   renderOwnerRequestOptions(agents, tasks, snapshot.mode === 'installed');
@@ -816,13 +795,7 @@ function render(snapshot) {
   renderFlowWatch(snapshot);
   setHtml('#owner-briefing-content', globalThis.TorchOwnerDigest.render(snapshot.ownerDigest));
 
-  setText('#attention-count', `${attention.length} ${attention.length === 1 ? 'item' : 'items'}`);
-  setHtml('#attention-list', attention.length ? attention.map((item) => `
-    <div class="attention-item tone-${escapeHtml(item.tone)}">
-      <span class="attention-mark" aria-hidden="true"></span>
-      <div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
-      ${item.href ? `<a href="${escapeHtml(item.href)}">Open relevant view</a>` : ''}</div>
-    </div>`).join('') : empty('No owner decisions are waiting in the observed queues.'));
+  renderAttention(attention);
 
   renderBacklog(tasks, snapshot.backlogHealth?.findings ?? []);
   setHtml('#activity-review-content', globalThis.TorchTaskActivity.render(snapshot.backlogActivity));
@@ -849,7 +822,7 @@ function render(snapshot) {
     const refs = [message.task, message.path, message.commit].filter(Boolean);
     const ack = (message.acknowledgedBy ?? []).length
       ? `Acknowledged by ${message.acknowledgedBy.join(', ')}` : 'Awaiting acknowledgement';
-    return `<article class="conversation-item"><div class="conversation-meta"><strong>${escapeHtml(message.sender)} to ${escapeHtml(message.recipient)}</strong><span>${escapeHtml(ageLabel(message.createdAt))}</span></div><p>${escapeHtml(message.body)}</p><small>${escapeHtml(ack)}${refs.length ? ` · ${escapeHtml(refs.join(' · '))}` : ''}</small></article>`;
+    return `<article class="conversation-item" id="message-${escapeHtml(message.id)}"><div class="conversation-meta"><strong>${escapeHtml(message.sender)} to ${escapeHtml(message.recipient)}</strong><span>${escapeHtml(ageLabel(message.createdAt))}</span></div><p>${escapeHtml(message.body)}</p><small>${escapeHtml(ack)}${refs.length ? ` · ${escapeHtml(refs.join(' · '))}` : ''}</small></article>`;
   }).join('') : empty('No durable messages yet. Runtime-native private reasoning is not shown here.'));
 
   setHtml('#check-list', globalThis.TorchCheckEvidence.render(snapshot.checks));
@@ -906,7 +879,7 @@ function render(snapshot) {
 
   const worktrees = snapshot.worktrees ?? [];
   setHtml('#worktree-list', worktrees.length ? worktrees.map((worktree) => `
-    <div class="list-row"><div><strong>${escapeHtml(worktree.area)}</strong><small>${escapeHtml(worktree.branch)} · ${escapeHtml(worktree.path)}</small></div><span>${escapeHtml(`${worktree.ahead ?? 0} ahead / ${worktree.behind ?? 0} behind`)}</span></div>
+    <div class="list-row" id="worktree-${escapeHtml(encodeURIComponent(worktree.area))}"><div><strong>${escapeHtml(worktree.area)}</strong><small>${escapeHtml(worktree.branch)} · ${escapeHtml(worktree.path)}</small></div><span>${escapeHtml(`${worktree.ahead ?? 0} ahead / ${worktree.behind ?? 0} behind`)}</span></div>
   `).join('') : empty('No managed worktrees have been created.'));
 
   const holders = snapshot.resources?.holders ?? [];
@@ -1864,8 +1837,46 @@ $('#change-list')?.addEventListener('click', async (event) => {
 });
 
 $('#attention-list')?.addEventListener('click', (event) => {
+  const decisionButton = event.target.closest('[data-attention-decision]');
+  if (decisionButton) {
+    const card = decisionButton.closest('.attention-item');
+    const status = card?.querySelector('.attention-action-status');
+    const approvalId = decisionButton.dataset.attentionApproval;
+    const decision = decisionButton.dataset.attentionDecision;
+    const form = [...document.querySelectorAll('#approval-request-list .approval-decision-form')]
+      .find((candidate) => candidate.dataset.approvalId === approvalId);
+    const previewButton = form?.querySelector('[data-approval-preview]');
+    const shortcut = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(form, decision, previewButton ? (approvalForm) => {
+      approvalForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      previewButton.click();
+    } : null);
+    if (!shortcut.started) {
+      if (status) {
+        status.textContent = shortcut.reason;
+        status.hidden = false;
+      }
+      return;
+    }
+    if (status) {
+      status.textContent = `Opening the guarded ${decision} preview for this owner-addressed request. Confirm only after reviewing its current evidence.`;
+      status.hidden = false;
+    }
+    return;
+  }
   const link = event.target.closest('a[href^="#"]');
   const target = link && document.getElementById(link.getAttribute('href').slice(1));
+  const recipient = link?.dataset.attentionRecipient;
+  if (recipient) {
+    const form = $('#owner-request-form');
+    const recipientSelect = form?.elements.namedItem('recipient');
+    const body = form?.elements.namedItem('body');
+    const status = form?.querySelector('.owner-request-status');
+    const hasRecipient = [...(recipientSelect?.options ?? [])].some((option) => option.value === recipient);
+    if (form && recipientSelect && body && hasRecipient && !recipientSelect.value && !body.value.trim()) {
+      recipientSelect.value = recipient;
+      if (status) status.textContent = `Selected ${recipient}. Add context and review the preview before sending anything.`;
+    }
+  }
   for (let parent = target?.parentElement; parent; parent = parent.parentElement) {
     if (parent.tagName === 'DETAILS') parent.open = true;
   }
