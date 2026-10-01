@@ -281,6 +281,13 @@ export function planFleetUp({ repositoryRoot, controlPlane, adapter, adapters, f
     }
     validateRuntimeAdapter(runtimeAdapter);
     const identity = controlPlane.identity(area.id);
+    if (identity.state === 'working') {
+      blockers.push({
+        areaId: area.id, code: 'RUNTIME_IDENTITY_ACTIVE', state: identity.state,
+        runtimeSessionId: identity.runtimeSessionId ?? null,
+      });
+      continue;
+    }
     const runtimeIntegration = runtimeAdapter.configure({
       repositoryRoot, areaId: area.id, mcpEntry: MCP_ENTRY,
       projectId: manifest.projectId, stateRoot,
@@ -375,6 +382,15 @@ export function planAreaUp({ repositoryRoot, controlPlane, areaId, adapter, adap
   }
   validateRuntimeAdapter(runtimeAdapter);
   const identity = controlPlane.identity(area.id);
+  if (identity.state === 'working') {
+    return {
+      action: 'area-up', projectId: manifest.projectId, areaId, fresh,
+      actions: [], blockers: [{
+        areaId, code: 'RUNTIME_IDENTITY_ACTIVE', state: identity.state,
+        runtimeSessionId: identity.runtimeSessionId ?? null,
+      }], canProceed: false, mutationPerformed: false,
+    };
+  }
   const runtimeIntegration = runtimeAdapter.configure({
     repositoryRoot, areaId: area.id, mcpEntry: MCP_ENTRY,
     projectId: manifest.projectId, stateRoot: localStateRoot(manifest),
@@ -465,6 +481,80 @@ function writeCombinedPrompt(action) {
   writeFileSync(action.promptFile, action.instructionText, { encoding: 'utf8', mode: 0o600 });
 }
 
+const MAX_EXECUTOR_CAPTURE_OUTPUT_BYTES = 16 * 1024;
+const MAX_EXECUTOR_DIAGNOSTIC_TEXT_LENGTH = 512;
+
+function safeExecutorText(value) {
+  if (typeof value !== 'string') return null;
+  const compact = value.replace(/\s+/g, ' ').trim();
+  if (!compact) return null;
+  return compact
+    .replace(/\bBearer\s+[-A-Za-z0-9._~+/]+=*/gi, 'Bearer [REDACTED]')
+    .replace(/((?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|token|password|secret|credential|authorization|cookie|prompt|private reasoning)\s*(?:=|:|\s)\s*)([^\s,;]+)/gi, '$1[REDACTED]')
+    .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[REDACTED]@')
+    .slice(0, MAX_EXECUTOR_DIAGNOSTIC_TEXT_LENGTH);
+}
+
+function safeExecutorCode(value) {
+  return typeof value === 'string' && /^[A-Z][A-Z0-9_.-]{0,79}$/.test(value) ? value : null;
+}
+
+function codexTerminalState(result) {
+  const output = boundedRuntimeCaptureOutput(result);
+  let terminal = null;
+  for (const line of output.split('\n')) {
+    try {
+      const type = JSON.parse(line)?.type;
+      if (type === 'turn.completed') terminal = 'completed';
+      else if (type === 'turn.failed' || type === 'turn.error' || type === 'error') terminal = 'failed';
+    } catch { /* non-protocol output is not completion evidence */ }
+  }
+  return terminal;
+}
+
+export function classifyExecutorOutcome(result, { runtime } = {}) {
+  const status = Number.isInteger(result?.status) ? result.status : null;
+  const signal = typeof result?.signal === 'string' && result.signal.trim() ? result.signal.trim() : null;
+  const errorCode = safeExecutorCode(result?.error?.code);
+  if (errorCode || result?.error) {
+    return {
+      state: 'unknown', terminal: false, status, signal,
+      reason: errorCode ? `executor-error-${errorCode}` : 'executor-error',
+      ...(errorCode ? { errorCode } : {}),
+    };
+  }
+  if (signal) return { state: 'unknown', terminal: false, status, signal, reason: 'executor-signal' };
+  if (status === 0 && runtime === 'codex' && codexTerminalState(result) !== 'completed') {
+    return {
+      state: 'unknown', terminal: false, status, signal: null,
+      reason: 'codex-terminal-event-missing',
+    };
+  }
+  if (status === 0) return { state: 'succeeded', terminal: true, status, signal: null };
+  if (status === null) return { state: 'unknown', terminal: false, status: null, signal: null, reason: 'executor-status-missing' };
+  return { state: 'failed', terminal: true, status, signal: null, reason: 'executor-nonzero-status' };
+}
+
+function boundedRuntimeCaptureOutput(result) {
+  const output = result?.stdout ?? result?.output;
+  return Buffer.from(typeof output === 'string' ? output : String(output ?? ''), 'utf8')
+    .subarray(0, MAX_EXECUTOR_CAPTURE_OUTPUT_BYTES).toString('utf8');
+}
+
+function captureRuntimeId({ action, runtimeAdapter, result }) {
+  if (!action.requiresRuntimeIdCapture || !runtimeAdapter) {
+    return action.runtimeSessionId;
+  }
+  try {
+    return runtimeAdapter.captureRuntimeId({
+      areaId: action.areaId, runtimeSessionId: action.runtimeSessionId,
+      stdout: boundedRuntimeCaptureOutput(result),
+    }).runtimeSessionId;
+  } catch {
+    return action.runtimeSessionId;
+  }
+}
+
 export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   if (!plan?.canProceed) {
     throw new TorchError('Fleet startup plan has unresolved blockers', {
@@ -481,15 +571,34 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   for (const action of plan.actions) {
     controlPlane.assertIdentity(action.areaId);
     writeCombinedPrompt(action);
-    const result = executor({ ...action.launch, areaId: action.areaId, runtimeSessionId: action.runtimeSessionId });
-    if (result?.status !== undefined && result.status !== 0) {
+    const result = executor({
+      ...action.launch, areaId: action.areaId, runtime: action.runtime,
+      runtimeSessionId: action.runtimeSessionId,
+    });
+    const outcome = classifyExecutorOutcome(result, { runtime: action.runtime });
+    const runtimeAdapter = runtimes.get(action.runtime);
+    if (outcome.state !== 'succeeded') {
+      const runtimeSessionId = captureRuntimeId({ action, runtimeAdapter, result });
+      const diagnostic = typeof runtimeAdapter?.diagnoseStartupFailure === 'function'
+        ? runtimeAdapter.diagnoseStartupFailure({ stdout: result?.stdout, stderr: result?.stderr }) : null;
+      const uncertain = outcome.state === 'unknown';
       controlPlane.reportStatus({
-        areaId: action.areaId, state: 'offline', runtime: action.runtime,
-        runtimeSessionId: action.runtimeSessionId, summary: 'Runtime launch failed.',
+        areaId: action.areaId, state: uncertain ? 'working' : 'offline', runtime: action.runtime,
+        runtimeSessionId,
+        summary: uncertain
+          ? 'Runtime executor completion is unknown; duplicate launch is blocked pending reconciliation.'
+          : 'Runtime launch failed with a terminal nonzero exit.',
       });
       throw new TorchError(`Fleet startup failed for ${action.areaId}`, {
         code: 'FLEET_START_FAILED',
-        details: { areaId: action.areaId, status: result.status, stderr: result.stderr ?? null, started },
+        details: {
+          areaId: action.areaId, status: outcome.status, signal: outcome.signal,
+          executorOutcome: outcome,
+          ...(diagnostic
+            ? { diagnostic, stderr: diagnostic.stderr }
+            : { stderr: safeExecutorText(result?.stderr ?? result?.error?.message) }),
+          started,
+        },
       });
     }
     let runtimeSessionId = action.runtimeSessionId;
@@ -506,7 +615,7 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
       }
       try {
         runtimeSessionId = runtimeAdapter.captureRuntimeId({
-          areaId: action.areaId, runtimeSessionId, stdout: result?.stdout, output: result?.output,
+          areaId: action.areaId, runtimeSessionId, stdout: boundedRuntimeCaptureOutput(result),
         }).runtimeSessionId;
       } catch (error) {
         controlPlane.reportStatus({

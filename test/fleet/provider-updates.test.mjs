@@ -34,7 +34,7 @@ function fixture() {
       return { status: 0, stdout: 'installed' };
     }
     return { status: 0, stdout: args[0] === '--version' ? `provider ${version}`
-      : args.includes('exec') ? '{"type":"thread.started","thread_id":"provider-update-fixture-session"}\n' : 'help' };
+      : args.includes('exec') ? '{"type":"thread.started","thread_id":"provider-update-fixture-session"}\n{"type":"turn.completed"}\n' : 'help' };
   };
   return { env, calls, runner, next: v => { version = v; }, breakInstall: () => { failInstall = true; } };
 }
