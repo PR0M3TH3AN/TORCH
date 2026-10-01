@@ -1159,14 +1159,14 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     const status = $('#live-refresh-status');
     const renderGeneration = ++appliedRefreshes;
     status.textContent = `${liveUpdatesPaused ? 'Automatic updates paused.' : 'Updates every 15 seconds while visible.'}${heldPanels ? ' Edited forms and active previews retained; their panels may show older state.' : ''}`;
-    globalThis.requestAnimationFrame(() => {
-      if (renderGeneration !== appliedRefreshes) return;
-      if (viewportBeforeRender && consoleViewRouter.userIntentVersion() === userIntentAtRender) {
-        globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
-      }
-      if (renderGeneration === 1) consoleViewRouter.afterInitialLayout();
-      status.dataset.generation = String(renderGeneration);
-    });
+    globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
+        if (renderGeneration !== appliedRefreshes) return;
+        if (viewportBeforeRender && consoleViewRouter.userIntentVersion() === userIntentAtRender) {
+          globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
+        }
+        if (renderGeneration === 1) consoleViewRouter.afterInitialLayout();
+        status.dataset.generation = String(renderGeneration);
+      }));
   },
   onError: (caught) => {
     const error = $('#console-error');
