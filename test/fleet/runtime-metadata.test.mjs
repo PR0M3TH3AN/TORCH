@@ -643,6 +643,43 @@ test('SCN-runtime-metadata-partial-journal', async () => {
   } finally { cleanup(fixture); }
 });
 
+test('SCN-runtime-metadata-invalid-active-pointer-target-privacy', async () => {
+  const invalidTargets = [
+    '/host/qa-private-runtime',
+    '../../../../outside/qa-private-runtime',
+  ];
+  for (const target of invalidTargets) {
+    const fixture = makeFixture();
+    try {
+      writeValidation(fixture, ALPHA2_COMMIT);
+      const active = join(fixture.dataHome, 'torch', 'runtime', 'active');
+      rmSync(active);
+      symlinkSync(target, active);
+
+      const { value } = await runReader(fixture);
+      const pointer = value.currentActiveRuntime.activePointer;
+      assert.equal(pointer.status, 'refused');
+      assert.equal(pointer.target, null);
+      assert.equal(pointer.version, null);
+      assert.ok(value.currentActiveRuntime.issues.some((entry) => (
+        entry.code === 'RUNTIME_METADATA_ACTIVE_POINTER_TARGET_INVALID'
+      )));
+      assert.equal(value.readerModuleEvaluation.packageVersion.value, '0.1.0-alpha.2');
+      assert.equal(value.readerModuleEvaluation.declaredSourceCommit.value, ALPHA2_COMMIT);
+      assert.equal(value.readerModuleEvaluation.candidateTree.consistency, 'match');
+      assert.equal(value.currentConsoleDisk.status, 'observed');
+      assert.equal(value.authenticationConfidence, 'unknown');
+      assert.equal(value.loadedMemoryCodeDigest, null);
+      assert.equal(value.deliveredBytesProof, null);
+      assert.equal(value.nativeAuthority, null);
+
+      const serialized = JSON.stringify(value);
+      assert.equal(serialized.includes(target), false);
+      assertNoAbsolutePathLeak(value, fixture.temporaryRoot);
+    } finally { cleanup(fixture); }
+  }
+});
+
 test('SCN-runtime-metadata-read-only-no-native-authority', async () => {
   const fixture = makeFixture();
   try {

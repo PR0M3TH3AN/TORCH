@@ -2858,3 +2858,29 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Self-host active-pointer privacy correction (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-metadata-invalid-active-pointer-target-privacy
+      given: "A bounded reader fixture has a fixed active symlink with an absolute host target or an escaping relative target"
+      when: "The no-argument reader observes runtime metadata and the complete result is serialized"
+      then: "The active pointer is refused with RUNTIME_METADATA_ACTIVE_POINTER_TARGET_INVALID and a null target; the raw target, fixture root, file URLs, and absolute host paths are absent while unrelated package, source-commit, candidate-consistency, and Console disk observations remain visible"
+  observable_outcomes:
+    - "Malformed active-pointer targets are not returned as display data"
+    - "Pointer refusal does not erase independent local metadata observations or imply authentication, loaded-memory, delivered-byte, or native authority"
+    - "All earlier eight runtime-metadata scenarios and their assertions remain unchanged and strict"
+  determinism_controls:
+    - "Fixed absolute and escaping symlink target strings; canonical temporary package and data-home fixtures; recursive JSON serialization"
+  anti_cheat_rationale:
+    prevents:
+      - "An invalid symlink target exposing host paths through an otherwise redacted metadata response"
+      - "A privacy test that checks only module identity while missing nested runtime fields"
+      - "Malformed runtime state suppressing unrelated useful observations or manufacturing authority"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

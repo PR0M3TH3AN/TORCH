@@ -523,7 +523,7 @@ function readActivePointer(issues) {
   const version = match ? versionValue(match[1]) : null;
   if (!version) {
     issues.push(issue('RUNTIME_METADATA_ACTIVE_POINTER_TARGET_INVALID', 'runtime/active'));
-    return { status: 'refused', target: link.text, version: null };
+    return { status: 'refused', target: null, version: null };
   }
   return { status: 'observed', target: link.text, version };
 }
