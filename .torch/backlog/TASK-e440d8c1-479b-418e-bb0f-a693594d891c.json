@@ -24,7 +24,7 @@
   ],
   "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "feature": "Identity-bound inbox selection and observation integrity",
-  "milestone": "Reviewed reliability dependencies",
+  "milestone": "Wind-down continuity: inbox item retained; MCP XDG source followup held",
   "state": "assigned",
   "owner": "provider-runtime",
   "evidence": [
@@ -44,8 +44,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:32:53.996Z",
-  "updatedAt": "2026-10-01T17:03:00.000Z",
-  "revision": 7,
+  "updatedAt": "2026-10-01T19:40:27.723Z",
+  "revision": 9,
   "history": [
     {
       "from": null,
@@ -95,6 +95,34 @@
       "actorId": "session-manager",
       "at": "2026-10-01T17:03:00.000Z",
       "note": "Reviewed metadata-only expectedrev6 at explicit ownerd2feed existing inbox/coordination requirement. Runtime retains assigned e440/no candidate and Kernel565 blocked source/native history; append one strict sharedreference/supersession/pagination requirement/evidence preserving ninecriteria/fullhistory. No second assignment,new backlog,providerstart,API/schema/code permission,autoack or fabricated token/cost measurement."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:19:52.963Z",
+      "reason": "Actual owner8c33 requests minimal Runtime Codex MCP XDG forwarding contribution. Fresh native next resume e440 assigned7/no candidate, not idle. Requestb69e9128 names existing mcp-isolation scoped launch/resume contribution and QA193919a0, asks actual disposition/owned paths before any second assignment or scope expansion. Retain e440 owner/state/full unread criteria/history/sourceKernel dependencies; no completion to freequeue/no starts/config/env changes.",
+      "from": {
+        "feature": "Identity-bound inbox selection and observation integrity",
+        "milestone": "Reviewed reliability dependencies"
+      },
+      "to": {
+        "feature": "Identity-bound inbox selection and observation integrity",
+        "milestone": "Assigned inbox continuity; precise scoped MCP context followup"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:40:27.723Z",
+      "reason": "Actual owner2dc stopnewwork/starts/expensivegates read19:36, Runtimee202f35a minimalcurrentcheckpoint/resumenotes only. Assignedsolee440 retained; QA0bf actualmcp-adapterXDGtest/TIN consentusable but no codeassigned/secondRuntimeitem/configinstallchange. Existingb69e/78aa scope and realhostcontext evidence survive for explicitlaterownerresume. Fullunreadcriteria/currentKernel nativeguards/evidence preserved; no complete/idleinference/automaticresetwake.",
+      "from": {
+        "feature": "Identity-bound inbox selection and observation integrity",
+        "milestone": "Assigned inbox continuity; precise scoped MCP context followup"
+      },
+      "to": {
+        "feature": "Identity-bound inbox selection and observation integrity",
+        "milestone": "Wind-down continuity: inbox item retained; MCP XDG source followup held"
+      }
     }
   ]
 }

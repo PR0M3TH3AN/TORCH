@@ -12,6 +12,46 @@ ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
 ## Current B2 implementation phase, 18:54 UTC
 
+### Actual B2 source rejection and parent correction seam, 19:24 UTC
+
+Current19:35 delegated quantitative ruling pins separate runtime E upper bounds:
+64KiB streaming chunks,512MiB/file,4GiB aggregate,32768 records,4096 UTF8 path
+bytes,16MiB canonical manifest. Product S64MiB/file512MiB aggregate8192 records
+and FD3 metadata/digests64KiB stay unchanged. Actual QA0bf grants Kernel named
+parent/snapshot-policy corrective tests plus physical-end TIN; current1GiB E
+entry discrepancy must use this pinned512MiB correction, not silent inflation.
+This resolves the numerical contract, not source acceptance or live registration.
+Actual selected/consumed headless Chromium, Node/npm and transitive bytes must be
+streamed/hash-bound; exact-cap/+1 and drift/unknown refusals and real issued
+positive child/fence behavior remain independent QA gates. Earlier proposed-cap
+wording is historical. No source path, schema, host or runtime activation expansion.
+
+Work candidate ea36a28d14ff332f24bc64b34ab94c79dac01514 is independently
+QA9cd1d66b SOURCE REJECTED. Fabricated bootstrap/four Boolean observations yield
+terminalProof; clone/reuse survive; public issuer accepts arbitrary tuples.
+Owner26d/544 also reproduces invalid digests/one-hour expiry/serializable labels,
+injected-executor success and same-process-only inputs. Six green tests encode
+unratified behavior and need actual QA strict spec-correction ruling/TIN, not
+weaker truth. Native systemd9df1 FAIL is a separate host-context issue. No landing,
+full-task completion or fixture/native promotion. Same Work in_progress continues.
+
+Kernel db0d6731d39d81c2242b0e3eac1c7369ce5a58b0 is two-path source progress,
+optional existing config.mjs plus NEW candidate-source-parent.mjs; no tests/TIN,
+native receipts or live policy. Current FD3 schema candidate-source-parent-admission
+/v2alpha1 carries schema/version/admissionId/leaseId/checkId/runGeneration/
+guardGeneration/policyBytesBase64/policyDigest/engine/subject/artifactManifest/
+receiptAdapterAdmission. This wire is not ratified: readFileSync is unbounded
+before checking64KiB, FD3/4 stay open, FD4 ack lacks nonce/expiry and E tool cap1GiB
+differs proposed512MiB. Kernel1861357d/Workb07 address exact corrective protocol;
+authenticated registered issuer relationship, actual ack/closure and fixed context
+must be composed, never inferred from inherited JSON/hash or WeakSet labels.
+No-args parent and opaque issued binding remain intended; check-subject-context
+unchanged unless Work identifies an actual required export. QA655/866 receives
+named parent-test/TIN and exact E-cap decisions. M outputs/A reserved-null is
+resolved. Source corrections preserve all seven full6e4 criteria and positive
+real child/observed descendant scenarios; UNKNOWN is correct on uncertainty,
+not a permanent fixture-only/refusal substitute for real native composition.
+
 Actual owner7f3ff1a9 authorizes EXISTING Workfull6e4 bounded B2 implementation.
 Fresh briefd7/native nextresumeTHISverification18 and six live Work-owned source
 paths were checked; supported transition to in_progress19 preserves owner, old316

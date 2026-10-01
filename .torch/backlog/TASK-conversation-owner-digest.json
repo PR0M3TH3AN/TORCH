@@ -16,7 +16,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Bounded Console saved-decision timestamps and coverage scenarios",
+  "milestone": "QA contributor consent resolved; sequential Console source hunk",
   "state": "proposed",
   "owner": null,
   "evidence": [],
@@ -24,8 +24,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.715Z",
-  "updatedAt": "2026-10-01T18:39:55.069Z",
-  "revision": 2,
+  "updatedAt": "2026-10-01T19:34:55.898Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -47,6 +47,32 @@
       "to": {
         "feature": "Self-host development readiness",
         "milestone": "Bounded Console saved-decision timestamps and coverage scenarios"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:20:01.627Z",
+      "reason": "Selected bounded site/owner-digest.js existingdecidedAt/savedwindow/structuredversusunindexed coverage slice; existinga4f1/88aecb41 followed up39c12dec/7a2787a6 for exact ownedhunk + namedConsole additiveQA test/fleet/console-owner-digest.test.mjs/appendTIN. No actualusable reply yet at19:20 observation; recipient decisions, nothumanwait/defaultfleetstop. Proposed unassigned original fullcriteria/externaloptin/cadence/indexing retained. Upon consent freshbrief/Consolecontinuity/native next before precisephasepermission, no provider start.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Bounded Console saved-decision timestamps and coverage scenarios"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Concrete Console and QA timestamp-coverage decisions requested"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:34:55.898Z",
+      "reason": "Actual QA0bf67b61 grants namedConsole additiveconsole-owner-digest.test.mjs+physicalendTIN stricttimestamp/coverage/escaping/immutability/sourcevslive scenarios. Holdresolved; preciseONLYsite/owner-digest.js contribution canfollow actualConsolehunk/availability. NEW explicitowner7eb9 README/siteindexcopy routed SAMEdocumentation-current assignedRelease4/Consoleprimarycontributor; sequenceoneConsoleimplementation, notnewhumanwait/wholefleethalt. Digestproposedfullcriteria/indexing/cadence/externaloptin untouched; no API/schema/timer/notifications/start.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Concrete Console and QA timestamp-coverage decisions requested"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "QA contributor consent resolved; sequential Console source hunk"
       }
     }
   ]

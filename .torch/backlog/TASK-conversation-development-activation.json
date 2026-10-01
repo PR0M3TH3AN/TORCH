@@ -17,7 +17,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Owner-reviewed first development backlog",
+  "milestone": "Owner75 approved; exact alpha.3 pointer/registry action verified",
   "state": "proposed",
   "owner": null,
   "evidence": [
@@ -29,8 +29,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.580Z",
-  "updatedAt": "2026-10-01T06:55:57.335Z",
-  "revision": 2,
+  "updatedAt": "2026-10-01T19:27:41.329Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -45,6 +45,21 @@
       "actorId": "session-manager",
       "at": "2026-10-01T06:55:57.335Z",
       "note": "Owner7668dbb3 requested factual metadata/evidence reconciliation only. Expectedrevision1; state/owner/dependencies and all acceptance criteria preserved. Record concrete partial pilot/landed closure evidence and actual current authorization; retain unmeasured budget/provider/stop-resume/start safety gates. Reviewed Manager-owned ledger amendment; no lifecycle claim or wider activation."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:27:41.329Z",
+      "reason": "Actual approval04ccc3a1/owner62619: human explicit yes do upgrade, native75 approvedrevision2/decidedowner19:24:18.790 read independently. Arbiter supported exact immutablealpha3 upgrade done19:24. Manager read active->versions/0.1.0-alpha.3, registrygeneration4 activealpha3 previousalpha2, validationSHA0e66890bc8a0681a79329ac860f747a56e289ed1b4a9b845cc79da8df6611905. Exact acceptedsource28c/digest2dafa retained; no newer0c2 UI installed. Preserve original externalrefusal/approvalhistory/full taskcriteria, proposed lifecycle/roadmap; priorpending75waitresolved. Existing liveprocesses mayholdalpha2 mixedcode, no daemonrestart/providerstopstart/model/wake/liveDDL/release/publication implied.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-reviewed first development backlog"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner75 approved; exact alpha.3 pointer/registry action verified"
+      }
     }
   ]
 }

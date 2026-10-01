@@ -17,16 +17,22 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Owner-reviewed first development backlog",
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
+  "milestone": "Wind-down: existing README copy checkpoint; landing and publication open",
+  "state": "assigned",
+  "owner": "release-self-host",
+  "evidence": [
+    "message:7eb9ccac-2719-44aa-a4dd-3adfd4e5bb3d:explicit-owner-copy-only-source-update",
+    "ownership:README.md=release-self-host;site/index.html=owner-console",
+    "message:c83992a5-8183-4f45-ac7c-b9bc9b85b867:exact-Release-README-copy-phase",
+    "message:75b58c95-4d27-4b1c-9610-91427264e17f:exact-Console-landing-copy-contribution",
+    "message:ab55257a-df18-426f-9f7b-c8df7a753b51:QA-product-surface-spec-correction-consent-request"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.726Z",
-  "updatedAt": "2026-09-30T19:30:23.726Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T19:40:23.755Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -34,6 +40,48 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.726Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:33:35.554Z",
+      "note": "Current briefd7 reread, explicit actualowner7eb9 permits sourcecopy only README/siteindex. Ready bounded currentcopyphase within existingdocumentation task, Releaselead/Consoleprimarysitecontributor; originalKernelTODOhandoff/fullcriteria remainlater. QA strictproduct-surface correction/additive/TIN permission required beforetests, sourcecopyexplicitlyauthorized; no genericdesign/humanwait. No codebegun/acceptance/taskcompletion inferred. Bothfreshnextidle/nootheractiveitem, sourcependingexactgateQA/integration, no starts/installation/publication/defaultmain/schema."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:34:44.865Z",
+      "note": "Assign SAME existing task bounded README/landing copy phase after explicitowner7eb9, currentbriefd7, nativeRelease nextreadyTHIS/noactiveitem and exactpathownership. Releaseimplements ONLY README.md; namedConsole contributor ONLY site/index.html, preservingcurrentlayout/demo/darkbranding and truthfulalpha3source28c/Codexpilot/qualifiedfoundation-versusremainingengine-provider-pipeline-release status/rewritebranchlinks. No peer sourceedits: eachprimary editsownpath; losslesspeercommitconvergence exactgates/finalQA/oneeligibleintegration. QAab55257a product-surface assertion spec-correction/additive/TIN consent mustreturnbeforetests; no inventedpaths/relaxation. FulloriginalTODOhandoff/ownership/provenancecriteria remain; thispartialsourcephase doesnotclosetask. Consoleowner-digest remainssequentialproposalwithQAconsentusable, no simultaneousConsolecode. Arbitercontrolsstarts/slots; no launch/install/build/restart/wake/publication/main/schema action."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:33:29.169Z",
+      "reason": "Actual explicitAdamrequest/owner7eb9 sourcecopyupdate on existingtask only. Nativeowners README=Release/siteindex=Console; freshbothnextidle/noactiveassignment. Namedexactpathcontributions c83992a5/75b58c95 preserveexperimentalalpha3source28c versusuninstalled0c2, runningCodexpilot versuslocal/reference/mixedprovider/fence/pipeline/releasequal, configuredscheduler+actualtimer versusinitautomationqual, rewritebranchCTAs/demo/layout/darkbranding. QAab55257a exactproduct-surface staleassertionstrictspec-correction/additiveversionparity/nooverclaim/TIN consentrequested; no testsbeforeactualpermission. OriginalfullTODOhandoff/ownership/provenancecriteria/history retained; no publish/build/install/main/provider/wake/schema action.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-reviewed first development backlog"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-authorized README and landing copy; strict product-surface consent"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:40:23.755Z",
+      "reason": "Actual owner2dc6ae4d explicitstopnewwork/peerstarts afterread19:36; safefinishminimalcurrentcheckpoint only. Release71178f82 reports READMEcopyalreadybegun19:32:55clean5b9 on existing workflow; assigneddocumentation4 is sameboundedcopytracking, no duplicateimplementation/start. Release81b953 mayfinishcheckpointownREADME only, Console0a8b pendinglandingcopy/sourcehunk held; QA3b14 no newexpensivereviewloops. Alloriginalcriteria/history/source/nativependinggates retained; nocompletion/candidateinferred. Explicitowner normalcommit/push/reviewedpublicstaticTORCHdomainpermission belongsarbiter exacttarget/privateAPIseparation; Managerno deploy/main/forcepush/gatewaiver. Pendinglanding/deployfutureafteractualcandidate/currentguards, noautomaticweeklyrestart.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-authorized README and landing copy; strict product-surface consent"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Wind-down: existing README copy checkpoint; landing and publication open"
+      }
     }
   ]
 }

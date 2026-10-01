@@ -24,7 +24,7 @@
   ],
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check execution provenance and state isolation",
-  "milestone": "B2 corrected policy framing and native composition review",
+  "milestone": "Wind-down checkpoint: corrected0665 unaccepted; full native composition open",
   "state": "in_progress",
   "owner": "work-integration",
   "evidence": [
@@ -101,8 +101,8 @@
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T18:52:30.678Z",
-  "revision": 19,
+  "updatedAt": "2026-10-01T19:40:19.341Z",
+  "revision": 24,
   "history": [
     {
       "from": null,
@@ -255,6 +255,71 @@
       "to": {
         "feature": "Check execution provenance and state isolation",
         "milestone": "B2 corrected policy framing and native composition review"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:19:58.842Z",
+      "reason": "Actual Work0dce clean candidateea36a28d14ff332f24bc64b34ab94c79dac01514 focused/lintPASS. Independently native receiptstest9df1FAIL/checkd744PASS/dashboard0a94PASS/lintd60PASS read; fail252/1/5 retained, no integration/native/fulltaskacceptance. Kernel a3a92fdc/90c095ce Msealedartifact/Areservednull resolved; b07a3991 requests actualFD3/4 fields, directopaque binding versus requiredV2 context hunk and addressedsix-testallowlist; QA655a819d exactsource review/Kerneltestcontributor/Ecaps decisions, Kernel9e9ce7b6 precise scope. Work SAMEin_progress19/old316/landing evidence retained; no newassignment/livepolicy/DDL/adapterconsumer. S64MiB/file512MiBtotal stays; proposed separate streamingE64KiBchunk512MiB/file4GiBtotal32768records4096path16MiBmanifest pending actualQA ratification and consumedheadlessbinary evidence.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 corrected policy framing and native composition review"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 Work ea36 candidate; Kernel parent composition and independent source QA"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:22:30.268Z",
+      "reason": "Actual owner26d51036 independently reproduces forgedliteral/alltrue fence proof, cloned/reused fence, arbitrary publicissuer, injectedexecutor fake success and sameprocess inputs at exactea36. Source fidelity failures distinct from native9df1 ENXIO; neither accepted. QA existing exactreview running3684596 per owner58d19; 0b792889 strict spec-correction ruling, Worke35ebd87 corrective owned phase, Kernela447/fe1 interface mismatch retained. Actual parent read finds post-read64KiB bound/unclosed FD3/4/missingnonce-expiry ack/1GiB Ecap deltas; exact corrective protocol decision routed, no JSON/Booleanproof promotion. Preserve fullin_progress Workowner/old316/allhistory/7criteria/candidatefail receipts; no new assignment/landing or automaticallrefusalendstate.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 Work ea36 candidate; Kernel parent composition and independent source QA"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 ea36 fidelity corrections under independent QA; native context separate"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:25:05.192Z",
+      "reason": "Actual QA9cd1d66b independently SOURCE REJECTS ea36 forged/clone/reuse/publicissuer; required strict spec-correction scenarios sent actualWork/Kernel, no sourceacceptancehold. Owner544 additional invaliddigests/unregisteredtuple/hour expiry/JSONserializable descriptor evidence. Kernel1c860 clean db0d673 twoownedsourcepaths/noQAtests/TIN/native receipts; exact parentread boundedpre-read/FDclosure/nonce-expiry/512MiBEcap mismatch routed1861357d and QA866. Workc074 SAMEownedcorrection under actualQA pathconsent/no newassignment; realpositive frozenchild/authenticatedorigin/fenceproof mandatory, notallrefusalendstate. Native9df1systemd ENXIOdistinct; retain old316/currentcandidates/failedreceipts/all7criteria/in_progressowner/history and no landing.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 ea36 fidelity corrections under independent QA; native context separate"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "QA source REJECT ea36; exact owned correction and parent-wire composition"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:37:40.284Z",
+      "reason": "Actual QA0bf namedKernel parent.test/snapshot-policy.test+physicalendTIN correctiveconsent nowusable f9e632; sourceea36/db0d notaccepted. Sourceissuer/fence/closure/actualchildscenarios strict per9cd/26d/544/a6fd, Workd4c correctiveplan sameownedpaths/opaqueprivateorigin notpublicclaims. Pin separatelyboundedE:64KiBstreamchunk512MiB/file4GiBtotal32768records4096UTF8path16MiBmanifest; S64MiB/file512MiBtotal8192records FD3metadata64KiB unchanged. Workcb70/K45b5/QA2f44 exactcap/+1/realconsumedheadlessNode/npm/transitives/hashdrift/nativeclosurequalification; no1GiBsilentinflation/livepolicy/newpaths/receiptadapterconsumerauthority. Preservefullsevencriteria/in_progressWorkowner/allcandidates/history/refusals/native9df1FAIL andrealpositiveendstate.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "QA source REJECT ea36; exact owned correction and parent-wire composition"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "Strict corrective contributor consent and pinned E limits; native composition open"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:40:19.341Z",
+      "reason": "Actual owner2dc6ae4d explicit8%weeklyusage wind-down read19:36: stopnewwork/starts/gateloops; Work15bf/QA3b14/Kernel3417 minimalownedcheckpoint only. Actual Workfde80 corrected0665bb305b10efd9e7242eed2484ecf97646a0f3 committedspec-correction; no independentacceptance. Native956228a2testFAIL/81b39973checkPASS/e8379e7cdashboardPASS/ebb56941lintPASS independentlyread, oldea36REJECTED+allreceipts retained. Workreports B2SCN33/38 pass and unfinished CheckService-to-parentFDcomposition/fixedregisteredE/privatePID1namespace-reapbackend, notfullnativeproof. No retry/reviewlaunch/integration/taskclosure; preservein_progressowner/full7criteria/old316/candidates/history. Resumeonlyexplicitownerrequestafterusage reset, notautomatic.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "Strict corrective contributor consent and pinned E limits; native composition open"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "Wind-down checkpoint: corrected0665 unaccepted; full native composition open"
       }
     }
   ]

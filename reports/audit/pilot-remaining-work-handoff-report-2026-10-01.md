@@ -1,5 +1,170 @@
 # Current pilot remaining-work handoff
 
+## Explicit usage wind-down and safe resume checkpoint, 19:38 UTC
+
+Owner2dc6ae4d, read19:36 after prior queued coordination, reports8% weekly usage
+and explicit wind-down. Stop new work/starts/gate loops now; resume only on an
+actual later owner request, no automatic weekly reset or wakes. Manager sent
+individual durable stop/checkpoint instructions to all six existing specialists;
+pending contribution/test reviews are held, not resolved or cancelled. Preserve
+dirty bytes/unique commits/reservations and attributable actual terminal evidence.
+Manager checkpoints owned ledger/reports only, no source/host/runtime operation.
+
+Workfde80 returns corrected0665bb305b10efd9e7242eed2484ecf97646a0f3, no QA
+acceptance. Native receipts independently read:956228a2 testFAIL,81b39973 checkPASS,
+e8379e7c dashboardPASS,ebb56941 lintPASS. Work reports focused B2 scenarios33/38
+and unfinished actual CheckService-parent FD composition, fixed registered E,
+private PID1 namespace/descendant reaping. Preserve all failures/ea36 rejection;
+not full native success or source acceptance. No further checks/reviews this turn.
+
+Release71178f82 says README copy already began19:32:55 at clean5b9; documentation
+assigned4 tracks that same bounded contribution, not another implementation.
+Release may minimally finish/checkpoint current README if safe. Landing copy,
+product-surface QA correction, digest/source-context contributions and publication
+remain held. User separately authorizes normal commits/push and reviewed PUBLIC
+static website deployment on existing TORCH domain; only arbiter verifies exact
+hosting target/static demo/no private live Fleet API and executes eligible action.
+No Manager deployment or unreviewed engine publication, main/legacy/forcepush/gate
+waiver. Full56 records and unfinished umbrella criteria remain; alpha3 pointer
+resolved, current0c2/newer helper/engine not installed/live-qualified. Actual leases
+and process terminal/unknown hazards must be preserved, never inferred from idle.
+
+## Usable contributor decisions and copy-only next handoff, 19:35 UTC
+
+Actual QA0bf resolves named Console digest, Runtime MCP and Kernel parent/policy
+corrective test/TIN consent. Exact paths: Console console-owner-digest.test.mjs;
+Runtime additive mcp-adapter.test.mjs; Kernel candidate-source-parent.test.mjs and
+candidate-snapshot-policy.test.mjs; each physical-end TIN under actual QA scenario
+constraints. No stale generic QA/human permission wait; ea36/db0d remain unaccepted.
+Runtime78aa still needs e440 actual continuity disposition before a second phase.
+Kernel f9e632 gets actual corrective test authority within existing source scope.
+Runtime E finite upper bounds are now pinned:64KiB chunks/512MiB file/4GiB total/
+32768 records/4096 UTF8 path/16MiB manifest. S64/512/8192 and FD3 64KiB unchanged;
+actual consumed headless runtime, exact-cap/+1/drift and native proof remain QA gates.
+
+NEW explicit Adam request/owner7eb9 is routed through EXISTING documentation-current,
+assignedrevision4 Releaselead after currentbrief/native nextreadyTHIS/ownership.
+Release ONLY README.md, named Console contributor ONLY site/index.html. Copy must
+represent accepted experimentalalpha3/source28c, uninstalledcanonical0c2, running
+Codexpilot versus local/reference coverage and pending mixedproviders/fence/pipeline/
+production gates. Rewritebranch source/README/spec links, exact View dashboard demo
+newtab/layout/darkbranding/sampleisolation and cache hypothesis retained. Actual
+installed user timer is distinct from configured scheduler and install/init
+automation qualification. QAab552 strict stale product-surface assertion correction,
+version/parity/branch/nooverclaim scenarios/TIN consent requested; no test edits
+before actual grant. Original Kernel TODO handoff/full criteria remain later.
+No source edits by Manager, publication/build/install/main or provider launch.
+
+Console digest usable consent is recorded in proposedrevision4; sequential source
+hunk follows this newly explicit landing contribution, not simultaneous Console
+implementation. Release652f/Consoleac130 carry exact next handoffs. Arbiter controls
+starts/three-slot timing; Manager launches none. All56 records persist, now38proposed/
+9blocked/6completed/1in_progress/2assigned through only this authorized phase.
+Ownera6fd independently corroborates parent read/FDclosure/ack/E Chromium gaps;
+no wire omission is silently ratified as origin proof. No pending owner approvals
+remain in the latest native read; broader live/browser/provider assurance is open.
+
+## Actual owner75 decision and upgrade readback, 19:27 UTC
+
+Owner04ccc3a1/62619 reports Adam explicitly approved the exact upgrade. Native
+75a8ebae is independently read as approvedrevision2, owner-decided19:24:18.790.
+Arbiter performed supported immutable alpha.3 upgrade19:24. Manager independently
+reads active -> versions/0.1.0-alpha.3, registrygeneration4, previousalpha.2,
+validationSHA0e66890bc8a0681a79329ac860f747a56e289ed1b4a9b845cc79da8df6611905.
+The prior human75 wait is resolved; original refusal and risk history remain.
+Only accepted source28c/digest2dafa is activated, not canonical0c2 or helper5b9.
+Existing processes may hold alpha.2; no daemon/agent restart or loaded-memory
+equivalence proof. Full live blockedReason/provenance/browser/mobile/mixed-provider
+qualification remains open. No newer build, source landing, DDL, model/wake or
+publication action. Existing activation and workflow labels record the concrete
+outcome without broad task completion. Earlier pending75 prose is dated history.
+
+Workd4c5 actual corrective plan retains SAME six source/six consented test paths
+and append TIN spec-correction. It will remove public tuple/command/executor/
+limit/Boolean seams and derive fixed context from authenticated CheckService.
+Parent origin, replay/expiry/generation/actual FD closure and real child/fence
+composition remain required; Kernel db0d JSON wire alone is insufficient. QA9cd
+rejection stays rejected until independent corrected candidate acceptance.
+
+## Current source decisions and causal MCP incident, 19:24 UTC
+
+Brief d7e6d69, addressed unread100, all56 backlog records, direct-report check-in,
+pending approvals, evolution/hierarchy and actual integration queue were refreshed.
+Canonical remains clean0c2. Old cce remains needs_convergence; duplicate c532 is
+ready but untouched, c178 proposed. No new request or landing. Current state remains
+39 proposed /9 blocked /6 completed /1 in_progress /1 assigned. The measured eight
+evolution and ten hierarchy signals favor precise existing-owner handoffs here;
+no new role, ownership transfer or activation is justified by these observations.
+
+Actual QA037425f8 **SOURCE ACCEPTS exact Release5b9e041**: three paths,
+8fb-identical source/test, approved0cba TIN,9 focused passes, three native PASS and
+11 artifact hashes. Required native test3fd FAIL263/1/5 remains; source review is
+resolved, native readiness is not. Owner8c33 records causal context: QA MCP3647020
+lacked XDG_RUNTIME_DIR while Codex parent3646857 had actual /run/user/1000.
+The unchanged real parser passes with that runtime even without DBUS; removing
+XDG and DBUS reproduces exact ENXIO. Only these nonsecret fields were inspected.
+This is diagnostic evidence, not a native receipt or installed-engine proof.
+
+Current Runtime-owned codex.mjs mcpArgs emits command/args only. Official
+[OpenAI MCP documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)
+confirms env_vars names forward the local parent's variables. Minimal proposal:
+TORCH launch/resume allows only XDG_RUNTIME_DIR, no hardcoded UID/path, DBUS,
+secrets or general environment; explicit absent/invalid/platform qualification and
+unchanged identity/model/sandbox/approval flags. Runtimeb69e9128 must resolve its
+existing assigned e440 continuity; existing mcp-isolation2 records the proposal,
+QA193919a0 requests exact mcp-adapter scenarios/TIN. No code assignment, harness
+configuration or installation change is inferred. Release2b3041f6 receives the
+distinct legitimate registered full-gate real-host route after actual condition,
+clean candidate/definition/engine provenance and QA classification. Preserve red
+receipts; no blind retry, env spoof, old checker equivalence or focused substitution.
+
+Actual Work0dce returns clean ea36a28, with native9df1 test FAIL252/1/5 and
+checkd744/dashboard0a94/lintd60 PASS independently read. Actual QA9cd1d66b now
+**SOURCE REJECTS ea36**, independently reproducing fabricated/clone/reusable
+fence proof and arbitrary issuer. Owner26d/544 additionally demonstrates invalid
+digests, one-hour expiry, serializable descriptor, injected-executor success and
+same-process consumption. These source fidelity defects are separate from ENXIO.
+Required corrections use authenticated private admission, opaque fixed execution,
+observed FD closure/actual descendant reaping and real frozen child consumption;
+UNKNOWN refuses uncertain terminal coverage. Positive issued behavior and strict
+negative scenarios are required, not a permanent all-refusal implementation.
+Workc074/e35 and existing QA0b792 receive the actual correction ruling. Full6e4
+remains the same active item with all seven criteria,316 and every failed receipt.
+
+Kernel1c860 returns clean db0d673, exactly optional config.mjs parser and new
+candidate-source-parent.mjs, no QA test/TIN edits/native receipts. Framing vectors
+are focused evidence only. M is sealed artifactManifest; A is null/reserved for
+the actual later receipt adapter. No naming hold. Actual parent interface still
+needs bounded pre-read/closed FD3+4, authenticated origin/run nonce/expiry ack,
+and exact E limits; JSON hashes/opaque wrappers alone do not prove native origin.
+Kernel1861357d and Workb07 receive precise wire/context deltas; check-subject-context
+stays unchanged absent an actual necessity decision. QA655/866 must return named
+Kernel test/TIN consent. No live policy application, DDL or receipt consumers.
+
+Separate E proposal remains 64KiB streaming chunks,512MiB/file,4GiB total,
+32768 records,4096-byte paths,16MiB manifest, with FD3 at64KiB digests only.
+Actual Node124835376/Chromium269778136 metadata exceeds product S64MiB/file;
+S64MiB/file512MiB total is unchanged. Work/QA/Kernel quantitative ratification,
+exact-cap/+1 and actual streamed consumed headless binary/transitive evidence are
+still required. Browser executablePath metadata does not prove consumed bytes.
+
+Console39c12/QA7a278 follow up the existing owner-digest a4f1/88a requests for ONLY
+site/owner-digest.js, additive console-owner-digest scenarios and append-only TIN.
+No usable consent is inferred; proposed digest3 retains broader indexing/cadence/
+opt-in criteria. Routine recipient decisions can enable this bounded contribution
+without a new human wait or whole-fleet stop. Arbiter controls session re-entry.
+
+Owner58d19 actual19:19 API doctorhealthy:true coexists MESSAGE_BACKLOG265,
+WORKTREE_PROBLEM/BACKLOG_ACTIVITY and process-confirmed Manager3679037,
+Kernel3679339/QA3684596 versus reported idle. Existing starting-presence6,
+attention24 and audit7 record actor/next action/evidence time/coverage/severity;
+count265 is not265 actionable owner decisions. Preserved unique commits are review
+information, not permission to destroy worktrees. No peer bulk acknowledgements.
+At the initial19:24 snapshot only owner75 was human-specific; the19:27 readback
+above resolves that wait. Browser/installed blockedReason,
+served provenance and live desktop/mobile acceptance remain open; source0c2 is
+landed/pushed, uninstalled. WakesOFF; no starts, schema, host, install or publication.
+
 ## Converged Release candidate and actual required-check failure, 18:58 UTC
 
 Actual Release41dee503 returns clean merged5b9e041cd4b1f5998130ccad5fbe2f8ecabeca44,

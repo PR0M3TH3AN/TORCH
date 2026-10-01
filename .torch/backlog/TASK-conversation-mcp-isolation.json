@@ -15,7 +15,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Owner-reviewed first development backlog",
+  "milestone": "QA scoped XDG test consent resolved; assigned Runtime continuity",
   "state": "proposed",
   "owner": null,
   "evidence": [],
@@ -23,8 +23,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.617Z",
-  "updatedAt": "2026-09-30T19:30:23.617Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T19:34:59.263Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -32,6 +32,34 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.617Z",
       "note": "Task created."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:19:50.046Z",
+      "reason": "Actual owner8c33 causal incident: QA MCP child lacked XDG_RUNTIME_DIR despite parent actual runtime; unchanged realparser PASS with actualXDG/noDBUS, removalXDG+DBUS reproduces exactENXIO. Official fetched MCP docs support env_vars local-name allowlist; current Runtime-owned codex mcpArgs command/args only. Narrow future contribution src/adapters/codex.mjs TORCH-only XDG name forwarding/noUID/path/DBUS/generalenv/secrets, explicit missing-invalid/platform qualification and unchanged identity/model/approval/sandbox flags. Runtimeb69e9128 must resolve assigned e440rev7 continuity before code/another assignment; QA193919a0 exact mcp-adapter additive scenarios/TIN requested. Preserve this proposed task original isolation/globalconfig criteria and all56records; no harness/installconfig/source authority or native3fd/9df1 waiver.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-reviewed first development backlog"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Scoped MCP XDG forwarding contract; Runtime continuity and QA scenarios"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:34:59.263Z",
+      "reason": "Actual QA0bf67b61 grants namedRuntime additive mcp-adapter.test.mjs+physicalendTIN exactlaunch/resumeXDGnameallowlist/actualparent/absent-invalid-platform/unchangedflags/mockvshost scenarios. Peerholdresolved, sourceb69e minimalcodexhunk stillrequires assigned e4408 actualcontinuity dispositionbeforecodeassignment. No parallelRuntimeitem or harnessconfig/installchange; old3fd/9df1red/currentregisterednativequalification retained.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Scoped MCP XDG forwarding contract; Runtime continuity and QA scenarios"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "QA scoped XDG test consent resolved; assigned Runtime continuity"
+      }
     }
   ]
 }

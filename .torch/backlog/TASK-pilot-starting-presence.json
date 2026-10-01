@@ -19,7 +19,7 @@
   ],
   "observedAt": "c940a343c357",
   "feature": "Self-host development readiness",
-  "milestone": "First real development trial",
+  "milestone": "Process-confirmed running versus durable idle; current evidence qualification",
   "state": "blocked",
   "owner": "provider-runtime",
   "evidence": [
@@ -36,8 +36,8 @@
   "integrationRequest": null,
   "blockedReason": "Waiting for corrected Kernel reservation API candidate from TASK-125dd886: exact ff285ffd currently requires fresh QA-authorized five-PNG recovery, clean convergence and independent exact qualification/landing; old engines ignore new leases. Existing Runtime e976 peer contract handoff retained. Preserve owned pending implementation/history; no provider start or unguarded identity workaround.",
   "createdAt": "2026-09-30T19:55:23.203Z",
-  "updatedAt": "2026-10-01T12:08:24.703Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T19:22:33.352Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -73,6 +73,21 @@
       "actorId": "session-manager",
       "at": "2026-10-01T12:08:24.703Z",
       "note": "Reviewed owned-ledger metadata-only amendment explicitly requested by owner25e645bf. Append strict incident-backed presence freshness, separate availability/health and recipient/age/actionability criteria as applicable. Preserve existing criteria, state, owner, candidate, integration request, dependencies and all history. Native service has no metadata-amend operation; no lifecycle transition, duplicate task, assignment, qualification, warning suppression, mass acknowledgement or host/provider authority inferred."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:22:33.352Z",
+      "reason": "Actual owner58d19c92 verified19:19UTC API doctorhealthy:true with MESSAGE_BACKLOG265/WORKTREE_PROBLEM/BACKLOG_ACTIVITY. Native systemctl Manager3679037+Kernel3679339 running while FleetPresence idle; QA3684596 exactea36 review running. Timestamped attributableprocess evidence, not badge inference. Preserve blocked Runtimeowner/fullstartingguards/criteria/history/candidate; currentstale idle cannot prove processabsence, advisory worktree uniquecommits do not authorizecleanup. No start/statusschema/service/wake/install changes.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "First real development trial"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Process-confirmed running versus durable idle; current evidence qualification"
+      }
     }
   ]
 }
