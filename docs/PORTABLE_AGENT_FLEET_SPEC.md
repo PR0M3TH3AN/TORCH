@@ -1973,27 +1973,44 @@ or reclassify any legitimate legacy receipt.
 A future candidate-source qualification design would keep three independent
 axes in every newly-versioned result:
 
-1. **Engine provenance** is the exact executable engine digest and its
+1. **Engine provenance (E)** is the exact engine source commit, module path,
+   dependency-resolution digest, source-tree digest, runtime/build bytes, and
    versioned interface contract. Matching engine bytes do not themselves grant
    receipt authority.
-2. **Check subject scope** identifies either an authenticated, clean, unlanded
-   candidate source commit or an installed operational runtime. Candidate-source
-   evidence is not an operational acceptance and must not stand in for the
-   post-landing operational subject.
-3. **Receipt authority** identifies the registered receipt adapter that
-   independently validated and stored the result. A fixture attestation is not
-   a registered receipt.
+2. **Check subject scope (S)** identifies either an authenticated, clean,
+   unlanded product-source commit or an installed operational runtime. It also
+   carries immutable product-storage schema metadata (digest or explicit null),
+   which is subject/input evidence rather than registered receipt/control-plane
+   schema authority. Candidate-source evidence is not an operational acceptance
+   and must not stand in for the post-landing operational subject.
+3. **Receipt authority (A)** identifies the registered receipt adapter that
+   independently validated and stored the result, including its exact adapter
+   bytes, `registeredReceiptSchemaVersion`, and compatible registered
+   receipt/control-plane schema versions. A fixture attestation is not a
+   registered receipt.
 
 The proposed `CandidateReceiptTuple/v1` would bind, at minimum, protocol
-version; engine digest and interface version; adapter identity, digest,
-interface version, and declared compatible schema versions; subject kind,
-authenticated project/install identity, exact candidate commit and frozen check
-definition digest; control-plane schema version; input snapshot digest;
-guard/resource binding; artifact-manifest digest; and terminal outcome. The
-registered-root authenticator, rather than a caller, would derive the project,
-install, candidate commit, and root binding. A caller must not supply an
-arbitrary registered root, manifest, database path, receipt adapter, or commit
-as authority.
+version; E's engine source commit, module path, dependency-resolution and tree
+digests, runtime/build-byte digest, and interface version; S's subject kind,
+authenticated project/install identity, exact product commit,
+`subjectProductStorageSchemaDigest` (or explicit null), and frozen check
+definition digest; and A's adapter identity, digest, interface version,
+`registeredReceiptSchemaVersion`, declared compatible receipt schemas, and
+observed registered control-plane schema version
+(`observedControlPlaneSchemaVersion`). E is independently recorded and is not
+presumed to equal S's product commit. It would also bind
+input snapshot digest, guard/resource
+binding, durable attempt identity, sealed artifact-manifest digest, and actual
+terminal outcome. Product-storage metadata must never be interpreted as a
+control-plane migration request.
+
+The registered-root authenticator, rather than a caller, would derive the
+registered area, project/install identity, clean managed subject, exact product
+commit, and root binding. The initial proposed CLI therefore accepts no caller
+commit, root, manifest, state-root, database, schema, context, adapter selector,
+or expected-commit value. If a future reviewed expected-commit option is ever
+accepted, it can only reject a mismatch against the already-derived subject; it
+cannot select a subject or confer root, adapter, or receipt authority.
 
 For a future native candidate result, a Kernel-authenticated context would be
 derived from the registered manifest/root and a clean managed candidate at the
@@ -2002,11 +2019,15 @@ would never receive the registered manifest, state-root, database handle, or
 receipt-writer capability. The only proposed real-receipt writer is a
 versioned registered adapter which first validates the complete tuple and its
 schema compatibility, then performs receipt DML only; it must perform no DDL,
-migration, schema relabel, or root redirection. Thus a candidate that requires
-schema 3 still refuses against schema 2. Existing exact source receipts that
-were valid under an adapter compatible with schema 2 remain evaluated under
-their recorded legacy contract; they are neither globally invalidated nor
-silently upgraded to this proposed tuple.
+migration, schema relabel, or root redirection. A future product-schema-3
+subject may be qualified hermetically by genuinely pure, schema-agnostic engine
+bytes and an authenticated schema-2-compatible adapter only when the reviewed
+tuple explicitly supports that combination. That possibility does not alter the
+current candidate CLI/engine, which initializes `ControlPlane`, requires schema
+3, and must continue to refuse against registered schema 2. Existing exact
+source receipts valid under a schema-2-compatible legacy adapter remain
+evaluated under their recorded legacy contract; they are neither globally
+invalidated nor silently upgraded to this proposed tuple.
 
 A future fixture context would use an independently authenticated, unique
 fixture project identity, manifest digest, state root, and XDG data root. Its
@@ -2023,17 +2044,32 @@ allowlist. The proposed baseline gives it per-attempt `HOME`, `TMPDIR`,
 dedicated artifact directory, and no inherited registered-state locations or
 provider credential variables. The adapter-owned collector accepts only
 regular artifacts beneath that attempt directory, refuses path traversal and
-links, hashes the resulting manifest, and consumes the attempt exactly once
-before it can emit a receipt.
+links, and hashes a sealed manifest.
+
+The proposed lifecycle is: durable guarded attempt creation; one worker
+transport; execution; adapter-observed proven terminal outcome; manifest
+sealing; then one atomic persistence action that consumes the attempt and
+persists terminal evidence after full tuple revalidation. A fully revalidated
+`PASS` inserts its registered receipt in that same atomic action; non-PASS
+evidence cannot satisfy a passing receipt or gate. `PASS`, `FAIL`, and proven
+`INCOMPLETE` are distinct terminal outcomes. `FAIL` and `INCOMPLETE` remain
+observable durable evidence. Error, signal, timeout, ENOBUFS,
+malformed transport, input/subject drift, and zero-exit mutation are
+`INCOMPLETE` when proven; interruption, cancellation, or an ambiguous commit
+without a proven terminal outcome is `UNKNOWN`. `UNKNOWN` creates no receipt,
+does not consume-and-lose the attempt, and retains evidence plus existing
+resource/worktree guards for reviewed recovery. Neither cancellation nor any
+unknown or failed state permits automatic replay or release; consumed or
+replayed attempt identifiers fail closed.
 
 Withholding those handles and capabilities is an **authority boundary**, not
 an operating-system filesystem sandbox. It prevents an authorized interface
 from conferring registered-root or receipt-writing authority; it does not by
 itself prevent same-user candidate code from discovering ambient host files.
-The exact process-isolation mechanism, environment allowlist exceptions,
-artifact sealing/transport primitive, cancellation and retry semantics,
-credential handling, and replay detection remain enforcement decisions for a
-future reviewed implementation.
+The exact durable store, guard/fence ownership, process-isolation mechanism,
+environment allowlist exceptions, artifact sealing/transport primitive,
+cancellation and recovery semantics, credential handling, and replay detection
+remain enforcement decisions for a future reviewed implementation.
 
 ## 19. Shared-resource coordination
 
@@ -2135,19 +2171,22 @@ distinct from an installed operational result and would require a fresh
 operational run wherever that subject is required. Fixture attestations remain
 nonpromotable and cannot satisfy an integration requirement.
 
-The current registered schema/engine guard remains authoritative: a new
-candidate tuple requiring schema 3 must refuse when the registered subject is
-schema 2. This narrow incompatibility must not globally invalidate existing
-schema-2 receipts that were recorded under a compatible legacy adapter and
-their own exact-source contract.
+The current registered schema/engine guard remains authoritative: the current
+candidate CLI/engine initializes `ControlPlane`, requires schema 3, and must
+refuse when the registered control plane is schema 2. A future product-schema-3
+subject does not by itself require registered schema 3: a genuinely pure,
+schema-agnostic engine plus authenticated schema-2-compatible adapter may be
+considered only through an explicitly reviewed compatible tuple. This narrow
+distinction must not globally invalidate existing schema-2 receipts that were
+recorded under a compatible legacy adapter and their own exact-source contract.
 
-The exact future CLI is unresolved. Release has proposed a caller commit flag,
-while the Kernel review rejects caller-provided commit selection as an authority
-source and requires the authenticated context to derive the exact subject.
-This document records that disagreement rather than choosing either interface:
-no `--commit` form, alternate presentation form, or caller authority is
-authorized here. Release, QA, Work, and the owner must settle the CLI surface,
-its refusal behavior, and the scenario evidence before implementation.
+The proposed initial CLI subject rule is resolved: it derives the authenticated
+registered area and clean managed subject internally, with no caller selector
+or initial expected-commit option. A future reviewed expected-commit comparison
+could be a rejection-only freshness check against that already-derived subject,
+never selection authority. Release still must name the command and decide its
+presentation/refusal behavior; QA must settle scenario evidence and the exact
+enforcement/store/fence design before implementation.
 
 ## 21. Doctor and observability
 

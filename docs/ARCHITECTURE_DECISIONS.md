@@ -643,25 +643,35 @@ must not be bypassed by fixtures, alternate roots, or a source runner.
 
 ### Proposed direction
 
-A future versioned result would bind three independent axes: engine provenance
-(exact engine digest plus interface version); subject scope (authenticated clean
-candidate source versus installed operational runtime); and receipt authority
-(the adapter identity/digest/interface and its compatible schema versions).
-Its exact compatibility tuple would also include protocol version, registered
-project/install identity, exact subject commit, frozen definition and input
-snapshot digests, control-plane schema version, guard/resource binding,
-artifact-manifest digest, and terminal outcome.
+A future versioned result would bind three independent axes. **Engine
+provenance (E)** is the exact engine source commit, module path,
+dependency-resolution and source-tree digests, runtime/build bytes, and
+interface version. **Subject scope (S)** is the authenticated clean product
+commit or installed operational runtime, with immutable
+`subjectProductStorageSchemaDigest` (or explicit null) as subject metadata.
+**Receipt authority (A)** is the adapter identity/digest/interface, declared
+compatible registered receipt schemas, `registeredReceiptSchemaVersion`, and
+`observedControlPlaneSchemaVersion`. E is independently recorded and is not
+presumed to equal S's product commit. The exact tuple would also include
+protocol version, registered project/install identity, frozen definition and input snapshot digests,
+guard/resource binding, durable attempt identity, sealed artifact-manifest
+digest, and actual terminal outcome. Product-storage schema metadata is not a
+registered receipt/control-plane schema change.
 
 The Kernel would derive a native candidate context from the registered
-manifest/root and exact managed candidate, rather than accepting caller paths,
-manifests, database handles, receipt adapters, or commits as authority. The
-candidate engine would not initialize `ControlPlane`. A separately versioned
-registered adapter would validate the tuple and compatible schema before
-performing receipt DML; the adapter would not perform DDL, migration, schema
-relabel, or root redirection. A candidate requiring schema 3 would therefore
-refuse against schema 2. This is tuple-specific: valid schema-2 legacy source
-receipts remain valid under their recorded compatible adapter contract and are
-not retroactively invalidated or promoted.
+manifest/root, registered area, and exact clean managed candidate, rather than
+accepting caller paths, manifests, database handles, receipt adapters, commits,
+or an initial expected commit as authority. The proposed candidate engine would
+not initialize `ControlPlane`. A separately versioned registered adapter would
+validate the tuple and compatible schema before performing receipt DML; the
+adapter would not perform DDL, migration, schema relabel, or root redirection.
+A future product-schema-3 subject can be considered with genuinely pure,
+schema-agnostic engine bytes and an authenticated schema-2-compatible adapter
+only when the reviewed tuple explicitly supports it. The current candidate
+CLI/engine actually initializes `ControlPlane`, requires schema 3, and must
+continue to refuse against registered schema 2. This is tuple-specific: valid
+schema-2 legacy source receipts remain valid under their recorded compatible
+adapter contract and are not retroactively invalidated or promoted.
 
 Fixture execution would use a separately authenticated fixture identity,
 manifest/root, and XDG state. It may return a permanently nonpromotable
@@ -675,8 +685,20 @@ verified immutable snapshot, frozen definition, bounded arguments, an explicit
 environment allowlist, and per-attempt `HOME`, `TMPDIR`, and XDG homes; it
 would receive neither registered root/manifest/database locations nor provider
 credential variables. The adapter-owned collector would accept regular files
-only below the attempt directory, reject links and traversal, hash an artifact
-manifest, and consume the attempt before receipt emission.
+only below the attempt directory, reject links and traversal, and seal a hashed
+artifact manifest.
+
+The proposed lifecycle is durable guarded-attempt creation, execution over one
+opaque worker transport, adapter observation of an actual terminal outcome,
+manifest sealing, and an atomic transaction that consumes the attempt while
+persisting terminal evidence after full tuple revalidation. A fully revalidated
+`PASS` inserts its registered receipt in that same transaction; non-PASS
+terminal evidence is retained for observability but cannot qualify a passing
+gate. `PASS`, `FAIL`, and proven `INCOMPLETE` stay distinct. A non-proven
+interruption, cancellation, or ambiguous commit is
+`UNKNOWN`: it creates no receipt, is not consumed-and-lost, retains its guards
+and evidence, and permits neither automatic replay nor automatic release.
+Consumed or replayed identifiers fail closed.
 
 These withheld capabilities are an authority boundary, not an OS filesystem
 sandbox. They stop the proposed interfaces from granting registered-root or
@@ -685,16 +707,18 @@ can discover ambient host state.
 
 ### Unresolved decisions
 
-- The exact CLI interface remains open. Release has proposed caller commit
-  selection; Kernel review rejects treating a caller commit as authority. No
-  CLI form or consensus is implied by this ADR.
-- Release must decide the command presentation/refusal surface and confirm the
-  primary `src/cli.mjs` boundary; QA must approve strict candidate, native,
-  fixture-nonpromotion, schema-incompatibility, single-use, replay, and
-  no-DDL scenarios before implementation.
-- Process isolation, environment exceptions, artifact sealing and transport,
-  credential treatment, cancellation/retry behavior, replay implementation,
-  and adapter support for historical receipt layouts remain unselected.
+- The initial CLI subject rule is constrained: derive registered area and clean
+  managed subject internally; accept no caller selector or initial
+  expected-commit. A future reviewed expected-commit value could only reject a
+  mismatch against that derived subject. Release still must decide command
+  naming, presentation/refusal surface, and the primary `src/cli.mjs` boundary.
+- QA must approve strict candidate, native, fixture-nonpromotion,
+  schema-incompatibility, single-use, replay, no-DDL, terminal-outcome, and
+  unknown-interruption scenarios before implementation.
+- Durable store choice, guard/fence ownership, process isolation, environment
+  exceptions, artifact sealing/transport, credential treatment,
+  cancellation/recovery behavior, replay implementation, and adapter support
+  for historical receipt layouts remain unselected.
 
 ### Consequences
 
