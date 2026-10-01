@@ -743,8 +743,16 @@ function renderAttention(groups) {
       ${items.length ? items.map((item) => `<article class="attention-item tone-${escapeHtml(item.tone)}">
         <span class="attention-mark" aria-hidden="true"></span><div class="attention-copy">
           <strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
-          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''} · ${escapeHtml(item.evidence)}</small>
+          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''}</small>
+          ${item.evidence.length > 120
+            ? `<details class="attention-evidence"><summary>Evidence and references</summary><p>${escapeHtml(item.evidence)}</p></details>`
+            : `<small class="attention-evidence-short">Evidence: ${escapeHtml(item.evidence)}</small>`}
           <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
+          ${item.decisionApprovalId ? `<div class="attention-quick-actions" role="group" aria-label="Owner decision shortcuts for ${escapeHtml(item.title)}">
+            <button type="button" data-attention-decision="approved" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Approve</button>
+            <button type="button" class="quiet-action" data-attention-decision="rejected" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Reject</button>
+            <p class="attention-action-status" role="status" aria-live="polite" hidden></p>
+          </div>` : ''}
           ${item.requestOwner ? `<a href="#owner-request-form" data-attention-recipient="${escapeHtml(item.requestOwner)}">Request review from ${escapeHtml(item.owner)}</a>` : ''}
         </div></article>`).join('') : `<p class="attention-empty">${escapeHtml(description)}</p>`}
     </section>`;
@@ -1829,6 +1837,32 @@ $('#change-list')?.addEventListener('click', async (event) => {
 });
 
 $('#attention-list')?.addEventListener('click', (event) => {
+  const decisionButton = event.target.closest('[data-attention-decision]');
+  if (decisionButton) {
+    const card = decisionButton.closest('.attention-item');
+    const status = card?.querySelector('.attention-action-status');
+    const approvalId = decisionButton.dataset.attentionApproval;
+    const decision = decisionButton.dataset.attentionDecision;
+    const form = [...document.querySelectorAll('#approval-request-list .approval-decision-form')]
+      .find((candidate) => candidate.dataset.approvalId === approvalId);
+    const previewButton = form?.querySelector('[data-approval-preview]');
+    const shortcut = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(form, decision, previewButton ? (approvalForm) => {
+      approvalForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      previewButton.click();
+    } : null);
+    if (!shortcut.started) {
+      if (status) {
+        status.textContent = shortcut.reason;
+        status.hidden = false;
+      }
+      return;
+    }
+    if (status) {
+      status.textContent = `Opening the guarded ${decision} preview for this owner-addressed request. Confirm only after reviewing its current evidence.`;
+      status.hidden = false;
+    }
+    return;
+  }
   const link = event.target.closest('a[href^="#"]');
   const target = link && document.getElementById(link.getAttribute('href').slice(1));
   const recipient = link?.dataset.attentionRecipient;

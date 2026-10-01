@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import '../../site/attention-projection.js';
+import '../../site/attention-actions.js';
+import '../../site/live-refresh.js';
 
 const project = (snapshot) => globalThis.TorchAttentionProjection.groups(snapshot);
 
@@ -20,11 +22,72 @@ test('SCN-console-attention-ownership: only owner-addressed pending decisions en
 
   assert.deepEqual(groups.owner.map((item) => item.title), ['Review executor boundary']);
   assert.equal(groups.owner[0].href, '#approval-owner-review');
+  assert.equal(groups.owner[0].decisionApprovalId, 'owner-review');
   assert.match(groups.owner[0].detail, /bounded scope/);
   assert.equal(groups.owner[0].waitSince, '2026-10-01T06:00:00Z');
   assert.equal(groups.fleet[0].owner, 'Independent QA');
+  assert.equal(groups.fleet[0].decisionApprovalId, null);
   assert.equal(groups.fleet[0].action, 'Open approval details');
   assert.doesNotMatch(JSON.stringify(groups.fleet), /Approve|Reject/);
+});
+
+test('SCN-console-attention-owner-shortcut: a shortcut selects only an owner decision and retains the preview-confirm boundary', () => {
+  const choice = { value: '', disabled: false };
+  const form = { dataset: {}, elements: { namedItem: () => choice } };
+  let previewCalls = 0;
+  const result = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(form, 'approved', () => { previewCalls += 1; });
+
+  assert.equal(result.started, true);
+  assert.equal(choice.value, 'approved');
+  assert.equal(previewCalls, 1, 'the caller can only start the established preview handler');
+
+  const nonOwnerForm = { dataset: {}, elements: { namedItem: () => ({ value: '', disabled: false }) } };
+  const noOwnerShortcut = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(nonOwnerForm, 'published', () => { previewCalls += 1; });
+  assert.equal(noOwnerShortcut.started, false);
+  assert.equal(nonOwnerForm.elements.namedItem().value, '');
+});
+
+test('SCN-console-attention-shortcut-drafts: missing forms, active previews, and opposite drafts remain unchanged', () => {
+  const missing = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(null, 'rejected');
+  assert.equal(missing.started, false);
+  assert.match(missing.reason, /no longer available/);
+
+  const previewForm = { dataset: { previewToken: 'current-preview' },
+    elements: { namedItem: () => ({ value: 'approved', disabled: true }) } };
+  const preview = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(previewForm, 'rejected');
+  assert.equal(preview.started, false);
+  assert.equal(previewForm.elements.namedItem().value, 'approved');
+
+  const draftChoice = { value: 'approved', disabled: false };
+  const draftForm = { dataset: {}, elements: { namedItem: () => draftChoice } };
+  const draft = globalThis.TorchAttentionActions.prepareOwnerDecisionShortcut(draftForm, 'rejected');
+  assert.equal(draft.started, false);
+  assert.equal(draftChoice.value, 'approved');
+  assert.match(draft.reason, /draft is preserved/);
+});
+
+test('SCN-console-attention-refresh-draft: an edited owner decision remains protected while newer evidence renders', () => {
+  const choice = { value: '', checked: false, tagName: 'SELECT', selectedOptions: [] };
+  const note = { value: '', checked: false, tagName: 'TEXTAREA' };
+  const fields = [choice, note];
+  const form = {
+    contains: () => false,
+    matches: () => false,
+    querySelector: () => null,
+    querySelectorAll: () => fields,
+  };
+  const document = { activeElement: null, querySelectorAll: () => fields };
+  const protection = globalThis.TorchLiveRefresh.createProtection(document);
+  protection.remember();
+  choice.value = 'rejected';
+  note.value = 'Need the exact impact first.';
+
+  assert.equal(protection.protects(form), true);
+  const dirty = protection.dirty();
+  protection.remember({ preserve: dirty });
+  assert.equal(protection.protects(form), true);
+  assert.equal(choice.value, 'rejected');
+  assert.equal(note.value, 'Need the exact impact first.');
 });
 
 test('SCN-console-attention-dedup: doctor and snapshot message counts become one honest queue item', () => {

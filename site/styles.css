@@ -190,6 +190,13 @@ footer div { display: flex; gap: 1.5rem; }
 .attention-item p { margin: .18rem 0 .35rem; color: var(--muted); font-size: .78rem; line-height: 1.4; }
 .attention-item small { display: block; color: var(--muted); font-size: .69rem; line-height: 1.35; overflow-wrap: anywhere; }
 .attention-item a { display: inline-block; margin: .35rem .8rem 0 0; color: var(--route); font-size: .76rem; font-weight: 650; }
+.attention-evidence { margin-top: .28rem; color: var(--muted); font-size: .69rem; }
+.attention-evidence summary { width: fit-content; cursor: pointer; color: var(--route); font-weight: 650; }
+.attention-evidence p { margin: .25rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.attention-quick-actions { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin-top: .4rem; }
+.attention-quick-actions button { min-height: 2rem; padding: .3rem .55rem; }
+.attention-action-status { flex-basis: 100%; margin: .1rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.4; }
+.attention-action-status[hidden] { display: none; }
 .board-section, .console-section { padding-block: 1.65rem; border-bottom: 1px solid var(--line); scroll-margin-top: 1rem; }
 .section-heading { margin-bottom: 1rem; }
 .section-heading h2 { margin: 0; }

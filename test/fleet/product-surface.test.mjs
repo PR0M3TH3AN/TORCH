@@ -30,6 +30,7 @@ test('SCN-product-site / SCN-dashboard-demo / SCN-torch-brand-surface: public si
   const html = readFileSync(new URL('../../site/index.html', import.meta.url), 'utf8');
   const demoHtml = readFileSync(new URL('../../site/demo.html', import.meta.url), 'utf8');
   const consoleHtml = readFileSync(new URL('../../site/console.html', import.meta.url), 'utf8');
+  const consoleScript = readFileSync(new URL('../../site/console.js', import.meta.url), 'utf8');
   const styles = readFileSync(new URL('../../site/styles.css', import.meta.url), 'utf8');
   const torchMark = readFileSync(new URL('../../site/torch-mark.svg', import.meta.url), 'utf8');
   assert.match(html, /<title>TORCH — an AI fleet shaped by your project<\/title>/);
@@ -70,6 +71,9 @@ test('SCN-product-site / SCN-dashboard-demo / SCN-torch-brand-surface: public si
   assert.match(consoleHtml, /console-rail/);
   assert.match(consoleHtml, /id="backlog-board"/);
   assert.match(consoleHtml, /id="attention-list"/);
+  assert.match(consoleHtml, /src="\/attention-actions\.js" defer/);
+  assert.match(consoleScript, /data-attention-decision/);
+  assert.match(consoleScript, /data-approval-preview/);
   assert.match(consoleHtml, /id="artifact-list"/);
   assert.match(consoleHtml, /id="organization-map"/);
   assert.match(consoleHtml, /id="organization-lifecycle"/);
@@ -93,7 +97,6 @@ test('SCN-product-site / SCN-dashboard-demo / SCN-torch-brand-surface: public si
   assert.match(consoleHtml, /Create a task proposal/);
   assert.match(consoleHtml, /Session Manager still owns triage and assignment/);
   assert.match(consoleHtml, /gates remain separate/);
-  const consoleScript = readFileSync(new URL('../../site/console.js', import.meta.url), 'utf8');
   assert.match(consoleScript, /artifact-feedback/);
   assert.match(consoleScript, /feedback\/preview/);
   assert.match(consoleScript, /data-feedback-confirm/);

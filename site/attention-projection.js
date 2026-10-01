@@ -27,6 +27,7 @@ function attentionGroups(snapshot) {
       waitSince: approval.createdAt ?? null,
       href: `#approval-${encodeURIComponent(approval.id)}`,
       action: isOwner ? 'Review request and evidence' : 'Open approval details',
+      decisionApprovalId: isOwner ? approval.id : null,
     });
   }
 
