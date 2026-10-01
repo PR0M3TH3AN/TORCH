@@ -21,6 +21,17 @@ records actual gate disposition; no stale convergence/peer consent dependency cl
 Fresh required PASS/current guards/final QA remain mandatory before ONE request.
 No host/service activation, schema repair, installation75 or source landing inferred.
 
+Actual owner4a1ab0ac independently reproduces merged/TIN/three-path provenance and
+runs UNCHANGED exact systemd scenario at the normal legitimate escalated host
+boundary with disposable fixtures:1/1PASS, no source/test/environment/live service
+change. This is focused environment diagnostic only, not a qualifying native full
+test or waiver. Release must establish the failed invocation's real host/sandbox/
+XDG_RUNTIME_DIR condition, then use the supported registered fulltest gate at a
+legitimate real-user-runtime boundary; no blind retry, environment spoof, arbitrary
+PATH, skip or relaxed assertion. Current Release handle is owner-attested active;
+no restart/selfsubmit. Exact final QA source review remains separate. Workflow29
+records this actual portability/qualification evidence while preserving3fdFAIL.
+
 ## Actual consent and implementation handoff, 18:54 UTC
 
 Owner7f3ff1a9 authorizes SAME Work B2 six-source-path phase; actual freshbrief,
