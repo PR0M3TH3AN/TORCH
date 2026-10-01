@@ -1,5 +1,218 @@
 # Test Integrity Notes
 
+## 2026-09-30 — Bounded routine coordination
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-routine-coordination-instructions
+      given: A freshly installed Fleet using generated default prompts
+      when: Common, manager, specialist, and resume instructions are read
+      then: Each preserves own-inbox acknowledgement, direct peer routing, owner exceptions, and paused execution
+    - id: SCN-routine-coordination-boundaries
+      given: An assigned task and pending peer and owner approvals in a fixed-time local control plane
+      when: The named recipient acknowledges messages and the manager attempts a non-owned decision
+      then: The task and approvals remain pending until only the named peer decides its approval
+    - id: SCN-routine-coordination-paused-dispatch
+      given: An assigned task, an approved named-peer request, and a pending owner provider decision
+      when: A public runtime start is attempted without an authorized executor
+      then: The start is refused, no provider adapter runs, and the assigned task and owner wait remain unresolved
+    - id: SCN-routine-coordination-paused-schedule-dispatch
+      given: An assigned waiting task, a pending owner provider decision, and an installed manager check-in schedule with wake.enabled false
+      when: The public system scheduler dispatches the due owner-authorized coordination schedule
+      then: It queues a durable manager review without planning or invoking a provider, while the task and owner wait remain unresolved
+  observable_outcomes:
+    - Generated tracked instruction text for fresh-install and resume surfaces
+    - Durable task state, approval state, named-approver identity, and authority errors
+    - Public start refusal, zero adapter invocations, offline identity state, and retained owner wait
+    - Installed wake policy, public scheduled-dispatch receipt, zero provider or command invocations, retained assignment and owner wait
+  determinism_controls:
+    - Disposable local Git repository, SQLite state, and fixed clock
+    - No provider calls, network, retries, sleeps, or host timers
+  anti_cheat_rationale:
+    prevents:
+      - Treating acknowledgement as task or approval completion
+      - Letting a manager decide an owner or peer approval
+      - Omitting policy boundaries from one generated startup surface
+      - Re-enabling paused execution or granting starts, spending, publication, destructive recovery, or arbitrary dispatch
+      - Treating a queued manager check-in as authorization to start a provider or resolve the underlying wait
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Codex terminal completion correction
+
+```yaml
+test_integrity_note:
+  change_type: spec_correction
+  scenarios:
+    - id: SCN-mixed-runtime
+      given: A status-zero Codex protocol stream containing thread.started and turn.completed
+      when: Fleet startup captures the provider-specific durable identity
+      then: The completed turn may record idle with the captured identity
+    - id: SCN-codex-terminal-completion
+      given: A status-zero Codex stream containing thread.started but no turn.completed
+      when: Fleet startup evaluates terminal evidence
+      then: Startup fails, retains the captured identity as working, and area startup refuses a duplicate
+    - id: SCN-provider-update-cli
+      given: The managed-provider fixture simulates a successful status-zero Codex exec stream
+      when: Startup follows an approved provider update
+      then: The fixture includes turn.completed after thread.started, preserving strict successful-turn evidence
+  observable_outcomes:
+    - Durable runtime state and captured Codex thread identifier
+    - FLEET_START_FAILED outcome and public area-start blocker
+  determinism_controls:
+    - Disposable local Git fixture and fixed JSON protocol records
+    - No provider calls, network, retries, sleeps, or timeout changes
+  anti_cheat_rationale:
+    prevents:
+      - Treating identity creation as successful turn completion
+      - Returning idle from a status-zero stream missing terminal evidence
+      - Launching a duplicate over an uncertain captured identity
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+Spec basis: a native successful Codex protocol probe emitted ten records ending
+in `turn.completed`; `thread.started` establishes identity only, not completion.
+
+## 2026-09-30 — Bounded Codex executor qualification
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-streaming-protocol-reduction
+      given: A successful Codex stream containing an initial identity, a multi-megabyte image record, private stderr, and terminal completion
+      when: The bounded reducer and lifecycle process the stream
+      then: Only identity and terminal records cross the boundary and idle is recorded without private output
+    - id: SCN-cli-codex-protocol-routing
+      given: A Codex launch planned by the CLI
+      when: The CLI invokes the executor
+      then: It launches the bounded reducer instead of collecting provider stdout directly
+    - id: SCN-codex-final-terminal-state
+      given: A stream whose final terminal failure follows an earlier completion, plus real child signal and spawn-error cases
+      when: The reducer and lifecycle classify the child outcome
+      then: Only the final failed terminal is retained, signals remain uncertain, and a safe spawn-error code is preserved
+    - id: SCN-scheduled-manager-wake-terminal-failure
+      given: An owner-authorized manager check-in with a planned Codex wake whose stream lacks terminal completion
+      when: The actual ScheduleService invokes the wake boundary
+      then: The schedule and wake reservation are failed while the manager identity remains working
+  observable_outcomes:
+    - Bounded reducer stdout, durable runtime state, schedule result, and reservation outcome
+  determinism_controls:
+    - Disposable Git/control-plane fixtures and fixed protocol records
+    - Local SIGTERM-aware child with a readiness marker; no provider, network, retries, or sleeps
+  anti_cheat_rationale:
+    prevents:
+      - Solving image overflow only by shrinking a parent buffer
+      - Marking a missing-terminal manager wake as invoked or successful
+      - Accepting an earlier completed event after a later failed terminal
+      - Retaining private image, token, or reasoning material in durable evidence
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Executor terminal-outcome integrity
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-executor-interrupted-outcomes
+      given: A real child that exits cleanly after SIGTERM plus deterministic signal and ENOBUFS executor results
+      when: Runtime startup receives a status-zero timeout, signal, or output-overflow error
+      then: No idle completion is recorded; captured identity remains working and failure evidence excludes private output
+    - id: SCN-scheduled-executor-failure
+      given: A scheduled command returns status zero together with ENOBUFS and screenshot-heavy output
+      when: The scheduler records its receipt
+      then: The receipt is failed, output is bounded, and credential or private-reasoning values are redacted
+  observable_outcomes:
+    - Durable runtime presence state and retained native session identifier
+    - Schedule result, exit status, bounded output, and redacted error evidence
+  determinism_controls:
+    - Disposable local Git fixtures and a bounded SIGTERM-aware child process
+    - Injected signal and ENOBUFS boundaries; no network, provider launch, retry, or sleep
+  anti_cheat_rationale:
+    prevents:
+      - Treating status zero as successful when Node reports timeout or output overflow
+      - Marking an interrupted runtime idle and permitting a duplicate launch
+      - Passing screenshot payloads, credentials, prompts, or private reasoning into durable receipts
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Early identity and safe no-code diagnostics
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-interrupted-identity
+      given: A real local helper whose child emits thread.started then remains alive
+      when: The parent observes the reduced bounded identity and sends SIGTERM to the helper
+      then: The helper closes by SIGTERM without a terminal success, while lifecycle retains the identity as working and uncertain
+    - id: SCN-codex-code-less-diagnostics
+      given: Code-less structured model, authentication, or quota errors containing prompt, reasoning, and image adversarial fields
+      when: The bounded reducer and adapter classify startup failure
+      then: Only the allowlisted category crosses the boundary; no free-form diagnostic or adversarial field remains
+    - id: SCN-cli-codex-real-executable
+      given: An installed disposable project and an isolated executable named codex
+      when: The actual runCli up command starts the selected domain
+      then: The reducer carries identity and terminal completion through the CLI boundary and durable identity becomes idle
+  observable_outcomes:
+    - Real helper close signal, exact reduced protocol bytes, and working retained runtime identity
+    - Safe diagnostic category with no prompt, reasoning, image, or free-form message
+    - Actual CLI JSON response and persisted identity state from a fake executable on an isolated PATH
+  determinism_controls:
+    - Local child process signal handshake driven by receipt of thread.started; a bounded watchdog only terminates and awaits the owned fixture on failed emission, never retries or asserts product timing
+    - Disposable Git/XDG fixtures and a hermetic executable; a tagged guard rejects an absent or mismatched env before native spawn, then delegates unchanged to native spawnSync only for the validated fake path
+  anti_cheat_rationale:
+    prevents:
+      - Delaying identity output until child close and losing it on interruption
+      - Treating code-less model/auth/quota errors as successful or retaining their raw text
+      - Testing only an injected launch helper instead of the CLI execution boundary
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-09-30 — Generated exact-check artifacts
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-generated-check-artifacts
+      given: A clean managed worktree and an exact check that emits evidence
+      when: The same check runs twice through TORCH
+      then: Each pass retains separate external bytes and hashes bound to candidate commit, check definition, and run ID while the tested tree stays clean
+    - id: SCN-generated-check-mutation
+      given: A clean managed worktree and an exact check that emits external evidence
+      when: The command exits zero after mutating a tracked source file
+      then: The receipt remains incomplete and cannot qualify despite retained output
+  observable_outcomes:
+    - Recoverable output paths, byte counts, SHA-256 hashes, candidate/check/run provenance, and exact-pass qualification
+    - Git worktree status and incomplete receipt for a zero-exit source mutation
+  determinism_controls:
+    - Disposable local Git fixtures, deterministic run IDs, fixed evidence bytes, and no network or provider calls
+    - No retries, sleeps, baseline updates, stashes, restores, or source cleanup
+  anti_cheat_rationale:
+    prevents:
+      - Treating exit zero as an exact-check pass after a tracked expectation changes
+      - Losing or overwriting generated evidence between sequential check runs
+      - Claiming provenance without retained bytes and a content hash
+      - Hiding source mutations through automatic restore or cleanup
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Exact observed-file ownership evidence
 
 ```yaml
@@ -2233,6 +2446,87 @@ test_integrity_note:
     - no provider accounts or live registry in regression tests
   anti_cheat_rationale:
     prevents: [unverified activation, global overwrite, silent stale fallback, arbitrary command injection]
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+# Setup and canonical worktree briefs (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-guided-setup
+      given: "An approved installed project with uncommitted TORCH files"
+      when: "Owner reviews and authorizes setup"
+      then: "Only owned files are committed; registered worktrees exist; no providers start; staged user work blocks setup"
+    - id: SCN-worktree-canonical-brief
+      given: "A registered worktree has older instructions"
+      when: "Its installation root is resolved and a brief requested"
+      then: "Canonical instructions appear; unregistered worktrees, copied installs and stale installation IDs fail closed"
+    - id: SCN-install-restore
+      given: "A normally detached project retains configuration and worktree commits"
+      when: "Owner explicitly restores the install"
+      then: "Binding is reattached without changing profiles, worktree history or launching providers"
+  observable_outcomes:
+    - "Git commits, clean canonical checkout, worktree registrations, brief text and local detach metadata"
+  determinism_controls:
+    - "Isolated temporary Git repositories and XDG state; no provider or network calls"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded success without Git worktrees or commits"
+      - "Accepting copied or unregistered installation state"
+      - "Staging unrelated owner work"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+# First live scheduler pilot: native systemd parser (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-systemd-native-unit
+      given: "A generated dispatcher with a repository path containing spaces, percent and quote characters"
+      when: "The real Linux systemd-analyze parser verifies the emitted service"
+      then: "The service parses successfully and WorkingDirectory remains an absolute scalar path"
+  observable_outcomes:
+    - "Actual native parser exit status and generated unit bytes"
+  determinism_controls:
+    - "Temporary project path alias and unit file; /usr/bin/true command; verify-only, no service activation"
+  anti_cheat_rationale:
+    prevents:
+      - "Mocked systemctl success masking invalid unit syntax"
+      - "Treating quoted ExecStart syntax as valid for scalar WorkingDirectory"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Codex startup runtime diagnostics (2026-09-30)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-startup-diagnostics
+      given: "A real Codex adapter and lifecycle plan receive deterministic nonzero child-process results"
+      when: "Codex stdout contains a model-rejection event, malformed JSON, or output above the diagnostic bound"
+      then: "Owner-visible failure details prefer the structured model rejection, redact stderr secrets and prompt fields, and label malformed or oversized output unknown with an explicit reason"
+  observable_outcomes:
+    - "FLEET_START_FAILED status, persisted offline identity state and owner-visible diagnostic details"
+    - "Structured model rejection over noisy MCP stderr; explicit unknown outcomes without retained oversized stdout"
+    - "No synthetic prompt, token or password value in serialized error details"
+  determinism_controls:
+    - "Disposable local Git/XDG fixtures and fixed injected child-process output"
+    - "Real createCodexAdapter and startFleet boundary; no provider calls, retries, sleeps or network"
+  anti_cheat_rationale:
+    prevents:
+      - "Returning a hard-coded success while losing the real nonzero execution status"
+      - "Displaying unrelated MCP noise instead of a structured model rejection"
+      - "Leaking raw prompt or credential values through diagnostics"
+      - "Treating malformed or oversized stdout as trusted structured evidence"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
