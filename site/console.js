@@ -1,4 +1,83 @@
+const consoleViewDefinitions = Object.freeze({
+  overview: { title: 'Overview' },
+  'owner-briefing': { title: 'Briefing' },
+  'flow-watch': { title: 'Flow watch' },
+  work: { title: 'Work' },
+  'initiative-progress': { title: 'Progress' },
+  fleet: { title: 'Fleet' },
+  communications: { title: 'Conversations' },
+  organization: { title: 'Organization' },
+  evidence: { title: 'Evidence' },
+  delivery: { title: 'Release gates' },
+});
+
+function installConsoleViewRouting() {
+  const nav = document.querySelector('.console-rail');
+  const sections = [...document.querySelectorAll('.console-workspace > [data-console-view]')];
+  const links = [...(nav?.querySelectorAll('a[href^="#"]') ?? [])];
+  if (!nav || !sections.length || !links.length) return { sync: () => 'overview' };
+
+  let lastHash = null;
+  const decodeHash = (hash) => {
+    try { return decodeURIComponent(String(hash ?? '').replace(/^#/, '')); } catch { return ''; }
+  };
+
+  function resolveView(hash) {
+    const fragment = decodeHash(hash);
+    if (consoleViewDefinitions[fragment]) return fragment;
+    const target = document.getElementById(fragment);
+    const containingView = target?.closest('[data-console-view]')?.dataset.consoleView;
+    return consoleViewDefinitions[containingView] ? containingView : 'overview';
+  }
+
+  function sync({ focus = false, force = false } = {}) {
+    const hash = globalThis.location.hash || '#overview';
+    if (!force && hash === lastHash) return resolveView(hash);
+    lastHash = hash;
+    const view = resolveView(hash);
+    const definition = consoleViewDefinitions[view];
+    const visible = sections.filter((section) => section.dataset.consoleView === view);
+    sections.forEach((section) => { section.hidden = section.dataset.consoleView !== view; });
+    links.forEach((link) => {
+      const route = resolveView(link.getAttribute('href'));
+      if (route === view) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    const workspace = document.querySelector('.console-workspace');
+    if (workspace) workspace.dataset.currentView = view;
+    document.title = `${definition.title} | TORCH Local Fleet Console`;
+    const announcement = document.querySelector('#console-view-status');
+    if (announcement) announcement.textContent = `Viewing ${definition.title}.`;
+
+    if (focus) {
+      const targetId = decodeHash(hash);
+      const target = document.getElementById(targetId);
+      if (target && target.dataset.consoleView !== view && target.closest('[data-console-view]')) {
+        target.scrollIntoView?.({ block: 'start' });
+        target.focus?.({ preventScroll: true });
+      } else {
+        const labelledBy = visible[0]?.getAttribute('aria-labelledby');
+        const heading = (labelledBy && document.getElementById(labelledBy))
+          ?? visible[0]?.querySelector('h1, h2');
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus({ preventScroll: true });
+        }
+        globalThis.scrollTo?.({ top: 0, behavior: 'instant' });
+      }
+    }
+    return view;
+  }
+
+  globalThis.addEventListener('hashchange', () => sync({ focus: true }));
+  globalThis.addEventListener('popstate', () => sync({ focus: true }));
+  const initialFragment = decodeHash(globalThis.location.hash);
+  sync({ focus: Boolean(initialFragment && !consoleViewDefinitions[initialFragment]) });
+  return { sync };
+}
+
 const $ = (selector) => document.querySelector(selector);
+const consoleViewRouter = installConsoleViewRouting();
 const demoWorkspace = globalThis.TorchConsoleDemo;
 const workViews = globalThis.TorchWorkViews;
 const workProgress = globalThis.TorchWorkProgress;
@@ -45,6 +124,46 @@ function setText(selector, value) {
   if (element) element.textContent = value ?? '';
 }
 
+function compactOwnerBriefingProvenance() {
+  const publication = $('#owner-briefing-content')?.querySelector('.briefing-publication');
+  if (!publication) return;
+
+  const timestamp = publication.querySelector('p time');
+  const window = [...publication.querySelectorAll('.briefing-muted')]
+    .find((paragraph) => paragraph.textContent.trim().startsWith('Window:'));
+  if (timestamp || window) {
+    const disclosure = document.createElement('details');
+    disclosure.className = 'briefing-provenance';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Publication time and reporting window';
+    disclosure.append(summary);
+    if (timestamp) {
+      const exactTime = timestamp.cloneNode(true);
+      exactTime.textContent = timestamp.getAttribute('datetime') || timestamp.textContent;
+      const published = document.createElement('p');
+      published.append('Published ', exactTime);
+      disclosure.append(published);
+      timestamp.textContent = ageLabel(timestamp.getAttribute('datetime'));
+      timestamp.title = exactTime.textContent;
+    }
+    if (window) disclosure.append(window);
+    publication.append(disclosure);
+  }
+
+  for (const code of publication.querySelectorAll('code')) {
+    const commit = code.textContent.trim();
+    if (!/^[a-f0-9]{40}$/i.test(commit)) continue;
+    const disclosure = document.createElement('details');
+    disclosure.className = 'briefing-provenance';
+    const summary = document.createElement('summary');
+    summary.textContent = `Commit ${shortCommit(commit)}`;
+    const exact = document.createElement('code');
+    exact.textContent = commit;
+    disclosure.append(summary, exact);
+    code.replaceWith(disclosure);
+  }
+}
+
 function shortCommit(value) {
   return value ? String(value).slice(0, 9) : '—';
 }
@@ -69,9 +188,10 @@ function taskCard(task, healthFindings = []) {
   const staleEvidence = healthFindings.find((finding) => finding.taskId === task.id
     && ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'].includes(finding.code));
   return `<article class="task-ticket">
-    <div class="ticket-topline"><code>${escapeHtml(task.id)}</code><span class="priority priority-${escapeHtml(task.priority ?? 'normal')}">${escapeHtml(task.priority ?? 'normal')}</span></div>
+    <div class="ticket-topline"><span class="priority priority-${escapeHtml(task.priority ?? 'normal')}">${escapeHtml(task.priority ?? 'normal')}</span></div>
     <h4>${escapeHtml(task.title ?? 'Untitled task')}</h4>
     <p>${escapeHtml(detail || 'No task description recorded.')}</p>
+    <details class="task-reference"><summary>Task reference</summary><code>${escapeHtml(task.id)}</code></details>
     ${staleEvidence ? `<div class="evidence-warning" role="status"><strong>Evidence needs refresh</strong><p>${escapeHtml(staleEvidence.recommendation)}</p></div>` : ''}
     <dl class="ticket-meta">
       <div><dt>Owner</dt><dd>${escapeHtml(task.owner ?? 'Unassigned')}</dd></div>
@@ -772,6 +892,7 @@ function render(snapshot) {
 
   setText('#project-name', project?.name ?? project?.id ?? 'Not installed');
   setText('#project-branch', branch);
+  setText('#project-branch-detail', branch);
   setText('#project-commit', shortCommit(snapshot.repository?.head));
   setText('#fleet-health', snapshot.mode === 'installed'
     ? (snapshot.doctor?.healthy ? 'Healthy' : 'Review findings') : 'Not installed');
@@ -794,6 +915,7 @@ function render(snapshot) {
   renderRuntimeProfileEditor(agents, snapshot.runtimeAdapters ?? [], snapshot.mode === 'installed');
   renderFlowWatch(snapshot);
   setHtml('#owner-briefing-content', globalThis.TorchOwnerDigest.render(snapshot.ownerDigest));
+  compactOwnerBriefingProvenance();
 
   renderAttention(attention);
 
@@ -1910,11 +2032,11 @@ globalThis.addEventListener('pageshow', (event) => {
   if (event.persisted && !liveUpdatesPaused && document.visibilityState === 'visible') refresh();
 });
 if (demoWorkspace) {
-  document.title = 'TORCH Dashboard';
   $('#demo-banner').hidden = false;
   $('#reset-demo')?.addEventListener('click', () => {
     demoWorkspace.reset();
     globalThis.location.reload();
   });
 }
+consoleViewRouter.sync({ force: true });
 refresh();
