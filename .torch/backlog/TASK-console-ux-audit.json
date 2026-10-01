@@ -22,17 +22,17 @@
   "observedAt": "ed1f7614d1ea",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "owner-console",
   "evidence": [
     "reports/design-system/task-console-ux-audit-owner-console-2026-09-30.md"
   ],
-  "commit": null,
+  "commit": "13fe10b765736984d02f6bca02f690d63dbb3a64",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "The audit requires visible mobile screenshots at desktop and mobile sizes. With a fresh browser session/tab, viewport set before navigation to 351x760 at DPR 0.9, DOM confirmed exactly 390x844 CSS and visible Overview content. The one fullPage:false screenshot attempt failed with `Timed out after 5000ms waiting for CDP command Page.captureScreenshot.` Previous 433x938 capture is not exact-size evidence; prior blank capture is retained as failure evidence. QA and Provider Runtime advise against retry loops or substituting another viewport. Other mobile views remain uninspected.",
   "createdAt": "2026-09-30T22:15:39.356Z",
-  "updatedAt": "2026-09-30T23:38:04.514Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T00:43:04.639Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -61,6 +61,13 @@
       "actorId": "owner-console",
       "at": "2026-09-30T23:38:04.514Z",
       "note": "Resumed assigned audit under current digest. Partial live desktop computer-use coverage and separate-view proposal recorded in the linked local report; prior screenshot timeout blocker remains open. Continuing stable browser capture and remaining keyboard/refresh/history/Operations/action-state coverage. No live action submitted."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "owner-console",
+      "at": "2026-10-01T00:43:04.639Z",
+      "note": "Current audit checkpoint and exact screenshot blocker recorded. Desktop views and interactions are documented; mobile visual coverage remains incomplete after one fresh exact-viewport capture attempt. No completion or integration claimed."
     }
   ]
 }

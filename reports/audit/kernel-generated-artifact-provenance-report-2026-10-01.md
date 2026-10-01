@@ -49,3 +49,27 @@ The task remains blocked on recovery and exact check qualification. Restored
 cleanliness would not supply a dashboard receipt. The accepted artifact
 dependency remains unlanded; no peer merge, canonical landing, provider start,
 baseline change, cleanup of other files, or gate waiver was performed.
+
+At the closing inbox boundary, owner message
+`40585506-3561-4644-bc0d-949fd4e4cdde` and QA message
+`0316210f-6c0f-474f-83a5-a7651af9f908` established that the attempted QA decision
+batch was interrupted. Authoritative approval readback still showed `pending`,
+revision 1, with no decision or restoration. Owner requires fresh clarification
+before anyone retries, cancels or decides that recovery operation. Manager routed
+this hold directly to Kernel. Independent bounded Runtime test consent was sent
+separately by QA; it does not grant recovery authority.
+
+The same closing reconciliation retained Runtime candidate
+`f4594e9a3767b5e7bc3284b5c81872c6143c0760` as locally improved but not fully
+qualified. Owner independently observed bounded code-less error classification
+and early thread identity before forwarded SIGTERM; strict product scenarios and
+all required exact-commit receipts remain necessary. Console recorded revision 5
+as blocked at `13fe10b765736984d02f6bca02f690d63dbb3a64`: the confirmed 390x844
+CSS mobile viewport could not be captured because `Page.captureScreenshot`
+timed out. DOM geometry is not completed mobile visual evidence.
+
+Fleet evolution and hierarchy assessment support retaining the six existing
+specialists while improving consent, preflight evidence and per-action receipts.
+No Fleet change or new dispatch was made. Automatic wakes remain paused. Owner
+landing approval `2b2dfb35-46ac-4adb-ac14-5680f7a85e80` remains pending; the
+automatic approval review rejection was not retried or bypassed.
