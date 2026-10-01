@@ -2811,3 +2811,41 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+## 2026-10-01 — Public alpha.3 copy reflects the self-host pilot
+
+Scope: isolated `release/public-alpha3-20261001`; QA decisions
+`695bc401-c64d-430e-83c3-0d97c7e37286` and
+`1dadb27a-74b7-48ab-9fd2-ff914468473a` authorize the bounded
+product-surface assertion correction and this physical-end append. The previous
+"Isolated candidate checks / Clean install gate open" assertion described an
+older stage, not the demonstrated Codex self-host pilot. It is replaced with
+stricter independent copy checks, not an implementation-derived snapshot.
+The original product-value lede and every other existing assertion are retained.
+This does not qualify the tool's execution engine, live provider switching,
+installation, private fleet, or production operation.
+
+```yaml
+test_integrity_note:
+  change_type: "spec_correction"
+  scenarios:
+    - id: SCN-public-alpha3-pilot-status
+      given: "The public landing page for the experimental alpha.3 release"
+      when: "A visitor reads its status, evidence ledger, and source links"
+      then: "Codex pilot evidence is distinct from unqualified provider switching, installed artifacts from development source, and implemented foundations from open execution-fence, pipeline, and production gates"
+  observable_outcomes:
+    - "Experimental version, paused automatic wakes, and open qualifications remain visible"
+    - "README, source, and specification links target the rewrite branch rather than the legacy default branch"
+    - "Existing demo isolation, separate-tab link, branding, purpose, and cache-hypothesis guards are unchanged"
+  determinism_controls:
+    - "Fixed committed HTML strings; no live provider, external request, clock, retry, or generated golden"
+  anti_cheat_rationale:
+    prevents:
+      - "Claiming full production or mixed-provider qualification from local scenarios"
+      - "Treating newer source as already installed"
+      - "Keeping a false historical status solely to satisfy a test"
+      - "Dropping existing public-demo and product-purpose assertions"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

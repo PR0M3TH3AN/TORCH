@@ -50,7 +50,17 @@ test('SCN-product-site / SCN-dashboard-demo / SCN-torch-brand-surface: public si
   assert.match(html, /Lower cache and context costs are a hypothesis/);
   assert.match(html, /torch bootstrap/);
   assert.doesNotMatch(html, /node bin\/torch\.mjs/);
-  assert.match(html, /Isolated candidate checks[\s\S]*Clean install gate open/);
+  assert.match(html, /TORCH 0\.1\.0-alpha\.3 · Experimental pilot/);
+  assert.match(html, /TORCH-on-TORCH self-host pilot is Codex-run/);
+  assert.match(html, /Built-in Codex, Claude, and Pi adapters exist; live mixed-provider swaps and production use remain unqualified/);
+  assert.match(html, /accepted alpha\.3 artifact is source 28c[\s\S]*canonical source 0c2 is not auto-installed/);
+  assert.match(html, /Candidate executor and fence assurance open/);
+  assert.match(html, /Pipeline execution, isolated candidate-executor assurance, and production acceptance remain open/);
+  assert.match(html, /automatic AI wakes remain paused/);
+  assert.match(html, /https:\/\/github\.com\/PR0M3TH3AN\/TORCH\/blob\/rewrite\/portable-agent-fleet\/README\.md/);
+  assert.match(html, /https:\/\/github\.com\/PR0M3TH3AN\/TORCH\/blob\/rewrite\/portable-agent-fleet\/docs\/PORTABLE_AGENT_FLEET_SPEC\.md/);
+  assert.match(html, /https:\/\/github\.com\/PR0M3TH3AN\/TORCH\/tree\/rewrite\/portable-agent-fleet/);
+  assert.doesNotMatch(html, /github\.com\/PR0M3TH3AN\/TORCH\/blob\/main\//);
   assert.match(html, /data-label="Evidence"/);
   assert.match(html, /As coordination grows[\s\S]*approve every organization change/i);
   assert.doesNotMatch(html, /Request CR-184|terrain streaming|Terrain specialist/);
