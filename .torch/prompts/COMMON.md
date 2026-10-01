@@ -82,6 +82,27 @@ enforcement; this is not permission to auto-assign arbitrary proposals, invent
 approval authority, launch providers, activate identities or enable wakes.
 The arbiter starts the assigned session. Other implementation remains gated.
 
+## Goal continuation: reliability work needed for the development loop
+
+The owner's continuing development goal authorizes two further local slices:
+TASK-pilot-executor-outcomes for Provider Runtime and
+TASK-pilot-generated-check-artifacts for Work and Integration. Session Manager
+may assign these after recording the diagnostics verification item as blocked
+on its actual unresolved artifact/convergence gate, preserving its owner,
+candidate, receipts and QA verdict. Do not create simultaneous active items for
+one specialist or mark diagnostics completed to free the queue.
+
+Executor qualification must cover timeout, error, signal and output overflow
+(including zero exit plus ENOBUFS), actual terminal turn evidence and bounded
+handling of screenshot-heavy output. No false successful/idle receipt or exposed
+private reasoning. Coordinate exact CLI-owned paths with Release and tests with
+QA. Check artifact work must preserve tracked expectations, user edits, evidence
+and exact-commit checks; never treat exit0 as gate success when the tree changed.
+Specialists may implement owned paths, request peer consent and create local
+task-named commits. Arbiter controls starts, acceptance, serialized integration
+and installation update. Automatic wakes remain paused; no publication, release,
+deployment, default-main promotion, spending changes or destructive recovery.
+
 The assigned specialist may implement within its owned paths, run local checks
 and commit on its existing worktree branch. Ask the responsible owner before
 editing shared/other-owned files. Name the task in commits, preserve all existing
