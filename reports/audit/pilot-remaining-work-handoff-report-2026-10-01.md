@@ -1,5 +1,98 @@
 # Current pilot remaining-work handoff
 
+## Guarded artifact delivery and current Fleet at 10:09 UTC
+
+Startup brief still matches `d7e6d69`; exact narrowly approved retry resolved
+the sandbox readonly-database access failure. QA submitted request
+`6e02f89e-3a03-4144-8c29-0e5f398c5844`. Manager independently reread its exact
+source `0fdfcb3b68e4511f2993d03e1fff8f89124b731c`, clean candidate and canonical
+`cb145e56`, target rewrite branch, ancestry, four-file diff and four current
+PASS receipts with null invalid reasons. The initial native plan had only
+missing authorization. Manager authorized at10:06:40, then the fresh native
+plan had zero blockers; serialized landing completed **10:06:50.778 UTC**.
+Canonical is independently confirmed clean at the exact accepted `0fdfcb3`.
+Standalone artifact task3909 is **completed revision 7**, with request and
+receipts retained. Fresh QA next lookup is idle; no substitute assignment made.
+This closes its bounded source/artifact safety criteria, not actual visual,
+release, installed-engine, schema recovery or wake qualification.
+
+Console's SAME workflow is now **in_progress revision 7**, actual native
+transition10:02:17. Owner `b7b19880` establishes that its earlier blocked5/idle
+report used a09:50 observation preceding the09:52 assignment, not a cache bug.
+Handoff `a5b5cbc5` preserves observation timestamps and requires current
+brief/task/inbox refresh before a blocked/idle report after peer review. Its
+implementation scope remains exactly the three approved site paths plus named
+QA test consent; real desktop/mobile browser acceptance is still open.
+
+Release persistent-operations remains **in_progress revision 4** with exact
+portable contract and named QA/Kernel/Runtime consent requests pending. Owner
+`df82e7fe` names actual request prefixes0a90/76cf/9cf. Manager routed them
+directly through `619e24a2`, `aab9e558`, `c5692d09` and `2c314c96`; no false owner
+hold, peer impersonation or additional implementation queue. Canonical advancement
+is communicated for clean guarded specialist convergence and fresh exact checks;
+active or dirty owned work must be preserved. Manager did not converge a peer.
+
+Kernel schema/writer-isolation and Runtime starting-presence remain blocked.
+Work's test-integrity record ownership/schema phase and real Console audit/
+attention acceptance also remain blocked. Approved QA-record prefix application
+and pipeline prefix review remain their separate retained handoffs; no config
+application or scope transfer occurred. Alpha.3 owner approval75 remains pending
+after the previous automatic approval review refusal for live-service risk;
+no fresh human answer or installation/wake authorization was received.
+
+Fleet and hierarchy assessments were refreshed before action: eight recurring
+domain sets and ten direct Manager coordination requests in30 days. Existing
+owners cover the current artifact, lifecycle, install and check boundaries;
+explicit interfaces and stronger observation/qualification contracts are the
+recommended process improvement. Retain all six specialists, with no proposed
+or active Fleet changes. All50 tasks remain:37 proposed, five blocked,
+six completed and two in progress, with one active item per specialist.
+Health's34 stale-observation and two resolved-dependency warnings stay visible;
+their existing owned classification follow-up is pending, not auto-fixed.
+
+## Proposed check execution and receipt boundary at 10:09 UTC
+
+Owner `df82e7fe` requests a design proposal for the retained deeper check-engine
+provenance roadmap. This is proposed architecture under existing delivery/release
+qualification follow-up, not implementation, ownership amendment or a new queue.
+Observed source evidence: `src/cli.mjs` constructs the live control plane before
+CheckService; canonical initializer unconditionally labels schema2, while the
+Kernel candidate's schema3 guard refuses a relabelled live database. CheckService
+also creates receipt/prepared-check tables through the control plane. Therefore
+running normal candidate checks can mutate production schema merely to qualify
+candidate source, creating the recorded activation/qualification circularity.
+
+Proposed contract for peer and owner review:
+
+- Work owns a candidate-source execution component that binds the exact clean
+  candidate, check definition, frozen inputs, resource/worktree guards, terminal
+  outcome and artifact bytes. It must not initialize the production database.
+- Kernel owns a versioned receipt/control-plane adapter interface; Release owns
+  explicit CLI wiring. The adapter authenticates project/identity/attempt and
+  records real guard/resource/outcome evidence under the registered state root.
+  It must not migrate that database as a side effect of candidate qualification.
+- Fingerprint both executing source engine and adapter independently: exact
+  commit/content digest, interface/schema versions and actual loaded provenance.
+  An explicitly reviewed compatibility contract decides which tuples are usable;
+  installed code is not presumed equivalent to the candidate.
+- Missing, incompatible, forged, stale or unknown engine/adapter provenance
+  refuses qualified receipts. Neither a caller boolean nor an isolated fixture
+  receipt can become real-project acceptance. Existing guards and lease/resource
+  authority remain mandatory; an unsupported live adapter remains a real blocker.
+- Deterministic QA scenarios should compare production database schema/data
+  before and after candidate execution; reject mismatched engine/adapter hashes,
+  definition/input drift, unknown terminal outcomes and cross-project/fixture
+  receipt promotion; preserve held leases and require actual artifact hashes.
+- Portable executor/adapter tests may use isolated state first. Real qualification
+  remains unavailable until the reviewed compatible live adapter exists. No old
+  checker retry, fake real-project receipt, gate waiver, production recovery,
+  runtime activation or unassigned implementation is granted by this proposal.
+
+Live ownership query confirms Work `src/checks/**`, Kernel `src/control-plane/**`
+and Release `src/cli.mjs`. Bounded read-only interface/path/scenario feasibility
+requests `f0615688` and `73f52a46` go directly to Work and Kernel; their responses,
+Release CLI consent and QA strict scenario review are the concrete next gate.
+
 ## Independent artifact acceptance at 10:00 UTC
 
 This supersedes the pending artifact acceptance in the 09:57 snapshot.

@@ -17,7 +17,7 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "owner-console",
   "evidence": [
     "message:89c92c3e-4f00-4213-877d-6c2afeb4b22c:focused-view-routing/mobile-navigation/title-provenance-design-observations",
@@ -35,8 +35,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T09:52:53.161Z",
-  "revision": 6,
+  "updatedAt": "2026-10-01T10:02:17.190Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -79,6 +79,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:52:53.161Z",
       "note": "Resume SAME owner/task after actual design acceptance and arbiter-attested named QA consent. Exact Console next idle/no active item. Implement only site/console.html, site/console.js, site/styles.css plus QA-approved test/fleet/console-view-navigation.test.mjs; confirm actual addressed QA6ce049 constraints before test edits. Stable fragments/history/current accessible navigation, mobile all-area grid, selected view, human-readable task/status and accessible provenance; retain drafts, preview freshness/confirmation and all existing authority controls, unknown/live distinction, branding/dark mode. No live-refresh/backend/config scope expansion. Strict tests/Test Integrity Note through QA consent; fresh exact four gates and independent QA acceptance. Actual browser unavailability remains explicit final visual gate, not source implementation deadlock. Arbiter controls session start; Manager starts none."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "owner-console",
+      "at": "2026-10-01T10:02:17.190Z",
+      "note": "Fresh brief and native backlog read confirm assigned revision 6 on the same task; exact three owned site paths and QA-consented scenario file are authorized. Beginning implementation while retaining actual browser desktop/mobile acceptance as a later gate."
     }
   ]
 }
