@@ -45,29 +45,6 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
-## 2026-10-01 — Check-subject context B1 allocation-bound correction
-
-```yaml
-test_integrity_note:
-  change_type: new_tests
-  scenarios:
-    - id: SCN-check-subject-context-v1-refusal
-      given: Captured metadata bytes larger than the fixed 1 MiB v1 frame limit
-      when: Parsing or E/S/A digest calculation is requested
-      then: Both reject before Buffer copying, hashing, or frame parsing
-  observable_outcomes:
-    - "MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE with zero observed Buffer.from copies"
-  determinism_controls:
-    - Fixed in-memory oversized buffer and temporary Buffer.from observation; no database, provider, network, retry, or sleep
-  anti_cheat_rationale:
-    prevents:
-      - Copying caller-controlled oversized metadata before the protocol resource bound applies
-      - Hashing or parsing bytes that the v1 contract must reject
-  relaxation:
-    did_relax_any_assertion: false
-    if_true_explain_spec_basis: ""
-```
-
 ## 2026-10-01 — Atomic runtime identity reservations
 
 ```yaml
@@ -2790,6 +2767,29 @@ test_integrity_note:
       - Reinterpreting V1 fixture observations as a loaded engine, native parent binding, or V2 snapshot/dependency attestation
       - Promoting an isolated fixture result into a native candidate or PASS receipt
       - Inferring actual product, engine, or adapter bytes from repository HEAD or a mutable active pointer
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-01 — Check-subject context B1 allocation-bound correction
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-check-subject-context-v1-refusal
+      given: Captured metadata bytes larger than the fixed 1 MiB v1 frame limit
+      when: Parsing or E/S/A digest calculation is requested
+      then: Both reject before Buffer copying, hashing, or frame parsing
+  observable_outcomes:
+    - "MANAGED_SUBJECT_METADATA_FRAME_TOO_LARGE with zero observed Buffer.from copies"
+  determinism_controls:
+    - Fixed in-memory oversized buffer and temporary Buffer.from observation; no database, provider, network, retry, or sleep
+  anti_cheat_rationale:
+    prevents:
+      - Copying caller-controlled oversized metadata before the protocol resource bound applies
+      - Hashing or parsing bytes that the v1 contract must reject
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
