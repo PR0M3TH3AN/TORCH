@@ -2754,3 +2754,44 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Candidate source B2 authenticated-attempt spec correction (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: spec_correction
+  scenarios:
+    - id: SCN-candidate-bootstrap-one-shot
+      given: "A CheckService-issued opaque registered-plan handle"
+      when: "A foreign, cloned, expired, replayed, or already-closed handle is used"
+      then: "No FD3 admission opens; the only accepted acknowledgement is the exact FD4 binding frame and it closes the original linear handle"
+    - id: SCN-candidate-input-consumption
+      given: "A frozen, bounded product snapshot and a fixed Node E binding"
+      when: "The original product bytes change before execution"
+      then: "An actual spawned child reads the frozen bytes; post-capture drift refuses before spawn"
+    - id: SCN-candidate-execution-boundary
+      given: "An opaque attempt with fixed command, arguments, explicit environment, and output cap"
+      when: "The child exits zero after exceeding the cap"
+      then: "The parent records overflow as non-success without accepting an injected executor or caller-selected limit"
+    - id: SCN-candidate-fence-closure
+      given: "A closed opaque attempt"
+      when: "The backend has not recorded namespace identity, FD closure, and descendant reaping"
+      then: "Terminal proof is UNKNOWN; fabricated observations and cloned handles cannot create proof"
+  observable_outcomes:
+    - "Only the exact FD4 acknowledgement closes a one-shot opaque admission"
+    - "Child stdout proves frozen-byte consumption, not same-process test reads"
+    - "Zero exit plus output overflow is never success"
+    - "Missing backend fence evidence is never TerminalProof"
+  determinism_controls:
+    - "Temporary source trees, fixed absolute Node runtime, explicit empty child environment, bounded streams"
+    - "No injected executor, caller-provided command, root, environment, limit, or terminal observation"
+  anti_cheat_rationale:
+    prevents:
+      - "Arbitrary tuple issuance or a fabricated bootstrap literal"
+      - "Boolean caller observations minting terminal proof"
+      - "Cloned or reused handles reopening an admission"
+      - "Same-process snapshot reads impersonating child consumption"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

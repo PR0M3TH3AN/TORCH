@@ -1,6 +1,33 @@
 import { TorchError } from '../kernel/errors.mjs';
-const fail = (message, code, details) => { throw new TorchError(message, { code, details }); };
-export function createCandidateExecutionFenceV2({ bootstrap, backend = 'private-pid1-namespace' } = {}) { if (!bootstrap?.transport?.closesBeforeCandidateSpawn || backend !== 'private-pid1-namespace') fail('Candidate fence has no supported private bootstrap', 'CANDIDATE_FENCE_UNAVAILABLE'); return Object.freeze({ schema: 'torch.dev/candidate-execution-fence/v2alpha1', backend, nonce: bootstrap.nonce, closed: false }); }
-/** A direct exit or empty PGID is deliberately insufficient: missing observed PID1/reap proof is UNKNOWN. */
-export function observeCandidateExecutionFenceV2({ fence, observation = {} } = {}) { if (!fence || fence.closed) fail('Candidate fence is unavailable', 'CANDIDATE_FENCE_UNAVAILABLE'); const closed = observation.privatePid1 === true && observation.namespaceObserved === true && observation.descendantsReaped === true && observation.admissionFdsClosed === true; return Object.freeze({ schema: 'torch.dev/candidate-terminal-proof/v2alpha1', outcome: closed ? 'terminal' : 'unknown', terminalProof: closed, reason: closed ? null : 'descendant-closure-unobserved', observation: Object.freeze({ privatePid1: observation.privatePid1 === true, namespaceObserved: observation.namespaceObserved === true, descendantsReaped: observation.descendantsReaped === true, admissionFdsClosed: observation.admissionFdsClosed === true }) }); }
-export function closeCandidateExecutionFenceV2(fence) { if (!fence || fence.closed) fail('Candidate fence is already closed', 'CANDIDATE_FENCE_UNAVAILABLE'); return Object.freeze({ ...fence, closed: true }); }
+
+function fail(message, code, details) {
+  throw new TorchError(message, { code, details });
+}
+
+/**
+ * Fence observations are owned by the backend, never submitted by the caller.
+ * Until the backend has recorded a PID1 namespace identity, FD closure, and
+ * namespace-wide reaping, every attempt is UNKNOWN. A process-group exit never
+ * creates TerminalProof.
+ */
+export function createCandidateExecutionFenceRuntimeV2({ stateForAttempt, backendObservation } = {}) {
+  if (typeof stateForAttempt !== 'function' || typeof backendObservation !== 'function') throw new TypeError('candidate fence runtime is incomplete');
+  const closed = new WeakSet();
+  function close(attempt) {
+    if (!stateForAttempt(attempt) || closed.has(attempt)) fail('Candidate fence is unavailable', 'CANDIDATE_FENCE_UNAVAILABLE');
+    closed.add(attempt);
+  }
+  function terminal(attempt) {
+    if (!stateForAttempt(attempt) || !closed.has(attempt)) fail('Candidate fence is unavailable', 'CANDIDATE_FENCE_UNAVAILABLE');
+    const observed = backendObservation(attempt);
+    const qualified = observed?.backend === 'private-pid1-namespace'
+      && Number.isSafeInteger(observed.namespacePid) && observed.namespacePid > 0
+      && typeof observed.namespaceIdentity === 'string' && observed.namespaceIdentity.length > 0
+      && observed.admissionFdsClosed === true && observed.descendantsReaped === true && observed.escapedDescendants === false;
+    return Object.freeze({
+      schema: 'torch.dev/candidate-terminal-proof/v2alpha1', outcome: qualified ? 'terminal' : 'unknown', terminalProof: qualified,
+      reason: qualified ? null : 'descendant-closure-unobserved',
+    });
+  }
+  return Object.freeze({ close, terminal });
+}

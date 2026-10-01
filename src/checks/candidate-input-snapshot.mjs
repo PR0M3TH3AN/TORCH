@@ -49,7 +49,7 @@ function hashRegularFile(path, expected, limits) {
   } finally { if (fd !== undefined) closeSync(fd); }
 }
 /** Private caller seam: callers obtain inputRoot from the returned opaque snapshot, never from a policy selector. */
-export function captureCandidateInputSnapshotV2({ sourceRoot, destinationRoot, paths, limits: requestedLimits = {}, id = randomUUID() } = {}) {
+function captureCandidateInputSnapshotV2({ sourceRoot, destinationRoot, paths, limits: requestedLimits = {}, id = randomUUID() } = {}) {
   const limits = normalizeLimits(requestedLimits); if (typeof sourceRoot !== 'string' || typeof destinationRoot !== 'string' || !Array.isArray(paths)) fail('Candidate snapshot request is invalid', 'CANDIDATE_SNAPSHOT_INPUT_INVALID');
   const source = resolve(sourceRoot); const destination = resolve(destinationRoot); if (source === destination || !relative(source, destination).startsWith('..')) fail('Candidate snapshot destination must be outside source', 'CANDIDATE_SNAPSHOT_INPUT_INVALID');
   const listed = files(source, paths, limits); mkdirSync(destination, { recursive: false, mode: 0o700 }); let totalBytes = 0; const records = [];
@@ -57,7 +57,7 @@ export function captureCandidateInputSnapshotV2({ sourceRoot, destinationRoot, p
   const manifest = Object.freeze({ schema: 'torch.dev/candidate-input-manifest/v2alpha1', id, files: Object.freeze(records), totalBytes, digest: createHash('sha256').update(JSON.stringify(records)).digest('hex') });
   return Object.freeze({ schema: 'torch.dev/candidate-input-snapshot/v2alpha1', inputRoot: destination, manifest, limits });
 }
-export function verifyCandidateInputSnapshotV2(snapshot = {}) {
+function verifyCandidateInputSnapshotV2(snapshot = {}) {
   if (snapshot?.schema !== 'torch.dev/candidate-input-snapshot/v2alpha1' || !snapshot.manifest?.files || typeof snapshot.inputRoot !== 'string') fail('Candidate snapshot is malformed', 'CANDIDATE_SNAPSHOT_INVALID');
   const listed = files(snapshot.inputRoot, snapshot.manifest.files.map((file) => file.path), snapshot.limits);
   const observed = listed.map((file) => hashRegularFile(join(snapshot.inputRoot, file.path), { ...file, bytes: file.size }, snapshot.limits));
@@ -66,4 +66,31 @@ export function verifyCandidateInputSnapshotV2(snapshot = {}) {
     fail('Candidate snapshot content drifted', 'CANDIDATE_SNAPSHOT_DRIFT');
   }
   return Object.freeze({ verified: true, digest: snapshot.manifest.digest, files: observed.length, totalBytes: snapshot.manifest.totalBytes });
+}
+
+/**
+ * The public boundary accepts only a service-issued attempt. Source roots,
+ * paths, destinations, and S limits live in the service's private state.
+ */
+export function createCandidateInputSnapshotRuntimeV2({ stateForAttempt } = {}) {
+  if (typeof stateForAttempt !== 'function') throw new TypeError('stateForAttempt is required');
+  const snapshots = new WeakMap();
+  function capture(attempt) {
+    const state = stateForAttempt(attempt);
+    if (!state?.input) fail('Candidate attempt has no frozen input authority', 'CANDIDATE_SNAPSHOT_ADMISSION_REQUIRED');
+    const snapshot = captureCandidateInputSnapshotV2(state.input);
+    snapshots.set(attempt, snapshot);
+    return Object.freeze({ digest: snapshot.manifest.digest, files: snapshot.manifest.files.length, totalBytes: snapshot.manifest.totalBytes });
+  }
+  function verify(attempt) {
+    const snapshot = snapshots.get(attempt);
+    if (!snapshot) fail('Candidate snapshot is unavailable', 'CANDIDATE_SNAPSHOT_ADMISSION_REQUIRED');
+    return verifyCandidateInputSnapshotV2(snapshot);
+  }
+  function cwd(attempt) {
+    const snapshot = snapshots.get(attempt);
+    if (!snapshot) fail('Candidate snapshot is unavailable', 'CANDIDATE_SNAPSHOT_ADMISSION_REQUIRED');
+    return snapshot.inputRoot;
+  }
+  return Object.freeze({ capture, verify, cwd });
 }
