@@ -1,0 +1,41 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-c178b387-dc7f-4392-b7ba-9bbc894070db",
+  "title": "Make exact integration requests atomic and idempotent across concurrent handoffs",
+  "description": "Owner e40b3de2 measured14:42 duplicate incident: a178(14:32) and c532(14:40) same project/area/branch/exact316/basee8/definitions ready unauthenticated. Root orchestration contributed by requesting submission before discovery and crossing later use-existing warning; do not attribute solely specialist failure. Original a178 subsequently native landed; c532 remains ready/unauthorized after native evaluation, oldcce unchanged. Preserve every audit record. Propose Work-owned atomic get-or-create request identity and supported duplicate disposition; not same mechanism as proposed approval-atomic20. No parallel implementation, manual DB/state patch, queue-force, lost audit/unique commits or gate/lease weakening. Existing PhaseA stays verification; new work proposed only.",
+  "priority": "high",
+  "affectedDomains": [
+    "work-integration",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-6e4ff870-a386-4a11-a59c-444ebc23732e"
+  ],
+  "acceptanceCriteria": [
+    "Versioned atomic get-or-create identity binds project, source area/branch/exact commit, target branch/base and required-check definition tuple; identical requests return the same audited ID.",
+    "Deterministic competing-process boundary scenarios prove exactly one actionable request; every attempted handoff remains auditable without dropped record, forged authority, changed lease/resource guard or weakened exact source checks.",
+    "Distinct target/base/definitions and retry after rejection require explicitly versioned new attempt semantics; supported superseded/already-integrated disposition preserves both histories and prevents duplicate landing.",
+    "Original a178/c532/cce incident history and root-orchestration contribution remain; independently qualify supported native API behavior before any cleanup/disposition, never direct DB delete/patch or queue force."
+  ],
+  "observedAt": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
+  "feature": "Serialized integration integrity",
+  "milestone": "Incident-backed reliability follow-up",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T14:49:54.703Z",
+  "updatedAt": "2026-10-01T14:49:54.703Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T14:49:54.703Z",
+      "note": "Task created."
+    }
+  ]
+}

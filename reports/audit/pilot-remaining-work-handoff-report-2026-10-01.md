@@ -1,5 +1,173 @@
 # Current pilot remaining-work handoff
 
+## Incident-backed intake at 14:50 UTC
+
+Actual ownere40 attributes duplicate request incident partly to root orchestration:
+submission requested before existing request discovery and crossing later warning;
+not solely specialist failure. After current brief reread and actual owned-path
+query, one native **TASK-c178b387-dc7f-4392-b7ba-9bbc894070db** was created proposed/
+unassigned for Work integration-request atomic idempotency and supported audited
+duplicate disposition, separate from approval-atomic20. No parallel code assignment.
+Prior55 roadmap retained; now56 =39proposed/9blocked/6completed/1assigned/1verification.
+Fleet evolution refreshed after intake; ownership/process/scenario correction is
+appropriate, no role creation/activation. Duplicatec532 remains ready/unauthorized,
+not silently cancelled/deleted or landed twice; concrete Work handoff retains wait.
+
+## Exact Phase A landing and current handoffs at 14:46 UTC
+
+Actual own unread100 delivered Work0e95/f098, Kernel959d, QAc841 and owner27/81;
+read individually and routed before acknowledgement. QA c841 ACCEPTS exact clean
+**316d8b7480c2e10925ebdff8310fe26ef5a881a8** for bounded Phase A source/native-gate
+qualification: merge parents b1+e8; exactly five approved paths versus e8; both
+parents' append-only TIN preserved; all13 focused scenarios in native test output;
+four current-definition native PASS/exit0/invalidReason null. Dashboard d098 has
+**11 unique regular PNGs**, independently byte/SHA verified including pilot-review,
+correcting Work0e95's 10 count. Historical five-PNG restore attribution remains
+no archive/no intermediate bytes; 994 rejected. Source review is resolved, not an
+owner wait or proof of child consumption/OS containment/atomic directory snapshot.
+
+Current queue contained original **a1789e46-b91e-496c-9204-ab204dac6a6d** created
+14:32:01 and duplicate **c5328d31-30f3-473d-9b4d-fab80220012a** created14:40:09 for
+identical316/e8. Manager created no request and used the earlier request. Creation
+preceded QA14:36; authorization followed QA at14:44:07. Native evaluate ready,
+native authority succeeded, native plan blockers[]/canProceed true, native land
+**14:44:26.747**. Canonical independently clean316. No manual Git landing,
+queue reorder, self-source acceptance, gate waiver or native-schema fallback.
+Duplicate native reevaluation14:45 stillreports READY/unauthorized; preserve it
+without second authority/land/delete. Work receives exact duplicate/idempotency
+process handoff, no new implementation assignment. Older cce needs_convergence
+unchanged. Full Work remains **verification7** by reviewed metadata-only amendment,
+actual316/a178 recorded while every full criterion/owner/history/b1/994 is retained.
+Do not close full source-qualification protocol from Phase A source landing.
+
+Kernel959 read-only review provides proposed provisionFixtureCandidateAttemptStoreV1,
+deriveCheckSubjectContextV1 and FinalizeV1 shapes. Its new pure authenticated issuer/
+verifier/managed clean-subject reader are explicitly missing; owner27 identifies
+existing actorId/claimedIdentity seam as initialized-CP-dependent. FullDDL/CAS/API
+lifecycle and actual child-input/terminal/descendant/seal admission proofs still
+need concrete peer review. QA c841 grants NO PhaseB contributor/code/test consent.
+Proposal report now records actual shapes and precise remaining design work;
+Kernel/QA/Work/Release receive bounded read-only contract/scenario handoffs, not
+owner implementation-detail waits or code/store/DDL authorization.
+
+E8 remote sync is verified, not proof of new316 remote sync. Release9ae receives
+actual316 postlanding read-only provenance/remote-boundary handoff for arbiter-only
+bounded nonforce existing developmentref push; Manager makes no competing push.
+Pending alpha3owner75, native adapter/receipt wiring and actual connected-browser/
+installed/mobile/full Console criteria remain. Full55 roadmap/counts unchanged:
+38proposed/9blocked/6completed/1assigned/1verification. No new identity/provider
+launch/automatic wake/installation/live schema/host activation or fixture promotion.
+
+## Corrected source acceptance, remote verified and Phase B proposal at 14:33 UTC
+
+Fresh currentbrief **d7e6d69** read through exact approved retry after ordinary
+readonly-database failure; Manager starts clean75ca263. CURRENT all55 task evidence
+preceded explicit own addressed unread100. Actual owner23d3, Release7f605,
+Work7680/a69, owner9f888/6a402/135a/66e70, QA1b804 and selfcheck-inf111 were read,
+routed and individually acknowledged after understanding. Check-in refreshed on
+startup and after the scheduled own message; actual pending findings were routed,
+no read acknowledgement was treated as resolution. Evolution8/hierarchy10 signals,
+changes none: retain six coherent specialists with explicit contracts/phase
+sequencing. Health48 stale-observation/2 resolved-dependency warnings are advisory;
+no auto-fix, duplicate queue, suppression or identity activation.
+
+**Current corrected Phase A and restoration truth.** Clean Work
+**b1c4c26b1b517312f4f42b7db2e95ed8b6cd06ac** supersedes9946 for review only. Manager
+inspected the exact same5path corrective diff, source bounds/allowlist/copied-byte
+hash and regular-file manifest code; actual7680 reports local13focused/full
+test208PASS/5intentionalSKIP/check/dashboard/lint PASS, not native receipts.
+Exact native receipt lookup atb1 was empty. Actual owner23 resolves the original
+focused cap/env repro only. QA **1b804** independently narrowly ACCEPTS b1 after
+7+6 named hermetic scenarios; 9946 remains rejected. Explicit exclusions remain:
+engine attests copied bytes, executor receives cwd, so actual child input
+consumption/OS containment are not proved; wx/verify detect ordinary drift but do
+not lock a concurrent-writer atomic directory snapshot. No whole-task, native or
+operational acceptance follows. Future adapter eligibility must reject missing
+applicable input/terminal/descendant/seal proof rather than substitute this summary.
+
+Owner9f888's new five-PNG dirty observation was not old286 consent. User's current
+launch reports the completed exact14:15:19 restoration, Work **a69** names actual
+plain npm run test:dashboard generator on unconvergedb1 and tool-approved git
+restore of only activity-review/check-evidence/operation-outcomes/owner-briefing-
+desktop/mobile PNGs; no source/assertion restore. Work explicitly states **NO
+archive and NO intermediate mutated PNG hash set**. Current baseline blob IDs:
+activity5155b8fbdd1e75a56bb9c0188384878c8f5fb21a,
+check094e4f46dc48ce38dfff8da0fe0ca02810eae1d2,
+operation96dbc5a3deadd356ec363025ac853364c3073893,
+desktope67a2e03e9eebd1092446ef8ae2b7a9600300d9f,
+mobile2315501dc73d33b7550421a595bdab9a9c41657f.
+QA independently sees those exact five clean versusb1 and identifies script default
+reports/design-system when TORCH_CHECK_ARTIFACT_DIR is absent. It did not restore,
+archive/hash dirty bytes or prove time/toolpermission from Git. Preserve that
+command-history attribution and QA proof limit; no invented archive, repeated
+restore, old approval reuse or native dirty-run qualification.
+
+SAME Work **in_progress5 -> verification6** records b1 narrow review/classification,
+full criteria/owner/history/994 rejection retained. Concrete Work **10f29671** asks
+native guarded clean convergence tocanonicale8, resulting exact commit fresh4
+native source checks with artifact isolation/actual candidate CLI provenance,
+independent resulting-commit QA/new exact request. No old receipt/frozen checker/
+fixture/schema fallback. Mid-observation staged changes were Work's active owned
+convergence, not Manager cleanup authority. Owner66 reports only append-only TIN
+merge conflict preserving both sides. Latest Manager reads Work **clean316d8b7480c2e10925ebdff8310fe26ef5a881a8**;
+Fresh exact316 native receipts **b524193a test,c252b84c check,d0981f67 dashboard,
+ddc79b34 lint** are all PASS/invalidReason null. Exact resulting-commit independent
+QA/provenance verdict and new request are still separately required; source checks
+of a prototype do not qualify its ability to create registered receipts. No
+Manager peer branch edit or provider launch occurred.
+
+**Exact source synchronization resolved.** Release **7f605** verified e8 exact
+current-definition native fourPASS and landed6cb, while pointing out rows lack a
+separate CLI-engine SHA and remote DNS initially prevented verification. Actual
+QA1b804 reverified11artifact hashes and accepts the unchanged exact subject/
+definitions after landing; no gratuitous rerun required. Owner **135a** inspected
+PUBLIC exact candidate bin/torch source invocation commands13:40:45/13:41:32/
+13:41:50/13:42:18, rechecked clean canonical/remote0fdf/ancestry, executed only
+approved nonforce **e8:refs/heads/rewrite/portable-agent-fleet** push to existing
+origin, exit0. Actual owner **66e70** confirms postpush remote exacte8; Manager's
+independent read-only **git ls-remote** also returns full
+**e8c4c4249e49d91393394ac205d918826ddd1891** for that sole development ref. Source
+sync is resolved, no duplicate push/false owner wait/new remote/main/legacy or
+publication claim. Current canonical remains clean e8; native6cb landed and
+old Workcce needs_convergence unchanged. Actual owner activation75 independently
+refreshed **pending1/approver owner**; live/browser/installed acceptance remains
+separate from source push and completed exact Runtime PNG recovery.
+
+**Concrete proposed next phase.** Manager authored
+`reports/protocol/candidate-source-phase-b-proposal-2026-10-01.md`, with live
+ownership verified for4Kernel newmodules and3QA newtests. Proposed B0 fixture-only
+provisioner/schema qualification, B1 authenticated side-effect-free E/S/A context
+reader, B2 attempt/result store and no-DDL atomic CAS/finalizer all require exact
+API/DDL/identity/compatibility contracts and named QA contributor/scenario consent.
+No currentControlPlaneinitializer/nativeconsumer/exactPasses change, live DDL,
+registeredstore, CLI wiring, provider start or operational activation. Actual
+owner66 readfull proposal/agrees isolateddirection and resumed EXISTING Kernel
+read-only --pin-phase-b-contract review only; no code/docs/test/state edit/newtask.
+Kernel **7fcc39e3** receives concrete proposal and authority boundary; QA/Release
+receive bounded contract review requests. Actual child consumption, parent
+terminal/descendant fence and seal proof are native receipt prerequisites, not
+inferred from Phase A metadata. Legacy schema2 receipts and be1required3/current2
+refusal remain. Kernel blocked inbox/reservation/inventory and full55 roadmap
+remain intact; future assignment requires explicit reviewed scope/fresh brief/next.
+
+**Measured owner attention criterion, not dispatch.** After separately refreshing
+current brief, explicit owner **6a402** request appended strict measured14:18
+criterion/evidence to SAME attention **blocked10 -> blocked11**, preserving all
+prior14criteria/owner/candidate/history. Healthydoctor56warnings/48stale-SHA/
+49taskactivity versus1actualownerpending must separate owner action, Fleet-owned
+exception and advisory cohorts; collapse/deduplicate with per-item current owner/
+reproduction drilldown while retaining observedAt guards, unsafe unknowns and
+approval truth. No dirty-work/unique-commit cleanup request, silence, auto-close or
+mass ack. Console **c74ae855** receives later-phase direction, not newassignment.
+
+Current55 remain38proposed/9blocked/6completed/1assigned/1verification; Runtime6
+and Work6 are the sole active items. Open concrete handoffs: resulting316 independent
+QA/provenance/newrequest, Kernel exact PhaseB contracts and consent, actual
+connected-browser/live Console acceptance. Source review/sync are resolved, genuine
+alpha3human decision is unchanged. No wakes, installation/schema/host action,
+extra identity, provider launch, manual Git landing or fixture promotion.
+
+
 ## Exact convergence and rejected Phase A draft at 14:08 UTC
 
 Manager checkpoint **24e4a40** recorded actual Console source landing. Native

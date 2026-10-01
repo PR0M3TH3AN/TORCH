@@ -25,7 +25,7 @@
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check execution provenance and state isolation",
   "milestone": "Reviewed reliability dependencies",
-  "state": "in_progress",
+  "state": "verification",
   "owner": "work-integration",
   "evidence": [
     "message:28f03fa6-ff6e-4af8-87e0-631218f1ec55:owner-bounded-design-document-phase",
@@ -39,14 +39,27 @@
     "message:a9d35980-8bb7-410e-803a-8e882d041c2e:actual-implemented-Phase-A-candidate-local-checks-not-native",
     "message:f1a17c3c-5b7e-42c1-918b-06102a865340:independent-current-source-boundary-defects",
     "message:e3027336-9254-4f3b-bd40-eaf4ef8ca5bb:QA-current-994-draft-NOT-ACCEPTED-exact-same-scope-additive-corrections",
-    "message:39da248a-96e7-4a05-832f-5ca749a70a96:same-assignment-corrective-handoff-no-duplicate"
+    "message:39da248a-96e7-4a05-832f-5ca749a70a96:same-assignment-corrective-handoff-no-duplicate",
+    "message:7680e7b8-7430-467a-ac0f-4f931123abf6:corrected-local-Phase-A-b1-not-converged-native",
+    "message:1b804536-b7c8-4a0c-abf4-bef32ce288f9:QA-narrow-b1-source-accepted-13focused-excludes-childconsumption-OSsandbox-atomic-directory",
+    "message:a69aec7b-e4cc-42cd-98be-0ea64eca0c27:actual-fivePNG-command-provenance-no-archive-no-intermediatehashes",
+    "message:10f29671-89b1-4df9-8fc7-73d0cd5658f1:guarded-convergence-resulting-exact-native-gates-request",
+    "message:0e95d68f-05b5-4475-8c3c-d2c32c5e687d:actual-converged316-native4PASS",
+    "message:c841b139-adea-4b06-877e-cb4c750c04f3:QA-exact316-source/nativegate-accepted-11verifiedPNG-not10",
+    "integration:a1789e46-b91e-496c-9204-ab204dac6a6d:landed316:2026-10-01T14:44:26.747Z",
+    "receipt:b524193a-58f5-411e-be73-ff4517e84a0f:exact316-test-PASS",
+    "receipt:c252b84c-64dc-416d-8130-d581ea939419:exact316-check-PASS",
+    "receipt:d0981f67-deee-4016-a65d-cba1212198eb:exact316-dashboard-PASS-11PNG",
+    "receipt:ddc79b34-c400-4a2e-8b36-c9fd7f352b8f:exact316-lint-PASS",
+    "integration:c5328d31-30f3-473d-9b4d-fab80220012a:duplicate-ready-unauthorized-native-evaluate14:45-preserved-not-landed",
+    "message:959d86f6-fb73-4ed3-a220-9d11f68b24db:PhaseB-readonly-contract-review-missing-issuer/reader/DDL/CAS-nocodeconsent"
   ],
-  "commit": "9946a2a3e49fd777ff06d3905e32ae0dbc43b2ed",
-  "integrationRequest": null,
+  "commit": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
+  "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T14:09:12.927Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T14:46:56.262Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -82,6 +95,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T14:09:12.927Z",
       "note": "Record actual commenced Phase A implementation on SAME assigned4, not readiness/acceptance/task completion. Worka9 reports clean994/new two source modules/two scenario files/additive TIN and local checks, but actual ownerf1/d896 and QAe302 reject UTF8 byte cap, syntax-only env validation, missing timeout/immutable-input and root/manifest link/read/canonicalization gaps. Continuing exact same scoped corrective implementation under QA additive direction; native receipts/independent corrected acceptance and later phases remain unqualified. Preserve full criteria/owner/history/unique commits and every schema/native guard. Canonicale8 advanced; guarded clean convergence/fresh exact checks before any request. No wiring/store/schema/consumer/gate/lease/install/live/host/provider/wake action."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T14:29:54.685Z",
+      "note": "SAME Phase A corrected candidate now in verification after actual QA1b804 narrow source/test acceptance and artifact incident classification. Keep994 rejection/all history/full criteria; 13 hermetic local PASS does not qualify native receipts, actual childinputconsumption/OSsandbox/concurrentdirectorylocking. Worka69 reports exact toolapproved five-pathrestore14:15:19 and explicitly no archive/intermediate dirty hashes; QA independently currentclean and overwrite mechanism only, no history fabrication/old286reuse. Nativeguardedconvergencecanonicale8 underway; resultingexactSHA fresh4sourcegates, independentresultingcommitQA/newrequest remain. FullTASK6e4 and laterstore/context/adapter/nativeoperational phases incomplete. No parallelassignment/wiring/schema/provisioner/host/install/provider/wake/fixturepromotion."
+    },
+    {
+      "from": "verification",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T14:46:56.262Z",
+      "note": "Reviewed metadata-only amendment at expectedrev6; native service lacks metadata amend. Actual guarded clean316 convergence, QA c841 exact bounded PhaseA source/nativegate ACCEPT and 11 verified PNGs (correct Work10), four exact current-definition PASS receipts and original a178 native landed14:44:26 recorded. Request creation14:32 preceded QA14:36; authorization14:44 followed verdict. Full state remains verification, not ready/fulltaskcomplete; owner/fullcriteria/dependencies/all earlierhistory/b1/994rejection/oldcce preserved. Later duplicatec532 stillready/unauthorized after nativeevaluate; no secondland/manualstate/delete. Prototype does not establish childinputconsumption/OScontainment/atomic snapshot/native adapter receipt wiring/operational acceptance. PhaseB read-only API review requires exactpureissuer/reader/fullDDL/CAS/scenarios/QAconsent before code; no newassignment/store/schema/installation/host/provider/wake activation."
     }
   ]
 }
