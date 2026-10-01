@@ -2764,3 +2764,65 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Self-host runtime metadata observations (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-metadata-fixed-preimages
+      given: "A bounded canonical-layout candidate fixture with fixed metadata, fourteen Console assets, a nested case/punctuation vector, and one permitted internal .bin link"
+      when: "The no-argument reader captures local observations and the independent oracle hashes the exact tree preimages"
+      then: "Pinned raw-byte hashes, recursive per-directory localeCompare traversal, and link-text-only records match; alternate global sorting or target-content hashing does not"
+    - id: SCN-runtime-metadata-observations-not-authentication
+      given: "Unsigned package, release, and validation metadata with parseable versions, a declared source commit, and a recomputed matching tree digest"
+      when: "The reader reports module-evaluation observations"
+      then: "Useful parsed values and consistency remain visible while authentication is unknown and loaded-memory, delivered-byte, and native-authority claims remain null"
+    - id: SCN-runtime-metadata-startup-held-pointer-advance
+      given: "A reader process whose module-evaluation observations capture alpha2"
+      when: "The fixed active pointer, registry generation, and a Console disk asset advance while that process remains loaded"
+      then: "Startup observations remain unchanged, current pointer/registry/UI disk observations show the later state, and relations identify the observed differences without claiming served or loaded bytes"
+    - id: SCN-runtime-metadata-allowlist-and-caps
+      given: "The exact fourteen fixed Console paths plus an unrelated file, with regular files at and beyond independent per-file and aggregate bounds"
+      when: "The reader hashes the display-only Console disk allowlist"
+      then: "Only the fourteen named paths appear; over-cap observations are refused with no partial asset list or digest, before content allocation/read"
+    - id: SCN-runtime-metadata-malformed-oversize-tamper-race
+      given: "Malformed, missing, oversized, changed module-evaluation/current-disk observations, strict-path symlink, and invalid artifact-link entries"
+      when: "Bounded metadata, UI, and candidate inventory reads encounter those entries"
+      then: "Typed unknown/refusal outcomes contain no partial matching digest; permitted internal links hash bounded link text only and external, absolute, escaping, dangling, oversized, invalid-text, or special entries do not traverse target content"
+    - id: SCN-runtime-metadata-partial-journal
+      given: "A fixed runtime directory with an observed pointer and registry and then a partial or malformed activation journal"
+      when: "Runtime-state observations are read"
+      then: "Pointer, registry, journal, consistency, and issues remain separately visible and all runtime bytes remain unchanged"
+    - id: SCN-runtime-metadata-read-only-no-native-authority
+      given: "A canonical-layout candidate and fixed temporary data-home containing metadata and a sentinel representing protected state"
+      when: "The sole public reader runs"
+      then: "Candidate and runtime trees plus the sentinel remain unchanged, and the module imports or invokes no VersionService/status/reconcile, SQLite, ControlPlane, database, DDL, write, or native receipt/subject authority"
+    - id: SCN-runtime-metadata-head-not-substitute
+      given: "A candidate fixture with a misleading .git/HEAD file and a declared source commit in validation metadata"
+      when: "The reader captures the source declaration and candidate-tree consistency"
+      then: "The declaration is reported as observed metadata, the fake git executable is never invoked, and repository HEAD is not substituted or authenticated"
+  observable_outcomes:
+    - "The sole export is synchronous readLoadedRuntimeMetadataV1() with no caller-selected paths, roots, manifests, databases, engines, adapters, callbacks, or verifier"
+    - "Startup reader-module/package/release/validation/tree observations, current fixed Console disk hashes, and startup/current pointer/registry/journal are separate fields"
+    - "Hash preimages preserve path NUL type NUL decimal mode NUL raw bytes-or-link-text NUL and candidate-compatible recursive per-directory localeCompare order"
+    - "UI caps are 64 entries, 4 MiB per file, and 16 MiB total; candidate caps are 8192 entries, 64 MiB per file, and 512 MiB total, checked before content reads"
+    - "Ordinary parsed versions, declared commits, raw hashes, and matching consistency remain visible independently of authenticationConfidence=unknown"
+    - "No authentication, atomic snapshot, loaded-memory digest, delivered-browser-byte proof, receipt eligibility, native authority, writes, or runtime repair is asserted"
+    - "Fixed metadata/UI symlinks are refused; only inventory links use bounded link-text records and only runtime/active uses its separate fixed-path readlink"
+  determinism_controls:
+    - "Independent fixed raw-byte vectors and a separate candidate inventory oracle with canonical nested ordering"
+    - "Canonical-layout child-process fixtures, fixed metadata bytes/versions/commits, sparse cap fixtures, temporary directories, and no network or live runtime state"
+    - "A held child process exposes module-evaluation versus later disk/pointer changes without clock sleeps or retries"
+  anti_cheat_rationale:
+    prevents:
+      - "Repository HEAD, package labels, unsigned manifests, or a mutable active pointer being presented as authenticated runtime identity"
+      - "Global-sort substitutions, symlink target traversal/content hashing, or partial digests being presented as candidate consistency"
+      - "Unbounded reads, truncation-to-match, and console paths outside the fixed display allowlist"
+      - "Calling a mutating VersionService/status reconciliation path from a dashboard reader"
+      - "Promoting local observations into loaded-code, delivered-browser-byte, registered-receipt, or native-authority proof"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
