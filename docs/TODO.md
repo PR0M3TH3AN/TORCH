@@ -1,5 +1,23 @@
 # TORCH remaining work
 
+## Owner-approved project knowledge requirement (2026-10-01)
+
+See [Project knowledge and domain institutional memory](PROJECT_KNOWLEDGE_SPEC.md).
+The existing authoritative backlog holds the implementation slices below; this
+section is an index, not a second queue. All are proposed/unassigned, and the
+fleet remains manually paused until the owner explicitly requests resume.
+
+- `TASK-knowledge-contract`: project-fit Git-backed KB, domain handbooks and
+  provisional memory; metadata, visibility, evidence and ownership contract.
+- `TASK-knowledge-agent-context`: documentation discovery, compact domain brief
+  references and provider-independent retrieval/inheritance without context bloat.
+- `TASK-knowledge-maintenance`: documentation-impact workflow, verification
+  evidence, cross-domain notifications and ownership transfer without duplicate truth.
+- `TASK-knowledge-console`: dedicated accessible Knowledge view, safe rendering,
+  search, history and durable ask-domain/report-outdated actions.
+- `TASK-knowledge-qualification`: end-to-end inheritance/freshness/privacy/pause
+  scenarios and realistic browser acceptance, including isolated demo fixtures.
+
 ## Authoritative current handoff (2026-09-30, after alpha.2 reinstall)
 
 TORCH is installed and healthy at `0.1.0-alpha.2`. Setup/restore and all seven

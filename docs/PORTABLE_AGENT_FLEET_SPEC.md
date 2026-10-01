@@ -2743,6 +2743,12 @@ and refuses to replace a launcher path not owned by that installation.
 
 ## 27. User interfaces
 
+Project reference documentation, domain handbooks and provisional working memory
+MUST follow [Project knowledge and domain institutional memory](PROJECT_KNOWLEDGE_SPEC.md).
+This owner-approved extension requires a Git-backed shared KB, durable domain
+ownership, compact agent entry points and a dedicated Console Knowledge view.
+It is a development requirement, not a claim that the feature is implemented.
+
 ### 27.1 CLI
 
 The target command surface includes:
