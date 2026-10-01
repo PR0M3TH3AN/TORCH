@@ -1162,7 +1162,7 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
         if (renderGeneration !== appliedRefreshes) return;
         if (viewportBeforeRender && consoleViewRouter.userIntentVersion() === userIntentAtRender) {
-          globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
+          globalThis.scrollTo?.(viewportBeforeRender.left, viewportBeforeRender.top);
         }
         if (renderGeneration === 1) consoleViewRouter.afterInitialLayout();
         status.dataset.generation = String(renderGeneration);
