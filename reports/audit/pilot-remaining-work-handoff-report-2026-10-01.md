@@ -1,5 +1,44 @@
 # Current pilot remaining-work handoff
 
+## Latest reviewed outcome and concrete session handoff, 18:12 UTC
+
+Fresh addressed unread/current56 tasks/actual queue/check-in18:11 reviewed.
+Owner **db4c35e2** independently verifies clean exact0c2 native LANDED cb83 and
+completed arbiter nonforce push to existing origin/rewrite/portable-agent-fleet;
+remote development ref is0c2, default main remainsa46832314f6a32c6636ae8ff672df8c3e67e2672.
+Source acceptance/landing/development-ref push are RESOLVED. No installed/service
+UI change or full-workflow completion. cce needs_convergence, c532 ready/unauthorized,
+and proposedc178 are preserved. Manager checkpoint683e9f8 and guarded convergence
+fcc5f73 preserve91 unique Manager commits; resulting owned tree/JSON/diff clean.
+
+Actual **QA6b5f2b59** REJECTS exact Release9a0 for one remaining privacy boundary:
+invalid active symlink /host/qa-private-runtime leaks through activePointer.target.
+Null/omit invalid target while retaining typed refusal and useful unrelated facts;
+strict absolute and escaping pointer cases recursively reject raw/host/fixture paths.
+QA otherwise independently verifies same three paths, eight strict scenarios,
+sorted preimage/noargs/relative identity, old TIN prefix, four native PASS and11
+artifact hashes. This evidence does not override rejection. Ownerdb4 authorizes and
+has already resumed SAME three-path Release correction. Existing QA is terminal,
+not an outstanding review of9a; next review is of the future corrected exact SHA.
+No new assignment/start, arbitrary path edits or integration. Preserve18/978/9a
+history and clean merge convergence/new exact gates after canonical advance.
+
+Concrete arbiter re-entry: existing Work can use pinned B2 packet683e9f8
+(PhaseB17:53, SHA84d062c358310a1428085b2287f3afbdb62fdbfac2f8554f3b113f1375f77a7b)
+for read-only native bootstrap/private fence-init agreement021cdaf8, and provide
+the actual integrity-record schema/preimage/YAML/test/scenario contractca0b for
+named QA decision. Kernel's remaining parent/policy/config-applier decision is
+a1b99330; queued owned TODO one-path current-handoff refresh isa27cb6e6. QA8c99
+holds exact B2 contributor/scenario decision, not code authority. Arbiter alone
+controls manual re-entry/native slots; Manager launches none. No generic extra
+design loop or parallel Work implementation: full6e4 remains verification14,
+integritya655 blocked6 on this concrete internal contract, reservation125 blocked6
+on actual compatibility with explicit6e4 dependency. Full56 roadmap/counts unchanged.
+
+Only genuine owner activation75 remains pending revision1; PNG recovery does not
+resolve it. Actual browser disconnected, installed alpha2/UI/API blockedReason/
+provenance and full desktop/mobile flow remain unqualified. Automatic wakesOFF.
+
 ## Current guarded source landing, 18:07 UTC
 
 Console's single actual request **cb83a211-9f3f-4688-98fe-3faaece76da6** is native
