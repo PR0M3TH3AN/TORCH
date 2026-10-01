@@ -19,12 +19,12 @@ durable Console state was changed.
 
 **Not complete:** mobile coverage beyond Overview, an exact 390 x 844 CSS
 viewport, exhaustive keyboard order, empty/loading/failed-action states, and
-task-owned artifact publication for every screen. After the owner authorized
-one bounded recovery, a fresh Overview tab produced a valid narrow screenshot.
-The requested 390 x 844 override measured as 433 x 938 CSS pixels at DPR 0.9;
-the prior blank `mobile-release-gates.jpg` and the subsequent 5-second CDP
-timeout remain evidence of the failed capture route on the old scrolled tab.
-See the images under `artifacts/TASK-console-ux-audit/`.
+task-owned artifact publication for every screen. The owner and peer guidance
+identified a viewport transform: 351 x 760 at DPR 0.9 yields a 390 x 844 CSS
+viewport. A fresh-tab attempt at that exact CSS size showed the Overview DOM,
+but its single screenshot attempt still failed with the 5-second CDP timeout.
+The earlier 433 x 938 CSS screenshot is retained as narrow-view evidence only;
+it does not satisfy the exact viewport requirement. See the evidence below.
 
 ## Personally observed evidence
 
@@ -32,6 +32,7 @@ See the images under `artifacts/TASK-console-ux-audit/`.
 |---|---|---|---|
 | Overview | `#overview` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-overview.jpg). “Healthy” appears beside six attention items, including five generic doctor warnings; project facts also show `Clean at snapshot` and `ONE-DISK`. |
 | Overview | `#overview` | 433 x 938 CSS, DPR 0.9 (requested 390 x 844) | [Narrow screenshot](../../artifacts/TASK-console-ux-audit/mobile-overview.jpg). Overview content fits the measured viewport width, but the horizontal nav clips after “Progress” and displays its own horizontal scrollbar. Screenshot dimensions are 462 x 1041 pixels. |
+| Overview | `#overview` | 390 x 844 CSS, DPR 0.9 | Fresh-tab DOM was visible before the authorized screenshot attempt. The screenshot timed out with `Timed out after 5000ms waiting for CDP command Page.captureScreenshot.` No image was produced; this is blocker evidence, not visual coverage. |
 | Briefing | `#owner-briefing` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-briefing.jpg). Empty briefing state gives CLI build/publish instructions. On the first navigation, Work was highlighted while Briefing content was shown; repeated navigation selected Flow watch correctly. |
 | Flow watch | `#flow-watch` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-flow-watch.jpg). Check-in and approval panels sit side by side; timer installation is explicitly unverified and only named approvers can decide. |
 | Work | `#work` | 1237 x 677 | [Desktop screenshot](../../artifacts/TASK-console-ux-audit/desktop-work.jpg). Filters form a dense block above five board columns; 44 active items make cards narrow and text wrap heavily. |
@@ -70,8 +71,15 @@ See the images under `artifacts/TASK-console-ux-audit/`.
   had a horizontal scrollbar. The one authorized fresh-tab screenshot is
   `mobile-overview.jpg` (462 x 1041 image pixels). The earlier
   `mobile-release-gates.jpg` remains blank (3,157 bytes), followed by the exact
-  CDP screenshot timeout; it is not visual evidence of that view. Other mobile
-  sections remain uninspected.
+  CDP screenshot timeout; it is not visual evidence of that view. QA and Provider
+  Runtime classified that failure as a browser/CDP capture limitation. Following
+  the owner's measured workaround, I created one new browser session, opened a
+  fresh tab, set 351 x 760 before navigation, then verified exact 390 x 844 CSS
+  dimensions at DPR 0.9. DOM geometry showed document width 373, Overview width
+  347.74, and nav scroll width 997 against client width 373; both header buttons
+  fit within 248.76 CSS pixels. The one screenshot attempt again returned the
+  exact 5-second CDP timeout. The override was reset immediately. No screenshot
+  was produced, so exact-size mobile visual coverage remains incomplete.
 
 Selected screenshots are registered in private TORCH artifact storage with task,
 session, and commit provenance:
