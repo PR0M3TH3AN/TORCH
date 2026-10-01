@@ -2572,8 +2572,8 @@ test_integrity_note:
       then: "Each original assertion and capture executes against the selected view without changing capture order, viewport coverage, artifact destination, or artifact safeguards"
     - id: SCN-console-priority-preview-invalidates-on-newer-evidence
       given: "A task priority preview and unsent priority and reason values are created from task evidence revision N"
-      when: "A separate confirmed sample API action advances that task to authoritative revision N+1 and Console refresh loads the newer evidence"
-      then: "The revision N token, preview, and confirmation control are absent; revision N+1 is visible, the unsent values remain intact and editable, and only a newly generated preview bound to N+1 can be presented"
+      when: "A separate confirmed sample API action advances that task to authoritative revision N+1, then the reader refreshes again after navigating away and back"
+      then: "The revision N token, preview, and confirmation control remain absent; revision N+1 is visible, the unsent values remain intact and editable across both refreshes, and a new preview is bound to N+1"
     - id: SCN-console-current-preview-and-draft-survive-unchanged-refresh
       given: "A task has an active priority preview and unsent priority and reason values bound to its current evidence revision"
       when: "Console refresh returns the same task revision"
@@ -2602,6 +2602,7 @@ test_integrity_note:
     - "Selected fragment, visible view, original assertion results, and the unchanged ordered screenshot set"
     - "Revision N+1 displayed after refresh, with the old preview token and confirmation control unavailable"
     - "Unsent priority and reason values retained and editable after newer evidence invalidates the old preview"
+    - "The same draft remains dirty and intact after another unchanged refresh and route transition, with the old token and confirmation control still absent"
     - "An unchanged current-revision preview, confirmation boundary, and draft retained after refresh"
     - "A regenerated preview token and displayed revision bound to N+1"
     - "Exact Overview and contextual view titles, plus focused in-viewport secondary targets across direct loads and browser history"

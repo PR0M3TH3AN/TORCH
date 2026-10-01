@@ -106,26 +106,25 @@ function invalidateStalePriorityPreviews(tasks = []) {
 
     const ticket = form.closest('.task-ticket');
     if (!ticket) continue;
-    const priority = form.querySelector('[name="priority"]')?.value;
-    const reason = form.querySelector('[name="reason"]')?.value;
-    const openDetails = new Set([...ticket.querySelectorAll('details[open]')]
-      .map((details) => details.querySelector(':scope > summary')?.textContent));
-    const template = document.createElement('template');
-    template.innerHTML = taskCard(task, currentBacklogHealth).trim();
-    const refreshedTicket = template.content.firstElementChild;
-    if (!refreshedTicket) continue;
-    const refreshedForm = refreshedTicket.querySelector('.priority-change-form');
-    if (refreshedForm) {
-      const priorityField = refreshedForm.querySelector('[name="priority"]');
-      const reasonField = refreshedForm.querySelector('[name="reason"]');
-      if (priorityField && priority) priorityField.value = priority;
-      if (reasonField) reasonField.value = reason ?? '';
-      priorityStatus(refreshedForm, `Task evidence advanced to revision ${currentRevision}. The older preview was cleared; review the current task before previewing again.`);
+    const priority = task.priority ?? 'normal';
+    const priorityBadge = ticket.querySelector('.ticket-topline .priority');
+    if (priorityBadge) {
+      priorityBadge.className = `priority priority-${escapeHtml(priority)}`;
+      priorityBadge.textContent = priority;
     }
-    refreshedTicket.querySelectorAll('details').forEach((details) => {
-      if (openDetails.has(details.querySelector(':scope > summary')?.textContent)) details.open = true;
-    });
-    ticket.replaceWith(refreshedTicket);
+    form.dataset.revision = String(currentRevision);
+    delete form.dataset.previewToken;
+    delete form.dataset.planHash;
+    const priorityField = form.querySelector('[name="priority"]');
+    const reasonField = form.querySelector('[name="reason"]');
+    if (priorityField) priorityField.disabled = false;
+    if (reasonField) reasonField.disabled = false;
+    const preview = form.querySelector('[data-priority-preview]');
+    if (preview) {
+      preview.replaceChildren();
+      preview.hidden = true;
+    }
+    priorityStatus(form, `Task evidence advanced to revision ${currentRevision}. The older preview was cleared; review the current task before previewing again.`);
   }
 }
 

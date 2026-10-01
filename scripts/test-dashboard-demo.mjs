@@ -339,6 +339,19 @@ try {
   assert.equal(await refreshedForm.locator('[name="reason"]').isDisabled(), false, 'the preserved reason remains editable');
   assert.match(await refreshedForm.locator('.priority-change-status').innerText(), new RegExp(`revision ${revisionN1}`),
     'the visible status identifies current task evidence');
+  await selectView(stalePage, 'overview');
+  await selectView(stalePage, 'work');
+  await stalePage.locator('#refresh-console').click();
+  await stalePage.locator('#live-refresh-status[data-generation="3"]').waitFor();
+  assert.equal(Number(await refreshedForm.getAttribute('data-revision')), revisionN1);
+  assert.equal(await refreshedTicket.locator('.priority').textContent(), 'low');
+  assert.equal(await refreshedForm.getAttribute('data-preview-token'), null);
+  assert.equal(await refreshedForm.locator('[data-priority-preview]').isVisible(), false);
+  assert.equal(await refreshedForm.locator('[data-priority-confirm]').count(), 0);
+  assert.equal(await refreshedForm.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await refreshedForm.locator('[name="reason"]').inputValue(), 'Review this change against the current task evidence.');
+  assert.equal(await refreshedForm.locator('[name="priority"]').isDisabled(), false);
+  assert.equal(await refreshedForm.locator('[name="reason"]').isDisabled(), false);
   await refreshedTicket.locator('.priority-change > summary').click();
   await refreshedForm.getByRole('button', { name: 'Review change', exact: true }).click();
   await refreshedForm.locator('[data-priority-confirm]').waitFor();
@@ -347,7 +360,7 @@ try {
     'a current preview must be regenerated from revision N+1');
   const currentToken = await refreshedForm.getAttribute('data-preview-token');
   await stalePage.locator('#refresh-console').click();
-  await stalePage.locator('#live-refresh-status[data-generation="3"]').waitFor();
+  await stalePage.locator('#live-refresh-status[data-generation="4"]').waitFor();
   assert.equal(await refreshedForm.getAttribute('data-preview-token'), currentToken,
     'unchanged current evidence must retain its active preview');
   assert.equal(await refreshedForm.locator('[data-priority-preview]').isVisible(), true);

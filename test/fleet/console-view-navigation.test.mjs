@@ -125,6 +125,20 @@ test('SCN-console-priority-preview-invalidates-on-newer-evidence: refresh preser
   assert.equal(await form.locator('[name="reason"]').isDisabled(), false);
   assert.match(await form.locator('.priority-change-status').innerText(), new RegExp(`revision ${revisionN1}`));
 
+  await page.locator('.console-rail a[href="#overview"]').click();
+  await page.locator('.console-rail a[href="#work"]').click();
+  await page.locator('#refresh-console').click();
+  await page.locator('#live-refresh-status[data-generation="3"]').waitFor();
+  assert.equal(Number(await form.getAttribute('data-revision')), revisionN1);
+  assert.equal(await ticket.locator('.priority').textContent(), 'low');
+  assert.equal(await form.getAttribute('data-preview-token'), null);
+  assert.equal(await form.locator('[data-priority-preview]').isVisible(), false);
+  assert.equal(await form.locator('[data-priority-confirm]').count(), 0);
+  assert.equal(await form.locator('[name="priority"]').inputValue(), 'urgent');
+  assert.equal(await form.locator('[name="reason"]').inputValue(), 'Preserve this unsent explanation across a newer task revision.');
+  assert.equal(await form.locator('[name="priority"]').isDisabled(), false);
+  assert.equal(await form.locator('[name="reason"]').isDisabled(), false);
+
   await form.getByRole('button', { name: 'Review change', exact: true }).click();
   await form.locator('[data-priority-confirm]').waitFor();
   const currentToken = await form.getAttribute('data-preview-token');
