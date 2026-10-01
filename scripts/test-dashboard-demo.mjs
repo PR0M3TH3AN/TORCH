@@ -203,7 +203,7 @@ try {
   await pilotPanel.locator(':scope > summary').click();
   await selectViewFor(page, '.pilot-review-history');
   await pilotPanel.screenshot({ path: screenshotPath('torch-dashboard-pilot-review.png') });
-  await selectViewFor(page, '#manager-wakes');
+  await selectView(page, 'overview');
   await page.locator('#manager-wakes').screenshot({ path: screenshotPath('torch-dashboard-manager-wakes.png') });
   await selectView(page, 'overview');
   await page.evaluate(() => scrollTo(0, 0));
