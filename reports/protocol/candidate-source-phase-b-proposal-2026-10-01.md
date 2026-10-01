@@ -11,6 +11,30 @@ ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
 ## Current complete contract review: Kernel b681, 15:04 UTC
 
+Current corrective handoff **cf842edc**, 15:26:54, names exact
+**1976208bfabb58038ebe83f87e56ab11eeba6be2**. Manager read its four-path diff:
+old raw initializer/verifier exports removed, fixture initialization private in
+the provisioner, foreign caller DB and forged authority negative asserts zero
+exec/prepare calls. Kernel's five focused PASS are contributor evidence only;
+independent QA **0d6e0a88** and broader Work protocol **ef5bfda3** remain distinct
+handoffs. Owner **e8436ed6**'s instrumented old613 PRAGMA/CREATE bypass is retained
+as falsifying evidence, not repaired retroactively by the newer commit. No native
+receipt, registered provisioning, consumer wiring or operational acceptance.
+
+Current owner8bf confirms existing QA resumed for exact197 independent public
+allowlist/renamed-export and arbitrary-DB mutation review. Next metadata/context
+phase is a bounded proposal after that actual verdict, with exact QA contributor
+consent and Work engine/parent agreement before arbiter implementation decision.
+No broader permission is inferred from current fixture PASS.
+
+Current B0 implementation handoff Kernela678 reports exact clean613f62af, four
+authorized paths and five local scenario PASS/syntax/lint. Ownerbbbd identifies
+exported raw-DB initializer bypass; Manager independently confirms public
+initializeCandidateAttemptStoreV1(database,metadata) and provisioner call. B0 source
+exists but is **not accepted** from those local passes. Same-scope Kernel correction
+and independent QA must reject arbitrary DB DDL through the public export surface.
+Preserve613/evidence; no native receipt, source integration or full-task acceptance.
+
 Manager read the complete durable message **b6818413-798a-450c-ad20-dfca25f45f77**
 (14:54 UTC), including all six paths, CandidateStore/v1 table definitions,
 issuer/reader/parent composition, lifecycle CAS and proof admission. The earlier

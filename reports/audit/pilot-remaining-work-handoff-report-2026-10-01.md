@@ -1,5 +1,70 @@
 # Current pilot remaining-work handoff
 
+## Current corrective candidate and durable handoff at 15:29 UTC
+
+Fresh brief retains d7e6d69; addressed unread100 and current all-task evidence
+refreshed. Native Console transition succeeded: SAMEattention **in_progress14**,
+all prior criteria/evidence/history preserved. Full56 records remain tracked:
+39 proposed, eight blocked, six completed, Runtime assigned6, Work verification8,
+and Console in_progress14. Stale presence badges do not override actual handoffs.
+
+Owner **e8436ed6** supplies the concrete old613 mutant: instrumented caller DB
+received foreign_keys/user_version PRAGMAs and CREATE TABLE. No real DB was touched;
+old613 and its five local PASS remain unaccepted development history. Kernel
+**cf842edc** now reports corrective **1976208bfabb58038ebe83f87e56ab11eeba6be2**,
+same four authorized paths, private initializer/verifier and strengthened foreign
+DB/forged-authority zero-call negative. Manager read the exact diff: raw exports
+removed, initialization moved into private provisioner functions; this inspection
+is not independent acceptance. Kernel reports five focused PASS/clean/syntax/lint.
+QA **0d6e0a88** receives exact197 independent review; Work **ef5bfda3** receives
+current candidate and separately open broader parent/engine protocol request.
+No native qualification/integration/full-task closure is claimed. Work's Phase A
+316/a178 stays accepted; later input-use, terminal coverage and registered/native
+gates stay open. Empty process group cannot discharge escaped-descendant coverage.
+
+Concrete next handoff: existing QA independently decides exact197 correction;
+existing Console supplies its authorized cohort candidate and independent QA/native
+evidence. Arbiter controls any session resume. No duplicate implementation task,
+provider launch or extra landing. Approval75 remains human-owned; schema2 history,
+required3/current2 refusal, full browser/live/mobile criteria and proposed c178 with
+both integration request records remain intact.
+
+Actual owner **8bf1b1c3** at15:29 confirms Kernel197 clean/correction session
+terminal, arbiter five focused PASS with zero skips, and existing QA resumed for
+exact independent review. Public export allowlist/renamed initializer mutation
+resistance remains part of that decision, not merely absence of the old name.
+Console cohort session remains active per current arbiter evidence; old presence
+idle is not a contrary dependency. Browser list is again empty per this current
+handoff: healthy live4174 API is not desktop/mobile browser acceptance. After the
+actual QA verdict, propose a concrete next metadata/context phase on SAME6e4 with
+exact contributor consent and Work protocol decision; this is a future handoff,
+not current code permission or another generic review assignment.
+
+## Current implemented B0 review and Console authority at 15:23 UTC
+
+Own current unread100 delivered Kernela678 candidate
+**613f62af5cdd20e2b085bb0530be3067d0406af3**, scheduledcheck-in27e8 and ownerbbbd.
+Check-in refreshed before acting/acknowledging; historical stale QAcc973 unread
+finding was already resolved. Kernel reports exact fourpaths/local five B0 scenario
+PASS/syntax/lint/clean; no native qualification or integration request. Ownerbbbd
+identifies exported initializeCandidateAttemptStoreV1(database,metadata) raw-DB
+DDL bypass. Manager independently reads exportline124/provisioner import/call.
+This is actual implemented candidate source, not accepted authority boundary;
+Kernel7fc and QA181 receive exact correction/negative public-export foreign-DB
+scenario, preserving613 and every local/failed evidence. No Manager source/test
+edit/liveDDL. Corrected exact clean candidate independent QA remains next gate.
+
+Actual arbiterbbbd15:20 authorizes SAMEattention implementation after usableQAcc973,
+only exact fourpaths and five additive49-ref/provenance/conflict/unsafe/read-only
+scenarios. FreshConsole nextidle, worktreeclean e8 behind316; ownercontrols resume,
+Manager launchesnone. Native sameitem transition blocked13->in_progress records
+authorized corrective phase, not completed code; prior source/native/livecriteria
+retained. Console241 receives native clean convergence beforeedit preservingunique
+commits and exact candidate/native artifact/independent QA requirements. Authority
+and QA waits are resolved for this slice, not a false ownerproductwait. Fullbrowser/
+desktop/mobile/live acceptance still required; approval75 and oldcce/duplicatec532/
+proposedc178/full56 stay intact. No anotherlanding/runtimeinstall/wake/host change.
+
 ## Concrete Console attention preparation at 15:15 UTC
 
 Actual **QAcc973f42**15:18 grants USABLE named contribution/scenario consent for
