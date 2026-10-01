@@ -33,4 +33,3 @@ Project: 3dc11932-6e3c-42aa-9a8a-ca7b8f818b54
 - No active resource leases.
 
 Resume by checking live identity, inbox, backlog, worktree state, and exact check receipts before dispatch.
-
