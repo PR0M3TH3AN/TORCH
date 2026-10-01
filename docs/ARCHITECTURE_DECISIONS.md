@@ -625,3 +625,80 @@ independent. They also make current boundaries explicit: repository moves,
 multi-machine control, non-Linux persistent launchers, published update
 channels, and measurement/adoption of live multi-level organization pilots
 remain unavailable or owner-gated rather than silently approximated.
+
+## ADR-026: Proposed candidate-source qualification contexts and receipt authority
+
+**Status: proposed, nonnormative design contribution pending Work, Release, QA,
+and owner review. This ADR makes no implementation, policy, gate, schema, or
+receipt-validity change.**
+
+### Context
+
+Candidate checks must be able to qualify a clean, unlanded source commit
+without initializing a live control plane. A single engine digest is not enough
+to establish what was checked, whether it may write a receipt, or whether the
+result describes candidate source versus an installed operational runtime.
+Conversely, the schema-2-to-schema-3 refusal protects live registered state and
+must not be bypassed by fixtures, alternate roots, or a source runner.
+
+### Proposed direction
+
+A future versioned result would bind three independent axes: engine provenance
+(exact engine digest plus interface version); subject scope (authenticated clean
+candidate source versus installed operational runtime); and receipt authority
+(the adapter identity/digest/interface and its compatible schema versions).
+Its exact compatibility tuple would also include protocol version, registered
+project/install identity, exact subject commit, frozen definition and input
+snapshot digests, control-plane schema version, guard/resource binding,
+artifact-manifest digest, and terminal outcome.
+
+The Kernel would derive a native candidate context from the registered
+manifest/root and exact managed candidate, rather than accepting caller paths,
+manifests, database handles, receipt adapters, or commits as authority. The
+candidate engine would not initialize `ControlPlane`. A separately versioned
+registered adapter would validate the tuple and compatible schema before
+performing receipt DML; the adapter would not perform DDL, migration, schema
+relabel, or root redirection. A candidate requiring schema 3 would therefore
+refuse against schema 2. This is tuple-specific: valid schema-2 legacy source
+receipts remain valid under their recorded compatible adapter contract and are
+not retroactively invalidated or promoted.
+
+Fixture execution would use a separately authenticated fixture identity,
+manifest/root, and XDG state. It may return a permanently nonpromotable
+`SourceAttestation/v1`, never a registered receipt. It cannot be copied or
+relabeled into registered receipt storage, and Integration, Backlog, and
+Delivery would not consume it as a gate result.
+
+The proposed worker transport is an adapter-created opaque fresh single-use
+attempt with a dedicated artifact directory. The worker would receive only a
+verified immutable snapshot, frozen definition, bounded arguments, an explicit
+environment allowlist, and per-attempt `HOME`, `TMPDIR`, and XDG homes; it
+would receive neither registered root/manifest/database locations nor provider
+credential variables. The adapter-owned collector would accept regular files
+only below the attempt directory, reject links and traversal, hash an artifact
+manifest, and consume the attempt before receipt emission.
+
+These withheld capabilities are an authority boundary, not an OS filesystem
+sandbox. They stop the proposed interfaces from granting registered-root or
+receipt-writing authority, but do not independently contain same-user code that
+can discover ambient host state.
+
+### Unresolved decisions
+
+- The exact CLI interface remains open. Release has proposed caller commit
+  selection; Kernel review rejects treating a caller commit as authority. No
+  CLI form or consensus is implied by this ADR.
+- Release must decide the command presentation/refusal surface and confirm the
+  primary `src/cli.mjs` boundary; QA must approve strict candidate, native,
+  fixture-nonpromotion, schema-incompatibility, single-use, replay, and
+  no-DDL scenarios before implementation.
+- Process isolation, environment exceptions, artifact sealing and transport,
+  credential treatment, cancellation/retry behavior, replay implementation,
+  and adapter support for historical receipt layouts remain unselected.
+
+### Consequences
+
+This proposal preserves ADR-024's fail-closed schema compatibility and
+ADR-025's recovery boundaries. It does not authorize live recovery, a schema
+change, an installation change, a provider start, automatic wake activation, or
+an integration decision.
