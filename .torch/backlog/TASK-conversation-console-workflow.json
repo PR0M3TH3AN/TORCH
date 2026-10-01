@@ -64,14 +64,20 @@
     "message:333bf5ab-558b-40f1-8245-f3333032c397:independent-protected-details-driver-toggle-proof",
     "message:9a83dde8-af7e-411b-890b-ee1582266e32:independent-focused-corrected-navigation-10/10-development-evidence",
     "message:4ff2beb2-8cf5-4a05-96fa-9e09ced8ebb3:independent-exact-e8c-source-acceptance-four-native-PASS-and-11-artifact-hashes-not-full-task/operational",
-    "message:f9a645d0-8f0a-4539-bbdd-326721aa47bd:exact-source-integration-request-handoff-no-self-landing"
+    "message:f9a645d0-8f0a-4539-bbdd-326721aa47bd:exact-source-integration-request-handoff-no-self-landing",
+    "message:5d61b4a0-6617-45aa-a772-a0a193ced2be:exact-source-integration-submitted-not-self-landed",
+    "integration:6cbac9cb-445f-45d7-8bb1-10902e840211:landed2026-10-01T13:59:37.393Z:e8c4c424:authority-session-manager:canonical-native-plan-canProceed-true-no-blockers",
+    "queue:cce22c51-1fa8-4324-8e28-bf8cbfc56165:needs_convergence-unchanged-no-override",
+    "message:9242963d-3432-49aa-8720-74bb997caa40:actual-browser-binding-disconnected-discovery-empty-live-acceptance-unproven",
+    "message:9f4288f7-c984-4851-8452-1b06490209e7:source-landed-live-session-handoff-no-install/provider",
+    "approval:75a8ebae-54f8-47da-9a5a-fbe647d0baaf:refreshed-pending-owner-revision1-not-PNG-recovery"
   ],
   "commit": "e8c4c4249e49d91393394ac205d918826ddd1891",
-  "integrationRequest": null,
-  "blockedReason": "Exact clean e8c4c424 independent QA source acceptance received in actual4ff2beb2; all four native PASS and 11 regular-file PNG receipt-manifest hashes verified by QA. The prior QA-pending clause is resolved/historical. Manager requested exact source integration request through Console registered branch (f9a645d0); serialized native authority/clean canonical/ancestry gates still required. Full workflow remains blocked on actual live desktop/mobile/installed-alpha2 and owner acceptance requirements; generated demo screenshots and source acceptance do not prove operational acceptance. No task completion, install switch, live schema recovery or provider/wake/host authority.",
+  "integrationRequest": "6cbac9cb-445f-45d7-8bb1-10902e840211",
+  "blockedReason": "Exact source QA acceptance and native serialized integration are RESOLVED: actual4ff2 accepts e8c4c424, all four exact native PASS and 11 artifact hashes qualified; request6cbac9cb landed13:59:37.393 UTC through session-manager authority with canonical plan canProceed true/no blockers. Canonical and Console are clean exact e8c. Full workflow remains genuinely blocked on actual live/installed/desktop/mobile and owner full-criteria acceptance; owner9242963d refreshed browser binding disconnected/discovery[] and no computer-use connection available. Source/demo artifact acceptance never proves live UI or installed runtime acceptance. Alpha3activation approval75 remains pending owner revision1, completed exact PNG recovery is not activation. No task completion, installation switch, host/browser changes, provider/wake or schema recovery.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T13:49:46.389Z",
-  "revision": 15,
+  "updatedAt": "2026-10-01T14:04:28.022Z",
+  "revision": 16,
   "history": [
     {
       "from": null,
@@ -177,6 +183,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T13:49:46.389Z",
       "note": "Reviewed Manager-owned authoritative ledger metadata-only reconciliation after fresh current blocked14 and actual QA4ff2 exact source acceptance. Prior QA-pending hold resolved, actual guarded source integration handoff and live full-task acceptance remain open. Preserve owner/state/candidate/full criteria/dependencies/all receipt and failure history; no lifecycle churn or automatic completion. Native service lacks metadata-amend API; no blocked transition bypass or native gate waiver."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T14:04:28.022Z",
+      "note": "Explicit current owner directs actual queue/source acceptance metadata reconciliation only. Fresh blocked15, QA4ff2 and native6cb authorized/plan/land result independently checked; source review and landing resolved. Preserve owner/state/candidate/full criteria/dependencies and every history/failure receipt. Record actual landed integration linkage without full workflow closure; browser924 disconnected/live installed desktop/mobile gates remain. No lifecycle churn/automatic closure or gate bypass."
     }
   ]
 }

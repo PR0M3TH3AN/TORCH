@@ -1,5 +1,82 @@
 # Current pilot remaining-work handoff
 
+## Native serialized Console source landing at 13:59:37 UTC
+
+Startup brief reread **d7e6d69** after narrowly scoped approved readonly-database
+retry; own clean checkpoint695fbb2. CURRENT task read preceded explicit addressed
+unread100. Actual owner **12ce71df**, Console **5d61b4a0** and owner **9242963d**
+were understood, routed and individually acknowledged. Task states initially
+Console blocked15, Work assigned4, Runtime assigned6; no new assignment or provider
+start. Work Phase A native unit is running per actual owner12/924, not inferred
+from stale presence. Readonly Manager check-in found the actual Console handoff;
+evolution8/hierarchy10 measured signals retain six coherent owners with explicit
+contracts/phase sequencing rather than new hierarchy or identity. No activation.
+
+**Exact queue and authority.** Installed native integration list showed older
+Work **cce22c51** at needs_convergence/target-advanced-since-request, sourcee350,
+base3ea8, authorizedBy null. Console **6cbac9cb-445f-45d7-8bb1-10902e840211** is
+exact **e8c4c4249e49d91393394ac205d918826ddd1891**, source area/branch owner-console/
+torch/owner-console, target rewrite/portable-agent-fleet, base **0fdfcb3b**.
+Fresh native evaluate returned ready. Manager independently reread exact four
+PASS receipts **4ca6a5ab test,00a9b411 check,43d7b57f dashboard,111f3067 lint**,
+all invalidReason null, actual own QA4ff2 exact clean-source acceptance with all11
+regular-file PNG hash/manifest checks, clean candidate and canonical checkout.
+No self-source acceptance; no fixture promotion or new source test run implied.
+
+Current integration policy grants landing authority only session-manager and
+serializes the first ready authorized request. The earlier Work item is not ready
+or authorized and remains unchanged; no force, reorder or gate waiver occurred.
+Native **authorize** bound6cb to session-manager13:59:14.229. Native **plan** from
+the clean canonical target checkout returned currentTarget0fdf, blockers[] and
+canProceed true/mutationPerformed false. Console's earlier own plan correctly
+refused missing landing authority/authorization; Manager's distinct named authority
+satisfied those guards rather than bypassing them. Native **land --yes** performed
+the serialized operation and returned **landed13:59:37.393 UTC**. No manual git
+merge/cherry-pick/reset/push, alternate state/engine or schema change was used.
+Afterwards canonical and Console independently clean at exact **e8c4c424**.
+Fresh queue confirms6cb landed and oldercce untouched needs_convergence.
+
+**Source integration resolves no operational requirement.** Fresh task remained
+blocked15 after landing; automatic task closure was not performed. Reviewed
+Manager-owned metadata-only **blocked16** links actual6cb and replaces pending
+source-request text with resolved QA/source landing. Owner/state/exact candidate,
+full criteria/dependencies/receipt failures/history preserved. Actual owner924
+refreshed computer-use discovery: previous browser binding disconnected, connected
+browsers[]. Actual live/installed-alpha2/desktop/mobile/owner full workflow criteria
+remain unproven. Generated demo images/source acceptance cannot substitute live
+visual evidence. Native owner approval **75a8ebae** independently refreshed pending
+revision1, approver owner, alpha2->alpha3 active pointer/registry switch; earlier
+mixed-loaded-code auto-review refusal remains. PNG reply is only duplicate consent
+for already completed exact Runtime93 recovery, not activation/repeated restore.
+No alpha3 switch, schema/host/browser installation, provider start or automatic wake.
+
+**Concrete session handoffs.** Console **9f4288f7** and QA **20713e99** receive
+actual landing and genuine live-browser/installed acceptance boundary. Next
+read-only live desktop/mobile qualification waits for an actual connected browser
+within approved scope; Manager does not install/start anything. Work **55f3fa5c**
+and Runtime **91d4f8f6** receive canonical advance: preserve unique commits and
+active work, guarded clean convergence before qualifying any new exact candidate,
+rerun required checks on resulting commit/independent QA/new exact integration
+request. No old receipts, force or competing push. Work was independently clean
+**9946a2a3** and Runtime clean0fdf at observation; those Git observations do not
+prove a terminal turn or implementation acceptance. SAME Work Phase A and Runtime
+items remain, no duplicate dispatch. Kernel implemented inbox/narrow proof and
+real native2/3refusal plus dormant inventory/launcher/Release roadmap remain.
+
+Owner12 fresh13:51 incident (doctor healthy/all7idle despite actual Manager service,
+aggregateunread130) is linked via existing Runtime starting-presence/Console
+attention criteria and actual handoff, not a new task or owner decision. Their
+current strict criteria already require timestamp/source/freshness, no idle-as-
+process-absence claim, recipient/age/actionability and actual browser gates;
+retain those requirements and anomaly evidence without suppressing health or
+mass acknowledgements. Pending genuine owner activation is distinct from routine
+Manager integration, source review and peer contribution decisions.
+
+Reviewed metadata keeps all55 tasks and one active item per specialist; full
+roadmap and blocked histories remain. No arbitrary recovery, cleanup, default-main
+promotion, release/deployment/publication or quota/model/runtime policy change.
+
+
 ## Phase A authorized and Console exact-source QA accepted at 13:51 UTC
 
 Fresh canonical brief digest **d7e6d69** was read through the approved narrowly
