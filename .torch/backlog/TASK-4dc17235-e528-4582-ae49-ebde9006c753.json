@@ -24,20 +24,28 @@
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "release-self-host",
   "evidence": [
     "message:f286a236-77f8-4bc6-a2a3-a4c45d33fa76:TORCH-engine-scope",
     "message:c15fcde8-b20f-4f95-b422-b722b70ca325:read-only-version-plan",
     "message:4af26ede-5253-4a6c-85e3-dfbb85ebcdca:bounded-alpha3-preparation-approved",
-    "owner:4af26ede:alpha3-preparation"
+    "owner:4af26ede:alpha3-preparation",
+    "message:cdc9acec-853a-49be-8ba0-30e32bf57879:clean-release-candidate-four-gates",
+    "receipt:d1bffb30-e4de-4c79-a421-8251bb8ac14f:pass",
+    "receipt:6cdd744a-a283-4337-9c6d-d177854909fa:pass",
+    "receipt:9c2d5e2f-9cf3-438c-834a-243f0ce55375:pass",
+    "receipt:e0c2a977-8f0a-4281-b152-59f7faef84e9:pass",
+    "message:a77c34ab-bb0a-439f-ad9f-a06a4f3e0922:QA-accepts-exacte0e94da",
+    "integration:454b7a55-c9ee-4268-8dfe-7e2035f2cc1d:landed286",
+    "message:1e5eb708-1f26-4983-b8b7-d9f39754bf1b:convergence-requalification"
   ],
-  "commit": null,
+  "commit": "e0e94da5452883b57161bc5ba6351776a3d7eed3",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T06:52:30.704Z",
-  "updatedAt": "2026-10-01T06:56:58.480Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T07:50:34.891Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -66,6 +74,27 @@
       "actorId": "session-manager",
       "at": "2026-10-01T06:56:58.480Z",
       "note": "Release nextready exactlythistask/noactiveitem. Assign explicitowner4af26ede phase1: clean guarded convergence and read-only planning may proceed; coherent alpha3 VERSION metadata edits ONLY after all sharedpackageconsents9c6563ff/8ce8a450/e625c02d actually approved. Preserve alpha2/currentDB/worktrees/timers/rollback-safe schema. All4exactcandidateCLIchecks, independentQA, guardedland then reviewedplan/isolatedbuild; NO activation/restart/providerfreshness/deeperengineguard/UI edits. Arbiter starts assigned native session; Manager launches none."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:37:15.883Z",
+      "note": "Reconcile actual completed local alpha3 metadata work on sameassignment, clean exacte0e94 liveobserved; all3versionconsents and4exactPASS independentlyread. No build/activation/landing inferred."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:37:21.761Z",
+      "note": "Actual clean e0e94 fourfreshPASS/noinvalidReason verified. Ownerreports QAa7b5c9bf accepted; request actual namedQA verdict/fullref before readyintegration. Runtimeurgentfirst requires subsequent guardedmerge/all4freshchecks/newQA/newrequest if canonicalmoves. SourceQA alone is not build/activation/complete."
+    },
+    {
+      "from": "verification",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:50:34.891Z",
+      "note": "Actual named QA acceptance for e0e94da now read and preserved. Resume SAME item for actual canonical clean286 convergence; new merge needs all four fresh exact candidate CLI gates, new independent QA/new native request. Kernel may advance target first. Old version-only consents apply unchanged scope; no candidate build before qualified landing/reviewed plan, activation/restart/wakes remain reserved."
     }
   ]
 }

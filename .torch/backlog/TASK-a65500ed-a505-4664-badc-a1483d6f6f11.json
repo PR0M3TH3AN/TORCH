@@ -1,0 +1,46 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-a65500ed-a505-4664-badc-a1483d6f6f11",
+  "title": "Preserve test-integrity evidence in immutable per-change records with a validated index",
+  "description": "Owner795de3fc observes repeated independent additive docs/TEST_INTEGRITY.md prepend merge conflicts in Runtime/Kernel convergence, requiring lossless peer reconciliation. Propose ONE bounded QA-led evidence organization change with Work Integration validation/discovery consent. Design immutable per-task/change integrity records and discoverable gate-validated index, preserving all historical notes, IDs, strict scenarios, hashes and original QA ownership. No immediate migration, current merge-protocol bypass, assertion weakening, acceptance shortcut or provider start. Existing frozen candidates must still reconcile notes under QA consent; this proposal remains unassigned until reliability sequence and peer review.",
+  "priority": "high",
+  "affectedDomains": [
+    "qa",
+    "work-integration",
+    "project-kernel",
+    "provider-runtime"
+  ],
+  "dependencies": [
+    "TASK-pilot-executor-outcomes",
+    "TASK-bounded-routine-coordination"
+  ],
+  "acceptanceCriteria": [
+    "Each task/change integrity record has immutable identity and provenance, required machine-readable fields and scenario/spec references; later corrections append new evidence rather than overwrite historical truth.",
+    "Discovery/index validation rejects missing, malformed, duplicated, stale or unauthorized records and preserves strict Test Integrity Note requirements for test changes.",
+    "Migration or compatibility plan preserves every historical docs/TEST_INTEGRITY.md note byte-for-byte or with lossless proven source/hash mapping; no deleting old evidence or changing acceptance expectations.",
+    "Concurrent additive independent records merge without repeated monolithic prepend conflicts; deterministic boundary scenarios prove discovery and fail-closed validation under missing/conflicting index entries.",
+    "QA explicitly consents to record and scenario paths; Work Integration consents to gate/discovery paths; source ownership, named approvals and all exact-commit checks remain enforced.",
+    "No rollout or frozen-candidate protocol change occurs from proposal alone; independent QA acceptance and guarded integration required for eventual implementation."
+  ],
+  "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T07:36:25.425Z",
+  "updatedAt": "2026-10-01T07:36:25.425Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:36:25.425Z",
+      "note": "Task created."
+    }
+  ]
+}

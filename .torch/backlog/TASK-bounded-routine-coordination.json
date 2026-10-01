@@ -22,7 +22,7 @@
   "observedAt": "7b7c6584b9d3",
   "feature": null,
   "milestone": null,
-  "state": "verification",
+  "state": "in_progress",
   "owner": "project-kernel",
   "evidence": [
     "npm run test: 195 passed",
@@ -44,14 +44,17 @@
     "receipt:20aef427-a098-4dbd-a1d8-b1c37b7a275d:pass",
     "receipt:24f91aab-7ca7-483b-9b20-5de29c17d72c:pass",
     "receipt:6f2ba896-b0c5-4253-b222-f398ba8bd048:pass",
-    "receipt:7859860a-6eee-4648-8b63-1a27ef8c44fa:pass"
+    "receipt:7859860a-6eee-4648-8b63-1a27ef8c44fa:pass",
+    "message:11288272-4390-4721-a624-ae0d77e23518:QA-accepts-exactdd62",
+    "integration:454b7a55-c9ee-4268-8dfe-7e2035f2cc1d:landed286",
+    "message:525ffac7-92a6-453c-82ac-4de25e9f91b0:guarded-merge-requalification"
   ],
   "commit": "dd62c7787737e35138cef7871489d6be1ee696c9",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T23:06:51.644Z",
-  "updatedAt": "2026-10-01T07:16:13.394Z",
-  "revision": 13,
+  "updatedAt": "2026-10-01T07:50:32.294Z",
+  "revision": 15,
   "history": [
     {
       "from": null,
@@ -143,6 +146,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T07:16:13.394Z",
       "note": "All four immutable exact dd62 fresh receipts verified PASS/noinvalidReason and clean native branch after approved recovery. Move SAME task to independent QA verification, retaining native owner, historical incomplete108f and all archives/approval histories. QA must review actual generated policy/scenario boundaries/TestIntegrity and exact engine provenance; this is not acceptance or landing."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:34:49.457Z",
+      "note": "IndependentQA11288272 accepts exactdd62 strictpolicy/scenarios andall4freshPASS/externalmanifest. Same taskready_to_integrate. Runtime286 landsfirst by arbiterrecommendedorder; nativeKernel must merge newlyadvanced canonical cleanbranch preservinguniquecommits, freshall4exactchecks/newQA/newrequest after race. No stale receipt reuse/rebase/defaultmain."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:50:32.294Z",
+      "note": "Same owned task must converge after actual canonical clean286 advance. Old exactdd62 acceptance retained, not transferable to merge. Guarded clean merge preserving all unique commits/strict notes; QA consent for conflict resolution, four fresh candidate-owned exact gates/newQA/new native request. No rebase, stale receipt reuse or second item."
     }
   ]
 }

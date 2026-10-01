@@ -18,15 +18,20 @@
   "observedAt": "c940a343c357",
   "feature": "Self-host development readiness",
   "milestone": "First real development trial",
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
+  "state": "assigned",
+  "owner": "provider-runtime",
+  "evidence": [
+    "message:d9705044-5bce-4806-b72a-b225bc617f50:explicit-bounded-arbiter-authorization",
+    "message:eae1adc0-06c7-4433-9c74-f51e5710203f:live-roster-counterexample",
+    "integration:454b7a55-c9ee-4268-8dfe-7e2035f2cc1d:landed286",
+    "TASK-pilot-executor-outcomes:completed:revision14"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:55:23.203Z",
-  "updatedAt": "2026-09-30T19:55:23.203Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T07:48:26.935Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -34,6 +39,20 @@
       "actorId": "owner",
       "at": "2026-09-30T19:55:23.203Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:47:45.020Z",
+      "note": "Current brief d7e6d69 reread; Runtime next idle. Explicit arbiter approval supersedes proposal-only wording for bounded starting presence/atomic identity reservation. Real held-open isolated CLI, independent timer/manual contention and conservative unknown interruption tests; no elapsed-time offline inference. Peer consent required for other-owned edits. No wakes/install/provider starts; diagnostics separately blocked."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:48:26.935Z",
+      "note": "Runtime next returned this exact ready item with no active implementation. Assign bounded owner d9705044 starting presence and atomic identity lease across manual/scheduled paths. Preserve uncertain outcomes; real held-open isolated CLI and independent concurrent timer/manual qualification. Query each path and obtain QA/Kernel/Release/Console consent before crossing ownership. Executor completed14 at landed286; diagnostics remains blocked separately. Native specialist reads current brief before work; task-named commits, exact candidate gates, independent QA, serialized request. Arbiter alone starts sessions/installation/wakes."
     }
   ]
 }

@@ -1,6 +1,145 @@
 # Current pilot remaining-work handoff
 
-## Current guard hold at 07:19 UTC
+## Authoritative reconciliation at 07:51 UTC
+
+The executor fix **actually landed** at `286bfa72e3202ec0806f7c3075821c8057d6e132`
+through exact request `454b7a55-c9ee-4268-8dfe-7e2035f2cc1d`, authorized and
+guarded at 07:40 UTC after independent clean canonical/source, ancestry, four
+fresh PASS receipts and QA `27c760e9` checks. Canonical readback is clean286.
+`TASK-pilot-executor-outcomes` is **completed revision14**, retaining receipts,
+archives and old refusals; its next lookup returned idle. Diagnostics remains
+separately blocked with its historical candidate/receipts/QA verdict preserved.
+The 07:39 and earlier entries below are historical, superseded by this section.
+
+Arbiter message `1e50f4d4-4372-4c92-9b0b-9779a5d2b73d` records an authorized
+non-force push of qualified landed286 to origin/rewrite/portable-agent-fleet,
+remote readback286, default main unchanged `a46832314f6a32c6636ae8ff672df8c3e67e2672`,
+and live Console OFF-MACHINE recoverability. Manager did not perform that push.
+Do not retain old ONE-DISK as an outstanding owner decision for this commit.
+Installed alpha.2 remains unchanged; landing and off-machine recovery do not
+qualify installed startup behavior or authorize automatic wakes.
+
+Owner `eae1adc0` reports actual running Manager/Runtime/Console processes while
+the roster said idle. Explicit bounded authorization `d9705044` supersedes the
+old proposal-only wording for **TASK-pilot-starting-presence**. Current brief
+digest d7e6d69 was reread; Runtime next was idle, then this exact ready item.
+Manager assigned it to provider-runtime **revision3** after closing executor.
+Implement durable pre-executor starting presence and atomic per-identity launch
+reservation shared by manual/scheduled paths, conservative unknown interruption
+and no elapsed-time offline inference. Require real held-open isolated CLI and
+independent concurrent manual/timer scenarios. QA consent request
+`8fb179b7-aed7-4893-88ef-64c0c04a05d9` is **approved revision2** for additive strict
+`test/fleet/starting-presence.test.mjs` and/or `test/fleet/lifecycle.test.mjs`
+plus corresponding complete `docs/TEST_INTEGRITY.md` note. Event/lease handshakes
+must remove timing nondeterminism; no retries/sleeps or assertion relaxation.
+Other exact paths still require named consent before crossing ownership. Runtime
+handoff `a5a4fa23` records these boundaries. Arbiter starts native sessions;
+Manager starts none. Executor completion alone cannot enable wakes.
+
+Kernel's exactdd62 QA acceptance is preserved, but canonical advanced. Same
+`TASK-bounded-routine-coordination` is **in_progress revision15** for guarded
+clean merge, preservation of unique commits and all strict notes, four fresh
+candidate CLI checks, new independent QA and native integration request.
+Release QA forward `a77c34ab` confirms actual exacte0e94da metadata acceptance;
+that wait is resolved. Same alpha.3 item is **in_progress revision7** for fresh
+convergence/qualification; Kernel may advance target again before Release lands.
+No stale receipt reuse or rebase. Candidate build still requires qualified
+source landing and reviewed exact conflict-free plan; activation/restart is
+reserved. Console attention task remains incomplete with contextual owner
+Approve/Reject and compact evidence still requested; actual desktop/mobile
+qualification remains required. Separate browser audit stays incomplete.
+
+Work Integration's artifact task is verified **completed revision10** at landed
+1a2 and next lookup idle. Systemd paths belong to Runtime, so no reassignment.
+The bounded parallel candidate is preparation of existing immutable-integrity
+proposal `TASK-a65500ed-a505-4664-badc-a1483d6f6f11`: historical note/hash inventory,
+lossless immutable record/index contract and strict owned gate/discovery design.
+QA message `7da44c5a` agrees to read-only preparation, with outputs confined to
+durable TORCH evidence/attachments and **no repository file creation**. Structured
+request `61de48f4-bf5f-49d8-8aee-8df4f49f3025` and peer scope answer remain tracked;
+messages `ad985a6a`/`5b77eda0` retain this wait. Manager inspected current backlog
+guards: next/assignment requires every dependency completed, so the full item
+remains proposed/unassigned pending Kernel closure. QA consent does not waive
+that guard. A bounded read-only peer planning question is routed within routine
+coordination; no migration, tests/enforcement changes or current merge-protocol
+bypass. Atomic approval idempotency
+proposal20d313 is separate; no duplicate task or competing manager backlog.
+Pipeline/chat/provider roadmap goals remain queued, not replaced by these slices.
+
+Live manager check-in was refreshed at 07:49 UTC. Idle badges are presence
+reports, not proof of process absence or completed assignments. Fleet evolution
+and hierarchy signals remain advisory: retain six specialists, improve owned
+coordination/evidence organization before adding roles. No Fleet changes or
+identity activation. Automatic wakes remain paused. This cycle records actual
+landing, closure, next assignment and peer waits; remaining gates are explicit.
+
+## Current resume reconciliation at 07:39 UTC
+
+**The Runtime owner hold is resolved**, not pending: owner approval
+`d1f74d6e-768b-4b89-921f-3f7b1e56a1a3` is approved revision 2. Actual post-risk
+user consent was delivered as a native Runtime user turn, scoped only to exact
+286/five archived paths. Native Runtime completed recovery, all originals match
+candidate baseline and the tree is clean. The old guard refusal, QA99ef, archives,
+superseded duplicate histories and incomplete fc8 receipt remain preserved.
+Manager independently read the owner decision and fresh exact PASS receipts:
+test `e08d795d-c6ce-4635-9935-5000d73cdd85`, check
+`12dc4949-8cfd-4b8c-87e0-d56d92feb289`, dashboard
+`29dc8f12-0829-4173-944a-76e0f35164b6`, lint
+`a38b5fc8-ba6b-4063-9a06-69d31b5d3b92`, all without invalidReason.
+
+Independent QA `27c760e9` accepts exact Runtime286 strict scenarios/integrity,
+clean tree and all11 external dashboard hashes. Same Runtime task is now
+**ready_to_integrate revision13**, retaining owner/candidate/history. Independent
+QA `11288272` accepts exact Kerneldd62 policy/scenarios/four fresh gates/external
+manifest; same Kernel task is **ready_to_integrate revision14**. No acceptance
+automatically lands either branch. Runtime-first bound native submission requested
+via `42ecee4d`; Manager must evaluate/authorize/land the returned exact request.
+Manager will not impersonate a specialist to create its request. At last queue
+read, only historical cce22 needs_convergence and artifact7d689 already landed
+exist. Canonical remains clean1a2; no new source landing occurred this cycle.
+
+Runtime is urgent first under ownercdc9/795de3fc sequence. Kernel and Release were
+directly told to guard-merge any resulting canonical advance (never rebase),
+preserve unique commits and strict notes, rerun all4 exact gates and obtain fresh
+QA/new native requests for resulting commits. Old candidate receipts cannot
+qualify a new merge. No gate waiver or default-main promotion is authorized.
+
+Release clean metadata candidate `e0e94da5452883b57161bc5ba6351776a3d7eed3` has
+four actual fresh PASS receipts d1bffb30/6cdd744a/9c2d5e2f/e0c2a977, independently
+read without invalidReason. Same alpha.3 task is **verification revision6**.
+Owner reports QAa7b5c9bf acceptance; Manager requested QA's existing exact verdict
+via `70a85e84` rather than assuming an unseen peer message. All3 version-only
+consents remain approved. No isolated candidate build until actual qualified
+source landing plus reviewed exact conflict-free plan; no active upgrade/restart.
+
+Console same task remains incomplete/in_progress revision5. Ownere217 counter-
+example09a30670 showed actual roster-title override, manager-authorized integration
+misclassified as Arbiter, and missing contextual overview Approve/Reject choices.
+QA01a826af routes repair under Console ownership. Live Console is now clean
+`9c806c4b09892703f0d7e6477dfc00b2afee1fc3`, with a followup role/authority commit;
+Manager does not assume current repairs or required visual acceptance are proven.
+Direct followup `2b57c30d` preserves guarded preview/confirmation/revision/evidence,
+owner-only quick choices, expandable evidence, drafts/refresh/errors/unknown,
+latest-inbox-before-submit and actual desktop/mobile browser acceptance. The
+separate audit remains blocked; no source-only or generated-image visual PASS.
+
+Owner795de3fc repeated additive integrity-note merge conflicts are recorded as
+ONE high-priority proposed task `TASK-a65500ed-a505-4664-badc-a1483d6f6f11` in the
+existing backlog. QA owns docs/TEST_INTEGRITY.md; immutable per-change records and
+a discoverable validated index must preserve all historical notes/provenance,
+strict scenarios and peer consent. Routed to QA/Integration, unassigned after
+reliability, no migration or current protocol bypass. Atomic approval-idempotency
+proposal20d313 remains separate and unassigned; no second work queue.
+
+Startup scoped brief reread d7e6d69 matches. Health healthy, historical coverage
+incomplete; seven recurring evolution signals and30 hierarchy recurrences/ten
+direct coordination requests remain advisory. No Fleet changes exist. Retain
+six specialists: actual friction supports owned process/evidence organization,
+not a new domain, promotion or coordination role. Automatic wakes remain paused,
+provider starts/installation changes stay arbiter-controlled. Manager begins at
+clean a7c4cc5 and checkpoints reviewed ledger only; no peer work was edited.
+
+## Historical guard hold at 07:19 UTC
 
 **Actual owner decision pending:** approval
 `d1f74d6e-768b-4b89-921f-3f7b1e56a1a3`, addressed to owner, records Runtime286

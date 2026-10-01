@@ -19,7 +19,7 @@
   "observedAt": "d636cae93c5a",
   "feature": null,
   "milestone": null,
-  "state": "blocked",
+  "state": "completed",
   "owner": "provider-runtime",
   "evidence": [
     "receipt:b346e435-f3e2-45f8-935d-0d4fe67dd3ea:test:pass",
@@ -42,14 +42,25 @@
     "message:df000c30-f0e4-4720-96d1-13e9dc58dd23:actual-public-guard-refusal",
     "message:0cfd47cc-3c48-4632-b095-a471ff05c745:supersedes-mistaken-interpretation",
     "approval:99ef7a45-82d4-4dc7-a558-c52bde768d53:approved-rev2-insufficient-to-bypass-external-guard",
-    "approval:d1f74d6e-768b-4b89-921f-3f7b1e56a1a3:owner-pending-post-risk-runtime-recovery"
+    "approval:d1f74d6e-768b-4b89-921f-3f7b1e56a1a3:owner-pending-post-risk-runtime-recovery",
+    "approval:d1f74d6e-768b-4b89-921f-3f7b1e56a1a3:owner-approved-rev2",
+    "message:93a7ebcc-e190-4b0c-a4d6-f7d078b07c79:successful-native-recovery",
+    "message:27c760e9-3a88-4276-997a-b117a5a83eca:independent-QA-acceptance",
+    "receipt:e08d795d-c6ce-4635-9935-5000d73cdd85:pass",
+    "receipt:12dc4949-8cfd-4b8c-87e0-d56d92feb289:pass",
+    "receipt:29dc8f12-0829-4173-944a-76e0f35164b6:pass",
+    "receipt:a38b5fc8-ba6b-4063-9a06-69d31b5d3b92:pass",
+    "message:27c760e9-3a88-4276-997a-b117a5a83eca:QA-accepts-exact286",
+    "integration:454b7a55-c9ee-4268-8dfe-7e2035f2cc1d:landed:2026-10-01T07:40:06.149Z",
+    "message:27c760e9-3a88-4276-997a-b117a5a83eca:QA-exact286-accepted",
+    "approval:d1f74d6e-768b-4b89-921f-3f7b1e56a1a3:owner-post-risk-approved-rev2"
   ],
   "commit": "286bfa72e3202ec0806f7c3075821c8057d6e132",
-  "integrationRequest": null,
-  "blockedReason": "Actual automatic approval-review guard rejected native Runtime five-QA-PNG restoration at public tool call 2026-10-01T07:12:06.460Z: trusted instructions reserve recovery to Project Kernel and prohibit retry, indirect execution or policy circumvention. New QA99ef approved scoped286 recovery but cannot bypass this guard. Arbiter has asked actual user for new post-risk exact-scope decision; owner-addressed wait pending. Candidate286/five dirty originals/archives and historical incompletefc8 receipts retained; no cross-worktree Kernel routing, policy override or retry until actual trusted user response and applicable guard permits.",
+  "integrationRequest": "454b7a55-c9ee-4268-8dfe-7e2035f2cc1d",
+  "blockedReason": null,
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-10-01T07:19:22.987Z",
-  "revision": 10,
+  "updatedAt": "2026-10-01T07:41:42.892Z",
+  "revision": 14,
   "history": [
     {
       "from": null,
@@ -120,6 +131,34 @@
       "actorId": "session-manager",
       "at": "2026-10-01T07:19:22.987Z",
       "note": "Ownerdf000c30 requests precise actual guard-hold reconciliation. Expectedrev9; same blocked state/owner/candidate/criteria/dependencies preserved. Manager-owned metadata amendment only; no lifecycle resume, approval decision, recovery execution or guard bypass. Arbiter actual-user question remains pending."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:34:38.015Z",
+      "note": "Same owned task resumes after actual owner post-risk decision, delivered native trusted user turn; independently read approvedrev2, clean286 and all4freshPASS. Actual old guard refusal retained, no general policy change/bypass or second task."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:34:42.673Z",
+      "note": "Independently read four exact clean286 fresh PASS/noinvalidReason receipts. Oldfc8 incomplete/history preserved, actual independentQA27c760e9 received. Record qualification lifecycle without claiming landing."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:34:46.595Z",
+      "note": "Independent QA accepts exact286, strict scenario/integrity and11externalmanifest hashes, all4exactPASS/currentclean. Urgent Runtimefirst guarded serialized submission; native Runtime must submit boundidentity exactrequest. Manager neither impersonates specialist nor waives gates; wakespaused."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "completed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:41:42.892Z",
+      "note": "Exactqualified286 task source actuallylanded byguardedserializedTORCH path aftercleanmain/source/ancestry/4freshPASS/independentQA andclearlandingplan; currentcanonical286clean. Landedclosurepreview hasnocandidates/noautomaticCloses, so explicitManager revisionchecked same-taskclosure withexactrequest. Preserveoldguardrefusal/incompletefc8/artifacts/rejectedduplicates. Completionofthisexecutorqualification isnotautomaticwakeactivation/installupdate/generalrelease; those remainpaused/arbiterdecision. Diagnosticsseparateblockedtask/history unchanged."
     }
   ]
 }
