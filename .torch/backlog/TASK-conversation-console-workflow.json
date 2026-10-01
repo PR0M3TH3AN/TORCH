@@ -17,15 +17,19 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
+  "state": "assigned",
+  "owner": "owner-console",
+  "evidence": [
+    "message:89c92c3e-4f00-4213-877d-6c2afeb4b22c:focused-view-routing/mobile-navigation/title-provenance-design-observations",
+    "message:799d0275-c113-45cd-a0cb-06ca78f9c71f:sequence-existing-focused-UI-roadmap-after-source-qualification",
+    "integration:9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b:attention-source-landed;fullvisual-task-blocked8"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-09-30T19:30:23.720Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T09:17:36.822Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -33,6 +37,20 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.720Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:17:07.717Z",
+      "note": "Fresh briefd7e6d69 read. Triage ONLY read-only design/scoping phase of existing Console workflow per owner89c92c3e/799d0275 after actual cb145 source qualification/landing. Current ownerConsole nextidle; attention/audit stay blocked with mandatory real visualcriteria intact. Plan one visible selected view with navigation/back/forward, clear task/outcome titles/provenance details and mobile accessibility from actual accumulated observations; no dashboard rewrite/source/test/config or live mutations yet. Must return precise owned source paths, QA additive scenarios/test-path consent and independent acceptance plan before implementation authority expands. Preserve full current workflowcriteria/later live/provider/background-cache qualification. Arbiter controls starts, no wakes/provider/install changes."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:17:36.822Z",
+      "note": "Exact fresh lookup readyTHISitem/noactiveitem after attention blocked8. Assign read-only focused UI design/scoping phase only, owner89c92c3e/799d0275, currentbriefd7e6d69. Return exact source-path scope and named QA consent/scenarios before implementation. No source/test/config/live edits or full visual audit/completion inferred. Browser unavailable remains explicit; preserve attention owner/candidate/landed receipts and allcontrols. Arbiter launches/resumes, Manager none."
     }
   ]
 }

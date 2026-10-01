@@ -1,0 +1,60 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-3909cbf6-10c6-44ce-b82e-5bfb62cf34c8",
+  "title": "Make standalone dashboard screenshot output safe by default",
+  "description": "Owner97e2a19a/ad1c2a86 requests ONE follow-up to the new Kernel direct npm dashboard incident. scripts/test-dashboard-demo.mjs currently defaults missing TORCH_CHECK_ARTIFACT_DIR to tracked reports/design-system. Make standalone output run-owned external/temporary by default, retained and printed with provenance. Explicit output must refuse tracked repository/baselines including symlink escape and preserve existing bytes. Existing TORCH candidate runner remains primary; direct npm execution does not create qualified receipts. QA owns scripts/** and test/**; no test expectation weakening, golden baseline rewrite, source recovery, provider/wake/install/config action. Assign only after current exact five-PNG recovery disposition is recorded; recovery itself stays Kernel-only. Keep original completed artifact-isolation task and broader engine/integrity scope distinct.",
+  "priority": "high",
+  "affectedDomains": [
+    "qa",
+    "owner-console",
+    "work-integration"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "With no artifact environment, a standalone dashboard run writes only to a fresh run-owned external temporary directory, retains output and prints exact artifact/provenance location; tracked baseline hashes stay unchanged.",
+    "An explicitly supplied external runner artifact directory is honored with captured screenshot names/byte counts/hashes, preserving the normal four-gate path.",
+    "Repository or baseline output targets, including symlink-resolved escape into any tracked worktree, are refused before any write; pre-existing user and baseline bytes stay unchanged.",
+    "Strict deterministic boundary scenarios cover absent env, valid external output, tracked repository target, symlink target and pre-existing byte preservation; existing screenshot assertions/golden expectations remain intact.",
+    "Only clean final candidate CLI from canonical cwd and registered area generates fresh four exact receipts; direct npm output is not labelled TORCH-qualified. Independent review and guarded serialized integration required."
+  ],
+  "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
+  "feature": "Check artifact safety",
+  "milestone": "Owner-reviewed reliability follow-up",
+  "state": "assigned",
+  "owner": "qa",
+  "evidence": [
+    "message:97e2a19a-080a-4865-9c33-2204e842626a:explicit-QA-owned-safe-default-followup",
+    "message:ad1c2a86-e25a-440c-818f-86d9c3ecfa71:create-one-actual-item/assignment-afterreview",
+    "message:79d19fd6-43e4-4113-9855-4f0a266e4e6c:directnpm-provenance-correction",
+    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:fresh-QA-recovery-disposition-complete;Kernel-only-application"
+  ],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T09:21:25.674Z",
+  "updatedAt": "2026-10-01T09:22:37.095Z",
+  "revision": 3,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:21:25.674Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:22:30.237Z",
+      "note": "Current briefd7 read before creation; QA nextidle noactive item. Exactly one followup—not reopening/duplicating completed runner isolation. Actual QA current recovery review/disposition recorded8a668aba before readiness; Kernel-only approvedfivepathrecovery staysseparate. QAowns script/test; source protection absent-env/external/repo/symlink/priorbyte truth per owner97, no baselines/assertion weakened. Work/Console independent source review required, actual candidateCLI exact4 gates, no selfacceptance orproviderstart."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:22:37.095Z",
+      "note": "Exact nextQA readyTHIStask/noactive; current Kernel recovery review/disposition alreadycomplete. Assign actual script/test implementation only within QAowned paths, strict added scenario integrity note, safe standalone external output, repo/symlink refusal/priorbyte preservation, no golden rewrite/directnpm-qualifiedclaims. Independent Work/Console review plus exactfinal4gates/nativeintegration required; Arbiter starts QA, Manager none. Recovery consent doesn'tgrantQAeditKernel tree."
+    }
+  ]
+}

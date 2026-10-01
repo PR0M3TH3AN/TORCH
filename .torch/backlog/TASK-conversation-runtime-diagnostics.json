@@ -17,7 +17,7 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "blocked",
+  "state": "completed",
   "owner": "provider-runtime",
   "evidence": [
     "test:f359e781-e79b-4d72-ab0f-5e9ed0c33281",
@@ -32,14 +32,28 @@
     "message:8275d64a-7b28-49ee-a379-2c6d0bdcacb3:QA-accepted-scenario-code-not-integration-qualified",
     "approval:b125592b-e022-453d-b2d9-98c0fd8ac164:approved-rev2-exact-additive-test-scope",
     "canonical:3ca70f2d43be3eac1a4df26d8aa485f58e239beb:advanced-beyond-diagnostics-candidate",
-    "dependency:TASK-pilot-generated-check-artifacts"
+    "dependency:TASK-pilot-generated-check-artifacts",
+    "message:94010b22-c6ce-4d34-9ed9-01b2330106db:recheck-real-remaining-diagnostics-gate",
+    "git:ae18a98e2911aa515d0484518013061b05ff6adf:ancestor:28c941d1ecbc3da8908a84f96c06ac0b929d4b19:independent-exit0",
+    "TASK-pilot-generated-check-artifacts:completed10:landed1a2",
+    "TASK-pilot-executor-outcomes:completed14:landed286",
+    "canonical:28c941d1ecbc3da8908a84f96c06ac0b929d4b19:four-fresh-PASS:pending-diagnostics-specific-QA",
+    "message:a992ac79-fcb9-4c82-a856-f8c4a54a3e7f:independent-diagnostics-fixture/sourcecoverage-sufficient-onaccepteddescendant",
+    "message:ad1c2a86-e25a-440c-818f-86d9c3ecfa71:reconcile-real-landedsource/legal-taskflow",
+    "git:ae18a98e2911aa515d0484518013061b05ff6adf:ancestor:cb145e56cb7d530f9563b98d4f9920ff0372a67a:exit0",
+    "integration:9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b:actual-landed-clean-cb145e56",
+    "receipt:2ee13d46-fe4f-4798-b08b-d4b7263a62c5:test:exact-cb145-pass",
+    "receipt:558d8598-0332-49eb-9296-9f68b5880604:check:exact-cb145-pass",
+    "receipt:d226d5de-61c3-41d7-acbc-9ab24a5bf931:dashboard:exact-cb145-pass",
+    "receipt:f849fd17-902c-47f5-9134-3a596dcaf97d:lint:exact-cb145-pass",
+    "original-candidate:ae18a98e2911aa515d0484518013061b05ff6adf:preserved-in-evidence-and-history;old214-incomplete-not-reused"
   ],
-  "commit": "ae18a98e2911aa515d0484518013061b05ff6adf",
-  "integrationRequest": null,
-  "blockedReason": "Required test-dashboard receipt 214a5830-7238-4188-82bd-eb6e9cd568bc is INCOMPLETE (worktree-changed-during-check) despite exit0: dashboard generates tracked QA-owned PNGs. Candidate ae18a98e is behind/diverged from current canonical3ca70f2d; guarded convergence and new exact-commit required checks remain necessary. QA scenario/code verdict accepted, explicitly NOT integration-qualified. Artifact isolation/provenance slice must resolve actual gate; preserve historical receipts and all unique commits.",
+  "commit": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
+  "integrationRequest": "9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b",
+  "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.606Z",
-  "updatedAt": "2026-09-30T23:17:58.527Z",
-  "revision": 6,
+  "updatedAt": "2026-10-01T09:24:53.158Z",
+  "revision": 11,
   "history": [
     {
       "from": null,
@@ -82,6 +96,41 @@
       "actorId": "session-manager",
       "at": "2026-09-30T23:17:58.527Z",
       "note": "Explicit owner goal-continuation instruction digest0e4eafe9 and message d5b46444-ee83-4ccb-a0a1-bf7674354e60 authorize recording this actual unresolved artifact/convergence dependency before dispatching one executor reliability assignment. Original owner, candidate, every receipt, QA verdict and approval retained. This is blocked, not completed or ready_to_integrate. No gate waiver, replacement baseline, discard, runtime launch or landing."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:06:42.213Z",
+      "note": "Reviewed metadata-only blocker/evidence reconciliation under owner94010b22; no metadata-amend API exists. Expectedrev6; preserve state/owner/candidate/request/fullcriteria and historicalreceipts. Independently proved originalcandidateancestor; artifactisolation and convergence no longer actual gate. Nameddiagnostics-specific currentdescendant acceptance/closure and existingRuntime assignmentcontinuity remain; no automaticcomplete/unblock or gatewaiver."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:24:40.270Z",
+      "note": "Manual reconciliation of accepted landed diagnostics descendant after actualQAa992 and ownerad1; not automaticclosure. Originalowner/history/oldunqualifiedreceipts retained. Runtime startingpresence is trulyblocked on separate stillunqualifiedKernel API; no parallelactiveitem, newimplementation or providerstart."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:24:45.475Z",
+      "note": "Manual reconciliation of accepted landed diagnostics descendant after actualQAa992 and ownerad1; not automaticclosure. Originalowner/history/oldunqualifiedreceipts retained. Runtime startingpresence is trulyblocked on separate stillunqualifiedKernel API; no parallelactiveitem, newimplementation or providerstart."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:24:49.579Z",
+      "note": "Manual reconciliation of accepted landed diagnostics descendant after actualQAa992 and ownerad1; not automaticclosure. Originalowner/history/oldunqualifiedreceipts retained. Runtime startingpresence is trulyblocked on separate stillunqualifiedKernel API; no parallelactiveitem, newimplementation or providerstart."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "completed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:24:53.158Z",
+      "note": "Manual authorized closure: all three existing diagnostics behaviorcriteria independently covered per QAa992, originalae18 ancestor exactcleanlandedcb145, fourfreshrequiredPASS receipts currentdescendant and strict9b39 landing independentlyverified. Originalowner/candidateevidence/old214INCOMPLETE/oldQAverdict/allcriteria/history preserved. No oldreceipt reused, noautomaticCloses or adjacentConsolevisual/Kernel/Runtime/wake/activationcompletion. Legal stages used with no simultaneousRuntimeactiveitem."
     }
   ]
 }

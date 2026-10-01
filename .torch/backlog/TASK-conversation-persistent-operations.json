@@ -20,15 +20,20 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "proposed",
-  "owner": null,
-  "evidence": [],
+  "state": "assigned",
+  "owner": "release-self-host",
+  "evidence": [
+    "message:94010b22-c6ce-4d34-9ed9-01b2330106db:sequence-real-next-Release-persistent-setup-owned-work",
+    "message:2d4318ba-d6b7-4b17-aef3-2ba450776dbc:current-closure-and-next-owned-work",
+    "TASK-4dc17235-e528-4582-ae49-ebde9006c753:completed:revision13",
+    "canonical-brief:d7e6d69:continued-existing-development"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:34:25.620Z",
-  "updatedAt": "2026-09-30T19:34:25.620Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T09:04:54.875Z",
+  "revision": 3,
   "history": [
     {
       "from": null,
@@ -36,6 +41,20 @@
       "actorId": "owner",
       "at": "2026-09-30T19:34:25.620Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:04:43.800Z",
+      "note": "Current brief reread before exactnewitem; actualRelease nextidle after boundedcandidatecompleted13. Owner directs real next persistent-operations/setup work; triage ONLY read-only owned CLI/selfhost setup planning phase on existing full task, not host/service implementation. Outputs durable evidence, exact ownership/consent/criteria map and proposed dormant preview plan; preserve fullcriteria. No repo edits/tests/config/migrations/services/timers/install/activation/providerstarts/wakes or secondtask. Kernel/Runtime active reliability remainspriority."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:04:54.875Z",
+      "note": "Assign ONLY read-only Release-owned setup/CLI/selfhost planning phase under explicit owner94010b22/2d4318ba next-work direction. Inspect current approved init/install/restore/upgrade/service preview paths and identify dormant/idempotent manifest-lifetime contracts, ownership boundaries and exact prospective peer requests. Outputs durable TORCH evidence/attachments only, no repository source/report/tests/config edits or host/provider/install actions. No credential inspection/live probe. Full multi-domaincriteria stayopen; later bounded implementation requires exactpath/QAconsent and reviewed scope; reservationreliability/wakepause retained. Arbiter alone starts native session; Managerlaunchesnone."
     }
   ]
 }

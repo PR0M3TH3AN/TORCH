@@ -18,20 +18,23 @@
   "observedAt": "c940a343c357",
   "feature": "Self-host development readiness",
   "milestone": "First real development trial",
-  "state": "assigned",
+  "state": "blocked",
   "owner": "provider-runtime",
   "evidence": [
     "message:d9705044-5bce-4806-b72a-b225bc617f50:explicit-bounded-arbiter-authorization",
     "message:eae1adc0-06c7-4433-9c74-f51e5710203f:live-roster-counterexample",
     "integration:454b7a55-c9ee-4268-8dfe-7e2035f2cc1d:landed286",
-    "TASK-pilot-executor-outcomes:completed:revision14"
+    "TASK-pilot-executor-outcomes:completed:revision14",
+    "message:7795f324-452c-43b0-892b-5b204784eb2c:KernelAPI-concrete-unqualified-defects",
+    "message:3c7427d8-8c6f-4bd0-8826-318f9fdb8a26:new-schema/capability-qualification-gate",
+    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:ff285-actual-recovery-not-candidate-acceptance"
   ],
   "commit": null,
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Waiting for corrected Kernel reservation API candidate from TASK-125dd886: exact ff285ffd currently requires fresh QA-authorized five-PNG recovery, clean convergence and independent exact qualification/landing; old engines ignore new leases. Existing Runtime e976 peer contract handoff retained. Preserve owned pending implementation/history; no provider start or unguarded identity workaround.",
   "createdAt": "2026-09-30T19:55:23.203Z",
-  "updatedAt": "2026-10-01T07:48:26.935Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T09:23:52.546Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -53,6 +56,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T07:48:26.935Z",
       "note": "Runtime next returned this exact ready item with no active implementation. Assign bounded owner d9705044 starting presence and atomic identity lease across manual/scheduled paths. Preserve uncertain outcomes; real held-open isolated CLI and independent concurrent timer/manual qualification. Query each path and obtain QA/Kernel/Release/Console consent before crossing ownership. Executor completed14 at landed286; diagnostics remains blocked separately. Native specialist reads current brief before work; task-named commits, exact candidate gates, independent QA, serialized request. Arbiter alone starts sessions/installation/wakes."
+    },
+    {
+      "from": "assigned",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:23:52.546Z",
+      "note": "Record actual unresolved peer API/evidence gate, not completion or fabricatedblocker to freequeue. Kernel recoveredcandidate/strictchecks still pending; Runtime sameowner/task retained. This truthful blocked handoff permits Manager to legally reconcile historicaldiagnostics acceptance without two simultaneousRuntimeactiveitems; resume SAME startingitem after correctedAPI gate clears. No elapsed-time inactivity inference or provider/wake action."
     }
   ]
 }

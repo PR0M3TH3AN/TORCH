@@ -1,5 +1,233 @@
 # Current pilot remaining-work handoff
 
+## Reconciled outcomes and remaining gates at 09:30 UTC
+
+This section supersedes the earlier snapshots below. Current canonical brief
+was reread before new items and still matches `d7e6d69`. Startup sandbox SQLite
+failure was retried only through the narrowly approved exact brief command.
+Manager owns coordination, not provider starts, install activation or peer trees.
+
+**Actual source delivery:** Console exact `cb145e56cb7d530f9563b98d4f9920ff0372a67a`
+landed through native request `9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b` at09:12:35.
+Manager verified clean canonical28c941, candidate ancestry/cleanliness/diff-check,
+four current immutable PASS receipts and independent QA `eb5a356c`/`f21b0c38`,
+including all11 run-owned PNG hashes, before authorize/plan/land. The authorized
+plan had no blockers; clean canonical cb145 was read back. Arbiter subsequently
+reports non-force push of exact cb145 and verified unchanged default main; this
+Manager turn performed no remote push. Attention task is **blocked revision8**
+with landed request/candidate/receipts retained, not completed. Actual browser
+desktop/mobile acceptance remains unavailable; generated artifacts are not live
+visual qualification. Old75afe remains INCOMPLETE/lost. Revision7's mistaken
+check-receipt transcription is explicitly corrected by appended evidence to
+actual `558d8598-0332-49eb-9296-9f68b5880604`; historical evidence was not erased.
+
+**Diagnostics genuinely completed revision11:** independent QA `a992ac79`
+confirmed all three unchanged scenario criteria on the accepted descendant:
+model-rejection rather than MCP noise, bounded malformed/oversized unknown, and
+no prompt/credential/private-reasoning leakage. Original ae18 is independently
+an ancestor of exact landed cb145. All four cb145 required receipts pass; current
+strict landing and QA disposition support manual lifecycle reconciliation, not
+automatic closure. Legal blocked7 -> in_progress8 -> verification9 -> ready10 ->
+completed11 preserves original owner, ae18 evidence, all old receipts and the
+old scenario verdict; old214 INCOMPLETE was not reused. Runtime starting-presence
+is separately **blocked revision4** on the actual corrected Kernel API/engine
+qualification gate, preserving its owner/history/peer contract. Thus no two
+Runtime implementation items were active at once. Runtime next now returns idle;
+resume the SAME starting item when its genuine peer gate clears.
+
+**Kernel reservation qualification remains blocked revision5**, clean candidate
+`be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2` independently read back. Initial12/12
+focused PASS missed actual replay/known-ID/unknown-ID/evidence/contention defects;
+owner hermetic reproduction46c9 and QA7795 are retained. Kernel implemented
+corrections and compatibility support; no acceptance inferred from its manual
+tests. The new five-PNG incident was caused by public plain npm dashboard calls,
+not a newly confirmed installed/MCP receipt incident (owner79d19 correction).
+Fresh QA8a668aba/2a8d2393 bound recovery to exact ff285, five paths and current/
+archive/HEAD hashes; Kernel alone recovered, preserved archive and converged.
+Manager did not restore, stage or edit any peer PNG/source file.
+
+Candidate CLI test185e9d68 passed, but its next check refused before execution:
+`CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED`, currentVersion2/requiredVersion3.
+Owneraa6f independently reports actual DB version2, reservation table12 columns/
+zero rows/integrityok; older v2 writers can relabel the DB after v3 initialization.
+This is a real supported-writer/recovery gate. No direct PRAGMA reset, lease
+deletion, migration retry, old-checker qualification or further Kernel provider
+relaunch. SAME Kernel task retains exact owned recovery-plan/writer inventory,
+backup/provenance/schema/index/data checks and strict QA negative scenarios.
+Peer requests5330/d57b/6c3c route Kernel/QA/Release; actual database action waits
+for a reviewed exact recovery plan. Records ownership application remains
+deferred while this current reliability work is unresolved.
+
+**One new owner-requested reliability item**, not a duplicate of completed runner
+isolation: `TASK-3909cbf6-10c6-44ce-b82e-5bfb62cf34c8` assignedrevision3 to QA
+after its actual recovery disposition and exact next-ready lookup. Independently
+read scripts/test-dashboard-demo.mjs:8 still defaults absent artifact env to
+tracked reports/design-system. Scope is QA-owned scripts/test safety: run-owned
+retained external output by default, explicit external runner compatibility,
+repository/symlink-target refusal before writes and pre-existing byte preservation.
+Keep assertions/goldens strict, add Test Integrity Note, require independent
+Work/Console review and clean final candidate CLI four-gate qualification.
+Direct npm success is not a TORCH receipt. Arbiter starts assigned QA; Manager
+does not launch it. Kernel recovery and broader engine/integrity tasks stay distinct.
+
+**Release isolated candidate task4dc completedrevision13** through its legal
+guarded stages and actual immutable artifact QA; manifest0e66890b/digest2dafa848/
+39 groups retained. Completion excludes activation/live/mixed-provider/browser/
+deeper executing-engine qualification. Next actual idle -> ready -> assigned
+sequenced existing persistent-operations **revision3, read-only design phase**.
+Releasefad0 returned concrete source/manifest/ownership evidence, no files or
+host state changed. Bare init stays read-only; proposed digest-bound combined
+install preview, dormant provisioning versus reviewed enablement, stable manifest
+ownership/idempotence/drift guards and system/session lifetime are peer-review
+inputs. Current launcher immediately enables user-systemd units; reboot/linger/
+destination choice remains unresolved. Kernel/Runtime/QA reviews1fee/ec746/8a4e
+are open before any implementation or host/service/timer change. Runtimea10 adds
+explicit timezone/DST/missed-run/restart policy, held-lease/pause preservation and
+separate provider-wake/quota authority; acknowledgement is not resolution.
+
+**Console next existing workflow assignedrevision3**, read-only focused design/
+scope phase after exact next-idle/ready lookup. Owner89c92 observed actual generated
+artifacts showing clipped mobile navigation, verbose raw SHA/timestamps and a long
+document. They support a proposal, not live audit acceptance. Plan one selected
+view, routing/back/forward/deeplink, accessible mobile areas and human task titles
+with provenance detail. Return precise owned source paths and named additive QA
+scenarios/consent before source/test changes. Attentionblocked8 and fullauditblocked5
+stay incomplete; no new parallel Console item or hidden verification waiver.
+
+**Ownership repair:** actual approval `b1033688-7462-49b6-82f2-156a52e16af9`
+approvedrevision2 names Kernel narrow later applier for only existing QA prefix
+docs/test-integrity/records/** in torch.yaml and roster.yaml. Live ownership still
+unchanged; no concurrent Kernel assignment or configuration application. Exact
+proposal report/artifact acd23e95 preserved; schema/migration/implementation consent
+is separate. Pipeline report/artifact2f9e6adf proposes ONLY existing Work primary
+src/pipelines/**; pure schema/overlap/full-value checks pass. Worke4ec agrees exact
+prefix; Kernel/QA review and owner/applier decision remain pending. Both proposals
+share full-file hash preconditions: regenerate the later amendment against the
+actual earlier landing, retaining its prefix, never replace whole config with a
+stale projection. No new identity, hierarchy or implementation dispatch follows.
+
+**Existing communication/trial roadmap:** Work's report-to-owner native call
+failed UNKNOWN_FLEET_IDENTITY; owner3f5 requires authenticated distinct bounded
+owner communication with delivery/no-response truth, not impersonation. Owner914b
+observed terminal acknowledgement-only Kernel work with unchanged diff before an
+arbiter resume produced real changes. Durable queued/delivered/acknowledged/
+running/workprogress/completed states need separate source evidence. Route these
+to existing ownerchat/trial/event-driven tasks, not a parallel backlog or automatic
+wake. Existing actor-versus-target audit gap in convergence remains proposed874.
+
+**Fleet evolution judgment:** refreshed after intake at09:26, eight recurring
+domain-set signals and ten direct coordination requests are advisory. Retain six
+specialists: narrow ownership repair, safe script defaults and explicit Kernel/
+Runtime/Release contracts address measured friction more directly than a new
+domain/manager. No role activation/promotion/retirement or ownership rewrite.
+One durable backlog now has50 items; active assignment continuity is enforced.
+Health reports34 historical observed-commit warnings (51 commits behind) plus
+Work's resolved-old-dependencies warning; its actual ownership/schema/phase gates
+remain. No mass observedAt rewrite or unblock to make health green. Commit-history
+coverage remains truncated/incomplete; TASK-fleet-resume is a historical label.
+
+**Only genuine human wait:** alpha3 active-pointer/registry approval75a8 remains
+pendingrevision1. Automatic approval review refused the arbiter activation before
+execution due live-service/mixed-code risk and prior candidate-only consent.
+Arbiter already asked for a fresh human answer; none recorded. QA-prefix approval
+does not answer this. Active alpha2/registrygeneration3/previousalpha1 remains;
+no install switch, restart or wake activation. Automatic wakes remain paused.
+Own messages acknowledged individually after understanding/routing; all current
+owner/peer task waits retained. Final checkpoint contains only reviewed Manager
+ledger/reports/proposal artifacts; preserve other branches and dirty work.
+
+## Reconciled Fleet resume at 08:59 UTC
+
+Current installed brief reread matches d7e6d69. Sandbox brief failed readonly
+SQLite; only that exact command retried with narrow approved escalation. Canonical
+is still clean28c941; Manager starts this cycle at clean47f0d0e. Canonical TODO and
+conversation handoff were reread; historical smoke-only/offline/timer statements
+do not override current COMMON or actual durable events. Current inbox/check-in,
+ownership, task revision, exact Git and evolution evidence refreshed before dispatch.
+
+**Two separate owner waits:** activation75a8 remains pendingrevision1 and active
+alpha2/registrygeneration3/previousalpha1 independently reread unchanged. No new
+post-risk human answer, activation retry, restart or wake change. Second approval
+**b1033688-7462-49b6-82f2-156a52e16af9 pendingrevision1** presents exact reviewed
+QA record-path ownership amendment requested by ownera9c521a3/10ed0773. See
+`reports/audit/qa-record-path-ownership-proposal-report-2026-10-01.md` and JSON
+artifact `artifacts/TASK-a65500ed-a505-4664-badc-a1483d6f6f11/qa-record-path-ownership-proposal-2026-10-01.json`,
+sha256 `acd23e9516bcda67b4253b43d6e9d74ff64960541ec2e4740ac9ef7751ef2db7`.
+Live docs/test-integrity/records/example.yaml is unowned. Propose only existing
+QA prefix `docs/test-integrity/records/**` appended in torch.yaml and roster.yaml;
+exact baseline file hashes/index/id/list guards in artifact. No numeric config
+revision exists; derived graphrevision1 unchanged. Projection passes canonical
+schema/overlap/whole-value equality checks: exactly one append per file,
+seven identities/six specialists/all other fields unchanged. Initial Manager
+module import lacked zod; validation rerun with canonical installed dependencies
+passed without installing dependencies or modifying configuration. No additional
+migration metadata paths guessed. Historical approved proposal/installmanifest
+preserved. Configfiles themselves unowned; owner request explicitly names narrow
+Kernel applier after safe current-task checkpoint, no second active Kernel task,
+no Manager impersonation. Live ownership remains unchanged until actual approved
+landing/refresh/readback. Native QA/Work/Kernel review handoffs a83cb5a5/25ce42db/
+ea2dfc61 retain SAME Work taskblocked5 and schema/scenario/implementation-phase gates.
+
+**Release bounded candidate task completedrevision13 at08:56:44.621 UTC** after
+direct independent QA `0dbe12ef` accepted actual immutable artifact/source/digest,
+all39 groups/zero status/error/signal. Validation hash independently reread
+unchanged0e66890b; previous Manager/QA tree digest and rollback evidence retained.
+Closure followed guarded verification11 -> ready_to_integrate12 -> completed13
+against exact already-landedf71e source28c941, then nextRelease returned idle.
+Premature peer completion claim150e78a0 followed a rejected direct transition;
+it was explicitly correctedf6d20b80 and actual successful readback4a8ef03f sent.
+No failed guard bypass or hidden outcome. Completion covers coherent metadata,
+single isolated acceptance and recoverable rollback provenance, **not active
+installation or live/browser/mixed-provider/starting-lease/deeper engine/Console
+provenance qualification**. No arbitrary next Release proposal was dispatched.
+
+**Console** nativec59b3032 reports reviewed scoped Work152a290e and QA30096732
+consents, own guarded convergence to clean581fc577. Manager independently read
+full `581fc577d9534939b012826a26f148ece7a2707b`, clean status and canonical28
+ancestry. No Manager cross-area mutation. Native mechanical preflight performed;
+existing Work1da91d1c/QA11cdad2f independent merged-engine confirmation remains
+open before four fresh exact gates. Manager direct followups63714af3/d8402807
+route those existing requests, no duplicate approvals. Candidate checks-plan
+readonlySQLite is a precise permission blocker, normal reviewed narrow elevation
+per owner547284d3 is distinct from prohibited state/guard bypass. Old75afe and
+irretrievably lost generated bytes stay INCOMPLETE; no stale receipt, golden
+update or reconstructed archive. Actual desktop/mobile browser acceptance still
+missing. Attention task in_progress5 resumes; full audit stays blocked.
+
+**Kernel/Runtime** current lookup resumes SAME assignments. Kernel now reconciled
+in_progressrevision4 from actual three dirty owned files: control-plane service,
+kernel-lifecycle tests and TEST_INTEGRITY note atHEAD28c941. Manager did not touch
+them. Owner reports corrected Runtimee57b08dc/QAc008c9f1 contract and focused12/12
+PASS; no exact commit/full four gates/independent qualification inferred. Owner
+requires identity preservation, unknown captured-ID holds, attempt replay,
+true independent-process contention and trustworthy reconciliation. Followup
+973a99ca retains these conditions; no time-only release, placeholders or starts.
+Runtime starting-presence assigned3 remains resumable; Work/QA next idle does
+not settle outstanding spec/engine questions or permit a second active item.
+
+**Authority roadmap evidence:** owner6b7e248b reports and Manager independently
+reads `src/convergence/service.mjs` audit actorId:plan.areaId and CLI --area-only
+surface. Existing proposed/unassignedTASK874 must preserve authenticated actor
+separate from target specialist and qualify delegated-manager attribution plus
+unauthorized peer negatives when assigned. Direct owning Work followup4453de94
+records source evidence. No unauthorized merge is claimed, no code changed or
+full grant activated. Terminal agents waiting on durable peer messages also
+inform existing event-driven wake/Console waiting-state roadmap; no wake enabled.
+
+**Evolution judgment:** seven recurring Fleet domain-set signals and31 hierarchy
+recurrences/10 requests in30days remain advisory. Current unowned future record
+path has coherent existing QA owner; prefer exact owned-prefix amendment over a
+new domain, split/merge, identity promotion or coordination role. Reservation
+cross-domain work is one bounded explicit Kernel API/Runtime lifecycle contract.
+No evidence yet that new persistent role earns its coordination cost. No Fleet
+changes pending or activated. Existing single49-item backlog retained; current
+reliability/verification resumes outrank proposed roadmap items. Health warning
+BLOCKED_DEPENDENCIES_RESOLVED persists for Work: actual new ownership/spec/phase
+gates remain unresolved despite completed old dependencies, so no auto-unblock.
+Bounded commit history remains incomplete/truncated. Own messages acknowledged
+individually after routing; waits retained. No starts/install/publication/spend/
+model/default-main changes; automatic wakes paused.
+
 ## Genuine owner activation wait at 08:34 UTC
 
 Owner `6fc99e88` reports automatic approval review **refused exact alpha.3

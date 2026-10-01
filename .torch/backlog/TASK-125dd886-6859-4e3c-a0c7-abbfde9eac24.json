@@ -23,19 +23,26 @@
   "observedAt": "286bfa72e3202ec0806f7c3075821c8057d6e132",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "blocked",
   "owner": "project-kernel",
   "evidence": [
     "message:57e4712e-50a8-474b-810b-550ea150aa95:explicit-owned-reservation-phase",
     "integration:4cfe7a5f-1a25-4233-9cc2-9233fae812a3:landed07a2bc",
-    "TASK-bounded-routine-coordination:completed:revision18"
+    "TASK-bounded-routine-coordination:completed:revision18",
+    "message:10ed0773-e864-433d-9336-8b0bee7fbf65:actual-owned-three-path-implementation-12-local-pass",
+    "message:a9c521a3-b36a-447b-914d-cbad6063968d:corrected-Runtime-e57b08dc-and-QA-c008c9f1",
+    "git:Kernel-dirty-TEST_INTEGRITY-control-plane-service-kernel-lifecycle:HEAD28c941:independent-read",
+    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:fresh-exact-fivepath-consent",
+    "message:1996ccdc-377b-4776-ba51-cd0fdb2d012e:cleanrecoveredbe1/testPASS/schema-refusal",
+    "message:aa6f5d58-ac0d-45a6-93a4-d948e59cc84d:actualDBshape/zeroRows/strict-owned-recovery-plan",
+    "git:be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2:independently-clean"
   ],
-  "commit": null,
+  "commit": "be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Recovered five PNGs under fresh exact QA consent; independently clean be1ae951. Candidate CLI test185e9d68 passed, next check refused before execution CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED currentVersion2 requiredVersion3. Owner verified reservation table12 columns/0rows/integrityok and oldv2 writers relabel after v3 initialization. Await exact Kernel-owned recovery/compatibility plan, strict QA consent and supported writer isolation; no migration retry, directPRAGMA reset, leaseclear, oldchecker qualification or provider relaunch.",
   "createdAt": "2026-10-01T07:57:28.590Z",
-  "updatedAt": "2026-10-01T08:02:32.984Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T09:28:27.110Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -57,6 +64,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T08:02:32.984Z",
       "note": "Kernel next exactly ready/no active item, previous policy task completed18 at landed07a2bc. Assign bounded owner57e4712e Kernel-owned src/control-plane reservation contract/schema phase; agree exact API with Runtime before implementation and request QA exact test/integrity paths. Atomic project identity reservation, conservative unknown interruption, attributable terminal evidence; manual/scheduled callers remain Runtime-owned, CLI Release-owned. No owner-grant/approval expansion, time-only release, defaultmain, wakes/install/provider starts. Preserve all history/unique commits, four fresh exact gates/independent QA/native serial request; arbiter starts native session."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:54:52.139Z",
+      "note": "Reconcile actual ongoing owned implementation on SAME Kernel assignment, not idle/offline inference or new task. Native3dirty paths independently observed and preserved; owner reports focused12/12PASS but all4exactgates/independentQA/qualified commit remain incomplete. Require identity preservation, unknown captured-ID hold, attempt replay, separate-process contention and trustworthy reconciliation; no providerstarts/wakes/install or unrelated ownership amendment application."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:28:27.110Z",
+      "note": "Honest external-statequalification blocker, sameowner/currentcandidate/history. Exactowned recovery plan/QAstrictscenarios required before actualdatabasechange; oldguard preserved, noPNGbaseline rewrite or broadcleanup, current fourgate qualification incomplete. ConfigQA-prefix applier remainsdeferred during currentunresolvedKernelreliabilitywork; no secondKernelitem/activation/wakes."
     }
   ]
 }

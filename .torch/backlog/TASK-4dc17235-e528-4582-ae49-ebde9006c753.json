@@ -24,7 +24,7 @@
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": null,
   "milestone": null,
-  "state": "verification",
+  "state": "completed",
   "owner": "release-self-host",
   "evidence": [
     "message:f286a236-77f8-4bc6-a2a3-a4c45d33fa76:TORCH-engine-scope",
@@ -55,14 +55,18 @@
     "artifact:/home/user/.local/share/torch/runtime/versions/0.1.0-alpha.3/.torch-validation.json:sha256:0e66890bc8a0681a79329ac860f747a56e289ed1b4a9b845cc79da8df6611905",
     "candidate-digest:2dafa8483df597d2d94e5ca9cdda52014bf0fc63b02c5333c239bba9ee3c7040:independently-recomputed",
     "candidate:39-required-scenarios:test-lint-syntax-status0-no-error-signal",
-    "registry:generation3:active-alpha2:previous-alpha1:independently-read"
+    "registry:generation3:active-alpha2:previous-alpha1:independently-read",
+    "message:0dbe12ef-bd0a-435c-9ceb-bc44c474cc50:QA-independently-accepts-immutable-alpha3",
+    "candidate-validation:0e66890bc8a0681a79329ac860f747a56e289ed1b4a9b845cc79da8df6611905:unchanged-current-read",
+    "active:alpha2:registry-generation3:previous-alpha1:unchanged-current-read",
+    "approval:75a8ebae-54f8-47da-9a5a-fbe647d0baaf:separate-pending-owner-activation"
   ],
   "commit": "28c941d1ecbc3da8908a84f96c06ac0b929d4b19",
   "integrationRequest": "f71e4202-fad8-4e65-a9db-fbbd0886269d",
   "blockedReason": null,
   "createdAt": "2026-10-01T06:52:30.704Z",
-  "updatedAt": "2026-10-01T08:32:01.096Z",
-  "revision": 11,
+  "updatedAt": "2026-10-01T08:56:44.621Z",
+  "revision": 13,
   "history": [
     {
       "from": null,
@@ -140,6 +144,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T08:32:01.096Z",
       "note": "Single arbiter isolated build actually completed; immutable receipt independently read and hashed, exact source/digest and39 scenario groups/test-lint-syntax zero/noerror/signal verified. Independently read activealpha2/registrygen3 and alpha3 rollback-safe v1alpha1 metadata. Same bounded task enters final evidence/rollback review; no duplicate build/overwrite, active switch/restart/provider/wake qualification or broader release completion inferred."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:56:41.210Z",
+      "note": "Independent QA now accepts actual immutable artifact; all bounded metadata/isolated-candidate/rollback criteria evidenced, exact request alreadylanded. Required guarded ready stage precedes closure; no new integration/activation needed. Earlier directverification→completed rejected without mutation, prematurepeerclaim correctedf6d20b80. This readiness is bounded task only, not livebrowser/mixed-provider/starting-reservation/deeperengine/generalrelease qualification."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "completed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T08:56:44.621Z",
+      "note": "Actual guarded closure of bounded coherent metadata, exact landed source, reviewed plan, immutable single-build acceptance and recoverable rollback provenance after direct independent QA0dbe acceptance. Retain olderreceipts and strictscope. Separate owneractivation75a8 stillpending; activealpha2 remains, no switch/restart/wakes. Broader live/selfhost/browser/mixedprovider/startinglease/deeperengine phases remain explicit unimplemented/unqualified."
     }
   ]
 }
