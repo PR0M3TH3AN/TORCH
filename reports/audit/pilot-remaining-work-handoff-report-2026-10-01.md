@@ -1,5 +1,27 @@
 # Current pilot remaining-work handoff
 
+## Precise QA disposition received at 13:33 UTC
+
+After checkpoint5dee7c8, CURRENT tasks remain Console in_progress13, Work
+assigned3 and Runtime assigned6 with the same55-task counts. Explicit unread100
+reads actual QA **7df9e219**: 7ea test/check PASS receipts remain real, but the
+wheel+scrollend/global scrollTo tracing/async roundtrip final scenario is outside
+consent and does not qualify acceptance. Strict fixed numeric nonzero TEST scroll,
+observed baseline, actual non-scrolling Refresh event, generation2 and exact
+desktop/mobile equality remain required. QA also now permits the precise cfb
+driver adapter: inspect disclosure.open and real-click summary only if closed,
+before the unchanged Review assertion. This resolves that contributor-permission
+wait, not the implementation/native/independent/live acceptance gates. Manager
+routes exact consent to Console and reads/acknowledges the decision.
+
+QA confirms parent-authenticated result transport/fence requirements are with
+Kernel/Work: worker token correlation-only, UNKNOWN retains AttemptRecord/guards
+and no final ResultRecord. Manager routes this actual review to Work design lead;
+final exact API/path/policy/code approval stays open. Historical dirty assertion-
+removal evidence remains on existinga655, distinct from committed strict source.
+No new assignment, final acceptance, native receipt relabel or operational action.
+
+
 ## Current diagnostic receipts and concrete design reviews at 13:31 UTC
 
 Canonical brief reread, digest **d7e6d69**; readonly default brief was retried only
