@@ -1,5 +1,126 @@
 # Current pilot remaining-work handoff
 
+## Current evidence reconciliation and routed decisions at 13:03 UTC
+
+Canonical brief was read again this cycle with digest **d7e6d69**. The default
+brief encountered a read-only SQLite boundary; the narrowly approved exact brief
+command succeeded. No database permissions, state copy or engine switch occurred.
+Current native tasks were read before the explicit addressed unread100 request;
+subsequent explicit unread100 refreshes, including 13:01–13:03, returned empty.
+The requested historical owner **44512241** WAL counterexample, **eca7ded3**
+Overview-title decision and Kernel **b952872d** implemented API/refusal were
+separately reread from the Manager's addressed history. Historical pages were
+never used as unread-completeness proof. Read acknowledgements do not close waits.
+
+The native backlog still has **55 tasks: 38 proposed, 8 blocked, 6 completed,
+2 assigned and 1 in_progress**. Runtime inbox **e440 assigned4**, Console workflow
+**in_progress13** and Work source-engine design **6e4 assigned3** each retain their
+existing specialist assignment. Fresh next-task lookups returned resume for all
+three. The 13:02 manager check-in has no findings or named approval waits; its
+idle presence rows are timestamped session observations, not task completion or
+proof of process absence. No second implementation assignment was created.
+
+Fleet evolution measured eight recurring domain sets; hierarchy assessment
+measured nine sets and eleven historical Manager coordination requests. Pending
+Fleet changes were empty. The six existing specialists still have coherent
+owners; exact contracts, direct peer review and bounded handoffs address the
+observed friction better than another identity or hierarchy change. No domain
+proposal, retirement, activation or provider start occurred.
+
+**Console source and focused evidence.** Owner **64ae2ea5** identified an initial
+mobile viewport failure on predecessor **a97a878**. Owner **6df88358** identified
+the separate dashboard approval-count selector hidden after reset. Manager read
+the actual native failed outputs: **53b9271f** on **3ebfebea** fails the original
+sticky-rail assertion; **cda85773** on **a97a878** times out with one open approval
+present but hidden. Each has exact test/check PASS receipts, but neither has a
+complete four-PASS qualification set. QA **02166e16** permits strict desktop and
+390x844 initial-layout coverage; the exact reset adapter and refresh stimulus
+decisions remain with QA, without changed predicates, captures or fallback.
+
+Owner **ae83ef12** corrects the later probe attribution: the earlier **88ed1ed**
+mobile failure reused the same fragment after resizing and was not a cold load.
+An actual about:blank-to-URL cold-load probe on **88ed1ed** passes Fleet selection,
+focus, open details and viewport bounds (top273.359/bottom691.813 within844);
+the predecessor override fails. This removes the claimed unresolved 88ed initial
+cold-load failure. It is attributed independent focused evidence, not a Manager
+run, native receipt, screenshot qualification or operational acceptance.
+
+Fresh read-only Git observation at 13:02 found Console clean at
+**69ab615eba14e06b8c69018090883e3bacd9d5f6**. Manager inspected the two-path delta
+from 88ed: refresh application restores its captured viewport; the test dispatches
+the actual Refresh button event without Playwright scrolling that header into
+view. Native **d49c2f61-2969-433f-acc2-eba51728e25c** nevertheless is **FAIL**, exit1,
+invalidReason null, measurementsExecuted true: exact scroll equality fails
+**347 != 167** at navigation line153. An unfinished wheel stimulus is a hypothesis,
+not an accepted explanation. Manager routes this exact failure and a deterministic
+strict stimulus/settlement decision to Console **694b338c** and QA **264ea20c**.
+All original equality, viewport, stale-evidence, navigation, draft and preview
+assertions remain required. No retries, sleeps, relaxed bounds or snapshot changes
+are authorized. Fresh final source gates, independent QA, guarded integration and
+separate actual live desktop/mobile acceptance remain open.
+
+Owner **1444787c** subsequently confirms actual active Console/Manager units;
+live4174 alpha2 still reports healthy plus120 unread and stale idle presence.
+This reinforces the existing attention/presence criteria, not an owner obligation
+or proof of idle work. Its attributed predecessor d993/95ec7424 result is
+231PASS/1FAIL/5SKIP with the same347-versus167 scroll counterexample. Manager
+routes the exact proposed instant numeric scroll or actual scroll-event completion
+variant before non-scrolling Refresh dispatch to QA **700bc99d** and Console
+**532da794**. Precise QA consent and a deterministic correction remain open;
+read acknowledgement does not resolve that test decision or the native failure.
+
+**Kernel implemented source versus native qualification.** The exact observeMessages
+implementation at **a4bba018** exists; the WAL/leading-whitespace mutation-killing
+proof correction has narrow independent owner and QA acceptance. The original
+44512241 raw state.db comparison missed WAL writes, which was a test-signal gap,
+not evidence that the actual SELECT implementation writes. Kernel task **565fa463
+blocked7** retains its full history and candidate. Its stored 'QA pending' clause
+is historical: actual narrow QA acceptance now exists. The genuine current source
+ControlPlane3 versus registered2 refusal occurs before execution and produces no
+qualified native receipt. No missing-API, missing-test-consent or full acceptance
+claim replaces that boundary; neither fixtures nor prose waive it.
+
+**Proposed source-qualification protocol.** Manager read Kernel's exact clean
+**1e27766f278d443e640de9e3ba60b43ce96b9e7a** proposed-only refinement of spec
+sections18/20 and additive ADR026. Work is design lead on its existing assigned3;
+Kernel is the named two-document contributor, not a second active implementation.
+QA's actual lifecycle/schema review **02166e16** exists. Source engine E, product
+subject S and receipt authority A must have separate exact provenance; product
+storage metadata is not the adapter's required control-plane schema. Initial CLI
+subject derives from authenticated registered area and clean managed worktree,
+without caller selection flags. Current normative policy and native gates stand.
+
+Owner **03fc1c55** requires two corrections before a code plan: name the affected
+Kernel3 candidate instead of implying every source CLI requires3; distinguish
+UNKNOWN/unproven execution, which retains guards and forbids replay, from proven
+terminal FAIL/INCOMPLETE, which may perform scoped cleanup under existing owned
+policy after independent descendant and durable-outcome proof. Cleanup is separate
+from PASS eligibility; no elapsed-time inference or force unlock. The first routing
+attempt returned automatic-review text without a TORCH receipt; its reason was
+not captured and delivery was not assumed. A safe bounded design-only retry
+produced **84767292**, then Work **e10d2947**, QA **914f8951**, Release **a76fb146**
+received the exact correction. No rejected action or enforcement guard was bypassed.
+Other actual protocol handoffs are Work **e2c44df3**, Release **7bfc2bc1** and
+Kernel **ff9cf6c4**. Revised draft, exact lifecycle/store/confinement/artifact/
+reconciliation contracts, Release presentation and future code/test/policy consent
+remain open before implementation. A proposed document is not governing policy.
+
+**Sequenced dormant-service phases.** After supported inbox qualification and
+Runtime's existing e440 wrapper, Kernel inventory **1e688a36 blocked4** needs the
+exact pure inventory export/digest contract and QA/source qualification. Runtime
+dormant-plan **2b4a6ab5 proposed1** follows qualified inventory, without a second
+Runtime assignment. Release persistent-operations then consumes both qualified
+APIs for source preview/provision scenarios. Its old additive-test permission hold
+was resolved; actual APIs and source/operational gates remain. Full roadmap,
+reservation/schema blocked histories and owner-only upgrade wait are preserved.
+
+Canonical was independently clean at **0fdfcb3b**; Kernel was clean at **1e27766f**.
+No final acceptance, new source implementation, automatic wakes, installation
+switch, live schema recovery, host activation, extra identities or provider launches
+occurred. Latest five-PNG consent remains limited to completed exact Runtime
+recovery and cannot authorize the pending runtime upgrade or live schema recovery.
+
+
 ## Latest mobile viewport counterexample at 12:35 UTC
 
 Final current-task then explicit unread100 refresh reads actual owner **560e62bf**:
