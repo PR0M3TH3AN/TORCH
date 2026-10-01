@@ -46,14 +46,23 @@
     "qa-title-mapping:d3e5a001-69dd-464d-ae54-c766c93fb153",
     "owner-decision:a8a0c5db-6c4f-4fbe-890a-987a1542b06f",
     "owner-diagnostics:eeb93c8f-22ac-45ad-a84e-9002344cf579",
-    "owner-deeplink-diagnostic:f5016dea-788c-47e8-83bf-81ffa91e7784"
+    "owner-deeplink-diagnostic:f5016dea-788c-47e8-83bf-81ffa91e7784",
+    "blocker:379ae2c1-5aa5-49a3-b925-ec6888c5a534",
+    "source-cli:test-dashboard:d983c1ca-dfed-4fd2-92da-2d76779b18f8:FAIL:candidate=6988fe3b1a1fe8e411e4e4968877ae6f22ea4200:artifact=/home/user/.local/share/torch/projects/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/checks/d983c1ca-dfed-4fd2-92da-2d76779b18f8/output.json",
+    "source-cli:test:e6b4bf22-de61-401d-804d-7bb98cfc3c97:PASS:candidate=6988fe3b1a1fe8e411e4e4968877ae6f22ea4200",
+    "source-cli:check:41e9b023-1862-463e-b87b-d0f234b28653:PASS:candidate=6988fe3b1a1fe8e411e4e4968877ae6f22ea4200",
+    "older-receipt:failed-test-dashboard-02a76db2-d8aa-40e9-ac93-03139ceca568:preserved",
+    "message:1b19a436-44d8-4e6c-8868-19f1e65591db:QA-exact-Fleet-markup-and-scenario-contribution-consent",
+    "message:1b2d96bc-ec77-4cb2-b5be-a1b9b6ef47ae:owner-explicit-same-task-scope",
+    "message:6a37283a-5baf-4b3f-b84c-1aa7cdecf223:actual-bounded-peer-request",
+    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:stale-wait-evidence-refresh-required"
   ],
-  "commit": "a67a04d57f400782b01ba6087b9741fb0c54e21f",
+  "commit": "6870c3a61073b950710eb7720f63ccd21da58f38",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T11:24:07.534Z",
-  "revision": 10,
+  "updatedAt": "2026-10-01T12:27:44.625Z",
+  "revision": 13,
   "history": [
     {
       "from": null,
@@ -124,6 +133,27 @@
       "actorId": "owner-console",
       "at": "2026-10-01T11:24:07.534Z",
       "note": "Resuming the same task at Manager-assigned revision 9. Implementing only QA-approved site/console.js behavior, additive console-view-navigation scenarios, script navigation/strict preview coverage preserving every existing assertion/capture/artifact safeguard, and additive Test Integrity Note. Keep prior receipts and visual-acceptance boundary."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "owner-console",
+      "at": "2026-10-01T12:22:42.223Z",
+      "note": null
+    },
+    {
+      "from": "blocked",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:26:21.618Z",
+      "note": "Resume SAME Console workflow after fresh brief d7, CURRENT blocked11 and own unread100 prove exact scope/QA wait already resolved. Current native next idle/no active item; actual source clean6870 restored strict driver, old8ba fallback remains unaccepted. Owner1b2 + QA1b19 explicit site/console.html Operations Fleet secondary ownership, console.js ancestor-details/deep-link routing, additive console-view-navigation test, narrow strict dashboard driver and additive integrity note. Retain ten destinations; all operational panels hidden elsewhere; direct/history manager-wakes selects Fleet, opens details, focuses/scrolls target. No fallback/show-all, backend/shared helper/fixtures/goldens changes or original assertion/capture weakening. Read actual addressed QA b444 before test contribution. No new task or second Console assignment. Fresh exact final four native source gates and independent QA required; actual live desktop/mobile acceptance separate. Preserve6870/8ba/6988/d983 and all histories; refresh unread/permissions/task evidence before reporting approval waits. No provider/wake/install/schema/host action."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "owner-console",
+      "at": "2026-10-01T12:27:44.625Z",
+      "note": "Resuming the same workflow on clean HEAD 6870c3a under Manager reassignment revision 12. Actual QA b4449652 and owner 46cd85d9 authorize the exact second-Fleet-section layout/routing scenario and narrow driver scope; preserve strict ownership assertions and all existing coverage."
     }
   ]
 }

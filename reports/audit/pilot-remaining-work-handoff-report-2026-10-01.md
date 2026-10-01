@@ -1,5 +1,115 @@
 # Current pilot remaining-work handoff
 
+## Current proposed amendment, resolved scope and protocol review at 12:30 UTC
+
+Actual Kernel **ce742a86** delivered clean **674d2418572026692e08307c5e9c71ae89c219d8**:
+Manager independently read the full exact two-path diff. Spec sections18/20 have
+only additive clearly PROPOSED nonnormative subsections; ADR026 is additive;
+current normative paragraphs and ADR024/025 are intact. This is a reviewable
+proposed design, not implemented source, native qualification or governing policy.
+Work design lead **170200de** received exact draft for concrete review. Actual QA
+1b19 design scenario review exists; future test-path/source/policy consent is
+separate. No document-only local check is substituted for native landing gates.
+
+Owner **7bc7227c** full-draft review identifies an actual precision gap: candidate
+PRODUCT storage version is independent of a pure source-check ENGINE/registered
+ADAPTER's required schema. Future product-schema3 source could be hermetically
+checked by a genuinely schema-agnostic pure engine and authenticated schema2-
+compatible adapter only under an explicitly reviewed tuple supporting that case.
+Current Kernel CLI/engine actually opens ControlPlane and requires3, so its real
+registered2-versus-required3 refusal remains unchanged. The proposed draft must
+not permanently preserve bootstrap circularity by conflating these requirements.
+
+Owner **d6b94081** settles initial CLI design: derive exact subject from the
+authenticated registered area/managed clean worktree; no caller commit/root/manifest/
+state-root/DB/schema/context/adapter selection flags or initial expected-commit.
+Release retains command names/presentation; any future expected-commit is a later
+reviewed rejection-only freshness assertion. This resolves the design choice, not
+code, current gate policy, adapter readiness, installation or live recovery.
+
+Manager routes a concrete integrated protocol review to Work/Kernel/Release/QA:
+create authenticated durable guarded attempt; execute; prove terminal outcome;
+seal bounded regular-file artifact manifest; atomically persist receipt AND
+consume attempt through a compatible trusted adapter transaction. Cancellation
+request alone is not proof the child stopped. Unknown/crashed/ambiguous attempts
+stay guarded, never successful/idle or automatically replayed. Seal/hash before
+transaction; persistence failure retains sealed evidence plus unconsumed guarded
+attempt. Commit uncertainty needs exact attempt/result/receipt read-only
+reconciliation, never duplicate emission. No consume-then-silent-loss design.
+This is a concrete proposal for peer review, not selected implemented enforcement.
+Remaining decisions are exact durable atomic store contract without DDL, worker
+confinement/environment exceptions, artifact sealing primitive, cancellation/
+process fence and replay/reconciliation rules. Kernel must revise only proposed
+paragraphs/ADR026 forward and return exact draft; Work must review exact interface
+and policy gaps before code. Current normative/ADR024 and receipt guards stand.
+
+Console **ac2684/581df/6a372** stale scope wait was reconciled after CURRENT
+blocked11, fresh brief, native next idle and unread100: actual owner1b2 and
+QA1b19/b444 scope already grant the same exact Fleet layout. Native transition
+blocked11→assigned12 at restored strict **6870c3a** retains all failures/history.
+Console then independently resumes **in_progress13**. Manager **b4365e44** confirms
+same task, five exact source/test/doc paths, no fallback/fixture/backend changes,
+and fresh final native source/independent QA/live visual gates. No new assignment
+or owner approval relay; old8ba fallback remains unaccepted.
+
+Owner **22df881a** concrete stale-wait incident is recorded in existing **inbox
+assigned4** and **attention blocked10** metadata/criteria/evidence, preserving
+states/owners/candidates and all prior histories. Final blocked/waiting/needs-owner
+reports require fresh authoritative unread inbox, named permissions and current
+task evidence; historical observations remain timestamped. A new mechanical
+watermark/status schema/API protocol requires an owned reviewed proposal, not
+unilateral implementation. Runtime **16be8f0b** receives exact revision update;
+Console/QA receive resolved permission and strict freshness requirement.
+
+Fresh native readback: Runtime inbox assigned4, Console workflow in_progress13,
+Work design assigned3, attention blocked10. Kernel inbox565 still blocked7 at a4:
+focused proof accepted, native3/2 qualification refusal retained. Ledger55 and one
+active item per specialist remain; full inventory/dormant/services/visual roadmap
+preserved. No final acceptance, automatic wakes, install/schema recovery, host
+activation, extra identities or provider launches.
+
+
+## Current strict route correction and CLI design decision at 12:24 UTC
+
+Owner **38089ba3** independent isolated exact6988 observation confirms Operations
+has no owning view while warning correction and Organization two-section visibility
+remain focused PASS. Owner **2a31aafd** identifies **8ba1af6** as the rejected driver
+fallback. Manager independently reads the exact8ba1 patch: it replaces the
+#manager-wakes selectViewFor owning-view boundary with selectView overview.
+Withhold acceptance/landing regardless of any green receipt. Correct forward,
+retain candidate/history/failures and restore owning-view truth; Manager edits
+no peer source or tests.
+
+Actual QA **1b19a436** now explicitly consents the narrow site/console.html layout
+plus existing console.js/navigation test/narrow driver/Test Integrity Note scope.
+Fleet owns a second appropriately identified Operations section, ten nav destinations
+remain, other views hide it, direct #manager-wakes selects Fleet/opens ancestor
+details/focuses and scrolls target. Manager **51468c2a/adbb5b06** routes exact
+consent and rejects fallback on the SAME workflow10. Original warning/draft/stale/
+mobile/deep-link/capture/artifact assertions remain mandatory; fresh final four
+native source gates and independent QA/live visual qualification are distinct.
+The Console branch is progressing; exact current HEAD must refresh before review.
+
+Owner **5e7cfbb8** confirms Kernel actual design-doc contributor turn began under
+25dca/28f authority, not a Manager provider launch. It also identifies a real
+CLI-interface disagreement: Release Work-addressed8da824 proposes caller --commit,
+Kernel rejects caller commit/root/schema/context authority. Manager **6964e85c**
+asks Release to agree initial internally derived registered clean subject/no commit
+override; any future expected-commit may only reject stale derived HEAD, never
+select arbitrary subject or grant receipt authority. Kernel **cb0b980e** and Work
+**67e0c13a** retain this pending decision honestly in proposed text. Three-axis
+agreement is not complete CLI-interface consensus, and no code authority follows.
+
+QA **1b19a436** supplies design-only tuple scenario plan: exact engine, authenticated
+adapter, subject identity, current schema, definition/input, opaque attempt/artifacts,
+guards and terminal evidence; nonconvertible source/operational receipts, fresh
+operational acceptance after landing, compatible legacy schema2 and genuine3/2
+refusal. Future QA test paths were sent to Work, not inferred as current edit consent.
+All four new messages were individually read and acknowledged; reviews remain open.
+Manager local checkpoint **b21cc60** holds the prior five reviewed coordination
+paths. No native landing, gate change, activation or recovery is claimed.
+
+
 ## Current design-document phase and Console route failure at 12:20 UTC
 
 Explicit own unread100 was reread after current tasks; owner **12360913/defac915**,

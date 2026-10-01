@@ -16,7 +16,8 @@
     "Explicit history and limited/truncated unread results expose sufficient reviewed selection, completeness/truncation and pending-unread metadata to distinguish a page from a complete unread check; metadata is produced through the existing bound read API with a consistent observation contract.",
     "Foreign recipient claims, arbitrary state-root redirection and unauthenticated metadata fail closed; reading never acknowledges, resolves, transfers ownership or changes stored message/ack records.",
     "Named Runtime, Kernel and QA review exact source/API/test contribution paths, strict boundary scenarios including group messages and limits, and deterministic pagination observations before implementation; preserve all existing assertions and add a Test Integrity Note.",
-    "Exact clean candidate checks, independent QA acceptance and guarded serialized integration are required; no fixture-only output, omitted unread filter or acknowledgement counts substitute for real current evidence."
+    "Exact clean candidate checks, independent QA acceptance and guarded serialized integration are required; no fixture-only output, omitted unread filter or acknowledgement counts substitute for real current evidence.",
+    "Before publishing a final blocked/waiting-on-approval/needs-owner report, refresh authoritative unread inbox, current named permission and task evidence; distinguish a timestamped earlier observation from current state and reconcile already-resolved routine waits without asking the owner again. A mechanical observation-watermark/status protocol, if needed, requires an owned reviewed proposal before schema/API implementation."
   ],
   "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "feature": "Identity-bound inbox selection and observation integrity",
@@ -29,14 +30,15 @@
     "message:67926f0f-79db-487e-8066-0b09fbd4ba0e:actual12-unread-incident",
     "ownership:src/mcp/tools.mjs=provider-runtime",
     "message:5039498d-a7f6-4ccd-93b8-cfb86ca2149e:exact-owned-contract-request",
-    "message:758830da-8cbb-4b24-a38f-ea472685ecf6:QA-scenario/path/contributor-decision-request"
+    "message:758830da-8cbb-4b24-a38f-ea472685ecf6:QA-scenario/path/contributor-decision-request",
+    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:Console12:22-stale-QA-wait-after12:19-consent"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:32:53.996Z",
-  "updatedAt": "2026-10-01T10:38:12.349Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T12:27:23.922Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -58,6 +60,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T10:38:12.349Z",
       "note": "Owner08 actual priority; fresh native next ready THIS item/no active Runtime item, clean Runtime exact0fdf verified. Assign bounded MCP inbox phase to Runtime on existing branch, preserving blocked starting-presence4/Kernel reservation5 and all their receipts/guards. First pin exact src/mcp/tools.mjs interface/spec and get real named QA scenario/path contributor consent; implement owned unread-default/explicit-history behavior only after that decision. Kernel-bound metadata API changes require exact peer contribution consent or separately assigned Kernel implementation, not guessed exports/direct DB/state roots. Return exact contract, QA decision and proposed dormant launcher component interface/implementer for later separately sequenced Release dependency. Full unread/count/truncation criteria stay open; no second Runtime active item, no tests before permission, no caller identity bypass/auto-ack/wake/host/schema/installation changes. Fresh exact four gates and independent QA/guarded integration required. Arbiter starts the actual provider turn; Manager launches none."
+    },
+    {
+      "from": "assigned",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:27:23.922Z",
+      "note": "Owner22df explicitly requests existing-item incident/requirement recording. Reviewed metadata-only amendment preserves current state, owner, candidate, dependencies, prior criteria and every historical wait. No lifecycle transition, new assignment, wrapper/API/schema contract implementation, autoapproval or mass acknowledgement. Fresh final-status observation is required; any mechanical protocol stays an owned reviewed proposal."
     }
   ]
 }

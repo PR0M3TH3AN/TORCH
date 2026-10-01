@@ -23,7 +23,8 @@
     "Runtime/tool availability and actionable Fleet health are displayed separately; doctor healthy/status ok does not erase unresolved message, presence, timer or qualification findings.",
     "Presence rows show timestamped source/freshness/unknown evidence; a last idle heartbeat is never presented as verified current process absence.",
     "Unacknowledged message attention is classified by actual recipient, routine peer coordination versus genuine owner decision, and age; aggregate backlog counts do not make the owner responsible for every message, and no suppression or mass acknowledgement occurs.",
-    "Timer/process/presence disagreements link exact observed evidence, the existing task and responsible domain without silently resolving or activating services."
+    "Timer/process/presence disagreements link exact observed evidence, the existing task and responsible domain without silently resolving or activating services.",
+    "Before publishing a final blocked/waiting-on-approval/needs-owner report, refresh authoritative unread inbox, current named permission and task evidence; distinguish a timestamped earlier observation from current state and reconcile already-resolved routine waits without asking the owner again. A mechanical observation-watermark/status protocol, if needed, requires an owned reviewed proposal before schema/API implementation."
   ],
   "observedAt": "0224abf2e08d",
   "feature": null,
@@ -56,14 +57,15 @@
     "message:eb5a356c-3c27-47cb-99d5-3c366179644e:QA-exact-code-hashes-accepted-only",
     "receipt:558d8598-0332-49eb-9296-9f68b5880604:correct-check-id-preserved;prior-revision7-transcription-49aa-is-not-a-receipt",
     "message:799d0275-c113-45cd-a0cb-06ca78f9c71f:land-code-retain-visual-blocker",
-    "message:25e645bf-db6a-4df8-9107-3b82f15e27d8:incident-backed-presence-health-message-classification-criteria"
+    "message:25e645bf-db6a-4df8-9107-3b82f15e27d8:incident-backed-presence-health-message-classification-criteria",
+    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:Console12:22-stale-QA-wait-after12:19-consent"
   ],
   "commit": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "integrationRequest": "9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b",
   "blockedReason": "Source cb145e56 landed through guarded integration after four exact PASS receipts and independent QA f21b0c38/eb5a356c/all11 artifact hashes. Actual live desktop/mobile browser acceptance remains unavailable and required for full completion; generated artifacts are not visual PASS. Preserve old75afe INCOMPLETE/lost history and current owner/candidate/receipts.",
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T12:08:24.703Z",
-  "revision": 9,
+  "updatedAt": "2026-10-01T12:27:23.922Z",
+  "revision": 10,
   "history": [
     {
       "from": null,
@@ -127,6 +129,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T12:08:24.703Z",
       "note": "Reviewed owned-ledger metadata-only amendment explicitly requested by owner25e645bf. Append strict incident-backed presence freshness, separate availability/health and recipient/age/actionability criteria as applicable. Preserve existing criteria, state, owner, candidate, integration request, dependencies and all history. Native service has no metadata-amend operation; no lifecycle transition, duplicate task, assignment, qualification, warning suppression, mass acknowledgement or host/provider authority inferred."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T12:27:23.922Z",
+      "note": "Owner22df explicitly requests existing-item incident/requirement recording. Reviewed metadata-only amendment preserves current state, owner, candidate, dependencies, prior criteria and every historical wait. No lifecycle transition, new assignment, wrapper/API/schema contract implementation, autoapproval or mass acknowledgement. Fresh final-status observation is required; any mechanical protocol stays an owned reviewed proposal."
     }
   ]
 }
