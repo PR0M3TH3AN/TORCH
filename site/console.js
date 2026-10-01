@@ -54,6 +54,9 @@ function installConsoleViewRouting() {
       const target = document.getElementById(targetId);
       const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
       if (target && targetId !== view && targetView === view) {
+        for (let ancestor = target; ancestor; ancestor = ancestor.parentElement) {
+          if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+        }
         if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
           target.tabIndex = -1;
         }

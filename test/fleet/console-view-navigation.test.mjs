@@ -211,6 +211,49 @@ test('SCN-console-view-navigation: fragments, direct loads, Back and Forward sel
   await assertSelectedView(page, 'flow-watch', 'Flow watch');
 });
 
+test('SCN-console-operational-deeplink-fleet: manager-wakes belongs to Fleet across direct loads and history', async (t) => {
+  const { page } = await openDemo(t, { width: 1280, height: 900 });
+  const base = `http://127.0.0.1:${new URL(page.url()).port}/console?demo=1`;
+  const assertManagerWakesTarget = async () => {
+    await assertSelectedView(page, 'fleet', 'Fleet');
+    assert.equal(await page.locator('#fleet-operations').isVisible(), true);
+    assert.equal(await page.locator('#fleet-operations').evaluate((details) => details.open), true,
+      'the Operations disclosure must open for its nested target');
+    const target = await page.locator('#manager-wakes').evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      return { activeId: document.activeElement?.id, top: bounds.top, bottom: bounds.bottom, height: innerHeight };
+    });
+    assert.equal(target.activeId, 'manager-wakes', 'the actual fragment target must receive focus');
+    assert.ok(target.top < target.height && target.bottom > 0,
+      `manager-wakes must intersect the viewport: ${JSON.stringify(target)}`);
+  };
+
+  await page.goto(`${base}#manager-wakes`);
+  await page.locator('#live-refresh-status[data-generation="1"]').waitFor();
+  await assertManagerWakesTarget();
+
+  await page.locator('.console-rail a[href="#fleet"]').click();
+  await assertSelectedView(page, 'fleet', 'Fleet');
+  await page.goBack();
+  await assertManagerWakesTarget();
+  await page.goForward();
+  await assertSelectedView(page, 'fleet', 'Fleet');
+
+  await page.goto(`${base}#overview`);
+  await page.locator('#live-refresh-status[data-generation="1"]').waitFor();
+  await page.locator('#attention-list a[href="#manager-wakes"]').click();
+  await assertManagerWakesTarget();
+  await page.goBack();
+  await assertSelectedView(page, 'overview', 'Overview');
+  await page.goForward();
+  await assertManagerWakesTarget();
+
+  await page.locator('.console-rail a[href="#work"]').click();
+  await assertSelectedView(page, 'work', 'Work');
+  assert.equal(await page.locator('#fleet-operations').isVisible(), false,
+    'operational panels must be hidden outside the selected Fleet view');
+});
+
 test('SCN-console-mobile-navigation: every destination is visible at 390x844 without horizontal hunting', async (t) => {
   const { page } = await openDemo(t, { width: 390, height: 844 });
   assert.equal(await page.locator('.console-rail a').count(), views.length);
