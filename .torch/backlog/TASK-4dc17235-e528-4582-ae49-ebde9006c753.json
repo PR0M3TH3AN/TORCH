@@ -1,0 +1,71 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-4dc17235-e528-4582-ae49-ebde9006c753",
+  "title": "Prepare coherent immutable TORCH alpha.3 candidate and rollback provenance",
+  "description": "Owner4af26ede authorizes one bounded Release-owned alpha.3 preparation after read-only planc15fcde8 reported VERSION_ALREADY_INSTALLED: installedalpha2 sourcec11754ab differs from repository1a2 check engine. Phase1 only: safely converge clean Release branch; with exact shared package.json consent change version metadata coherently in package.json, package-lock.json and torch-release.json, preserving all installed versions/state and rollback-safe schema. All four exact gates must use explicit candidate CLI from canonical cwd, independent QA and guarded serialized rewrite landing. Only after exact landed source and reviewed conflict-free candidate plan is isolated candidate build authorized. Activation, installation switch, Console restart, automatic wakes, publication, default-main/provider/spending changes remain arbiter-reserved. Deeper engine-provenance UI and stale-engine receipt guard requirements from f286a236 are retained in Manager handoff as a separate later phase, not claimed shipped by this metadata slice. Provider update-startpaths remains unchanged. Read-only plan and local preparation can proceed concurrently to repair installation mismatch; artifact isolation is already landed; no executor completion claim.",
+  "priority": "high",
+  "affectedDomains": [
+    "release-self-host",
+    "work-integration",
+    "owner-console",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-pilot-generated-check-artifacts"
+  ],
+  "acceptanceCriteria": [
+    "Version metadata agrees on new 0.1.0-alpha.3 across package.json, package-lock.json and torch-release.json; package.json shared owners give exact version-only consent before edits, and existing version stores and all other metadata remain preserved.",
+    "Clean guarded convergence preserves unique commits and real project state; exact task-named metadata candidate passes test/check/test-dashboard/lint through explicit candidate bin/torch.mjs from canonical cwd with registered Release area.",
+    "Independent QA accepts resulting exact source and serialized TORCH integration lands it to rewrite before any candidate build; no gate waiver, stale receipt reuse, installed checker qualification or competing push.",
+    "Read-only candidate plan binds exact landed source commit and digest, coherent version metadata and rollback-safe state schema; conflict-free plan is reviewed before authorized isolated candidate build.",
+    "Isolated candidate build and immutable acceptance receipts establish recoverable source/version/provenance; rollback review preserves DB, worktrees, unique commits, prior versions and paused timers/wakes. No active installation switch or restart occurs without arbiter decision.",
+    "Metadata preparation does not claim deeper executing-engine mismatch guards, Console provenance UI, provider freshness, general release qualification or real visual acceptance are implemented; those remain explicit follow-up phases."
+  ],
+  "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
+  "feature": null,
+  "milestone": null,
+  "state": "assigned",
+  "owner": "release-self-host",
+  "evidence": [
+    "message:f286a236-77f8-4bc6-a2a3-a4c45d33fa76:TORCH-engine-scope",
+    "message:c15fcde8-b20f-4f95-b422-b722b70ca325:read-only-version-plan",
+    "message:4af26ede-5253-4a6c-85e3-dfbb85ebcdca:bounded-alpha3-preparation-approved",
+    "owner:4af26ede:alpha3-preparation"
+  ],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T06:52:30.704Z",
+  "updatedAt": "2026-10-01T06:56:58.480Z",
+  "revision": 4,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:52:30.704Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:55:57.335Z",
+      "note": "Explicit owner4af26ede phase1 metadata amendment at expectedrev1: same bounded task narrowed to coherent alpha3 candidate/rollback preparation. Executor dependency no longer blocks this independently approved preparation; artifact dependency retained and complete. Deeper engine-provenance UI/receipt guard requirements retained in current handoff for later phase, not weakened test expectations or claimed shipped. No assignment or activation performed by metadata amendment."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:56:01.628Z",
+      "note": "Exact owner-approved phase1 alpha3 metadata/candidate plan. Canonicalbrief reread d7e6d69; Release nextidle/clean; artifactdependencylandedcomplete. Shared package version consents9c6563ff(Kernel),8ce8a450(Runtime),e625c02d(QA) pending and required before edits. Deeperengineguard/UI deferred explicitly, no current installation/activation/build before qualifiedland/reviewedplan."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:56:58.480Z",
+      "note": "Release nextready exactlythistask/noactiveitem. Assign explicitowner4af26ede phase1: clean guarded convergence and read-only planning may proceed; coherent alpha3 VERSION metadata edits ONLY after all sharedpackageconsents9c6563ff/8ce8a450/e625c02d actually approved. Preserve alpha2/currentDB/worktrees/timers/rollback-safe schema. All4exactcandidateCLIchecks, independentQA, guardedland then reviewedplan/isolatedbuild; NO activation/restart/providerfreshness/deeperengineguard/UI edits. Arbiter starts assigned native session; Manager launches none."
+    }
+  ]
+}

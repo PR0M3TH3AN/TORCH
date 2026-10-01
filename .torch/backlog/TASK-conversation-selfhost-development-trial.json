@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-conversation-selfhost-development-trial",
   "title": "Qualify bounded TORCH-building-TORCH development loop",
-  "description": "The installed smoke proved only one specialist and one manager communicating. Plan an approved bounded code task across specialists: current brief; assigned/resume preference; checks; frozen queued evidence where appropriate; serialized landing on the approved rewrite boundary; landed closure; next-item/idle; stop/resume. Preserve all worktree history and clarify remote/local recoverability before landing.",
+  "description": "The installed smoke proved only one specialist and one manager communicating. Plan an approved bounded code task across specialists: current brief; assigned/resume preference; checks; frozen queued evidence where appropriate; serialized landing on the approved rewrite boundary; landed closure; next-item/idle; stop/resume. Preserve all worktree history and clarify remote/local recoverability before landing. Partial actual loop evidence is now recorded: clean converged artifact1a2, four immutable exact PASS receipts, independent QA, authorized serialized rewrite landing, completed task and next-item idle. Missing stop/resume/identity retention, model/provider/launch-safety and budget qualification remain open; repeated old installed checker incidents and stale starting presence prevent broad qualification. Current Kernel/Runtime recovery and Console visual coverage remain incomplete. No lifecycle completion, dependency removal or broader activation is inferred.",
   "priority": "high",
   "affectedDomains": [
     "qa",
@@ -25,13 +25,19 @@
   "milestone": "Owner-reviewed first development backlog",
   "state": "proposed",
   "owner": null,
-  "evidence": [],
+  "evidence": [
+    "qa:ad64eec5-d0e5-4d02-896c-0b7c2a9a527d:accepted-exact1a2",
+    "checks:1a2b5b0:test1882bf2d-check32c51f5d-dashboard24457e40-linte5334c44:pass",
+    "integration:7d689fd0-f733-4626-98b6-baa6ac3eab1f:landed:1a2b5b0",
+    "TASK-pilot-generated-check-artifacts:completed-rev10; work-integration-next:idle",
+    "message:7668dbb3-bd8e-4948-abce-956993ef2ccf:partial-loop-evidence"
+  ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.680Z",
-  "updatedAt": "2026-09-30T19:30:23.680Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T06:55:57.335Z",
+  "revision": 2,
   "history": [
     {
       "from": null,
@@ -39,6 +45,13 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.680Z",
       "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:55:57.335Z",
+      "note": "Owner7668dbb3 requested factual metadata/evidence reconciliation only. Expectedrevision1; state/owner/dependencies and all acceptance criteria preserved. Record concrete partial pilot/landed closure evidence and actual current authorization; retain unmeasured budget/provider/stop-resume/start safety gates. Reviewed Manager-owned ledger amendment; no lifecycle claim or wider activation."
     }
   ]
 }

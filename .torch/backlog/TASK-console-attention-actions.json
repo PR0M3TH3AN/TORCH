@@ -24,22 +24,23 @@
   "observedAt": "0224abf2e08d",
   "feature": null,
   "milestone": null,
-  "state": "ready",
-  "owner": null,
+  "state": "in_progress",
+  "owner": "owner-console",
   "evidence": [
     "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:bounded-attention-implementation-authorized",
     "owner-console:eab85dd:reports/design-system/task-console-ux-audit-owner-console-2026-09-30.md:desktop-findings-mobile-incomplete",
     "approval:6d029541-3206-41f8-bdd7-eda7514f34e3:pending-QA-path-consent",
     "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:bounded-implementation",
     "message:bd4df0d9-6647-476a-bef0-a6c0c7b1c3aa:concrete-attention-projection-evidence",
-    "approval:6d029541-3206-41f8-bdd7-eda7514f34e3:pending-QA-consent"
+    "approval:6d029541-3206-41f8-bdd7-eda7514f34e3:pending-QA-consent",
+    "approval:6d029541-3206-41f8-bdd7-eda7514f34e3:approved:revision2"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T06:47:44.579Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T07:01:51.321Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -61,6 +62,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T06:47:44.579Z",
       "note": "Current briefd7e6d69 reread before exactnewitem. Canonical continueddevelopment ownerauthorization plus exact9590d8b1 permits bounded existingattention task. Metadatarev2 removes only full-audit start prerequisite; auditblockedrev5 remains unchanged, final actualdesktop/mobilevisualacceptance mandatory. OwnerConsole nextidle/cleaneab85dd/no active item. Ready for prioritization only; MUST obtain actual QA6d029541 pathconsent before assignment. Existing allcriteria/assertions/authoritycontrols retained; sourceobservability projected blockedReason ownedConsole. Arbiter controls start, no manager providerlaunch; no broadUIrewrite or scopeexpansion."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:52:18.673Z",
+      "note": "QA6d029541 actual approvedrev2 at06:50:49 grants additive owned scenario/path consent only; independently read decision. Fresh nextOwnerConsole ready exactly this task/no active item; audit remainsblockedrev5 and cleaneab85dd retained. Assign bounded attention labels/dedup/actions/projection only from owner9590d8b1 and desktopobservations, currentbriefd7e6d69. Preserve all existing QAassertions, namedapprover/revision/preview/draft guards; real desktop/mobilevisualacceptance and all4 exactchecks remainrequired. Owned site/** src/observability/**; askpeer for other paths. Explicit candidateCLIfromcanonicalcwd for checks, no installedoldcheckerqualification. Read frontend/browser skills before respectivework; no screenshot substitute/source-onlycompletion. Arbiter alone starts session; no Manager providerlaunch, no dashboardarchitecture rewrite/automaticrecovery/remoteaction."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "owner-console",
+      "at": "2026-10-01T07:01:51.321Z",
+      "note": "Resumed assigned revision 4 after fresh canonical brief; confirmed QA path consent and owned site/** plus src/observability/** boundaries. Preserving TASK-console-ux-audit as blocked revision 5 and its actual-browser final acceptance gate."
     }
   ]
 }
