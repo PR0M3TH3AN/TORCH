@@ -20,7 +20,7 @@
   "observedAt": "94062020c767",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "completed",
   "owner": "work-integration",
   "evidence": [
     "f46c713cc9e90697d02e3e29222b3eeb7cd71d99",
@@ -28,14 +28,23 @@
     "integration request cce22c51-1fa8-4324-8e28-bf8cbfc56165 ready",
     "approval:2b2dfb35-46ac-4adb-ac14-5680f7a85e80:approved:revision2",
     "integration:cce22c51-1fa8-4324-8e28-bf8cbfc56165:needs_convergence:target-advanced-since-request",
-    "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md"
+    "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md",
+    "test receipt 1882bf2d-f598-4afb-9992-3f9a28a2c901 pass",
+    "qa:40291558-d0f0-491c-aca4-7b39ef787e3d:accepted",
+    "checks:test:1882bf2d-f598-4afb-9992-3f9a28a2c901:pass",
+    "checks:check:32c51f5d-2bec-4a01-9b6f-e3927f3006e6:pass",
+    "checks:test-dashboard:24457e40-26ed-496f-bcb5-cc8b08da197a:pass",
+    "checks:lint:e5334c44-46b8-4c7f-8d19-17d2c57713ce:pass",
+    "qa:ad64eec5-d0e5-4d02-896c-0b7c2a9a527d:accepted",
+    "integration:7d689fd0-f733-4626-98b6-baa6ac3eab1f:landed",
+    "canonical:1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4:clean"
   ],
-  "commit": "e35046908f741799be9e814cecc6470cf1983b86",
-  "integrationRequest": "cce22c51-1fa8-4324-8e28-bf8cbfc56165",
+  "commit": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
+  "integrationRequest": "7d689fd0-f733-4626-98b6-baa6ac3eab1f",
   "blockedReason": null,
   "createdAt": "2026-09-30T20:31:08.855Z",
-  "updatedAt": "2026-10-01T03:33:34.098Z",
-  "revision": 7,
+  "updatedAt": "2026-10-01T03:48:55.335Z",
+  "revision": 10,
   "history": [
     {
       "from": null,
@@ -85,6 +94,27 @@
       "actorId": "session-manager",
       "at": "2026-10-01T03:33:34.098Z",
       "note": "Fresh canonical digestd7e6d69 and ownerbb48534b authorize checked continuation; owner2b2 approvedrev2. Exact request evaluation is needs_convergence after canonical clean330ec1a advanced. Resume same owner/item for clean guarded convergence, preserve uniquee350 and oldPASS/QA/request history, rerun all4 exact checks on resulting candidate, independentQA and newrequest. No stalee350 authorization/landing or gate weakening; arbiter controls native session start and checked rewrite push."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "work-integration",
+      "at": "2026-10-01T03:36:53.269Z",
+      "note": "Guarded convergence to canonical 330ec1a completed; all required exact candidate checks passed. Awaiting fresh independent QA acceptance before a new request."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "work-integration",
+      "at": "2026-10-01T03:47:06.324Z",
+      "note": "Independent QA accepted the exact converged candidate; fresh serialized integration request submitted after all four exact PASS receipts."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "completed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T03:48:55.335Z",
+      "note": "Guarded serialized authorization/plan/landing succeeded at 03:48 UTC under fresh d7e6d69 owner permission. Independently verified source/canonical clean, ancestry and all four exact PASS receipts; QA accepted exact candidate and all 11 artifact hashes. Canonical rewrite readback now exact1a2 clean. Old cce/e350 and all historical evidence retained. No gate waiver, direct push, installation or wake activation."
     }
   ]
 }

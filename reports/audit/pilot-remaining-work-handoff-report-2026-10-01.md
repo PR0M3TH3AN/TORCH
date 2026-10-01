@@ -1,6 +1,77 @@
 # Current pilot remaining-work handoff
 
-## Current reconciliation after fresh authorization
+## Current reconciliation at 03:49 UTC
+
+Artifact candidate `1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4` is **landed**
+on `rewrite/portable-agent-fleet`, via fresh request
+`7d689fd0-f733-4626-98b6-baa6ac3eab1f` at 03:48:11 UTC. Manager verified clean
+source/canonical, exact HEAD, ancestry and all four immutable PASS receipts;
+independent QA acceptance `ad64eec5-d0e5-4d02-896c-0b7c2a9a527d` additionally
+verified the unchanged 2/2 scenarios and all 11 retained artifact hashes.
+TORCH authorization and landing plan passed without blockers; canonical readback
+is clean at the exact candidate. Task is completed revision 10; Work and
+Integration's next lookup returns idle. The old `cce22` request remains historical.
+
+Kernel handoff `bd634096-7ceb-46d5-8153-4ed9a6ab13ca` confirms only the five
+approved PNGs were restored after independent hash checks under QA decision
+`406ff30e-b317-4733-b39e-f63c9a57506d` revision 2. Manager readback confirms
+Kernel clean. Archive, rejected prior decision and old unqualified manual run
+remain preserved. Recovery is resolved; this does not qualify Kernel's candidate.
+
+Next re-entry is **existing Kernel coordination and Runtime executor tasks**:
+reread brief, guarded clean convergence to current canonical, all required checks
+on resulting exact commits, independent QA and fresh exact integration requests.
+Diagnostics stays blocked until its own artifact/convergence gate is qualified
+and Runtime assignment continuity permits resumption. Console still lacks actual
+mobile visual evidence. Arbiter controls provider starts, checked non-force
+rewrite push and installation changes. Manager has started no providers and has
+not pushed. A direct durable notice to recipient `owner` was refused as an unknown
+Fleet identity; this report and final handoff carry the arbiter outcome.
+
+The revocable authority-grant proposal below remains high priority after the
+reliability dependencies, unassigned. Full project authority is an explicit
+required preset, alongside bounded grants; any external enforcement limitation
+must be reported precisely, never hidden behind a limited-only implementation.
+Fleet evolution favors retaining the six existing specialist owners. Backlog is
+45 items (40 proposed, four blocked, one completed at this checkpoint). Automatic
+wakes remain paused. No new identity, authority grant or hierarchy is activated.
+
+## Historical reconciliation at 03:42 UTC
+
+Canonical digest remains `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
+Recovery approval `406ff30e-b317-4733-b39e-f63c9a57506d` is now **approved**,
+revision 2, by QA after native user risk-specific authorization and independent
+five-file provenance checks. The former propagation hold is resolved. Kernel's
+five files are still dirty; only Kernel may apply the exact approved restoration
+after rechecking, preserving archive and prior unqualified evidence. Arbiter
+controls Kernel's session start. Approval is not proof restoration occurred.
+
+Work and Integration is clean at `1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4`,
+converged with canonical `330ec1a`; task verification revision 8. Manager verified
+four exact PASS receipts with exit 0 and no invalid reason: test `1882bf2d-f598-4afb-9992-3f9a28a2c901`,
+check `32c51f5d-2bec-4a01-9b6f-e3927f3006e6`, dashboard `24457e40-26ed-496f-bcb5-cc8b08da197a`,
+lint `e5334c44-46b8-4c7f-8d19-17d2c57713ce`. Fresh independent QA acceptance and
+a new exact request remain required. The only current request is the old `cce22`
+in needs_convergence; no authorization or landing was attempted. Manager routed
+the new exact candidate to QA. Runtime and diagnostics remain blocked on actual
+artifact qualification/landing; Console mobile visual evidence remains incomplete.
+
+New owner requirement `1afb931b-79f7-4338-82e7-69523be63aee` is concretely
+recorded in the same backlog as **proposed**, unassigned
+`TASK-874ed1e4-9414-4a8f-8575-a6c5aceefc56`: revocable owner-to-manager authority
+grants and trusted propagation. Its [implementation and Delegations-screen proposal](../design-system/owner-manager-authority-grants-proposal-2026-10-01.md)
+defines exact/full project scope, owner issuance, audit, revocation/expiry/use
+limits, native trusted transport, independent scenarios and a dedicated owner
+view. No full authority grant, prompt-based bypass or new identity is activated.
+Existing reliability dependencies precede this work. Kernel/Runtime/Console/QA
+received the proposal under their existing ownership.
+
+Fleet assessment still favors six specialists, with no new coherent owner gap.
+Backlog now contains 45 items; the new proposal does not create a second queue.
+Automatic wakes remain paused. Earlier snapshots below retain chronology rather
+than current decision holds.
+
+## Historical reconciliation after fresh authorization at 03:33 UTC
 
 Updated 2026-10-01 03:33 UTC under canonical digest
 `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.

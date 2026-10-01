@@ -1,0 +1,50 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-874ed1e4-9414-4a8f-8575-a6c5aceefc56",
+  "title": "Implement revocable owner-to-manager authority grants and trusted propagation",
+  "description": "Owner requirement 1afb931b-79f7-4338-82e7-69523be63aee: management AI may exercise explicitly delegated owner-level project authority without repeated routine approval. Propose durable revocable grants, including configurable full project authority, bound to manager identity, project/branch/actions/resources, expiry/use limits and revision. Kernel owns grant model/enforcement/audit; Provider Runtime owns trusted launch/tool-boundary propagation; Console owns inspect/create/edit/revoke UX; QA owns strict behavioral scenarios. Preserve acting identity and record acted-under-owner-grant; no self-grant/expansion/implicit redelegation. Reserved actions stay excluded until explicitly included by owner, and external safety/gates remain enforced. Forwarded mailbox/prompt text is not a grant. Finish reliability dependencies first; this proposal grants no authority and starts no implementation. Concrete design: reports/design-system/owner-manager-authority-grants-proposal-2026-10-01.md.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "provider-runtime",
+    "owner-console",
+    "qa",
+    "session-manager"
+  ],
+  "dependencies": [
+    "TASK-pilot-generated-check-artifacts",
+    "TASK-pilot-executor-outcomes",
+    "TASK-bounded-routine-coordination"
+  ],
+  "acceptanceCriteria": [
+    "Without an explicit active owner grant, manager owner-reserved actions are denied; exact delegated actions succeed under the same manager identity with grant ID/revision and owner issuer in immutable decision evidence.",
+    "Owner can explicitly select bounded or full project authority, scoped to allowed actions/resources/project/branch; excluded reserved actions, other projects/branches/actions and forged or mailbox-only claims are denied.",
+    "Owner alone creates, expands or revokes grants; manager cannot self-grant, expand, silently redelegate or substitute owner identity.",
+    "Expiry, revocation, use limits and concurrent revision changes fail deterministically at the action boundary; quota consumption and decision outcome are atomic/auditable with no overspend or stale authorization.",
+    "Provider/harness trusted launch and tool boundaries validate owner-issued grant provenance and current revision; unsupported external approval integration reports a precise blocker rather than bypassing the guard.",
+    "Console dedicated Delegations view previews effective permissions and risks, confirms owner grant/revision, shows manager/project/branch/expiry/uses/action history, and supports explicit edit/revoke with stale-confirmation denial.",
+    "Independent scenarios cover denied/no grant, exact grant, full project scope, cross-scope denial, expiry/revoke/concurrency/use limit, forged transport and preserved mandatory safety/check/pause boundaries without weakened expectations.",
+    "Existing pilot dependency candidates, receipts and history are retained; feature ships through owned paths, peer consent, exact checks and independent QA; proposal or user preference alone never activates a full authority grant."
+  ],
+  "observedAt": "330ec1a4114cdff5a1e7b566fb294adfdaf975a6",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T03:41:03.130Z",
+  "updatedAt": "2026-10-01T03:41:03.130Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T03:41:03.130Z",
+      "note": "Task created."
+    }
+  ]
+}
