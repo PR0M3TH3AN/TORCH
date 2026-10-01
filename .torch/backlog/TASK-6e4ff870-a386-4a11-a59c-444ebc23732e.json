@@ -25,7 +25,7 @@
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check execution provenance and state isolation",
   "milestone": "Reviewed reliability dependencies",
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "work-integration",
   "evidence": [
     "message:28f03fa6-ff6e-4af8-87e0-631218f1ec55:owner-bounded-design-document-phase",
@@ -35,14 +35,18 @@
     "message:59933112-c99e-486a-b186-9aca37cc0174:reviewed-phased-engine/store/transport-proposal",
     "message:36788020-8960-4fbc-8ed9-db8d5cacbe04:owner-exact-Phase-A-conditional-authorization",
     "message:a0e8ae17-8525-46d7-b213-0031aa85f2a0:QA-named-Phase-A-source/test-path/scenario-contributor-consent",
-    "message:21997bf1-b1c1-4808-88fe-9d673c55fb23:owner-condition-resolved-record-same-assignment-phase"
+    "message:21997bf1-b1c1-4808-88fe-9d673c55fb23:owner-condition-resolved-record-same-assignment-phase",
+    "message:a9d35980-8bb7-410e-803a-8e882d041c2e:actual-implemented-Phase-A-candidate-local-checks-not-native",
+    "message:f1a17c3c-5b7e-42c1-918b-06102a865340:independent-current-source-boundary-defects",
+    "message:e3027336-9254-4f3b-bd40-eaf4ef8ca5bb:QA-current-994-draft-NOT-ACCEPTED-exact-same-scope-additive-corrections",
+    "message:39da248a-96e7-4a05-832f-5ca749a70a96:same-assignment-corrective-handoff-no-duplicate"
   ],
-  "commit": null,
+  "commit": "9946a2a3e49fd777ff06d3905e32ae0dbc43b2ed",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T13:45:39.303Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T14:09:12.927Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -71,6 +75,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T13:45:39.303Z",
       "note": "Explicit owner21997bf1 requests reviewed metadata-only phase/revision/evidence amendment after actual owner367 and QAa0 consent. Expected revision3; SAME existing Work assignment, phase A preparation/development now authorized only exact two new modules, two additive hermetic test files and append-only integrity note. No assertion of code begun/finished, no lifecycle transition or duplicate assignment; owner/state/full criteria/dependencies/candidate/integration and all prior history preserved. Service has no metadata-amend API; no transition/gate workaround. Kernel/Release/consumer/store/schema phases remain proposed; no runtime/provider launch or operational acceptance."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T14:09:12.927Z",
+      "note": "Record actual commenced Phase A implementation on SAME assigned4, not readiness/acceptance/task completion. Worka9 reports clean994/new two source modules/two scenario files/additive TIN and local checks, but actual ownerf1/d896 and QAe302 reject UTF8 byte cap, syntax-only env validation, missing timeout/immutable-input and root/manifest link/read/canonicalization gaps. Continuing exact same scoped corrective implementation under QA additive direction; native receipts/independent corrected acceptance and later phases remain unqualified. Preserve full criteria/owner/history/unique commits and every schema/native guard. Canonicale8 advanced; guarded clean convergence/fresh exact checks before any request. No wiring/store/schema/consumer/gate/lease/install/live/host/provider/wake action."
     }
   ]
 }

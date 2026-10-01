@@ -1,5 +1,61 @@
 # Current pilot remaining-work handoff
 
+## Exact convergence and rejected Phase A draft at 14:08 UTC
+
+Manager checkpoint **24e4a40** recorded actual Console source landing. Native
+convergence plan on clean Manager branch reported blockers[], canProceed true,
+70 unique Manager commits preserved; native **torch converge run** merged
+canonicale8 through the guarded path to clean **32de73e0**, ancestor check/diff
+whitespace PASS. No manual Git bypass or Manager source-integration request;
+Manager has no required checks and changes remain ledger/report coordination.
+Console **blocked16** retains exact landed6cb/e8 and full live criteria; native
+source landing is resolved. Fresh CURRENT tasks/unread100 then received actual
+owner **f1a17c3c/d896bf93**, Work **a9d35980**, QA **e3027336**, individually read,
+routed and acknowledged. No old idle/dependency/acceptance claim was reused.
+
+**Phase A implementation exists but fails the agreed boundary.** Work reports
+clean **9946a2a3e49fd777ff06d3905e32ae0dbc43b2ed**, exact two new modules/two test
+files/additive TIN, focused and local full test202PASS/5intentional SKIP, check,
+dashboard and lint PASS; sandbox local listener EPERM then exact scoped test
+permission succeeded. These are reported local development checks, not native
+eligible receipts or independent acceptance. Actual owner isolated fake-executor
+diagnostic finds cap4 retaining8UTF8 bytes for two emoji, arbitrary syntactically
+valid synthetic environment names accepted, no native timeout, input descriptor
+not verified immutable payload. Actual QA independently inspects994 and **does
+NOT ACCEPT**: root symlink followed, manifest symlink/unbounded read, locale sort
+and incomplete cap/read/write-once negatives also violate reviewed scope. An
+implementation narrative cannot substitute actual allowlist/source/scenario proof.
+
+SAME Work **assigned4 -> in_progress5** records actual started implementation and
+candidate994, continuing exact scoped correction rather than new assignment or
+ready/accepted/completed state. Full original criteria/owner/phase boundaries and
+historical candidate remain. Exact corrective handoff **39da248a**: full explicit
+limits including timeout/refuse missing before execution, UTF8-byte-safe cap,
+module-owned environment allowlist, copied/hashed immutable input snapshot,
+root/manifest lstat refusals and bounded reads, bytewise canonical ordering,
+cap/drift/replacement/write-once negative scenarios with no weaker assertions.
+QA **7e63e199** retains final test truth. No source edit/test run by Manager, no
+wiring/store/provisioner/schema/native promotion/operational acceptance; guarded
+clean convergence tocanonicale8 and fresh exact checks/independent QA/new request
+remain required before eventual candidate landing. Provider starts remain arbiter.
+
+**Development remote boundary.** Actual ownerd896 refreshed existing HTTPSorigin
+refs/heads/rewrite/portable-agent-fleet at0fdf while canonicalclean e8 is landed;
+this is genuine unsynchronized source evidence, separate from native source
+integration and live activation. Release **b442e23f** plus QA7e63 receive bounded
+postlanding exact-source qualification/evidence and arbiter existing-origin,
+existing-development-branch **nonforce push** handoff. No new remote/default-main,
+legacy/release/deploy/publication or Manager expansion of arbiter authority. No
+push is claimed; keep recoverability warning until actual verified synchronization.
+Alpha3approval75 remains genuinely ownerpending1, independent of PNG recovery;
+live browser924 disconnected and live desktop/mobile/installed acceptance open.
+
+Open waits are corrected Work994 validation/QA and Release/QA exact postlanding
+source qualification for arbiter remote synchronization, plus actual connected
+browser/live Console acceptance. No duplicate task, extra identity, installation,
+schema recovery, host/browser change, provider launch or automatic wake activation.
+
+
 ## Native serialized Console source landing at 13:59:37 UTC
 
 Startup brief reread **d7e6d69** after narrowly scoped approved readonly-database
