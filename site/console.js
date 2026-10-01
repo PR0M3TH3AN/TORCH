@@ -1147,13 +1147,13 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     heldPanels = 0;
     renderingSnapshot = true;
     try { render(snapshot); } finally { renderingSnapshot = false; }
-    if (viewportBeforeRender) globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
     invalidateStalePriorityPreviews(snapshot.backlog ?? []);
     refreshProtection.remember({ preserve: editedBeforeRender });
     $('#console-error').hidden = true;
     const status = $('#live-refresh-status');
     status.dataset.generation = String(++appliedRefreshes);
     status.textContent = `${liveUpdatesPaused ? 'Automatic updates paused.' : 'Updates every 15 seconds while visible.'}${heldPanels ? ' Edited forms and active previews retained; their panels may show older state.' : ''}`;
+    if (viewportBeforeRender) globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
     if (appliedRefreshes === 1) consoleViewRouter.afterInitialLayout();
   },
   onError: (caught) => {
