@@ -12,6 +12,16 @@ ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
 ## Actual B1 four-path authorization and real composition roadmap, 16:29 UTC
 
+Current16:34 implementation evidence: initial9b4 localPASS claim did not establish
+bounded parsing; owner465 independently instruments1MiB+1 input and observes copy
+before refusal. Corrected **b375037a9ca5c20704204b52e9ffb3d8060494d9** checks original
+byteLength before each public copy/hash/parse and adds zero-copy regression without
+changing old assertions. Exact Kernel clean four-path c08 delta/diffcheck observed;
+focused/eslint/syntax PASS is implementer evidence. Existing QAbec5581a and Work5c0378fa
+must independently classify the corrected exact candidate and mutation scenario;
+no source/native/operational acceptance is inferred. SAME task verification11
+preserves9b failure and all prior history; legacy2/current3vs2 guards unchanged.
+
 Corrected QAc3e0241 replaces only erroneous src/control-plane path consent with
 NEW src/kernel/managed-subject-metadata.mjs, NEW src/kernel/check-subject-context.mjs,
 NEW test/fleet/check-subject-context.test.mjs and append-only docs/TEST_INTEGRITY.md.

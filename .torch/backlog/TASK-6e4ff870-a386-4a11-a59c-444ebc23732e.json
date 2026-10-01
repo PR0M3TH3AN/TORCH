@@ -71,14 +71,20 @@
     "message:b819ecbc-14b6-420c-b56b-470f90db3190:actual-owner-B1-incremental-fourpath-implementation-authorization",
     "message:bfdcb08f-1753-4689-b528-701e7c96ebe3:existing-Kernel-B1-handoff",
     "message:2f2087d3-4ca4-443f-8473-ec374279d5f5:exact-existing-QA-candidate-review-handoff",
-    "message:a784d4fc-c320-4611-a663-1e8a38ed3149:Work-fullowner-protocol-handoff"
+    "message:a784d4fc-c320-4611-a663-1e8a38ed3149:Work-fullowner-protocol-handoff",
+    "message:9cced188-48b0-4ead-8d67-50540a900639:implemented9b4-B1-localPASS-not-sourceaccepted",
+    "message:465719dd-e137-45a4-9d3e-86cdbf5c3365:independent9b4-oversize-copy-before-bound-defect",
+    "message:865c8290-30e9-4048-8a73-7198faf3d894:corrected-b375-localPASS-zero-copy-regression-awaits-QA",
+    "git:project-kernel:clean-b375037a9ca5c20704204b52e9ffb3d8060494d9:fourpath-c08-delta-diffcheck-observed16:33",
+    "message:bec5581a-bac8-4e49-b1fa-30aba2abdbe9:existing-QA-exact-b375-independent-review-request",
+    "message:5c0378fa-d323-4808-a6f4-cb834c64acf6:Work-exact-b375-protocol-review-handoff"
   ],
   "commit": "316d8b7480c2e10925ebdff8310fe26ef5a881a8",
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T16:28:00.000Z",
-  "revision": 10,
+  "updatedAt": "2026-10-01T16:34:00.000Z",
+  "revision": 11,
   "history": [
     {
       "from": null,
@@ -149,6 +155,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T16:28:00.000Z",
       "note": "Metadata-only current phase recording after actual corrected QA consent/Work agreement/owner B1 authorization, expected revision9. Work remains full owner, landed316/a178 unchanged; all criteria, dependency and history retained. Named Kernel contribution on SAME task only; no second assignment or Manager start. B1 source is not full native/operational acceptance. Legacy2/current3vs2 refusal and B0 rejected histories remain. Future real parent/snapshot child consumption/fencing/native consumer phases mandatory, separately scoped."
+    },
+    {
+      "from": "verification",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:34:00.000Z",
+      "note": "Metadata-only expectedrev10 checkpoint exact implemented B1 candidate and independent defect/correction, no source acceptance or lifecycle change. Earlier9b4 localPASS claim superseded after owner instrumented1MiB+1 prebound-copy defect; corrected b375 clean exactfourpathdelta/diffcheck observed, implementer focused/eslint/syntax PASS and zero-copy regression handed to existing QA/Work. Independent exact verdict pending, not owner permission. Full owner/state/landed316/a178/sevencriteria/history/native3vs2refusal retained; no native receipts/integration eligibility or fulltask acceptance from fixtures."
     }
   ]
 }

@@ -1,5 +1,30 @@
 # Current pilot remaining-work handoff
 
+## Corrected exact B1 handoff and clean Manager checkpoint, 16:34 UTC
+
+Actual Kernel9cced188 reports fixture B1 candidate9b4 with local focused gates;
+owner465719dd independently instruments oversized1MiB+1 Buffer input and proves
+both parse and digest copied before bound refusal. That original bound claim is
+rejected, history retained. Kernel865c8290 supplies corrected exact
+**b375037a9ca5c20704204b52e9ffb3d8060494d9**, same authorized four paths, original
+byteLength rejection before public copy/hash/parser and additive zero-copy scenario.
+Manager observes clean exact HEADb375, c08..b375 four-path delta and diffcheck PASS.
+Implementer focused/eslint/syntax PASS is not independent acceptance. Existing
+QA **bec5581a** and Work **5c0378fa** receive THIS exact candidate and independent
+instrumented regression request, preserving V1 nonpromotion and reserved V2 binding.
+Arbiter controls existing peer resume, Manager starts none. SAME6e4 verification11
+retains Work ownership, landed316/a178 and all seven full criteria. No native receipt,
+integration request or fixture-as-operational claim follows from b375.
+
+Reviewed Manager checkpoint **8ca8a6b** preserves task criteria/evidence/history,
+dependencies and owners; native guarded clean convergence plan has no blockers
+and merges canonical4fa, preserving84 unique Manager commits, resulting
+**176c77c74ebdb0c02a73b049dd1ff766db0a2d70**. Full56 ledger:39 proposed,9 blocked,
+6 completed,1 Runtime assigned,1 Work verification; no duplicate active task.
+Direct-report check-in16:32 refreshed observations: Kernel earlier9b waiting badge
+is superseded by actual corrected b375 addressed handoff, not inferred approval or
+process absence. No structured approval wait; separately human75 remains pending.
+
 ## Current single landing and bounded B1 authority, 16:29 UTC
 
 Console exact **4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1** is now LANDED,
