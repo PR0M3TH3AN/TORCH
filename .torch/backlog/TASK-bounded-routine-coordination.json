@@ -22,7 +22,7 @@
   "observedAt": "7b7c6584b9d3",
   "feature": null,
   "milestone": null,
-  "state": "blocked",
+  "state": "verification",
   "owner": "project-kernel",
   "evidence": [
     "npm run test: 195 passed",
@@ -37,14 +37,21 @@
     "message:9d671f19-4184-4dc0-b98f-0b0d9cb2d868:QA-exact-note-reconciliation-consent",
     "receipt:108f3607-c9c6-4135-8f39-3b57e6accbfa:incomplete:worktree-changed-during-check",
     "message:c293d46a-0e20-40cb-bdcf-1e45f434ee22:installed-checker-correction",
-    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:owner-technical-routing"
+    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:owner-technical-routing",
+    "approval:6f85e138-27f6-47ea-bf63-96cb46553496:approved-rev2",
+    "message:76628552-924e-4a56-a52a-5f8945bdf040:clean-native-recovery-four-fresh-gates",
+    "checks:20aef427-24f91aab-6f2ba896-7859860a:exact-dd62-PASS",
+    "receipt:20aef427-a098-4dbd-a1d8-b1c37b7a275d:pass",
+    "receipt:24f91aab-7ca7-483b-9b20-5de29c17d72c:pass",
+    "receipt:6f2ba896-b0c5-4253-b222-f398ba8bd048:pass",
+    "receipt:7859860a-6eee-4648-8b63-1a27ef8c44fa:pass"
   ],
   "commit": "dd62c7787737e35138cef7871489d6be1ee696c9",
   "integrationRequest": null,
-  "blockedReason": "Merged candidate is gate-blocked after installed alpha.2 check runtime (not candidate CLI) ran dashboard and rewrote exactly five QA-owned tracked PNGs. Dashboard exit0 receipt 108f3607-c9c6-4135-8f39-3b57e6accbfa is incomplete/worktree-changed-during-check. Preserve NEW bytes, external archive/hash and clean-before provenance; obtain NEW named QA bounded recovery disposition before any restoration. Lint unrun; no new four-gate qualification/integration. Re-entry uses explicit candidate bin/torch.mjs from canonical cwd, registered area, after approved recovery.",
+  "blockedReason": null,
   "createdAt": "2026-09-30T23:06:51.644Z",
-  "updatedAt": "2026-10-01T06:44:09.098Z",
-  "revision": 11,
+  "updatedAt": "2026-10-01T07:16:13.394Z",
+  "revision": 13,
   "history": [
     {
       "from": null,
@@ -122,6 +129,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T06:44:09.098Z",
       "note": "Actual merge finished; preserve new exact candidate and previous strict QA/receipt history. Landed isolation1a2 not shown faulty: installed alpha2 check service lacks output environment propagation, native Kernel admitted installed launcher. Native owner must archive new byte set and exact pre-clean receipts then request QA recovery for THIS candidate/path set; old4068350 approval cannot cover this incident. No peer dirty-file edits/restore/stash/gate waiver. Candidate CLI/source version explicit for all resulting checks; Release read-only activation/rollback plan pending arbiter, wakes paused."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:15:30.691Z",
+      "note": "Resume SAME owned task after actual new scoped QA-approved native recovery. Independently read four exact dd62 PASS receipts with no invalidReason and clean live worktree. Old108f remains INCOMPLETE, archives/406/c2 retained. No completion/integration acceptance inferred; independent QA review still required, canonical1a2 clean unchanged. Preserve original owner/candidate/history, no second assignment."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:16:13.394Z",
+      "note": "All four immutable exact dd62 fresh receipts verified PASS/noinvalidReason and clean native branch after approved recovery. Move SAME task to independent QA verification, retaining native owner, historical incomplete108f and all archives/approval histories. QA must review actual generated policy/scenario boundaries/TestIntegrity and exact engine provenance; this is not acceptance or landing."
     }
   ]
 }

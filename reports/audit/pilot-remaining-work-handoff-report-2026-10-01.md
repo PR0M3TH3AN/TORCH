@@ -1,6 +1,95 @@
 # Current pilot remaining-work handoff
 
-## Current closing coordination at 07:03 UTC
+## Current guard hold at 07:19 UTC
+
+**Actual owner decision pending:** approval
+`d1f74d6e-768b-4b89-921f-3f7b1e56a1a3`, addressed to owner, records Runtime286
+recovery's real automatic approval-review refusal. Owner `df000c30` confirms
+PUBLIC tool call at 07:12:06.460 rejected five QA-owned PNG overwrites because
+trusted instructions reserve restoration to Project Kernel and explicitly
+prohibit retry, indirect execution and policy circumvention. Arbiter has already
+asked the actual user for a new post-risk exact-scope decision. Earlier general
+development consent and QA99ef approval are insufficient to bypass this guard.
+
+Manager's earlier `2c70c796` interpretation treated the blocker as clause scope
+ambiguity; that was incomplete and is explicitly superseded by `0cfd47cc` after
+the actual guard evidence arrived. Do not retry from peer clauses, edit policy
+to override, or route Kernel into Runtime's dirty worktree. Original candidate,
+five dirty originals, archives and old incomplete receipts remain preserved.
+Same Runtime task stays **blocked revision 10** with the precise guard reason;
+no owner decision, restoration or resumed qualification is inferred.
+
+Scheduled self-check `7af7e222` was read and fresh check-in at07:18:46 found no
+unacknowledged findings or peer approval waits. The explicit owner wait was then
+created once, after querying existing pending approvals. Acknowledgement does
+not resolve that hold. Kernel remains verification13 with four fresh PASS
+receipts, and Console/Release local work continues within existing assignments.
+Automatic wakes stay paused; Manager performs no provider start or installation.
+
+## Historical resume reconciliation at 07:17 UTC
+
+Installed startup brief succeeds under scoped exact-command escalation after a
+sandbox readonly-DB refusal; canonical digest remains `d7e6d69`. Canonical is
+clean at `1a2b5b0`; no new integration request qualifies at this reconciliation.
+Manager started at clean `c65ae5c`. All six specialists retain their boundaries.
+Backlog health is healthy; bounded historical scan remains incomplete. Evolution
+has seven recurring domain-set signals; hierarchy has 30 recurrences and ten
+direct coordination requests over 30 days, advisory only, no Fleet changes.
+Existing domain ownership and procedural improvements are preferable to another
+specialist or coordination role: much evidence is seeded proposals, while actual
+friction concerns engine provenance, exact recovery and duplicate approval races.
+Promoting a current identity or adding a manager has no demonstrated outcome or
+authority benefit at this point. No proposal or identity activation is performed.
+
+QA new recoveries `6f85e138` (Kernel dd62) and `99ef7a45` (Runtime286) are actually
+approved revision 2; Manager independently read their bounded decisions. Owner
+`7763e6e2` reports native duplicate `101fe731`/`925643d6` rejected as superseded.
+These peer-request records are outside Manager's returned approval list; QA was
+asked to confirm their crossreferences and preserve all audit, not decide again.
+Historical 406/c2 and incomplete dashboard receipts remain untouched.
+
+Kernel native recovery completed, live `dd62c778` worktree is clean, and Manager
+independently read fresh exact PASS receipts: test
+`20aef427-a098-4dbd-a1d8-b1c37b7a275d`, check
+`24f91aab-7ca7-483b-9b20-5de29c17d72c`, dashboard
+`6f2ba896-b0c5-4253-b222-f398ba8bd048`, lint
+`7859860a-6eee-4648-8b63-1a27ef8c44fa`, all without invalidReason. Same task was
+resumed revision 12 and moved to **verification revision 13**, preserving owner
+and candidate; independent QA requested via `0e327975`. This is not QA acceptance
+or landing. Old installed receipt108f remains incomplete. Qualification used the
+explicit candidate CLI from canonical cwd; artifact output is external.
+
+Runtime286 remains blocked revision 9 with exactly five PNGs dirty at live read.
+Its new scoped QA decision allows native Runtime only. Runtime reported a
+Kernel-only authority conflict; Manager `2c70c796` explains the historical 406
+Kernel clause versus new99ef scope and explicit owner7763 owner-native direction.
+No cross-worktree restoration is routed to Kernel. Native Runtime must reread
+the exact decisions and immediately recheck unchanged HEAD/paths/hashes before
+applying; any applicable guard refusal stays visible. Manager changes no peer
+files and does not claim resolution before native clean recovery/fresh gates.
+
+All three Release version-only consents (QA e625, Kernel9c65, Runtime8ce8) are now
+approved revision 2 and read independently; Release was notified by `9a772036`.
+Live Release branch converged to1a2 and contains only its three metadata edits.
+Its alpha.3 task remains the same assignment, with exact candidate gates,
+independent QA and guarded source landing before reviewed plan/isolated build.
+Console attention remains in_progress revision5, with owned local edits in
+site/console.js, site/styles.css and src/observability/snapshot.mjs. Separate
+Console audit/final real-browser acceptance remain blocked. No dirty work is
+touched or inferred abandoned from a presence badge. Wakes remain paused.
+
+Owner `79720701` requested atomic approval-request idempotency after parallel
+Kernel/Runtime recovery duplicates. ONE high-priority proposed existing-backlog
+task `TASK-20d313f8-bec3-4926-b9ef-2f0be687e2cc` records project/task/exactcandidate/
+action/resource-set/named-approver keys, retained audit/evidence lineage, strict
+scope/revision checks and deterministic concurrency/recovery outcomes. It remains
+unassigned after reliability; a preflight query alone cannot prevent a race.
+Kernel was routed the proposal, without changing frozen dd62. Owner e854's typed
+handoff hardening was routed alongside it after shell interpolation8360/6013;
+use structured bound-MCP message arguments, preserve corrected audit and guards.
+Neither followup grants authority, creates a new queue or weakens tests.
+
+## Historical closing coordination at 07:03 UTC
 
 Console has now resumed attention implementation as in_progress revision 5 at
 07:01:51, preserving its separate blocked audit and final browser gate. Release

@@ -38,14 +38,18 @@
     "message:9d671f19-4184-4dc0-b98f-0b0d9cb2d868:QA-exact-note-reconciliation-consent",
     "receipt:fc8da04b-76fb-4e5d-9ca9-dacfddd31332:incomplete:worktree-changed-during-check",
     "message:c293d46a-0e20-40cb-bdcf-1e45f434ee22:installed-checker-correction",
-    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:owner-technical-routing"
+    "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:owner-technical-routing",
+    "message:df000c30-f0e4-4720-96d1-13e9dc58dd23:actual-public-guard-refusal",
+    "message:0cfd47cc-3c48-4632-b095-a471ff05c745:supersedes-mistaken-interpretation",
+    "approval:99ef7a45-82d4-4dc7-a558-c52bde768d53:approved-rev2-insufficient-to-bypass-external-guard",
+    "approval:d1f74d6e-768b-4b89-921f-3f7b1e56a1a3:owner-pending-post-risk-runtime-recovery"
   ],
   "commit": "286bfa72e3202ec0806f7c3075821c8057d6e132",
   "integrationRequest": null,
-  "blockedReason": "Merged candidate is gate-blocked after installed alpha.2 check runtime (not candidate CLI) ran dashboard and rewrote exactly five QA-owned tracked PNGs. Dashboard exit0 receipt fc8da04b-76fb-4e5d-9ca9-dacfddd31332 is incomplete/worktree-changed-during-check. Preserve NEW bytes, external archive/hash and clean-before provenance; obtain NEW named QA bounded recovery disposition before any restoration. Lint unrun; no new four-gate qualification/integration. Re-entry uses explicit candidate bin/torch.mjs from canonical cwd, registered area, after approved recovery.",
+  "blockedReason": "Actual automatic approval-review guard rejected native Runtime five-QA-PNG restoration at public tool call 2026-10-01T07:12:06.460Z: trusted instructions reserve recovery to Project Kernel and prohibit retry, indirect execution or policy circumvention. New QA99ef approved scoped286 recovery but cannot bypass this guard. Arbiter has asked actual user for new post-risk exact-scope decision; owner-addressed wait pending. Candidate286/five dirty originals/archives and historical incompletefc8 receipts retained; no cross-worktree Kernel routing, policy override or retry until actual trusted user response and applicable guard permits.",
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-10-01T06:44:06.318Z",
-  "revision": 9,
+  "updatedAt": "2026-10-01T07:19:22.987Z",
+  "revision": 10,
   "history": [
     {
       "from": null,
@@ -109,6 +113,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T06:44:06.318Z",
       "note": "Actual merge finished; preserve new exact candidate and previous strict QA/receipt history. Landed isolation1a2 not shown faulty: installed alpha2 check service lacks output environment propagation, native Kernel admitted installed launcher. Native owner must archive new byte set and exact pre-clean receipts then request QA recovery for THIS candidate/path set; old4068350 approval cannot cover this incident. No peer dirty-file edits/restore/stash/gate waiver. Candidate CLI/source version explicit for all resulting checks; Release read-only activation/rollback plan pending arbiter, wakes paused."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:19:22.987Z",
+      "note": "Ownerdf000c30 requests precise actual guard-hold reconciliation. Expectedrev9; same blocked state/owner/candidate/criteria/dependencies preserved. Manager-owned metadata amendment only; no lifecycle resume, approval decision, recovery execution or guard bypass. Arbiter actual-user question remains pending."
     }
   ]
 }

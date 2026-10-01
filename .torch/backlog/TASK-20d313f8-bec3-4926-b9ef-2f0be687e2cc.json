@@ -1,0 +1,46 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-20d313f8-bec3-4926-b9ef-2f0be687e2cc",
+  "title": "Make approval requests atomic and idempotent across concurrent Fleet handoffs",
+  "description": "Owner79720701 observed actual duplicate Kernel101fe731/Manager6f85e138 and Runtime925643d6/Manager99ef7a45 exact recovery requests. Record one proposed existing-backlog requirement, not a competing approval queue: atomic durable request idempotency keyed project/task/exact candidate/action/resource set/named approver. Preserve each request attempt and evidence lineage, return one actionable request identity to concurrent callers, and keep meaningful evidence/scope conflicts explicit. Current existing approvals and rejected-as-superseded histories remain unchanged. Manager queries existing requests before creating; this procedural precheck does not solve races. Implementation unassigned pending reliability sequence, domain ownership, peer consent and QA; no new authority/provider starts.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "provider-runtime",
+    "owner-console",
+    "qa",
+    "work-integration"
+  ],
+  "dependencies": [
+    "TASK-pilot-executor-outcomes",
+    "TASK-bounded-routine-coordination"
+  ],
+  "acceptanceCriteria": [
+    "Concurrent identical requests at the durable boundary resolve one actionable approval ID without losing attempt/evidence audit; key includes project, task, exact candidate, action, canonical resource set and named approver.",
+    "Different candidates, approvers, actions or resource scopes remain distinct; incompatible evidence revisions are visible and cannot silently broaden an existing decision.",
+    "Named approver authority, evidence sufficiency, revision checks, pause and ownership controls remain enforced; deduplication never approves, executes or transfers ownership.",
+    "Interrupted request creation/retry returns the existing durable outcome with no second actionable pending or approved request, retaining superseded historical records.",
+    "Independent deterministic concurrency/recovery scenarios observe durable request IDs, evidence lineage and refusals at API/CLI boundaries; no weakening of existing approval assertions."
+  ],
+  "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T07:15:25.892Z",
+  "updatedAt": "2026-10-01T07:15:25.892Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:15:25.892Z",
+      "note": "Task created."
+    }
+  ]
+}
