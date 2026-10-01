@@ -142,9 +142,9 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
 
     await page.locator('.console-rail a[href="#work"]').click();
     await page.mouse.wheel(0, 180);
-    const beforeRefreshRender = await page.locator('#refresh-console').evaluate((button) => {
+    const beforeRefreshRender = await page.evaluate(() => scrollY);
+    await page.locator('#refresh-console').evaluate((button) => {
       button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      return scrollY;
     });
     await page.locator('#live-refresh-status[data-generation="2"]').waitFor();
     assert.equal(new URL(page.url()).hash, '#work');

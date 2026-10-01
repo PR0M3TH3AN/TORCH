@@ -62,7 +62,11 @@ function installConsoleViewRouting() {
   const initialFragment = decodeHash(initialHash);
   let initialPositionPending = Boolean(initialFragment && !consoleViewDefinitions[initialFragment]
     && document.getElementById(initialFragment));
-  const abandonInitialPosition = () => { initialPositionPending = false; };
+  let userIntentVersion = 0;
+  const abandonInitialPosition = () => {
+    initialPositionPending = false;
+    userIntentVersion += 1;
+  };
   const onNavigation = () => {
     abandonInitialPosition();
     sync({ focus: true });
@@ -133,6 +137,7 @@ function installConsoleViewRouting() {
       const view = resolveView(initialHash);
       positionNestedTarget(document.getElementById(targetId), targetId, view);
     },
+    userIntentVersion: () => userIntentVersion,
   };
 }
 
@@ -1143,6 +1148,7 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
   apply: (snapshot) => {
     const viewportBeforeRender = appliedRefreshes > 0
       ? { left: globalThis.scrollX, top: globalThis.scrollY } : null;
+    const userIntentAtRender = consoleViewRouter.userIntentVersion();
     const editedBeforeRender = refreshProtection.dirty();
     heldPanels = 0;
     renderingSnapshot = true;
@@ -1151,10 +1157,16 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     refreshProtection.remember({ preserve: editedBeforeRender });
     $('#console-error').hidden = true;
     const status = $('#live-refresh-status');
-    status.dataset.generation = String(++appliedRefreshes);
+    const renderGeneration = ++appliedRefreshes;
     status.textContent = `${liveUpdatesPaused ? 'Automatic updates paused.' : 'Updates every 15 seconds while visible.'}${heldPanels ? ' Edited forms and active previews retained; their panels may show older state.' : ''}`;
-    if (viewportBeforeRender) globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
-    if (appliedRefreshes === 1) consoleViewRouter.afterInitialLayout();
+    globalThis.requestAnimationFrame(() => {
+      if (renderGeneration !== appliedRefreshes) return;
+      if (viewportBeforeRender && consoleViewRouter.userIntentVersion() === userIntentAtRender) {
+        globalThis.scrollTo?.({ ...viewportBeforeRender, behavior: 'instant' });
+      }
+      if (renderGeneration === 1) consoleViewRouter.afterInitialLayout();
+      status.dataset.generation = String(renderGeneration);
+    });
   },
   onError: (caught) => {
     const error = $('#console-error');
