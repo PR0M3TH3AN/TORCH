@@ -62,14 +62,22 @@ test('SCN-console-overview-owner-decisions-and-urgent-hazards-lead-with-distinct
   const { page, snapshot } = await openOverview();
   t.after(() => page.close());
   await renderSnapshot(page, unsafeSnapshot(snapshot));
-  const projected = globalThis.TorchAttentionProjection.summary(globalThis.TorchAttentionProjection.groups(unsafeSnapshot(snapshot)));
+  const groupsForCounts = globalThis.TorchAttentionProjection.groups(unsafeSnapshot(snapshot));
+  const ownerDecisions = groupsForCounts.owner.length;
+  const urgentHazards = groupsForCounts.fleet.filter((item) => item.tone === 'urgent').length;
+  const actionable = ownerDecisions + groupsForCounts.fleet.filter((item) => item.tone !== 'info').length
+    + groupsForCounts.arbiter.filter((item) => item.tone !== 'info').length;
+  const summarized = globalThis.TorchAttentionProjection.summary(groupsForCounts);
+  assert.equal(summarized.ownerDecisions, ownerDecisions);
+  assert.equal(summarized.urgentHazards, urgentHazards);
+  assert.equal(summarized.actionable, actionable);
 
   const groups = page.locator('#attention-list > .attention-group');
   assert.match(await groups.nth(0).locator('h3').innerText(), /Waiting on you/);
   assert.match(await groups.nth(1).locator('h3').innerText(), /Fleet handling/);
-  assert.equal(await page.locator('#owner-decision-count').innerText(), `${projected.ownerDecisions} owner decision${projected.ownerDecisions === 1 ? '' : 's'}`);
-  assert.equal(await page.locator('#urgent-hazard-count').innerText(), `${projected.urgentHazards} urgent hazard${projected.urgentHazards === 1 ? '' : 's'}`);
-  assert.equal(await page.locator('#attention-count').innerText(), `${projected.actionable} actionable`);
+  assert.equal(await page.locator('#owner-decision-count').innerText(), `${ownerDecisions} owner decision${ownerDecisions === 1 ? '' : 's'}`);
+  assert.equal(await page.locator('#urgent-hazard-count').innerText(), `${urgentHazards} urgent hazard${urgentHazards === 1 ? '' : 's'}`);
+  assert.equal(await page.locator('#attention-count').innerText(), `${actionable} actionable`);
   assert.match(await page.locator('#advisory-count').innerText(), /1 cohort/);
   assert.equal(await page.locator('#attention-list [data-attention-decision]').count(), 2);
   assert.equal(await page.locator('#attention-list button').filter({ hasText: /Acknowledge|Close|Recover/ }).count(), 0);
@@ -144,8 +152,9 @@ test('SCN-console-overview-crowded-preview-preserves-every-fleet-and-advisory-re
   const projected = globalThis.TorchAttentionProjection.summary(globalThis.TorchAttentionProjection.groups(snapshot));
   assert.equal(await desktop.page.locator('#advisory-count').innerText(), '1 cohort · 49 task references');
   const previewCount = globalThis.TorchAttentionProjection.fleetPreview(globalThis.TorchAttentionProjection.groups(snapshot)).length;
-  assert.equal(await desktop.page.locator('#fleet-preview-count').innerText(), `Showing ${previewCount} of ${projected.fleetTotal} Fleet findings; ${projected.fleetTotal - previewCount} remaining`);
+  assert.equal(previewCount, 6, 'all three urgent records and only three additional preview records are shown');
   assert.equal(projected.fleetTotal, 17, 'the crowded data has exactly 17 original Fleet findings');
+  assert.equal(await desktop.page.locator('#fleet-preview-count').innerText(), 'Showing 6 of 17 Fleet findings; 11 remaining');
   assert.equal(await desktop.page.locator('#attention-list .tone-urgent').count(), 3);
   const desktopWidth = await desktop.page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
     document: document.documentElement.scrollWidth,
@@ -205,7 +214,7 @@ test('SCN-console-overview-crowded-preview-preserves-every-fleet-and-advisory-re
     'expanded exact references remain within the mobile viewport');
   assert.ok(await mobile.page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
     'expanded advisory provenance does not overflow the mobile viewport');
-  assert.equal(await mobile.page.locator('#fleet-preview-count').innerText(), `Showing ${previewCount} of ${projected.fleetTotal} Fleet findings; ${projected.fleetTotal - previewCount} remaining`);
+  assert.equal(await mobile.page.locator('#fleet-preview-count').innerText(), 'Showing 6 of 17 Fleet findings; 11 remaining');
 });
 
 test('SCN-console-overview-refresh-and-navigation-preserve-owner-drafts-without-adding-unsafe-actions', async (t) => {
