@@ -29,9 +29,41 @@ const LATER_CONSOLE_JS_BYTES = Buffer.from('window.consoleCapabilities = { block
 const ALPHA2_COMMIT = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const ALPHA3_COMMIT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const ALPHA4_COMMIT = 'cccccccccccccccccccccccccccccccccccccccc';
+const CONSOLE_AGGREGATE_PREIMAGE_RECORDS = [
+  ['site/console.html', 33, '7dde07b4ced6fa4d765b386349d272471af8b02d7d1344c44acb0825e04ffd82'],
+  ['site/styles.css', 25, '1f38f2b2437bde2a818f5b6bcfefa969b296d4228a05bd23091ad48f2865f7e6'],
+  ['site/torch-mark.svg', 28, 'e0529597ed9e940d876ee62599cf8c59793967e560e0c1bd780b788a6958e645'],
+  ['site/work-views.js', 27, 'dcf41572339c08f20def7c4c3160dfc9cfbca77ff0be814d24bbea1fb4aeb97a'],
+  ['site/work-progress.js', 30, 'faa1dd5bc34e043474614ce08872dbdd127ab5128d113569782509a970f240af'],
+  ['site/owner-digest.js', 29, '357fe69cf90999ecefc8c1173db5cd3a2f0e2c08c01e20dc1e5c070d067d2c9c'],
+  ['site/check-evidence.js', 31, 'fe0e2552a5a4b2d871e8569ae7388dece34944e05cb7cde70e3b5c8ebe9b49e5'],
+  ['site/task-activity.js', 30, '926d931fe30920b580f2d125f5e00bd2451915febfd1d84c188826548a07f2e9'],
+  ['site/operation-outcomes.js', 35, 'd906a79d78684df88c9efb7c5d416514c0130f23ab7bd4cbc92f4ae1f9a07658'],
+  ['site/attention-projection.js', 37, 'f9ebf53fa3b26eb155fa96397a6f3b04b929ddd4b8bfe62269f2230822954758'],
+  ['site/attention-actions.js', 34, '47de3994661702d556c21cdc34de26d6fb52976c53cd16fe51a3e001154ec294'],
+  ['site/live-refresh.js', 29, '797d27032a75268f884fd2b33a8c47cda6dd6be37fd59a37758085cab63f1273'],
+  ['site/demo.js', 21, 'a804da821bea1d2b1e1353511dca7bcf0109cac0d7f23e54bbba7520138586e7'],
+  ['site/console.js', 33, '72e85e8e7b15d04fa947acf2f76429b3313291470b917754db318275b9a5bac1'],
+];
 
 function hash(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
+}
+
+function consoleAggregatePreimageHash(records) {
+  const digest = createHash('sha256').update('torch.dev/console-assets/v1alpha1\0', 'utf8');
+  for (const [path, bytes, sha256] of records) {
+    digest.update(path, 'utf8').update('\0')
+      .update(String(bytes), 'utf8').update('\0')
+      .update(sha256, 'utf8').update('\0');
+  }
+  return digest.digest('hex');
+}
+
+function assertNoAbsolutePathLeak(value, fixtureRoot) {
+  const serialized = JSON.stringify(value);
+  assert.equal(serialized.includes(fixtureRoot), false);
+  assert.doesNotMatch(serialized, /file:\/\/|(?:^|["\s])(?:\/[^"\s]+|[A-Za-z]:[\\/][^"\s]*)/);
 }
 
 function ensureParent(path) {
@@ -211,6 +243,16 @@ function cleanup(fixture) {
 }
 
 test('SCN-runtime-metadata-fixed-preimages', async () => {
+  assert.equal(CONSOLE_AGGREGATE_PREIMAGE_RECORDS.length, 14);
+  assert.equal(CONSOLE_AGGREGATE_PREIMAGE_RECORDS.reduce((total, [, bytes]) => total + bytes, 0), 422);
+  assert.equal(
+    consoleAggregatePreimageHash([...CONSOLE_AGGREGATE_PREIMAGE_RECORDS].sort(([left], [right]) => left.localeCompare(right))),
+    'acc9d453ee6d2256c6efb9dafff17057e3a6a501328d2eb5a6509349567587fc',
+  );
+  assert.equal(
+    consoleAggregatePreimageHash(CONSOLE_AGGREGATE_PREIMAGE_RECORDS),
+    '6bfe963481147c4c0add95e79df883c9fd7b67eab7d01556973e7a14850afe97',
+  );
   assert.equal(hash(PACKAGE_BYTES), 'bb3f4716de3a74659133d53f81a040a96983084caabd1aa804e06d0925a8b488');
   assert.equal(hash(RELEASE_BYTES), '0f328f1cebc69b7cbedae7a83b5c25170d93ac2cefacbd8ea2cadc3e9e3e09be');
   assert.equal(hash(CONSOLE_HTML_BYTES), '7dde07b4ced6fa4d765b386349d272471af8b02d7d1344c44acb0825e04ffd82');
@@ -252,6 +294,16 @@ test('SCN-runtime-metadata-fixed-preimages', async () => {
     assert.equal(declared.digest, expected.digest);
     const { exports, value } = await runReader(fixture);
     assert.deepEqual(exports, ['readLoadedRuntimeMetadataV1']);
+    const api = await importReader(fixture);
+    assert.equal(api.readLoadedRuntimeMetadataV1.length, 0);
+    assert.deepEqual(value.readerModuleEvaluation.moduleIdentity, {
+      relativePath: 'src/self-host/runtime-metadata.mjs',
+      basis: 'reader-module-import-meta',
+    });
+    assert.equal(Object.hasOwn(value.readerModuleEvaluation, 'moduleUrl'), false);
+    assert.equal(Object.hasOwn(value.readerModuleEvaluation, 'modulePath'), false);
+    assert.equal(Object.hasOwn(value.readerModuleEvaluation, 'packageRoot'), false);
+    assertNoAbsolutePathLeak(value, fixture.temporaryRoot);
     assert.equal(value.readerModuleEvaluation.candidateTree.sha256, expected.digest);
     assert.equal(value.readerModuleEvaluation.candidateTree.consistency, 'match');
     const linkRecord = expected.records.find((record) => record.relativePath === 'node_modules/.bin/probe');
@@ -280,6 +332,7 @@ test('SCN-runtime-metadata-fixed-preimages', async () => {
       'site/console.js': '72e85e8e7b15d04fa947acf2f76429b3313291470b917754db318275b9a5bac1',
     };
     assert.deepEqual(Object.fromEntries(value.currentConsoleDisk.assets.map((asset) => [asset.path, asset.sha256])), expectedConsoleAssetDigests);
+    assert.equal(value.currentConsoleDisk.aggregateSha256, 'acc9d453ee6d2256c6efb9dafff17057e3a6a501328d2eb5a6509349567587fc');
   } finally { cleanup(fixture); }
 });
 

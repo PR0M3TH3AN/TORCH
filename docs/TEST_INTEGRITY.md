@@ -2826,3 +2826,35 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Self-host runtime metadata correction (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-metadata-fixed-preimages-corrected
+      given: "The fixed fourteen Console asset records total 422 bytes and the independent test oracle has literal path, byte-count, and raw-file digest tuples"
+      when: "The test computes the aggregate preimage in sorted site-relative path order and in the prior declaration order"
+      then: "The sorted aggregate equals acc9d453ee6d2256c6efb9dafff17057e3a6a501328d2eb5a6509349567587fc and declaration order equals only the distinct negative vector 6bfe963481147c4c0add95e79df883c9fd7b67eab7d01556973e7a14850afe97"
+    - id: SCN-runtime-metadata-serialized-result-has-no-host-paths
+      given: "A no-argument reader runs against a temporary package fixture"
+      when: "Its entire result is serialized recursively"
+      then: "The fixture root, file URLs, and absolute host paths are absent; the sole export remains zero-argument and exposes only relative reader-module identity"
+  observable_outcomes:
+    - "The current disk aggregate follows sorted relative-path preimages while individual asset observations and all previous metadata observations remain available"
+    - "A fixed independent fourteen-record and 422-byte oracle distinguishes the approved sorted digest from declaration-order hashing without calling production helpers"
+    - "Serialized reader results reveal no fixture root, module URL, module path, or package root"
+    - "No assertion was relaxed; authentication, loaded-memory, delivered-byte, and native-authority values remain unknown or null"
+  determinism_controls:
+    - "Literal fixed path, byte-count, and SHA-256 tuples; fixed fixture metadata; isolated temporary package/data-home; recursive JSON serialization"
+  anti_cheat_rationale:
+    prevents:
+      - "Declaration-order hashing from passing without a positive aggregate oracle"
+      - "A production-helper test oracle validating its own incorrect ordering"
+      - "Absolute module or package paths leaking through nested serialized fields"
+      - "An unexpected caller parameter or new export weakening the no-argument interface"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

@@ -474,10 +474,11 @@ function evaluateReaderModule() {
   }
   return {
     status: issues.length === 0 ? 'observed' : 'partial',
-    moduleUrl: import.meta.url,
-    modulePath: MODULE_PATH,
+    moduleIdentity: {
+      relativePath: 'src/self-host/runtime-metadata.mjs',
+      basis: 'reader-module-import-meta',
+    },
     moduleEvaluationAt: new Date().toISOString(),
-    packageRoot: PACKAGE_ROOT,
     packageVersion: observedValue(packageJson.status, packageVersion),
     releaseVersion: observedValue(releaseJson.status, releaseVersion),
     declaredSourceCommit: observedValue(validationJson.status, declaredSourceCommit),
@@ -616,7 +617,7 @@ function readConsoleDisk() {
       hashed.push({ path: item.relativePath, bytes: bytes.length, sha256: sha256(bytes) });
     }
     const aggregate = createHash('sha256').update('torch.dev/console-assets/v1alpha1\0', 'utf8');
-    for (const asset of hashed) {
+    for (const asset of [...hashed].sort((left, right) => left.path.localeCompare(right.path))) {
       aggregate.update(asset.path, 'utf8').update('\0')
         .update(String(asset.bytes), 'utf8').update('\0')
         .update(asset.sha256, 'utf8').update('\0');
