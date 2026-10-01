@@ -1,0 +1,63 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-e440d8c1-479b-418e-bb0f-a693594d891c",
+  "title": "Make agent inbox reads unread-first and expose history/truncation semantics",
+  "description": "Owner 1d65eac9-45b3-4343-8962-22b38ec6c8aa explicitly requests ONE bounded high-priority proposal following Runtime incident 67926f0f-79db-487e-8066-0b09fbd4ba0e. Runtime read an oldest history page of 20 and locally filtered acknowledgements, falsely reporting no unread messages while 12 unread handoffs remained. Current src/mcp/tools.mjs passes an omitted unacknowledged_only to ControlPlane.readMessages, whose default false selects ASC history before LIMIT. This is selection/pagination semantics, not caching. Provider Runtime owns the identity-bound MCP default; Kernel owns any necessary bound read API/count metadata; QA owns exact behavior specification, additive scenario/path permission and final acceptance. Review precise source/test paths, explicit history selection and pending unread/selection/truncation semantics before behavior changes. No arbitrary state-root access, identity bypass, auto-ack, new manager queue, runtime start, live recovery or authority expansion; keep existing blocked startup reservation work and independent UI/source-qualification items distinct.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "project-kernel",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Default identity-bound agent MCP inbox reads select actual unacknowledged addressed/group messages before LIMIT; explicit history remains available with visibly distinct selection semantics.",
+    "Given more than 20 acknowledged historical messages and newer pending handoffs, a default read returns pending handoffs and cannot truthfully report unread-zero/no-work merely from a limited history page.",
+    "Explicit history and limited/truncated unread results expose sufficient reviewed selection, completeness/truncation and pending-unread metadata to distinguish a page from a complete unread check; metadata is produced through the existing bound read API with a consistent observation contract.",
+    "Foreign recipient claims, arbitrary state-root redirection and unauthenticated metadata fail closed; reading never acknowledges, resolves, transfers ownership or changes stored message/ack records.",
+    "Named Runtime, Kernel and QA review exact source/API/test contribution paths, strict boundary scenarios including group messages and limits, and deterministic pagination observations before implementation; preserve all existing assertions and add a Test Integrity Note.",
+    "Exact clean candidate checks, independent QA acceptance and guarded serialized integration are required; no fixture-only output, omitted unread filter or acknowledgement counts substitute for real current evidence."
+  ],
+  "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
+  "feature": "Identity-bound inbox selection and observation integrity",
+  "milestone": "Reviewed reliability dependencies",
+  "state": "assigned",
+  "owner": "provider-runtime",
+  "evidence": [
+    "message:1d65eac9-45b3-4343-8962-22b38ec6c8aa:one-bounded-high-priority-inbox-fix",
+    "message:08d6cbe5-d561-4375-abff-19b13e490481:explicit-priority-real-inbox-fix-and-owned-component-phases",
+    "message:67926f0f-79db-487e-8066-0b09fbd4ba0e:actual12-unread-incident",
+    "ownership:src/mcp/tools.mjs=provider-runtime",
+    "message:5039498d-a7f6-4ccd-93b8-cfb86ca2149e:exact-owned-contract-request",
+    "message:758830da-8cbb-4b24-a38f-ea472685ecf6:QA-scenario/path/contributor-decision-request"
+  ],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T10:32:53.996Z",
+  "updatedAt": "2026-10-01T10:38:12.349Z",
+  "revision": 3,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:32:53.996Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:37:33.079Z",
+      "note": "Current brief d7e6d69 reread; fresh Runtime next idle while starting-presence remains blocked4 with original evidence. Owner08 explicitly prioritizes real unread-default fix. Ready bounded Runtime MCP phase: pin exact interface/source path/test contribution contract, obtain named QA strict scenario/path permission, then implement only approved Runtime-owned inbox selection/metadata wiring and explicitly authorized contributor paths. Kernel-owned control-plane needs reviewed supported API or precise peer consent, never direct DB/state-root access or guessed export. No behavior/test edit before actual QA consent; no relaxation, auto-ack, ownership transfer, provider start, host/schema/install change. Full criteria/independent exact checks/QA/guarded landing stay open."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:38:12.349Z",
+      "note": "Owner08 actual priority; fresh native next ready THIS item/no active Runtime item, clean Runtime exact0fdf verified. Assign bounded MCP inbox phase to Runtime on existing branch, preserving blocked starting-presence4/Kernel reservation5 and all their receipts/guards. First pin exact src/mcp/tools.mjs interface/spec and get real named QA scenario/path contributor consent; implement owned unread-default/explicit-history behavior only after that decision. Kernel-bound metadata API changes require exact peer contribution consent or separately assigned Kernel implementation, not guessed exports/direct DB/state roots. Return exact contract, QA decision and proposed dormant launcher component interface/implementer for later separately sequenced Release dependency. Full unread/count/truncation criteria stay open; no second Runtime active item, no tests before permission, no caller identity bypass/auto-ack/wake/host/schema/installation changes. Fresh exact four gates and independent QA/guarded integration required. Arbiter starts the actual provider turn; Manager launches none."
+    }
+  ]
+}

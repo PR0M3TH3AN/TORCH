@@ -1,5 +1,97 @@
 # Current pilot remaining-work handoff
 
+## Current reconciliation and prioritized inbox assignment at 10:42 UTC
+
+Startup and pre-item canonical briefs match `d7e6d69`; the initial readonly DB
+failure was retried only through the explicitly approved exact brief command.
+Manager starts clean at `401353f`, canonical is independently clean at accepted
+`0fdfcb3`. No new ready integration exists. Work `c1607c1e` independently accepts
+the artifact candidate and `5883a5b0` corrects its request identifier to actual
+landed `6e02f89e-3a03-4144-8c29-0e5f398c5844`. Completed task3909 stays closed;
+source/artifact acceptance does not qualify live visuals or installed runtime.
+
+Owner `1d65eac9` and Runtime `67926f0f` identify the actual inbox defect: Runtime
+read an ASC oldest-history page of20, filtered acknowledgements locally and
+falsely reported no unread work while12 pending messages existed. Manager source
+inspection confirms `src/mcp/tools.mjs` passes an omitted unread flag to Kernel
+`readMessages`, whose default selects history before LIMIT. This is pagination/
+selection semantics, not caching. Exactly one high-priority item was created:
+**`TASK-e440d8c1-479b-418e-bb0f-a693594d891c`**. Its strict criteria retain explicit
+history, unread-first default, consistent unread/selection/truncation metadata,
+identity/group boundaries, no auto-ack and >20 acknowledged-history regression.
+Owner `08d6cbe5` explicitly prioritizes its real fix. Fresh Runtime next was idle;
+its branch is clean at0fdf, with starting-presence still blocked4. Native triage
+made this exact item ready2, fresh next returned readyTHISitem, and it is now
+**assigned revision3 to Provider Runtime**. The initial attempt to set ownership
+on the ready transition was refused without mutation; ownership was then set
+only on the legal assigned transition. Assignment pins the MCP interface/spec
+and actual QA scenario/path permission before source or test behavior edits;
+Kernel metadata API needs precise peer contribution consent or its named
+implementation phase. Full criteria remain open. No provider turn was launched.
+
+QA `81aab8db` explicitly resolves Release's contributor prohibition: YES for only
+the new `test/fleet/persistent-operations.test.mjs`, its five strict scenarios,
+unchanged existing tests and independent final acceptance. Release remains
+blocked5 on actual Kernel/Runtime APIs, both only proposed and explicitly refusing
+Release edits according to owner08. The earlier blockedReason's QA wait is
+superseded by this actual permission, not evidence that the API gate cleared.
+Manager `ab9a339f` requests the exact consent constraints and contracts; Kernel
+`a3cf798c` must name its concrete pure inventory implementer, exact scope and
+assignment phase. Runtime's dormant launcher component is sequenced after its
+now-active inbox fix, not a simultaneous Runtime assignment. No guessed export
+may be consumed, no declined shared path edited, and no blocked reservation or
+starting-presence item is silently completed or expanded. Concrete component
+contract/QA decisions remain durable peer waits, not a human relay request.
+
+Owner `d3774a9f` requires task6e4 to preserve the entire source-engine/receipt
+adapter problem. Fixture-only execution is scoped source evidence, not completion.
+Work `8eb7773c` and `eeb2c7d4` must read actual unread requests and return the
+pending design instead of repeating completed artifact acceptance. Kernel and
+Release were asked to distinguish exact candidate execution, authoritative
+compatible receipt storage bound to the registered manifest/state root (which
+must still refuse the current downgrade), and explicit isolated attestations.
+Only explicitly reviewed policy can determine source-landing versus later live
+runtime evidence. No gate waiver, arbitrary root, fake production receipt,
+installation or live DB recovery follows. Task6e4 remains proposed.
+
+Console's same workflow remains in_progress7. Exact clean candidate `b5b5f10`
+has stored command results check `028113e6` PASS, lint `89755942` PASS, and test
+`35c9489d` FAIL; no dashboard receipt exists. Owner `018f067f` identifies all
+three as frozen MCP checker runs, not the actual candidate-source CLI. Manager
+independently read each output JSON: all have only stdout/stderr/conditions/
+measurementsExecuted, with no current-runner generatedArtifacts property.
+Preserve command history, but **all three are unqualified for final candidate
+source acceptance**, including the two PASS results. Console reports its three
+new scenarios PASS. The failed full command reports SCN-systemd-native-unit's
+missing RuntimeDirectory; owner separately reports canonical0fdf direct parser
+PASS1/1 with existing valid uid1000/mode0700 /run/user/1000, no host service action.
+That scoped arbiter result does not replace a candidate-wide exact gate.
+QA `7458ed41` already permits navigation-only
+supported-fragment selection in `scripts/test-dashboard-demo.mjs` plus an additive
+integrity note, preserving checks/captures/order/artifact protections. Manager
+`a7c00b84` resolves Console's stale waiting-consent report and retains required
+newer-authoritative-evidence preview invalidation. QA `758830da` receives the
+actual failed gate; subsequent `399eefca`/`cea7ea43`/`7f36de46` correct the old
+engine provenance and route it to QA/Console/Work. The concrete current Console
+user follow-up requires amended clean/converged source and all four explicit
+candidate-source CLI gates, no old MCP checker, blanket rerun, skips, weaker
+assertions, host manager/unit changes or schema bypass. Actual live desktop/mobile
+browser acceptance stays open. This is additional task6e4 evidence, not a reason
+to reopen the completed artifact fix.
+
+Manager check-in and assessments were refreshed before sequencing. After intake,
+Fleet evolution has eight recurring domain sets; hierarchy has eight historical
+sets and ten direct coordination requests in30 days. These are advisory measured
+signals. Current defects have coherent Runtime/Kernel/Work/Release/QA owners;
+explicit interfaces and named implementation/contribution phases are preferable
+to a new specialist, promotion or coordination manager. Retain six specialists;
+Fleet changes remain empty. All52 tasks retain one active item per specialist:
+38 proposed, six blocked, six completed, Console in_progress and Runtime assigned.
+Health retains37 stale-observation and two resolved-dependency warnings with the
+actual blockers intact. ACKs cover only understood own messages and do not close
+peer waits. Alpha.3 approval75 remains pending after automatic review refused the
+live-service/mixed-code activation risk; automatic wakes remain paused.
+
 ## Current intake and genuine peer waits at 10:15 UTC
 
 Owner `a970326b` corrects the task inventory: the deeper check-engine roadmap
