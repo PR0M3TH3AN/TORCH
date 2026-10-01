@@ -30,6 +30,20 @@ function installConsoleViewRouting() {
     return consoleViewDefinitions[containingView] ? containingView : 'overview';
   }
 
+  function accountForStickyNavigation(target) {
+    const workspace = document.querySelector('.console-workspace');
+    if (!workspace || !target) return;
+    const railBounds = nav.getBoundingClientRect();
+    const workspaceBounds = workspace.getBoundingClientRect();
+    const overlapsWorkspace = railBounds.right > workspaceBounds.left + 1
+      && workspaceBounds.right > railBounds.left + 1;
+    if (overlapsWorkspace) {
+      target.style.scrollMarginTop = `${Math.ceil(railBounds.height + 8)}px`;
+    } else {
+      target.style.removeProperty('scroll-margin-top');
+    }
+  }
+
   function sync({ focus = false, force = false } = {}) {
     const hash = globalThis.location.hash || '#overview';
     if (!force && hash === lastHash) return resolveView(hash);
@@ -57,6 +71,7 @@ function installConsoleViewRouting() {
         for (let ancestor = target; ancestor; ancestor = ancestor.parentElement) {
           if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
         }
+        accountForStickyNavigation(target);
         if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
           target.tabIndex = -1;
         }
@@ -70,7 +85,12 @@ function installConsoleViewRouting() {
           heading.tabIndex = -1;
           heading.focus({ preventScroll: true });
         }
-        globalThis.scrollTo?.({ top: 0, behavior: 'instant' });
+        if (target && targetId === view && targetView === view) {
+          accountForStickyNavigation(target);
+          target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+        } else {
+          globalThis.scrollTo?.({ top: 0, behavior: 'instant' });
+        }
       }
     }
     return view;
