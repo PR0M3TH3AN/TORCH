@@ -22,19 +22,23 @@
   "observedAt": "7b7c6584b9d3",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "project-kernel",
   "evidence": [
     "npm run test: 195 passed",
     "5 explicitly skipped",
-    "0 failed; npm run check passed; npm run lint passed; dashboard gate blocked by missing Playwright chromium_headless_shell-1243"
+    "0 failed; npm run check passed; npm run lint passed; dashboard gate blocked by missing Playwright chromium_headless_shell-1243",
+    "message:b475dc53-efca-4e1e-bc19-4d4fcf046c73:actual-pause-scenario-and-direct-gates",
+    "message:584e38a1-7b7b-423c-8143-4431f6956a23:independent-actual-pause-4of4-pass",
+    "approval:c2a1702b-2042-444c-9472-6d277a2017b6:pending-five-generated-PNG-recovery",
+    "message:bbc47b24-8135-436c-942f-f9378ada0bc9:guarded-unlanded-artifact-dependency-plan-request"
   ],
-  "commit": "d3a679849b0f5e55c2114223a2e56977c318391e",
+  "commit": "8350e47b0f92f7d41454a8e9a1b59e645b95eefe",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Candidate8350 actual paused ScheduleService dispatch scenario independently passes4/4; direct test197pass/5skip, check/lint/dashboard reported PASS but not exact TORCH receipts. Direct dashboard generated exactly five QA-owned tracked PNG modifications; qualified checks blocked WORKTREE_DIRTY. QA archive/hash/pre-run-clean/scoped-restoration approvalc2a1702b pending; accepted artifact dependencye350 unlanded pendingowner2b2dfb35. Current convergence only targets configured canonical, no supported peer-source route yet confirmed by Work Integration. Preserve all outputs/baselines/user edits; no gate waiver or root landing.",
   "createdAt": "2026-09-30T23:06:51.644Z",
-  "updatedAt": "2026-09-30T23:35:35.493Z",
-  "revision": 6,
+  "updatedAt": "2026-10-01T00:14:06.687Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -77,6 +81,13 @@
       "actorId": "project-kernel",
       "at": "2026-09-30T23:35:35.493Z",
       "note": null
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T00:14:06.687Z",
+      "note": "Reconcile actual gate from Kernel coordination requestb475dc53 and owner584e38a1. Preserve owner/history and original evidence; missing browser1243 is historical, current Playwright1.58.2/browser1208 works. Blocked is not completed or accepted; no second item or unsupported dependency merge authorized."
     }
   ]
 }
