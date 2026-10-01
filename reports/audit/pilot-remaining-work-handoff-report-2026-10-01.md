@@ -1,5 +1,111 @@
 # Current pilot remaining-work handoff
 
+## Current addressed decisions and next owned actions, 18:40 UTC
+
+Current briefd7e6d69, explicitly addressed unread100, all56 task records, native
+queue, manager observations and named approvals were refreshed. Source canonical
+0c2 is clean and already landed/pushed; no duplicate316/c532 landing. Full roadmap
+remains39proposed/9blocked/6completed/1verification/1assigned. Current check-in
+and advisory evolution/hierarchy evidence favor existing owners and precise peer
+contracts, not new roles or activation. Doctor healthy does not negate owner18:24
+229-unread observation or the50 current backlog findings (49 stale observed commits,
+one resolved-dependency warning); no bulk acknowledgements, closes or cleanup.
+
+Actual QA455f3ac7 **ACCEPTS exact8fb58b232ed5e854f00125a3b96922a2c8615b98**
+bounded Release source correction/provenance:9strict focused, four fresh native
+PASS, all11 artifact hashes and unchanged170135-byte TIN prefix. This supersedes
+the historical pending source review below; it is not integration/final merged QA.
+Owner7b2c8cb6 actually resumed EXISTING Release for guarded convergence, not Manager
+automation. Release2969e1d6 previews exactly one QA-owned conflict: TIN base blob
+a2aef473cb21b09a9e420fea9603549924c30bba, canonical0c2
+a35e0339b1d9d0e19e823cfd08a1ef6255b2b45e, accepted8fb
+6a2bc8c0c49564a2ace18f8a5d2623e17a4d9943. Named QAc9df5bae requests exact full
+canonical prefix plus unchanged three Release block bodies in original order.
+Manager cannot consent for QA. SQLite readonly convergence-plan refusal is an
+external tool guard, distinct from peer consent; exact scoped escalation can be
+reviewed, with no DB permissions/state copy/manual merge. Original18/978/9a
+failures stay. Lossless clean convergence, new merged SHA/four exact gates/immutable
+artifacts/final QA precede one request. No current Release integration acceptance.
+
+Complete addressed Work6038b6c1 now supplies original68d integrity contract plus
+its explicit correction: strict ten-key record schema; ordered JSON UTF8/noBOM/LF
+digest excluding record_sha256; source/approval binding; append-only discovery and
+fail-closed malformed/duplicate/stale/unauthorized/orphan/replay/rewrite/delete
+scenarios; anchor and all61sections/14mappings. The original941-byte/a80d vector
+is INVALID (required legacy absent), rejected QA862dd6d6/ownerd7ed4a6a, retained.
+Manager independently reproduces corrected legacy:null JSON+LF955bytes,
+SHA903157bef00dc68913c628813530f1612fa8e1b51a287b7ad0966c6bfdb0f1ab,
+explicit sourceabc+LF hex6162630a/4bytes/SHAedeaaff3f1774ad2888673770c6d64097e391bc362d7d6fb34982ddf0efd18cb.
+Actual Git anchor07a is143955bytes/SHA239fb5539e9f7cfc8562ac5351c61e7e1d345f00737a557ce9fa1b6d702e941a/61H2.
+The first verification attempt threw subprocess EPERM; a read-only Git-to-Node
+pipeline subsequently reproduced these values. Fixture serialization is not real
+source/approval/admission proof. Same corrected reviewf45947e4 awaits actual QA
+decision; full a655 stays blocked, Work6e4 verification. No generic human hold.
+
+Approved ownership amendmentb103revision2 names Kernel to append ONLY QA
+docs/test-integrity/records/** in both .torch/torch.yaml and .torch/roster.yaml after
+safe current-work checkpoint. Current canonical0c2 hashes still match approved
+4e21d6bf/fb17fd5 guards, but actual ownership remains unowned. Kernel52502f15 requests
+exact safe continuity/two-config plan under existing approval; no new human answer
+or B2 registration inferred. PATH_UNOWNED remains enforced until actual qualifying
+landing/readback. Work source integrity-records.mjs and QA test-integrity-records
+scenarios do not gain code authority from packet/hash success.
+
+Actual Workc106/e243 and Kernel2565351a ratify narrow future CheckService admission,
+opaque parent, private FD3/4 closure and optional candidate_execution_policy parser.
+Pinned B2 report now records exact current delta, real dependency/frozen-input/
+descendant requirements, and only remaining vector/adapter-versus-artifact/QA
+allowlist decisions. Full seven native/source/consumer criteria remain required;
+legacy2/current3/2 refusals preserved. No fixture-only or all-refusal completion.
+
+Independent next roadmap action selected under owner4ab: existing proposed
+TASK-conversation-owner-digest, Console ONLY site/owner-digest.js saved-decision
+timestamps and explicit structured-approval versus unindexed manager coverage.
+The API already supplies decidedAt, but the renderer currently drops it. Existing
+QA test/fleet/console-owner-digest.test.mjs gains additive deterministic boundary,
+malformed/out-of-window/unknown/truncated/privacy/immutable-publication scenarios
+and separately consented append-only TIN. Named Consolea4f1e68b/QA88aecb41 decisions
+are the next implementation prerequisite; no engine/API/schema/timer/notification
+changes. Native nextConsoleidle and ownership were checked, without claiming
+process inactivity. This prepares one concrete source action, not a parallel
+implementation or full digest completion. Real manager indexing and reviewed
+external opt-in/cadence remain whole-task criteria. Health-label/mobile93b,
+thread/supersessiond2feed and Kernel one-path current TODO handoff remain separate
+existing workflow/documentation requests, not forgotten or duplicated tasks.
+
+Owner784c788c's concrete converge-plan writer incident was independently read at
+canonical CLI1714/Kernel constructor264 and recorded in SAME6e4: future compatible
+read-only initialized planning, no schema/identity/roster writes, exact missing/
+incompatible refusal and immutable before/after evidence. ReleaseCLI/Kernel API/
+Work guards/QA scenarios remain named owned contributions, not a parallel queue.
+Immediate supported guarded convergence may request legitimate scoped tool
+approval after actual QA conflict consent, preserving every external failure.
+
+Owner2f3e9343 corrects the actual QA/Kernel re-entry failure: both initial units
+failed before agent turn because an arbiter temporary output probe incorrectly
+handled plain codex --version. Its hermetically verified correction/retry belongs
+to the arbiter, not an installed TORCH/model/QA refusal. No repo/installed executor
+change or guard bypass; old failed receipts/units remain. Current owner reports
+Manager+QA+Kernel active, Release prior handle terminal. Manager starts none;
+only arbiter may re-enter Release after exact QA consent and slot availability.
+Actual browser retry still returns noavailable/list[], so live UX remains open.
+
+Supported owned API updates only classification labels and timestamped reason
+history for existing a655revision8,6e4revision17,workflowrevision26,digestrevision2.
+All statuses/owners/candidates/integration links/full acceptance criteria/evidence
+arrays/lifecycle histories are preserved. No same-state transition or manual ledger
+edit manufactured evidence permission; current classification reasons and this
+report supersede stale prior summary text while retaining it as history.
+
+Only actual human activation75pending remains human-specific; five-PNG approval
+already satisfied does not resolve it. Installed alpha2/current live blockedReason,
+served provenance, real browser/mobile acceptance remain unqualified. Owner12657
+reports Kernel terminal, Release and Manager active; starts stay arbiter-only and
+bounded to three native identities plus root. No installation, live DDL/schema,
+host/service/model/publication/default-main action; automatic wakesOFF.
+
+Historical entries below retain their dated evidence and superseded review states.
+
 Latest actual Work **c90d7c8a** confirms the complete integrity-record V1 contract
 reached named QA in durable **68d4ea0e-aac8-4d00-bafb-9248266b205b**: schema/preimage/
 vector/exact paths and61 legacy-section/14 commit-blob mapping. Manager routes that

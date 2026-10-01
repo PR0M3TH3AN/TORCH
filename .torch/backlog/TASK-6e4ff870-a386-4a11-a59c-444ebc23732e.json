@@ -24,7 +24,7 @@
   ],
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check execution provenance and state isolation",
-  "milestone": "Reviewed reliability dependencies",
+  "milestone": "B2 registered policy and no-write native planning admission",
   "state": "verification",
   "owner": "work-integration",
   "evidence": [
@@ -96,8 +96,8 @@
   "integrationRequest": "a1789e46-b91e-496c-9204-ab204dac6a6d",
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T18:15:19.000Z",
-  "revision": 15,
+  "updatedAt": "2026-10-01T18:42:58.762Z",
+  "revision": 17,
   "history": [
     {
       "from": null,
@@ -203,6 +203,34 @@
       "actorId": "session-manager",
       "at": "2026-10-01T18:15:19.000Z",
       "note": "Record actual owner28 existing Work read-only contract turn WIP; no new assignment/status/schema field, implementation permission, consent assumption or lifecycle change. All original source/criteria/history/refusals preserved; concrete returned contract and QA contributor decisions remain required."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:39:48.912Z",
+      "reason": "Actual Workc106/e243 and Kernel2565351a agree narrow registered CheckService pre-snapshot admission, opaque parent/no CP, private FD3/4, real Node/npm/browser dependencies and observed descendant closure. Kernel accepts proposed config applier but not edit authority; candidate_execution_policy optional parser. Exact reproducible package_json_path/package_script_name/vector and artifact-versus-adapter A distinction need recipient decisions52502f15; exact QAaebbf allowlist copy/TIN consent requested8e7bea6a. No B2 implementation, policy registration, DDL, consumer or native acceptance. Preserve verification/full seven criteria, landed316 history, legacy2 and current3/2 refusal.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "Reviewed reliability dependencies"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 registered policy bytes and private native admission agreement"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:42:58.762Z",
+      "reason": "Append actual owner784c788c/Release2969 incident: nominal converge plan inherits mutable CLI1714 openControlPlane, Kernelconstructor initializeSchema/INSERT identity and identity/roster refresh. Same6e4 needs precise ReleaseCLI/Kernel readonly initialized compatible state/Work guards interface: no planning writes, missing/incompatible schema refusal and immutable schema/data/identities/tasks/messages/resource before-after scenarios. Separate external SQLite guard from exact QA TIN consent; immediate normal guarded path may request legitimate narrowly scoped tool approval, never live DDL/schema/DB permission workaround or75 activation. No new task/parallel implementation; previous B2 vectors/contributor gates and all seven full criteria retained.",
+      "from": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 registered policy bytes and private native admission agreement"
+      },
+      "to": {
+        "feature": "Check execution provenance and state isolation",
+        "milestone": "B2 registered policy and no-write native planning admission"
+      }
     }
   ]
 }

@@ -16,7 +16,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Owner-reviewed first development backlog",
+  "milestone": "Bounded Console saved-decision timestamps and coverage scenarios",
   "state": "proposed",
   "owner": null,
   "evidence": [],
@@ -24,8 +24,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.715Z",
-  "updatedAt": "2026-09-30T19:30:23.715Z",
-  "revision": 1,
+  "updatedAt": "2026-10-01T18:39:55.069Z",
+  "revision": 2,
   "history": [
     {
       "from": null,
@@ -33,6 +33,21 @@
       "actorId": "owner",
       "at": "2026-09-30T19:30:23.715Z",
       "note": "Task created."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:39:55.069Z",
+      "reason": "Owner4ab asks independent implementable roadmap action. Selected Console-only site/owner-digest.js to render existing decidedAt and saved-window/structured-versus-unindexed coverage; live path ownerConsole and next idle read18:36, not process evidence. Precise scope requesta4f1e68b and QA88aecb41 for additive test/fleet/console-owner-digest.test.mjs plus exact append-only TIN; consent must return before implementation/assignment. No engine/API/schema/timers/external notifications. Preserve proposed unassigned full task, decision indexing/cadence/external opt-in remaining criteria. Health/mobile/thread workflow requests separate; no launch.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Owner-reviewed first development backlog"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Bounded Console saved-decision timestamps and coverage scenarios"
+      }
     }
   ]
 }

@@ -23,8 +23,8 @@
     "No rollout or frozen-candidate protocol change occurs from proposal alone; independent QA acceptance and guarded integration required for eventual implementation."
   ],
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
-  "feature": null,
-  "milestone": null,
+  "feature": "Immutable test-integrity evidence",
+  "milestone": "Corrected V1 oracle and approved QA record ownership application",
   "state": "blocked",
   "owner": "work-integration",
   "evidence": [
@@ -46,8 +46,8 @@
   "integrationRequest": null,
   "blockedReason": "Read-only preparation complete. Actionable INTERNAL Work/QA contract decision: return concrete version-pinned record schema/canonical preimage/exact YAML/test paths/scenarios requested by actual QA1e477 (owner4646), then obtain named contributor/gate consent and sequence bounded implementation. Historical61de permits evidence preparation only. This is not an owner strategic permission hold; no code/migration/acceptance or automatic dependency unblocking.",
   "createdAt": "2026-10-01T07:36:25.425Z",
-  "updatedAt": "2026-10-01T18:15:19.000Z",
-  "revision": 7,
+  "updatedAt": "2026-10-01T18:39:45.725Z",
+  "revision": 8,
   "history": [
     {
       "from": null,
@@ -97,6 +97,21 @@
       "actorId": "session-manager",
       "at": "2026-10-01T18:15:19.000Z",
       "note": "Record actual owner28 existing Work read-only contract turn WIP; no new assignment/status/schema field, implementation permission, consent assumption or lifecycle change. All original source/criteria/history/refusals preserved; concrete returned contract and QA contributor decisions remain required."
+    }
+  ],
+  "classificationHistory": [
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:39:45.725Z",
+      "reason": "Current decisions: QA862dd6d6 rejects original68d missing legacy; complete addressed Work6038b6c1 now includes legacy:null, explicit abc+LF source specimen, 955-byte SHA903157bef00dc68913c628813530f1612fa8e1b51a287b7ad0966c6bfdb0f1ab independently reproduced by Manager. Original941 invalid remains. Anchor143955/hash/61 independently reproduced; 14 mapping QA evidence preserved. Corrected packet still requires actual QA verdict; approved b103 named Kernel two-file amendment not applied, PATH_UNOWNED remains. Preserve blocked lifecycle, full criteria/owner/history/evidence. No code/migration/assignment; current decision ledger in reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md supersedes stale 'packet not returned' text without deleting it.",
+      "from": {
+        "feature": null,
+        "milestone": null
+      },
+      "to": {
+        "feature": "Immutable test-integrity evidence",
+        "milestone": "Corrected V1 oracle and approved QA record ownership application"
+      }
     }
   ]
 }

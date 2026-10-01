@@ -12,6 +12,77 @@ ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
 ## Current B2 owned decisions and remaining registration seam, 17:53 UTC
 
+### Addressed native admission and policy delta, 18:40 UTC
+
+The original packet remains pinned at Manager commit683e9f8, SHA256
+84d062c358310a1428085b2287f3afbdb62fdbfac2f8554f3b113f1375f77a7b.
+Read complete addressed Workc10696f6 and e2435195, plus Kernel2565351a.
+These are read-only agreements, not B2 source or config permission.
+
+Work specifies the exact future existing checks/service.mjs admission hunk:
+after identity/definition/resource/clean-subject validation and before
+captureCheckSnapshot/executeConditionedCheck, issueCandidateNativeAdmissionV2
+from the authenticated registered plan, policy and E preflight. Missing policy
+refuses CHECK_CANDIDATE_NATIVE_POLICY_UNREGISTERED before channel/spawn/state
+transition. No live writer, receipt, migration or legacy consumer change.
+The private capability binds project/area/check/plan/commit/definition/cleanGuard,
+lease generations/policy/E/run/nonce/expiry (at most60s); no caller selectors,
+ControlPlane, writer, DB or adapter handle. Bootstrap consumes it once, rejecting
+replay, closure, expiry and cross-generation. Private inherited FD3 carries one
+framed record at most64KiB; FD4 observes acknowledgement. Fixed private init
+validates nonce/generation and closes both before candidate spawn; the child
+inherits neither. Internal provenance does not authenticate hostile same-UID
+host processes. The earlier1MiB general descriptor limit does not enlarge this
+admission transport limit.
+
+Kernel agrees to the proposed named .torch/torch.yaml applier role. Exact future
+registration is ONLY optional strict checks[].candidate_execution_policy on the
+four existing test/check/test-dashboard/lint definitions, parsed in EXISTING
+src/kernel/config.mjs; old configs remain valid. Parent parses/verifies and returns
+an opaque binding/resolved policy without opening CP. Node/npm raw package+lock,
+script/dependency bytes and actual Chromium/runtime/transitive dependencies remain
+required. In-root .bin link text, lexical/resolved target and target bytes are
+bound; product links refuse. Absolute pinned unshare/private PID1 init require
+actual namespace/run/generation and tested close/reap barriers: direct exit,
+empty PGID or namespace creation is not proof of escaped-descendant closure.
+Unknown coverage cannot mint TerminalProof/PASS.
+
+Precise remaining recipient decisions, without another generic design cycle:
+
+- Kernel52502f15: addressed full executable canonical vector, including required
+  literal package_json_path/package_script_name, framing bytes/length/hash.
+  Owner12657cf8 and Worke243 identify those omitted frames in the prior932-byte
+  proposal; its hash alone is not an independently reproducible oracle.
+- Kernel/Work52502f15/e4fe45de: distinguish c106's Phase-A sealed artifact manifest
+  from the pinned adapter-admission A tuple with explicit separate schema fields;
+  no silent reinterpretation of compatibility evidence.
+- QA8e7bea6a: addressed exact aebbf six test paths/scenarios and separate exact
+  append-only Test Integrity Note consent. Owner reports consent exists; Manager
+  does not invent its allowlist from a delivery summary.
+- Actual reviewed policy registration remains distinct from source implementation
+  and the separate approved b103 QA-record ownership amendment. No .torch edit,
+  live DDL, source receipt, installation or operational acceptance is granted here.
+
+Existing Workfull6e4 remains verification with all seven criteria. Positive actual
+registered issuance, frozen-file consumption by all four real gates, observed
+descendant fencing, compatible native adapter and eventual real consumers remain
+required. B1 fixture acceptance, legacy2 receipts and current3/2 refusal are retained.
+The supported revision-checked classify API records this current phase in existing
+task classificationHistory; it does not alter lifecycle, ownership or native gates.
+
+Owner784c788c identifies a concrete related planning boundary, independently read
+on canonical0c2: src/cli.mjs1714 opens normal mutable ControlPlane for converge
+plan/guards; service initialization creates schema/inserts identities, and identity
+assertion refreshes roster with writes. Future SAME6e4 native planning composition
+must read compatible already-initialized state without any schema/identity/roster
+writes, refuse precisely when missing/incompatible, and prove immutable schema,
+data, identities, tasks, messages and resource guards before/after. Release owns
+the CLI use, Kernel the read-only interface, Work convergence guards, QA boundary
+scenarios (routed e92a36f1/9f012d8d). This is a source requirement, not permission to
+open/migrate live state or substitute an older checker. Immediate convergence
+still uses supported guarded tools with legitimate scoped tool approval and exact
+QA conflict consent. Current external SQLite refusal and all earlier failures stay.
+
 This section supersedes the 17:02 proposed map only by the specific deltas below.
 Actual Work **acc1d43e** and Kernel **9752d155**, with owner **7921552a** correcting
 two factual errors, are read-only protocol decisions. No B2 implementation,
