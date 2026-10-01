@@ -1,0 +1,44 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-125dd886-6859-4e3c-a0c7-abbfde9eac24",
+  "title": "Provide the Kernel-owned atomic identity reservation contract for startup presence",
+  "description": "Explicit owner57e4712e requests one bounded Project Kernel-owned reservation contract/schema phase after TASK-bounded-routine-coordination safely lands/closes. Native Kernel24a4625a declined Runtime edits to src/control-plane/** and requires separately assigned owned implementation. This is a dependency of SAME TASK-pilot-starting-presence, whose Runtime owner retains lifecycle/schedule integration and Release exact CLI consent; it is not a second Runtime assignment or ownership transfer. Implement only the reviewed durable per-project identity reservation API/storage contract required by that slice; agree exact interface with Runtime and strict paths/tests with QA. Unknown interruption must prevent duplicate starts; no elapsed-time offline inference, wake activation, provider launch, installation or broader owner-grant/approval schema changes. Current Kernel task continuity outranks this proposal. Preserve all history/state/unique commits and exact-commit QA/integration gates.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "provider-runtime",
+    "qa",
+    "release-self-host"
+  ],
+  "dependencies": [
+    "TASK-bounded-routine-coordination"
+  ],
+  "acceptanceCriteria": [
+    "Runtime and Kernel agree a precise owned reservation interface and storage/schema contract for TASK-pilot-starting-presence before edits; peer consent covers any additional path, without transferring ownership.",
+    "Independent concurrent manual and scheduled contenders at the durable boundary produce at most one per-project identity reservation and retain attributable competing attempt evidence.",
+    "Unknown or interrupted launch preserves a guarded reservation; known terminal completion/failure and proven process absence remain distinguishable, with no timeout-only offline or automatic duplicate restart.",
+    "Existing named identity/ownership/pause/runtime gates remain enforced; no provider start, automatic wake enablement, installation change or broader approval authority follows from reservation acquisition.",
+    "QA-approved additive deterministic scenarios and complete Test Integrity Note preserve all historical notes/assertions/holdouts; resulting clean exact candidate passes four fresh gates, independent QA and guarded serialized integration."
+  ],
+  "observedAt": "286bfa72e3202ec0806f7c3075821c8057d6e132",
+  "feature": null,
+  "milestone": null,
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T07:57:28.590Z",
+  "updatedAt": "2026-10-01T07:57:28.590Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T07:57:28.590Z",
+      "note": "Task created."
+    }
+  ]
+}
