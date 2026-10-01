@@ -1,5 +1,31 @@
 # Current pilot remaining-work handoff
 
+## Latest mobile viewport counterexample at 12:35 UTC
+
+Final current-task then explicit unread100 refresh reads actual owner **560e62bf**:
+exact **3ebfebea4db0a9202059c07b8d2cbf3c2c78fb96** isolated navigation9/9 and
+warning/Fleet ownership focused PASS. Additional actual390x844 initial direct
+#manager-wakes fails viewport after snapshot generation1: selected Fleet,
+focused target and open Operations are correct, but target top1522/bottom1940
+exceeds viewport844 after async layout changes. This is an attributed focused
+counterexample, not independent Manager execution or native/live visual evidence.
+
+Manager routes same-task console.js initial nested target correction after initial
+data/layout application, without hijacking owner scroll on later refresh; QA
+receives exact strict additive mobile variant in existing consented navigation
+scenario. Preserve desktop/nine previous cases, no sleeps/retries/relaxation,
+correct focus alone insufficient, no backend/helper/fixture scope. New exact
+candidate four native source gates/independent QA and live visual acceptance
+still open. No second Console assignment or guessed idle/dependency state.
+
+Fresh native state: Runtime inbox assigned4, Console workflow in_progress13,
+Work design assigned3. Manager checkpoint837842c was clean before recording this
+new message; genuine histories, receipt failures, full roadmap and every tool
+boundary remain. No wakes, install switch, live schema recovery, host activation,
+extra identities or provider launches. Latest five-PNG consent remains restricted
+to already-completed exact Runtime recovery.
+
+
 ## Integrated Work review received at 12:33 UTC
 
 Actual Work **cc6a8118** full integrated design-lead contract received/read and
