@@ -112,7 +112,7 @@ function attentionGroups(snapshot) {
     const reservations = (snapshot.managerWakes?.reservations ?? []).filter((item) => item.blocksManagerWake);
     const wakeOwners = [...new Set(reservations.map((item) => agentName(item.managerId)))];
     add('fleet', {
-      tone: 'urgent', title: `${unknownWakes} scheduled manager wake${unknownWakes === 1 ? '' : 's'} need inspection`,
+      tone: 'urgent', title: `${unknownWakes} scheduled manager launch${unknownWakes === 1 ? '' : 'es'} ${unknownWakes === 1 ? 'needs' : 'need'} inspection`,
       owner: wakeOwners.join(', ') || 'Scheduled wake owner not recorded',
       detail: 'A recorded reservation blocks another wake. Inspect current runtime evidence before acting; this record does not prove a provider is still running or establish who may restart it.',
       evidence: reservations.map((item) => [item.scheduleId, item.reservedAt, item.outcome].filter(Boolean).join(' · ')).join('; ') || 'Reservation detail unavailable',
