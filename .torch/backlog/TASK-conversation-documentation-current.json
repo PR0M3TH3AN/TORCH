@@ -17,7 +17,7 @@
   ],
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
-  "milestone": "Wind-down: existing README copy checkpoint; landing and publication open",
+  "milestone": "Wind-down README8fb515 checkpoint; landing/QA/native/publication open",
   "state": "assigned",
   "owner": "release-self-host",
   "evidence": [
@@ -31,8 +31,8 @@
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.726Z",
-  "updatedAt": "2026-10-01T19:40:23.755Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T19:42:51.080Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -81,6 +81,19 @@
       "to": {
         "feature": "Self-host development readiness",
         "milestone": "Wind-down: existing README copy checkpoint; landing and publication open"
+      }
+    },
+    {
+      "actorId": "session-manager",
+      "at": "2026-10-01T19:42:51.080Z",
+      "reason": "Actual Releaseb6c0d53c returns partialREADME-only8fb515d2bb892cf2ec4c144793ac9e1cbfc7a38d parent5b9,39insertions15deletions/diffcheckPASS/cleanreported. Accuratealpha3source28c/liveprocess/newersource distinction/Codexpilot/adaptersvsunqualifiedmixedproviders/timerinstalledvsinitautomation/wakesOFF/remainingfencepipelineprovenanceUXrelease/rewritebranchlinks/cachehypothesis retained. No additionalexpensive/nativegates/testsTIN or sourceQA, no request/taskclosure. Full exactnewcandidate test/check/dashboard/lint+QA open, old5b9FAILunwaived; Consoleindexcopy/product-surfaceconsent/publicstaticdeployment pending/haltedowner2dc. PreserveassignedRelease/full3criteria/history/ledgercandidate-null (partialscopecandidateexplicitreason), ownerresumerequired/noautomaticwakes.",
+      "from": {
+        "feature": "Self-host development readiness",
+        "milestone": "Wind-down: existing README copy checkpoint; landing and publication open"
+      },
+      "to": {
+        "feature": "Self-host development readiness",
+        "milestone": "Wind-down README8fb515 checkpoint; landing/QA/native/publication open"
       }
     }
   ]

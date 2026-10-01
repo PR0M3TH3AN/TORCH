@@ -2,6 +2,15 @@
 
 ## Explicit usage wind-down and safe resume checkpoint, 19:38 UTC
 
+Final returned Releaseb6c0d53c checkpoint: README-only
+8fb515d2bb892cf2ec4c144793ac9e1cbfc7a38d, parent5b9,39 insertions/15 deletions,
+diff-check PASS and clean tree reported. No new tests/TIN/native gates/review or
+integration request; exact new-candidate qualification remains open. Existing
+documentation6 records this partial source checkpoint, retaining original full
+criteria and the pending owned landing-copy/product-surface/deployment handoff.
+Work0665 full native output independently reads252 pass/1 systemd fail/5 skips;
+three other exact receipts PASS. This cannot establish B2 or source acceptance.
+
 Owner2dc6ae4d, read19:36 after prior queued coordination, reports8% weekly usage
 and explicit wind-down. Stop new work/starts/gate loops now; resume only on an
 actual later owner request, no automatic weekly reset or wakes. Manager sent
