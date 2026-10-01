@@ -142,13 +142,16 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
 
     await page.locator('.console-rail a[href="#work"]').click();
     await page.mouse.wheel(0, 180);
-    const beforeRefresh = await page.evaluate(() => scrollY);
-    await page.locator('#refresh-console').evaluate((button) => button.click());
+    const beforeRefreshRender = await page.evaluate(() => new Promise((resolve) => {
+      const button = document.querySelector('#refresh-console');
+      button.addEventListener('click', () => resolve(scrollY), { once: true });
+      button.click();
+    }));
     await page.locator('#live-refresh-status[data-generation="2"]').waitFor();
     assert.equal(new URL(page.url()).hash, '#work');
     await assertSelectedView(page, 'work', 'Work');
     assert.notEqual(await page.evaluate(() => document.activeElement?.id), 'manager-wakes');
-    assert.equal(await page.evaluate(() => scrollY), beforeRefresh,
+    assert.equal(await page.evaluate(() => scrollY), beforeRefreshRender,
       'a later refresh must retain the user’s scrolled position');
   }
 });
