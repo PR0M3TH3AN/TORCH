@@ -2620,6 +2620,7 @@ test_integrity_note:
   determinism_controls:
     - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
     - "Manager-wakes routing uses the existing isolated sample Console, a deterministic two-frame first-generation layout-completion marker, and browser fragment history without changing project state"
+    - "The later-refresh viewport baseline is measured after the browser applies the explicit wheel input at its next animation frame"
     - "Newer evidence is introduced through the sample's supported preview/confirm API before an explicit refresh"
     - "The browser test advances only the isolated sample API; it never submits the priority form or mutates a live project"
     - "No network, live project mutation, retry, sleep, timeout, golden update, or direct fixture-source change"
