@@ -1,5 +1,30 @@
 # Test Integrity Notes
 
+## 2026-10-01 — Visible source installation instructions
+
+```yaml
+test_integrity_note:
+  change_type: ["new_tests"]
+  scenarios:
+    - id: SCN-site-install
+      given: "A new visitor has no TORCH CLI and the product is experimental."
+      when: "They follow the landing page installation entry point."
+      then: "Visible prerequisites and rewrite-source commands install into an isolated prefix; review and startup remain separate."
+  observable_outcomes:
+    - "Installation section and working CLI bin mapping are present."
+    - "Source/candidate distinction, approval steps and manual pause are explicit."
+  determinism_controls:
+    - "Read repository HTML and package metadata; no model or network invocation."
+  anti_cheat_rationale:
+    prevents:
+      - "Assuming torch is already installed"
+      - "Linking only to a default-branch legacy guide"
+      - "Hidden automatic startup or global existing-launcher overwrite"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Bounded routine coordination
 
 ```yaml
