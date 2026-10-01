@@ -1,15 +1,93 @@
 # Proposed Phase B: authenticated candidate context and receipt adapter
 
-Status: broad Phase B remains proposed. Actual QA03e2 grants usable narrow B0
-consent; actual arbitercc6c authorizes that named Kernel implementation contribution
-only. No broader protocol or operational activation authority. Earlier no-code
-reviews below are retained chronologically and superseded solely for exact B0.
+Status: broad Phase B remains proposed. Narrow B0 is independently source accepted;
+actual corrected QAc3e0241 and ownerb819ecbc now authorize the exact B1 contribution
+below. No broader parent/consumer/protocol or operational activation authority.
+Earlier no-code reviews remain chronological history, superseded only for the
+specified B0/B1 paths and scenarios by these actual decisions.
 This is a phase of existing TASK-6e4ff870-a386-4a11-a59c-444ebc23732e;
 no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
 ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
+## Actual B1 four-path authorization and real composition roadmap, 16:29 UTC
+
+Corrected QAc3e0241 replaces only erroneous src/control-plane path consent with
+NEW src/kernel/managed-subject-metadata.mjs, NEW src/kernel/check-subject-context.mjs,
+NEW test/fleet/check-subject-context.test.mjs and append-only docs/TEST_INTEGRITY.md.
+Actual Work4a3c8ab6 agreement pins the reserved parent bindings. Actual ownerb819ecbc
+authorizes implementation only on those four paths, SAME6e4 Work ownership and
+named Kernel contribution. Existing Kernel active3473803 is owner-reported; Manager
+starts none. Current task verification10 retains landed316/a178 and all seven full
+criteria. Kernel returns exact clean task-named candidate with focused/syntax/diff
+checks and TIN; existing QA independently reviews exact source. Native gates and
+current required3/current2 refusal remain, no installed old checker equivalence.
+
+Implement V1 bounded data-only fixture/untrusted-observation parsing and genuinely
+issued opaque fixtures, with exact public namespace/input allowlists, clone/foreign
+issuer/expiry/reuse/selectors-before-parsing refusals, independent frame/digest
+mutations and dirty/stale/unknown/mixed/version-drift negatives. Schema2 remains
+legacy-readable; required3/current2 refuses with zero mutation. Missing native issuer
+is CHECK_SUBJECT_CONTEXT_MISSING_COMPOSITION. Metadata frame is <=1MiB; product
+bytes are represented by observed length/SHA, not copied into or inferred from it.
+V1 explicitly refuses parent/native/loaded-engine claims and V2-shaped fields;
+fixture positives never become native candidates or receipts.
+
+Reserve explicitly named V2/successor canonical E/S/A bytes: E module/interface ID,
+fixed entry length/SHA and dependency-manifest length/SHA; A compatibility declaration
+bytes/schema tuple plus adapter entry/dependency manifest length/SHA; S project ID,
+commit, clean-tree digest, snapshot-policy digest, frozen-input-manifest digest,
+total bytes/file count. private inputRoot stays nonserializable parent state, never
+a caller selector/frame value. Do not silently reinterpret V1 or implement the
+parent/adapter/receipt/consumer/CLI under B1 authority.
+
+The next real-composition scope remains Kernel fixed no-args parent and pre/post
+E/A byte binding, Work child execution only in frozen snapshot.inputRoot and
+enforceable fence admission, later compatible adapter/native consumers and Release
+CLI composition, independently QA-qualified. Future separate scenarios require
+same-ID E/A byte substitution refusal, original-source mutation after capture with
+unchanged child-observed snapshot bytes, snapshot mutation UNKNOWN/refusal,
+descriptor-versus-product-size separation and no enforced fence/PGID-only => no
+PASS. No same-user OS containment or loaded-memory proof is claimed. Unknown
+terminal descendant coverage refuses TerminalProof. This mandatory roadmap avoids
+a permanent fixture-only/all-refusal substitute for full6e4. No live DDL/schema,
+registered provisioning, existing consumer wiring, runtime75, host/provider/wakes
+or publication permission is granted by these source decisions.
+
 ## Current narrow B0 acceptance and proposed B1, 15:47 UTC
+
+Current16:19 actual **Work4a3c8ab6** accepts B1 fixture parsing surfaces and pins
+future ParentSubjectBindingV1, not code authority. Kernel **a6b009c4** completes
+read-only byte/API pin; complete addressed contract requested **d46b954d**. QA
+**f246** grants strict scenario contribution but says src/control-plane modules;
+current Kernel/report scope is src/kernel modules. Exact correction requested
+**e68791be**, not silently reinterpreted. Work's actual full parent agreement was
+forwarded **c05d2769** to resolve QA's missing-copy race. No stale Work agreement
+hold remains; exact path consent/complete tuple pin/arbiter decision still matter.
+
+Mandatory later real composition, owned by Kernel in
+src/kernel/candidate-source-parent.mjs: openCandidateSourceParentV1() takes noargs,
+derives fixed installed module location and validates actual startupcwd against
+install/project/managed common-dir+registered branch/clean tree before issuing
+private opaque binding. Caller JSON/callbacks/selectors never issue authority.
+E/A fixed entry/dependency bytes are hashed before import, imported at fixed path,
+then re-read/re-hashed with interface/module-ID checks; mismatch refuses, never
+an in-memory byte proof. S separately captures snapshot-policy/frozen-input
+manifest/tree digests, byte count/file count and privateinputRoot. Descriptor1MiB
+cannot replace product bytes. E/S/A canonical version must explicitly include
+dependencies and snapshotmanifest; incomplete fixture v1 cannot silently acquire
+native meaning. Future Work seam runs the child ONLY at snapshotinputRoot;
+mutate original source after capture: black-box command still sees original
+snapshot bytes; mutate snapshot: pre/postmanifest check UNKNOWN/refusal. Current
+PhaseA capture is unbounded/non-atomic/same-user-writable, not final qualification.
+No viable fence means noTerminalProof; PGID emptiness alone never permits PASS.
+
+These future parent/consumption/fencing/receipt-adapter/native-consumer phases need
+exact contributor scenarios and separate arbiter authorization. B1 private API
+plus fixture metadata positives are useful bounded progress, not a permanent
+all-refusal/fixture-only substitute for full6e4. Legacy2 remains valid and current
+required3/current2 refusal is unchanged. No registered provisioning/DB/liveDDL/
+MCP/CLI/host/install/provider/wake or publication action follows from agreement.
 
 Actual **QA3cf79613** independently ACCEPTS exact clean
 **c08ca349c8e98b5b967b91bc25a6830039a0a612**, fixture-only cumulative four-path B0

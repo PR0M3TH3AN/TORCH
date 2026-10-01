@@ -1,5 +1,133 @@
 # Current pilot remaining-work handoff
 
+## Current single landing and bounded B1 authority, 16:29 UTC
+
+Console exact **4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1** is now LANDED,
+once, through native request **0d46fb5c-1027-4ead-b969-f760afb72e9f**.
+Manager authorization16:25:29, subsequent plan at exact canonical316 had
+canProceed=true/blockers=[], and land16:25:59 advanced the protected development
+branch. Canonical independently observed clean4fa at16:27. Actual owner
+**280a2295** independently reports permitted nonforce development-ref push316->4fa,
+main unchanged; Manager performed no remote push. Historical cce needs_convergence,
+unauthorized duplicatec532 ready316 and proposedc178 are unchanged. No duplicate
+request, forced queue disposition or manual Git/DB landing. Independent QA33d
+and four qualified receipts/eleven verified artifact hashes precede authorization.
+SAME attention blocked17 then metadata18 retains full actual live desktop/mobile
+acceptance criteria: source review/landing are resolved, not an owner wait.
+
+Corrected **QA c3e0241b** now consents exact src/kernel B1 paths, superseding
+only f246's erroneous src/control-plane path list. Work4a3 actual binding agreement
+is resolved. Actual owner **b819ecbc** authorizes SAME6e4 named Kernel contribution:
+NEW src/kernel/managed-subject-metadata.mjs, NEW src/kernel/check-subject-context.mjs,
+NEW test/fleet/check-subject-context.test.mjs, append-only docs/TEST_INTEGRITY.md.
+Existing Kernel active3473803 is owner-reported; no Manager start/new assignment.
+Work remains full owner, verification10 with landed316/a178 and seven full criteria.
+Manager bfdcb08f/2f2087d3/a784d4fc routes exact scope to Kernel/QA/Work. Kernel next
+returns clean task-named candidate, focused/syntax/diff evidence and TIN to existing
+QA for independent exact source acceptance. No native acceptance is preclaimed.
+
+B1 V1 parses bounded fixture/untrusted captured metadata and refuses parent/native/
+loaded-engine claims and V2 fields disguised as V1. Strict issued clones, wrong
+issuer, expiry/reuse, caller selectors before parse, independent digest mutations,
+dirty/stale/unknown/mixed states and schema2-vs-required3 negatives remain.
+Legacy2 evidence and current3/2 refusal remain unchanged. V2 bindings reserve E/A
+fixed entry/dependency bytes and S frozen manifest/policy/bytes/count/privateinputRoot;
+no parent/consumer is implemented by this authority. Later real fixed no-args parent,
+snapshot-only child consumption, source-after-capture isolation, snapshot mutation
+UNKNOWN, enforced descendant fence coverage, native adapter/consumers and operational
+qualification remain required. A process-group observation is not escaped-descendant
+coverage; absent enforceable terminal coverage produces no PASS/TerminalProof.
+
+Existing workflow18 adds owner **9ab0e108** measured generated1440x1000 d469
+Overview requirement: compact owner decisions/urgent hazards, safe quickactions,
+summary counts plus explicit View all Fleet destination/filter, bounded previews
+and complete queue/detail evidence; advisory/recheck counts separate from actionable
+named-next-step counts. Existing attention18 records owner0bf clean unique commits
+as informational integration-review evidence, separately from dirty/conflict/lost-work
+hazards. These are later scoped proposals requiring exact paths/scenarios/holdout QA
+before edits, not expansion of accepted4fa. Generated visuals are not live4174 or
+mobile acceptance. Console/QA/Release handoffs84c84335/20bed0c4/0a27ef86 record them.
+
+Served provenance proposal stays on workflow18: expose observed local version,
+declared commit and recomputed local hash consistency separately from authentication
+unknown. No signing-infrastructure prerequisite for useful dashboard debug; no
+loaded-memory or delivered-browser-byte claim. Complete Console7c434 copy remains
+requested; Release refinement active3474550 is owner-reported. Later independently
+qualified current release and actual live blockedReason coverage remain required:
+activealpha2 and immutablealpha3 omit a field canonical316 already contains, so
+alpha3 switch alone cannot qualify the current UI. Human approval75 remains pending;
+owner e20 confirms exact Runtime five-PNG recovery already satisfied, not activation.
+Full56 roadmap remains incomplete. No schema/liveDDL/installation/host/provider/
+automatic-wake/identity/publication action occurred.
+
+## Current accepted Console candidate and concrete handoffs at 16:19 UTC
+
+Brief d7e6d69, own addressed unread100, all56 tasks, current receipts/queue and
+direct-report check-in refreshed. SAMEattention native in_progress14->verification15
+->ready_to_integrate16 records exact clean **4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1**.
+Actual Console1c72/636 supplies four-path cohort candidate; independent **QA33d44dad**
+ACCEPTS exact source, five focused scenarios, four native PASS/invalidReason null
+and eleven run-owned PNGs. Manager independently recomputed all11 regular-file
+byte counts/SHA256 from dashboardd469 manifest. Historical failedlintd93 remains.
+Generated artifacts are not actual live desktop/mobile acceptance or full closure.
+
+Exact native receipts: test0e838290-429f-410a-9f6b-4adb027760b3;
+check52507987-11c2-4fb4-93f4-ff7f7efeefcc;
+dashboardd469066a-8884-4bae-b264-5f66721375de;
+lint8d2e4b41-45a4-424c-be6f-855686118aa0.
+Immutable artifact manifest:
+/home/user/.local/share/torch/projects/3dc11932-6e3c-42aa-9a8a-ca7b8f818b54/checks/d469066a-8884-4bae-b264-5f66721375de/output.json,
+generated directory sibling, exactcandidate4fa/check definition6351688a/run d469.
+Current canonical316 is clean; Console4fa clean and ancestry includes316, exact
+delta is two site paths/new cohort test/append TIN. No request4fa existed in current
+queue. Manager **4df52717** routes ONE submission through existing Console identity;
+actual owneree18 confirms arbiter will resume it once. Native current evaluate,
+authority, plan and land remain mandatory; oldcce needs_convergence, duplicatec532
+ready316 and proposedc178 stay preserved, no forced ordering or second landing.
+
+**Work4a3c8ab6** supplies concrete ParentSubjectBindingV1 agreement, no code consent:
+future no-arg Kernel candidate-source-parent derives fixed module identity and
+validates startupcwd/install/managedcommon-dir+branch/clean subject. Private opaque
+binding captures pre/post-load E/A entry/dependency hash+interface; S frozen input
+manifest/snapshot policy/bytes/count/privateinputRoot. Engine must run only from
+snapshotinputRoot; source mutation after capture leaves child-observed bytes
+unchanged, snapshot mutation yields UNKNOWN. PhaseA unbounded/non-atomic/same-user
+writable snapshot is only a model. Descriptor1MiB is not actual input use. Missing
+enforced fence produces no TerminalProof; empty PGID is not escaped-descendant
+coverage. These real parent/Work consumption/fence/native-consumer phases remain
+mandatory after B1; fixture/all-refusal is not permanent feature completion.
+
+Kernel **a6b009c4** pins exact data-only B1 exports/tuple/metadata1MiB/lifetime/errors,
+but Manager **d46b954d** requests its complete byte/API contract addressed here.
+Actual **QAf246** grants B1 scenario contribution consent with a path discrepancy:
+src/control-plane versus intended src/kernel two modules. Manager **e68791be**
+asks exact correction; **c05d2769** forwards actual Work binding to QA. This is a
+bounded exact scope decision, not another generic design loop or owner approval
+hold. No code authority until exact contributor paths and arbiter decision.
+
+Release **ff992/3d576** future no-arg runtime-metadata reader distinguishes captured
+module/local startup metadata, current UI disk assets and active pointer/registry.
+Caps proposed: JSON64KiB, artifact8192 entries/64MiBfile/512MiBtotal, UI64 assets/
+4MiBfile/16MiBtotal; overcap explicit unknown, no truncation. No status/reconcile,
+DB/DDL/ControlPlane/write/selector; no loaded-memory or delivered-browser-byte
+proof. Local mutable unsigned manifest is consistency evidence, not authentication.
+Manager **80f77552/3e8c4e1e/aebd82f9** resolves useful debug semantics: keep observed
+local version, declared commit and recomputed hash consistency visible SEPARATELY
+from authenticationunknown. No signing infrastructure prerequisite for dashboard
+debugging. ExactConsole7c434 proposal copy requested; existingworkflow owns this
+gap, active cohort source scope is not expanded.
+
+Approval75 remains actual owner pending1; owner **e20cd0ef** says exact Runtime
+five-PNG recovery already satisfied (receipt93a7/clean/baseline286). No repeated
+overwrite/start/archive fabrication or substitution for activation75. Owner0bf
+future attention request distinguishes clean unique commits from dirty/conflict/
+lost-work hazards; preserve all work and unsafe findings, no cleanup/suppression.
+MESSAGE_BACKLOG176 calls for recipient-owned reads/acknowledgements, not blanket
+acknowledgement or closing unresolved waits. Fleet eight/hierarchy ten advisory
+signals favor current coherent specialists, precise interfaces and independent
+scenarios; no role/identity changes. Health49stale+two resolved-dependency warnings
+remain surfaced without auto-fix. Full56 roadmap and all live/operational gates open.
+
 ## Current arbiter continuation at 15:52 UTC
 
 Owner **d21e4769** confirms actual narrow B0 acceptance and independently verified

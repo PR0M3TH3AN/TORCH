@@ -26,12 +26,14 @@
     "Timer/process/presence disagreements link exact observed evidence, the existing task and responsible domain without silently resolving or activating services.",
     "Before publishing a final blocked/waiting-on-approval/needs-owner report, refresh authoritative unread inbox, current named permission and task evidence; distinguish a timestamped earlier observation from current state and reconcile already-resolved routine waits without asking the owner again. A mechanical observation-watermark/status protocol, if needed, requires an owned reviewed proposal before schema/API implementation.",
     "Given the measured14:18 doctor healthytrue/56warnings with48 stale-SHA findings,49-task activity warning and only1 ownerpending activation, attention explicitly separates actionable owner decisions, Fleet-owned exceptions and advisory recheck cohorts with measured counts. Deduplicate/collapse repeated stale-commit cohorts with per-task/current-owner/current-reproduction drilldown while retaining every observedAt recheck requirement, unsafe recovery warning and pending owner approval. Dirty active implementations and unique commits are evidence, never automatic owner cleanup requests; do not suppress findings, auto-close or acknowledge peers.",
-    "Given actual15:14:01.981 live4174 snapshot projected by canonical316 yields owner1/fleet67/arbiter0 with49 distinct stale/missing task cards plus the duplicate49-record cohort, the reviewed advisory grouping preserves all49 task references, responsible owners, observedAt/current evidence and reproduction drilldown; identical doctor/backlogHealth observations share one advisory record retaining both origins, conflicting/unsafe/unknown conditions remain visible. Projection/scenario evidence is not desktop/mobile/live visual acceptance."
+    "Given actual15:14:01.981 live4174 snapshot projected by canonical316 yields owner1/fleet67/arbiter0 with49 distinct stale/missing task cards plus the duplicate49-record cohort, the reviewed advisory grouping preserves all49 task references, responsible owners, observedAt/current evidence and reproduction drilldown; identical doctor/backlogHealth observations share one advisory record retaining both origins, conflicting/unsafe/unknown conditions remain visible. Projection/scenario evidence is not desktop/mobile/live visual acceptance.",
+    "Later separately scoped doctor/projection scenario distinguishes clean branches with unique preserved commits as informational integration-review state with responsible owner/next step from dirty/conflicting/lost-work hazards; retain unsafe findings and all unique commits, never auto-clean or suppress. Owner0bf measured Manager83/Kernel14/Console3 unique commits and MESSAGE_BACKLOG176; aggregate counts do not transfer acknowledgement authority.",
+    "Later compact Overview count/preview distinguishes actionable named-next-step items from advisory/recheck cohorts, retains full queue and evidence with explicit View all destination and no draft loss; exact source/scenario scope and QA holdout precede edits. Existing accepted4fa cohort source is not expanded or final visual acceptance."
   ],
   "observedAt": "0224abf2e08d",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "owner-console",
   "evidence": [
     "message:9590d8b1-8ccd-478e-9e47-6b7e319404a0:bounded-attention-implementation-authorized",
@@ -68,14 +70,26 @@
     "message:21ffbd96-c4af-4693-a735-6ac30c047ddf:measured49-distincttask-preservation-scenario-evidence-handoff",
     "message:cc973f42-47d5-4c42-aab9-dc7273fe1b80:usable-exact-fourpath-cohort-QA-contributor-consent-five-strict-scenarios-not-implementation-authorization",
     "message:bbbd1861-00c3-4dd5-9258-1fcf2abd8632:arbiter-exact-current-cohort-implementation-authorized-resuming-existingConsole",
-    "message:cc973f42-47d5-4c42-aab9-dc7273fe1b80:usable-fourpath-contributor-consent-five-strict-scenarios"
+    "message:cc973f42-47d5-4c42-aab9-dc7273fe1b80:usable-fourpath-contributor-consent-five-strict-scenarios",
+    "message:1c72c585-cf7f-4db5-b830-ad35b33ddd01:exact-clean-fourpath-cohortcandidate-14focused-fourfreshnativePASS-elevenartifactmanifest",
+    "message:63617ca3-da78-4eff-a409-14d91fa1cf09:same-task-checkpoint-not-closure",
+    "receipt:0e838290-429f-410a-9f6b-4adb027760b3:exact4fa-test-PASS",
+    "receipt:52507987-11c2-4fb4-93f4-ff7f7efeefcc:exact4fa-check-PASS",
+    "receipt:d469066a-8884-4bae-b264-5f66721375de:exact4fa-dashboard-PASS-eleven-artifacts",
+    "receipt:8d2e4b41-45a4-424c-be6f-855686118aa0:exact4fa-lint-PASS",
+    "message:33d44dad-3ab1-4ac4-8b76-8017297decad:independent-QA-exact4fa-source-nativegate-accepted-5focused-fourPASS-elevenhashes-not-live",
+    "artifact:d469066a-8884-4bae-b264-5f66721375de:Manager-independently-eleven-regularpaths-bytecounts-SHA256-verified",
+    "message:33d44dad-3ab1-4ac4-8b76-8017297decad:independent-exact4fa-source-native-qualification-accepted",
+    "integration:0d46fb5c-1027-4ead-b969-f760afb72e9f:landed2026-10-01T16:25:59.349Z:exact4fa:manager-native-plan-no-blockers",
+    "message:0bf6a212:owner-future-cleanunique-worktree-warning-vs-hazard-distinction",
+    "message:9ab0e108-ac63-4de8-87fe-8986ec05cf21:future-bounded-overview-and-advisorycount-roadmap-requirement"
   ],
-  "commit": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
-  "integrationRequest": "9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b",
-  "blockedReason": null,
+  "commit": "4fa9bd7d490fb740eb1d0bdf3dc9cafa2f309ba1",
+  "integrationRequest": "0d46fb5c-1027-4ead-b969-f760afb72e9f",
+  "blockedReason": "Exact 4fa9 source independently accepted by QA33d44dad/6dfa and landed once via native request0d46 at16:25:59 with authorized Manager plan no blockers/four native PASS/eleven hashes. Source review and integration are resolved. Full acceptance remains blocked on actual live/installed desktop/mobile owner flow and served UI/API provenance; generated demo artifact checks do not establish live visual acceptance. Pending human runtime75 is separate from satisfied PNG recovery; pointer switch alone cannot qualify missing blockedReason. No installation, host, provider, wakes, schema or publication action.",
   "createdAt": "2026-09-30T22:56:50.255Z",
-  "updatedAt": "2026-10-01T15:24:07.630Z",
-  "revision": 14,
+  "updatedAt": "2026-10-01T16:28:00.000Z",
+  "revision": 18,
   "history": [
     {
       "from": null,
@@ -174,6 +188,34 @@
       "actorId": "session-manager",
       "at": "2026-10-01T15:24:07.630Z",
       "note": "Record SAME existing item's bounded corrective implementation phase under actual arbiterbbbd and QAcc973 after freshConsole nextidle/no otheractive. ONLY site/attention-projection.js,site/console.js,newtest/fleet/console-attention-cohorts.test.mjs,appendTIN; CSS/drivers/goldens/backend excluded. Arbiter controls existingConsole resume; Manager startsnone. No claim edits/tests/candidate already completed; guardedcleanconvergence to316 beforeedit preservesuniquecommits. Originalfullcriteria/history/oldcandidate/nativechecks/live desktop/mobile/browser blockers remain incomplete; no sourceacceptance/fulltaskclosure/schema/runtime75/wakes/host change."
+    },
+    {
+      "from": "in_progress",
+      "to": "verification",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:14:13.117Z",
+      "note": "SAME item's implemented cohort candidate checkpoint after actual current cleanHEAD4fa, exact fourpath delta and four nativePASS/invalidReason null independently refreshed. QA exactsource acceptance pending; no integration request or task completion inferred. Preserve full criteria/history/oldcb145 acceptance and supersededfailedlint; real live installed desktop/mobile remains open and workflow17 servedprovenance gap separate. Single integration only after actual QA and queue/currentguards; no duplicatec532 submission/landing, provider/runtime75/schema/wake action."
+    },
+    {
+      "from": "verification",
+      "to": "ready_to_integrate",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:17:42.476Z",
+      "note": "Actual addressedQA33d ACCEPTS exactclean4fa source/nativegates; no self-source acceptance. Ready only for ONE guarded exactcommit integration request by existingConsole identity after currentqueue lookup. Full16criteria/live desktopmobile acceptance remain incomplete; preserve oldcb145/d93/unqualifiedhistory and source/operational boundary. No duplicate submit as c532; native authority/evaluate/plan/land gates and queue refusals authoritative, no manual bypass/runtime75/schema/provider/wake/publication."
+    },
+    {
+      "from": "ready_to_integrate",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:26:48.285Z",
+      "note": "Single exact native landing completed under delegated authority; preserve all receipts and historical requests, including failed d93 lint. Do not close full attention task or create duplicate integration. Actual live criteria remain open."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T16:28:00.000Z",
+      "note": "Reviewed metadata-only expected revision17 records actual owner0bf/9ab future requirements on existing attention/workflow roadmap after single source4fa landing. No new task, current source scope expansion, assignment, cleanup or test relaxation. Preserve all original16criteria/state/owner/exact4fa/0d46/history and incomplete actual live acceptance."
     }
   ]
 }
