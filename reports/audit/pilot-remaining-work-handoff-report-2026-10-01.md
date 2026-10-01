@@ -1,6 +1,97 @@
 # Current pilot remaining-work handoff
 
-## Current decisions and qualification boundaries at 11:25 UTC
+## Current evidence and reviewed-context waits at 11:53 UTC
+
+Canonical brief still matches `d7e6d69`. Default startup brief again failed at
+the SQLite read-only sandbox boundary. Its exact escalation first timed out in
+automatic approval review, then the permitted single retry succeeded without
+changing permissions, copying state or bypassing the brief. Manager starts clean
+`e992f12`; canonical remains clean0fdf, Kernel clean a4bba018, Console clean0747b35.
+Current task and explicit own unread100 queries precede these status claims.
+Requested owner44512241 and eca7ded3 were reread from own addressed history;
+history was not used to infer unread completeness. Current unread initially
+contained four newer requests, individually understood/routed/acknowledged.
+
+Kernel **5fe7ff9e** hands off exact
+**a4bba0181335cdc8eb83a15522f17fc18c251bed**. Only the two previously consented
+test/doc paths changed from7908; source/API/schema are unchanged. Manager inspected
+the whitespace-aware SQL classifier, direct multiline INSERT count assertion,
+helper audit-SQL assertion and deterministic restoration. Owner **96e563ad**
+independently observed original6/6 PASS and external direct-mutant FAIL specifically
+for one counted audit INSERT, accepting only this proof correction for source review.
+Actual QA **d29c68c8** now independently accepts the exact narrow source/test-integrity
+correction after hermetic focused6/6 PASS and contained-mutation review. QA's
+elevated execution of unreviewed external /tmp mutants was refused; those scripts
+were NOT independently executed by QA. Owner external evidence, QA focused evidence
+and Manager diff inspection retain separate attribution. No guard workaround followed.
+
+The SAME565 task is **blocked7 at a4bba018**, with its original candidates,
+criteria, proof failures and histories retained. Its stored pending-QA phrase is
+superseded by actual d29 narrow acceptance, recorded here and in peer handoffs;
+do not manufacture lifecycle transitions just to rewrite it. The actual remaining
+gate is **CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED current2/required3 before native
+source-check execution**, with no eligible native receipt/integration request.
+Source implementation and specific read-only proof review are available; full task,
+native qualification, landing and operational acceptance remain open. QA handoff
+**17fcfe88** and Runtime **238146b3** carry the exact candidate; subsequent d29
+updates resolve the focused review wait without granting wider acceptance.
+
+Console owner **8a4bff26** confirms the dirty-source probe fixed stale-preview
+removal/deep-link targeting but exposed NEXT-refresh draft loss: revision1→2
+invalidation preserves urgent/reason, second unchanged revision2 refresh previously
+reset low/empty. Console's current clean **0747b35341642e967fa75c4cd5ddcf8e2259ac2f**
+is a committed draft-preservation follow-up, not automatically accepted or qualified.
+Manager **ddc0528f/53ae5163** routes exact second-refresh/navigation values,
+absent stale token/preview/Confirm, and current-revision re-preview requirements.
+QA **d29c68c8** grants same-scope strengthening only: console.js, navigation test,
+additive integrity note and existing narrow demo driver. No backend/shared helper,
+fixture/capture changes or live acceptance. Exact eca7 Overview title/original demo
+assertion and all unchanged-current-preview/deep-link criteria remain strict.
+Fresh exact candidate-source gates and independent QA/real visual evidence are
+requested from Console; no old candidate receipt is reused. SAME workflow remains
+in_progress10 at latest ledger refresh; Runtime e440 assigned3, no duplicate active
+implementation or provider start.
+
+Owner **29bb0aa3** corrects Work's a377 design and prior Manager guidance: native
+receipt authority must not require the subject to be already landed. Separate
+THREE axes: exact engine provenance; check subject/scope (unlanded clean candidate
+source versus installed operational runtime); receipt authority (registered compatible
+authenticated adapter versus isolated nonpromotable fixture). TORCH already requires
+candidate checks before integration. A genuinely compatible versioned SOURCE adapter
+may bind a registered-project candidate attempt with exact candidate runner bytes,
+identity/definition/frozen-input/guards/terminal/artifacts independently authenticated.
+This is distinct from post-install operational qualification. It does not equate an
+old installed checker with candidate execution or authorize schema lowering,
+fixture promotion, forged context or recovery by assertion.
+
+Work **f0492d4a**, Kernel **43d6be57**, Release **ec47cee4** and QA **d7b741e7**
+receive the concrete revision/review request. Complete general design and exact
+context/spec18/20/ADR/CLI/scenario/contributor-policy authority must be reviewed
+before code. If actual live2/3 mixed state supports no legitimate adapter, retain
+that real compatibility blocker; do not design in a post-landing-only circularity.
+Task6e4 remains proposed1/unassigned; current native landing gates are unchanged.
+
+Health remains37 stale observed-commit findings and two resolved-dependency warnings;
+none auto-fixed. Fleet evolution eight domain sets and hierarchy nine recurring
+sets/eleven historical coordination requests justify contract/process repair within
+the existing six specialists, not another identity or hierarchy. Fleet changes empty.
+Kernel next is idle after actual blocked7, meaning no eligible assignment, not no
+remaining work: inventory1e688 and reservation125 remain genuinely blocked, dormant
+Runtime API2b4 proposed. Full service/pipeline/QA-record/visual roadmap is retained.
+Owner-only switch approval75 remains pending; five-PNG consent applies only to
+completed exact Runtime recovery. Wakes, installation switch, live schema recovery,
+host activation, extra identities and provider launches remain off-scope.
+
+Final11:54 refresh: explicit unread100 returns empty; current manager-check-in
+findings/structured manager waits are empty. Ledger is55 tasks:39 proposed,
+8 blocked,6 completed,1 assigned (Runtime e4403),1 in_progress (Console workflow10).
+QA d29 updates are routed through Console **25aed3cc**, Kernel **16e1a9ad** and
+Runtime **5fc64b1a**. Those messages settle the narrow contributor/proof-review
+waits while retaining actual native/visual/context-policy gates. There is no native
+metadata-amend operation or blocked→blocked transition; preserve the task's stored
+historical phrase and current durable superseding evidence without lifecycle churn.
+
+## Historical decisions and qualification boundaries at 11:25 UTC
 
 Fresh owner **c55359eb** independently verifies7908 normal6/6 PASS, original
 helper audit mutant FAIL on counted writes, and a direct multiline audit INSERT

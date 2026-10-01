@@ -21,7 +21,7 @@
   "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
   "feature": "Unread-first inbox dependency",
   "milestone": "Before Runtime inbox integration and dormant service components",
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "project-kernel",
   "evidence": [
     "message:7abee039-9bde-4706-9876-4e50385d9ddb:Runtime-wrapper-contract",
@@ -35,14 +35,17 @@
     "message:019aff91-71f5-42c2-9573-c1abd1b45c6b:same-assignment-bounded-strengthening",
     "message:44c76670-194b-4011-83bc-a03872fa0188:7908d1b-amended-clean-source-unchanged-original/mutant/restored-evidence-and-refusal",
     "git:7908d1b:only-test/fleet/control-plane.test.mjs-and-docs/TEST_INTEGRITY.md-delta-from-f67:independently-inspected",
-    "message:c55359eb-08e8-45be-8ed5-4b2902fae52c:independent-both-mutants-fail-remaining-leading-whitespace-DML-count-gap"
+    "message:c55359eb-08e8-45be-8ed5-4b2902fae52c:independent-both-mutants-fail-remaining-leading-whitespace-DML-count-gap",
+    "message:5fe7ff9e-6925-4b6d-96e1-ee244b6b41a1:actual-amended-clean-a4bba018-handoff",
+    "message:96e563ad-8af4-4597-9e8d-389050c6f32d:independent-narrow-proof-accepted-not-task/native/landing",
+    "message:29bb0aa3-c245-491a-9576-258f602ce4c0:candidate-check-subject-vs-receipt-authority-vs-operational-scope"
   ],
-  "commit": "7908d1b06e701184c04fedefaf3af977422ae976",
+  "commit": "a4bba0181335cdc8eb83a15522f17fc18c251bed",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Implemented observeMessages source plus exact QA-consented WAL proof correction at clean a4bba018. Owner96e independent original6/6 PASS/direct multiline INSERT mutant FAIL executed1 DML accepts this specific source-review proof only; exact independent QA still pending. Actual source TORCH test refuses before execution CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED currentVersion2 requiredVersion3, no qualified native receipt/integration. Real gate is supported compatible candidate-source adapter/context/schema evidence, not resolved test consent or missing API; no live schema recovery/install/fixture promotion/oldchecker waiver.",
   "createdAt": "2026-10-01T10:57:51.775Z",
-  "updatedAt": "2026-10-01T11:25:28.661Z",
-  "revision": 6,
+  "updatedAt": "2026-10-01T11:51:11.335Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -85,6 +88,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T11:25:28.661Z",
       "note": "Fresh actual owner independent7908 review: normal6/6 PASS/helper audit mutant FAIL on instrumented calls/direct multilineINSERT mutant FAIL on logical equality. A precise remaining zero-DML instrumentation gap requires existing test/doc-only strengthening on SAME task: leading whitespace after start-of-string is not classified; count actual direct multilineINSERT and preserve every existing assertion/source/schema behavior. Resume bounded test-only correction within actual QA6d9/6e4 consent, no new assignment/provider turn or production source edits. Real native schema2/3 refusal remains an unresolved qualification gate, not waived by these source results. Return amended exact candidate and independent review before acceptance."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T11:51:11.335Z",
+      "note": "Fresh canonical brief/current task/clean exact candidate and two consented path diff reviewed. SAME component implementation/proof correction finished; record genuine unresolved native schema/context/source-qualification gate and independent QA, preserve every original candidate/history/criteria/refusal. No further resolved test-consent hold, no final acceptance/landing, no new Kernel assignment/provider launch. Native registered receipt authority can legitimately bind unlanded candidate-source checks under reviewed compatible adapter; future design cannot require all real receipts post-landing. Current unsupported2/3stillrefuses and no prose policy waiver is granted."
     }
   ]
 }
