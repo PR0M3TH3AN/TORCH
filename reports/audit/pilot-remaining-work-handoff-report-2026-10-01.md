@@ -1,5 +1,20 @@
 # Current pilot remaining-work handoff
 
+## Current arbiter continuation at 15:52 UTC
+
+Owner **d21e4769** confirms actual narrow B0 acceptance and independently verified
+workflow17 served criteria; existing Release resumed for read-only owned provenance
+interface proposal. SourceVersionService.status may reconcile journal/registry,
+so it is excluded from pure reader use; no current install/reconcile/service action.
+Current Console draft measured owner1/Fleet17/advisory1, but non-enumerable advisory
+drops all49 references through JSON/Object.keys. Same-scope direct ownercc267
+correction is active: enumerable populated advisory, renderer empty defaults and
+strict new serialization/reference/provenance/observed-SHA-versus-date scenarios.
+Manager routes existing Console/QA/Release; no source/native/browser acceptance
+from these draft counts or extra assignment/start. B1 proposal already supplied;
+its private issuer cannot accept forgeable public metadata callbacks. Actual peer
+entry decisions and separate arbiter code authority remain open.
+
 ## Current exact B0 verdict and next B1 handoff at 15:47 UTC
 
 Actual **QA3cf79613** ACCEPTS narrowly clean exactc08 B0 fixture-only cumulative
