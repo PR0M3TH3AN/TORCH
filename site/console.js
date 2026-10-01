@@ -954,13 +954,18 @@ function renderFlowWatch(snapshot) {
 function attentionGroups(snapshot) {
   return globalThis.TorchAttentionProjection.groups(snapshot);
 }
+function attentionItemCount(groups) {
+  return ['owner', 'fleet', 'advisory', 'arbiter']
+    .reduce((count, key) => count + (groups[key]?.length ?? 0), 0);
+}
 function renderAttention(groups) {
   const definitions = [
     ['owner', 'Waiting on you', 'Only requests that name the project owner as decision-maker.'],
     ['fleet', 'Fleet handling', 'A named domain owns the next step; unknown ownership stays explicit.'],
+    ['advisory', 'Advisory / recheck cohorts', 'Observed evidence grouped for rechecking; these findings do not assign an owner action.'],
     ['arbiter', 'Arbiter handling', 'No observed item has structured evidence assigning its next step exclusively to an arbiter.'],
   ];
-  const total = Object.values(groups).reduce((sum, items) => sum + items.length, 0);
+  const total = attentionItemCount(groups);
   setText('#attention-count', `${total} ${total === 1 ? 'item' : 'items'}`);
   setHtml('#attention-list', definitions.map(([key, title, description]) => {
     const items = groups[key];
@@ -973,6 +978,14 @@ function renderAttention(groups) {
           ${item.evidence.length > 120
             ? `<details class="attention-evidence"><summary>Evidence and references</summary><p>${escapeHtml(item.evidence)}</p></details>`
             : `<small class="attention-evidence-short">Evidence: ${escapeHtml(item.evidence)}</small>`}
+          ${item.observations ? `<details class="attention-cohort-details"><summary>Recheck observations (${item.observations.length})</summary><ul>${item.observations.map((observation) => `<li>
+            <code>${escapeHtml(observation.taskId ?? 'Task reference not recorded')}</code> · ${escapeHtml(observation.code)}
+            · Owner: ${escapeHtml(observation.owner ?? 'Owner not recorded')}
+            · Observed at: ${escapeHtml(observation.observedAt ?? 'Not recorded')}
+            · Current observed commit: ${escapeHtml(observation.currentObservedCommit ?? 'Not recorded')}
+            · Reproduction: ${escapeHtml(observation.reproductionStatus ?? 'UNKNOWN')}
+            · Sources: ${escapeHtml(observation.sources.join(', ') || 'Not recorded')}
+          </li>`).join('')}</ul></details>` : ''}
           <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
           ${item.decisionApprovalId ? `<div class="attention-quick-actions" role="group" aria-label="Owner decision shortcuts for ${escapeHtml(item.title)}">
             <button type="button" data-attention-decision="approved" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Approve</button>
@@ -1012,7 +1025,7 @@ function render(snapshot) {
   const parts = [`${agents.length} persistent ${agents.length === 1 ? 'identity' : 'identities'}`,
     `${working} ${working === 1 ? 'task' : 'tasks'} in progress`];
   if (blocked) parts.push(`${blocked} blocked`);
-  const attentionCount = Object.values(attention).reduce((sum, items) => sum + items.length, 0);
+  const attentionCount = attentionItemCount(attention);
   setText('#project-summary', snapshot.mode === 'installed'
     ? `${parts.join(' · ')}. ${attentionCount ? `${attentionCount} item${attentionCount === 1 ? '' : 's'} need a named next step.` : 'No owner decision is currently waiting in the observed queues.'}`
     : 'This repository has not been installed as a TORCH Fleet. The view is showing repository intake only.');

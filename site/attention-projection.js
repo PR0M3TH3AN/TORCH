@@ -12,9 +12,39 @@ function worktreeProblemLabel(problem) {
 function attentionGroups(snapshot) {
   const groups = { owner: [], fleet: [], arbiter: [] };
   const agents = new Map((snapshot.agents ?? []).map((agent) => [agent.areaId, agent]));
+  const tasks = new Map((snapshot.backlog ?? []).map((task) => [task.id, task]));
   const agentName = (id) => agents.get(id)?.title ?? id ?? 'Owner not recorded';
   const add = (group, item) => groups[group].push(item);
   const approvals = (snapshot.approvalRequests?.items ?? []).filter((approval) => approval.status === 'pending');
+
+  const advisory = [];
+  Object.defineProperty(groups, 'advisory', { value: advisory });
+  const recheckCodes = new Set(['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING']);
+  const rechecks = new Map();
+  const recheckValue = (finding, key, fallback) => Object.hasOwn(finding, key) && finding[key] !== undefined
+    ? finding[key] : fallback;
+  const addRecheck = (finding, source) => {
+    if (finding.severity !== 'warning' || !recheckCodes.has(finding.code)) return;
+    const taskId = recheckValue(finding, 'taskId', null);
+    const task = tasks.get(taskId);
+    const observation = {
+      taskId,
+      code: finding.code,
+      owner: recheckValue(finding, 'owner', task?.owner ?? null),
+      observedAt: recheckValue(finding, 'observedAt', task?.observedAt ?? null),
+      currentObservedCommit: recheckValue(finding, 'currentObservedCommit',
+        snapshot.repository?.head ?? snapshot.project?.head ?? null),
+      reproductionStatus: finding.reproductionStatus ?? finding.reproductionState ?? 'UNKNOWN',
+      sources: [],
+    };
+    const fingerprint = JSON.stringify([
+      observation.taskId, observation.code, observation.owner, observation.observedAt,
+      observation.currentObservedCommit, observation.reproductionStatus,
+    ]);
+    const retained = rechecks.get(fingerprint) ?? observation;
+    if (!retained.sources.includes(source)) retained.sources.push(source);
+    rechecks.set(fingerprint, retained);
+  };
 
   for (const approval of approvals) {
     const isOwner = approval.approver === 'owner';
@@ -76,7 +106,8 @@ function attentionGroups(snapshot) {
   }
 
   for (const finding of findings.filter((entry) => ['error', 'warning'].includes(entry.severity)
-    && !['MESSAGE_BACKLOG', 'WORKTREE_PROBLEM'].includes(entry.code))) {
+    && !['MESSAGE_BACKLOG', 'WORKTREE_PROBLEM'].includes(entry.code)
+    && !(entry.severity === 'warning' && recheckCodes.has(entry.code)))) {
     const recoveryGap = finding.code === 'RECOVERABILITY' && !finding.offMachine;
     const humanTitle = recoveryGap
       ? 'Off-machine recovery copy is not verified'
@@ -136,14 +167,28 @@ function attentionGroups(snapshot) {
     evidence: 'Review the recorded task activity before asking for a change.', href: '#activity-review', action: 'Open activity review',
   });
 
-  const staleEvidence = (snapshot.backlogHealth?.findings ?? []).filter((finding) =>
-    ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'].includes(finding.code));
-  if (staleEvidence.length) add('fleet', {
-    tone: 'review', title: `${staleEvidence.length} task evidence record${staleEvidence.length === 1 ? '' : 's'} need refresh`,
-    owner: 'Task owner not recorded', detail: 'Some backlog evidence refers to an old or unreachable commit. Re-check it before dispatch.',
-    evidence: staleEvidence.map((finding) => `${finding.taskId ?? 'task not recorded'} · ${finding.code}`).join('; '),
-    href: '#backlog-board', action: 'Inspect backlog evidence',
+  for (const finding of findings) addRecheck(finding, 'doctor');
+  for (const finding of snapshot.backlogHealth?.findings ?? []) addRecheck(finding, 'backlogHealth');
+  const observations = [...rechecks.values()].sort((left, right) => {
+    const leftKey = JSON.stringify([left.taskId, left.code, left.owner, left.observedAt,
+      left.currentObservedCommit, left.reproductionStatus]);
+    const rightKey = JSON.stringify([right.taskId, right.code, right.owner, right.observedAt,
+      right.currentObservedCommit, right.reproductionStatus]);
+    return leftKey < rightKey ? -1 : leftKey > rightKey ? 1 : 0;
   });
+  if (observations.length) {
+    const taskReferences = [...new Set(observations.map((item) => item.taskId).filter((id) => id != null))];
+    const countLabel = taskReferences.length === observations.length
+      ? `${taskReferences.length} task evidence recheck${taskReferences.length === 1 ? '' : 's'}`
+      : `${observations.length} observed evidence record${observations.length === 1 ? '' : 's'} to recheck`;
+    advisory.push({
+      tone: 'info', title: countLabel, owner: 'Advisory recheck',
+      detail: 'Observed backlog evidence may refer to an old or unreachable commit. Recheck each observation before dispatch; reproduction remains UNKNOWN until independently verified.',
+      evidence: `${observations.length} distinct observation${observations.length === 1 ? '' : 's'} · ${taskReferences.length} recorded task reference${taskReferences.length === 1 ? '' : 's'}`,
+      href: '#backlog-board', action: 'Inspect backlog evidence',
+      observations, taskReferences,
+    });
+  }
   return groups;
 }
 
