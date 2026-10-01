@@ -173,15 +173,23 @@ footer div { display: flex; gap: 1.5rem; }
 .panel-heading { padding-bottom: .65rem; border-bottom: 1px solid var(--line); }
 .panel-heading h2, .panel-heading h3 { margin: 0; font: 650 1rem/1.2 var(--display); }
 .panel-heading span, .section-heading > span { color: var(--muted); font-size: .76rem; text-align: right; }
-.attention-list { display: grid; }
-.attention-item { display: grid; grid-template-columns: 9px 1fr; gap: .7rem; padding: .8rem 0; border-bottom: 1px solid var(--line); }
+.attention-list { display: grid; gap: 1rem; }
+.attention-group { min-width: 0; padding-top: .6rem; border-top: 1px solid var(--line); }
+.attention-group-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; }
+.attention-group-heading h3 { margin: 0; font: 650 .9rem/1.25 var(--display); }
+.attention-group-heading span, .attention-empty { color: var(--muted); font-size: .72rem; }
+.attention-empty { margin: .35rem 0 0; line-height: 1.4; }
+.attention-item { display: grid; grid-template-columns: 9px minmax(0, 1fr); gap: .7rem; padding: .75rem 0; border-bottom: 1px solid var(--line); }
 .attention-mark { width: 7px; height: 7px; margin-top: .45rem; background: var(--field); }
 .tone-urgent .attention-mark { background: var(--signal); }
 .tone-review .attention-mark { background: var(--route); }
 .tone-decision .attention-mark { background: #f3bd55; }
+.tone-info .attention-mark { background: var(--field); }
+.attention-copy { min-width: 0; }
 .attention-item strong { display: block; font-size: .86rem; overflow-wrap: anywhere; }
-.attention-item p { margin: .18rem 0; color: var(--muted); font-size: .78rem; line-height: 1.4; }
-.attention-item a { color: var(--route); font-size: .76rem; font-weight: 650; }
+.attention-item p { margin: .18rem 0 .35rem; color: var(--muted); font-size: .78rem; line-height: 1.4; }
+.attention-item small { display: block; color: var(--muted); font-size: .69rem; line-height: 1.35; overflow-wrap: anywhere; }
+.attention-item a { display: inline-block; margin: .35rem .8rem 0 0; color: var(--route); font-size: .76rem; font-weight: 650; }
 .board-section, .console-section { padding-block: 1.65rem; border-bottom: 1px solid var(--line); scroll-margin-top: 1rem; }
 .section-heading { margin-bottom: 1rem; }
 .section-heading h2 { margin: 0; }
