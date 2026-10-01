@@ -2321,3 +2321,35 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Candidate engine and artifact sealing Phase A (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-engine-pure-fixture
+      given: Hermetic frozen fixture descriptors, bounded command data, explicit environment and a fixture artifact directory
+      when: The isolated Phase-A engine observes a child execution
+      then: Only bounded parent-observed terminal data and a nonpromotable SourceAttestation are returned
+    - id: SCN-artifact-manifest-seal
+      given: Fixed regular artifact bytes in a hermetic temporary directory
+      when: The parent seals the directory
+      then: Canonical sorted paths, byte lengths and SHA-256 values are write-once and verify unchanged
+  observable_outcomes:
+    - Raw exit, error, signal, timeout and overflow observations; zero exit plus overflow is not success
+    - No receipt identity, writer capability, registered-state handle or consumer eligibility
+    - Capped canonical manifests and refusals for links, traversal, special files, overwrite and post-seal drift
+  determinism_controls:
+    - Fixed bytes, injected executors and isolated temporary directories
+    - No retries, sleeps, network, registered control-plane state or provider process
+  anti_cheat_rationale:
+    prevents:
+      - Hard-coded PASS or fixture receipt promotion
+      - Ambient environment or registered-state capability leakage
+      - Snapshot/golden rubber-stamping and unbounded output masking
+      - Link, traversal, overwrite or post-seal artifact substitution
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
