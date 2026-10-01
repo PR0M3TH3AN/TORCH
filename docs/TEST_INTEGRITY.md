@@ -2744,8 +2744,10 @@ test_integrity_note:
       then: "The task reference remains visible while missing owner and provenance remain null and reproduction is labelled UNKNOWN"
   observable_outcomes:
     - "One 49-reference advisory cohort replaces duplicated stale/missing attention cards while preserving exact drilldown references"
+    - "A populated advisory group remains enumerable and JSON-serializable; an empty projection preserves its original owner/fleet/arbiter object shape"
     - "Each deduplicated observation retains doctor and backlogHealth provenance; conflicting records are never merged by code alone"
     - "Owner decisions, unsafe recovery, schema errors, unknown wakes, delivery operations, and same-code errors remain in their existing action groups"
+    - "Observed source/revision displays the exact observedAt SHA without presenting it as a clock timestamp"
     - "Projection does not mutate snapshot data or invoke state-changing actions, and existing owner quick-action preview/revision/draft assertions remain unchanged"
     - "Source/scenario qualification is not actual live desktop/mobile visual acceptance"
   determinism_controls:

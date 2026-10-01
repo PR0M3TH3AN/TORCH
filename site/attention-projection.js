@@ -18,7 +18,6 @@ function attentionGroups(snapshot) {
   const approvals = (snapshot.approvalRequests?.items ?? []).filter((approval) => approval.status === 'pending');
 
   const advisory = [];
-  Object.defineProperty(groups, 'advisory', { value: advisory });
   const recheckCodes = new Set(['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING']);
   const rechecks = new Map();
   const recheckValue = (finding, key, fallback) => Object.hasOwn(finding, key) && finding[key] !== undefined
@@ -188,6 +187,7 @@ function attentionGroups(snapshot) {
       href: '#backlog-board', action: 'Inspect backlog evidence',
       observations, taskReferences,
     });
+    groups.advisory = advisory;
   }
   return groups;
 }

@@ -25,7 +25,7 @@ function finding(task, source = {}) {
 function cohortFixture(count = 49) {
   const tasks = Array.from({ length: count }, (_, index) => ({
     id: taskId(index + 1), owner: `domain-${String(index + 1).padStart(2, '0')}`,
-    observedAt: `2026-09-${String((index % 28) + 1).padStart(2, '0')}T12:00:00.000Z`,
+    observedAt: String(index + 1).padStart(40, '0'),
   }));
   const findings = tasks.map((task, index) => finding(task, {
     code: index % 2 ? 'BACKLOG_OBSERVED_COMMIT_MISSING' : 'BACKLOG_OBSERVED_COMMIT_STALE',
@@ -47,6 +47,13 @@ test('SCN-attention-advisory-cohort-cardinality-and-exact-references: 49 equival
   assert.equal(groups.fleet.filter((item) => /BACKLOG_OBSERVED_COMMIT_(STALE|MISSING)/.test(item.title)).length, 0);
   assert.deepEqual(groups.advisory[0].taskReferences, expectedReferences);
   assert.equal(groups.advisory[0].observations.length, 49);
+  assert.ok(Object.keys(groups).includes('advisory'));
+  assert.equal(Object.values(groups).reduce((count, group) => count + group.length, 0), 1,
+    'the enumerable cohort participates in the existing group-count boundary');
+  const serialized = JSON.parse(JSON.stringify(groups));
+  assert.equal(serialized.advisory.length, 1);
+  assert.deepEqual(serialized.advisory[0].taskReferences, expectedReferences);
+  assert.equal(serialized.advisory[0].observations.length, 49);
   const fixture = cohortFixture();
   for (const observation of groups.advisory[0].observations) {
     const task = fixture.backlog.find((entry) => entry.id === observation.taskId);
@@ -90,6 +97,7 @@ test('SCN-attention-advisory-cohort-cardinality-and-exact-references: 49 equival
   assert.equal(await advisory.locator('.attention-item').count(), 1);
   assert.equal(await advisory.locator('.attention-cohort-details li').count(), 49);
   assert.deepEqual(await advisory.locator('.attention-cohort-details li code').allTextContents(), expectedReferences);
+  assert.match(await advisory.locator('.attention-cohort-details li').first().textContent(), /Observed source\/revision: 0{39}1/);
   assert.equal(await page.locator('#attention-list .attention-group-fleet .attention-item').filter({
     hasText: /BACKLOG_OBSERVED_COMMIT_(STALE|MISSING)|task evidence record.*need refresh/,
   }).count(), 0);
@@ -105,7 +113,7 @@ test('SCN-attention-advisory-provenance-and-semantic-conflicts: equal sources me
     { field: 'taskId', firstId: 'TASK-ID-A', secondId: 'TASK-ID-B' },
     { field: 'code', change: { code: 'BACKLOG_OBSERVED_COMMIT_MISSING' } },
     { field: 'owner', change: { owner: 'domain-conflict' } },
-    { field: 'observedAt', change: { observedAt: '2026-10-01T12:01:00.000Z' } },
+    { field: 'observedAt', change: { observedAt: '1'.repeat(40) } },
     { field: 'currentObservedCommit', change: { currentObservedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } },
     { field: 'reproductionStatus', change: { reproductionStatus: 'REPRODUCED' } },
   ];
@@ -114,7 +122,7 @@ test('SCN-attention-advisory-provenance-and-semantic-conflicts: equal sources me
   const tasks = [];
   for (const [index, conflict] of conflictCases.entries()) {
     const id = `TASK-CONFLICT-${conflict.field}`;
-    const firstTask = { id: conflict.firstId ?? id, owner: 'domain-a', observedAt: `2026-10-01T12:0${index}:00.000Z` };
+    const firstTask = { id: conflict.firstId ?? id, owner: 'domain-a', observedAt: String(index + 1).padStart(40, '0') };
     const secondTask = conflict.secondId
       ? { ...firstTask, id: conflict.secondId }
       : firstTask;
@@ -139,7 +147,7 @@ test('SCN-attention-advisory-provenance-and-semantic-conflicts: equal sources me
     assert.ok(['doctor', 'backlogHealth'].includes(observation.sources[0]));
   }
 
-  const equalTask = { id: 'TASK-EQUAL', owner: 'domain-equal', observedAt: '2026-10-01T13:00:00.000Z' };
+  const equalTask = { id: 'TASK-EQUAL', owner: 'domain-equal', observedAt: 'b'.repeat(40) };
   const equalGroups = project({ repository: { head: '316d8b7480c2e10925ebdff8310fe26ef5a881a8' }, backlog: [equalTask],
     doctor: { findings: [finding(equalTask)] }, backlogHealth: { findings: [finding(equalTask)] } });
   assert.equal(equalGroups.advisory[0].observations.length, 1);
@@ -158,7 +166,7 @@ test('SCN-attention-advisory-does-not-hide-owner-or-fleet-risks: unsafe and unkn
       { severity: 'error', code: 'BACKLOG_HEALTH_INVALID', message: 'Backlog schema validation failed.' },
       { severity: 'warning', code: 'RECOVERABILITY', offMachine: false, recommendation: 'Verify the recovery copy.' },
     ] },
-    backlog: [{ id: 'TASK-ADVISORY', owner: 'provider-runtime', observedAt: '2026-10-01T10:00:00.000Z' }],
+    backlog: [{ id: 'TASK-ADVISORY', owner: 'provider-runtime', observedAt: 'f'.repeat(40) }],
     managerWakes: { blockingCount: 1, reservations: [{ managerId: 'provider-runtime', scheduleId: 'wake-a', outcome: 'unknown', blocksManagerWake: true }] },
     deliveryOperations: [{ operation: 'publish', state: 'unknown', actor: 'provider-runtime', commit: '316d8b7480c2e10925ebdff8310fe26ef5a881a8' }],
   });
@@ -178,7 +186,7 @@ test('SCN-attention-advisory-does-not-hide-owner-or-fleet-risks: unsafe and unkn
 test('SCN-attention-advisory-projection-is-read-only: projection preserves snapshot and existing owner decision shape', () => {
   const snapshot = {
     repository: { head: '316d8b7480c2e10925ebdff8310fe26ef5a881a8' },
-    backlog: [{ id: 'TASK-READONLY', owner: 'provider-runtime', observedAt: '2026-10-01T12:00:00.000Z' }],
+    backlog: [{ id: 'TASK-READONLY', owner: 'provider-runtime', observedAt: '0'.repeat(40) }],
     doctor: { findings: [{ severity: 'warning', code: 'BACKLOG_OBSERVED_COMMIT_STALE', taskId: 'TASK-READONLY' }] },
     backlogHealth: { findings: [{ severity: 'warning', code: 'BACKLOG_OBSERVED_COMMIT_STALE', taskId: 'TASK-READONLY' }] },
     approvalRequests: { items: [{ id: 'owner-confirm', revision: 7, status: 'pending', approver: 'owner', requester: 'provider-runtime',
@@ -224,4 +232,8 @@ test('SCN-attention-advisory-unknown-fields-stay-unknown: absent owner and obser
   assert.equal(observation.currentObservedCommit, null);
   assert.equal(observation.reproductionStatus, 'UNKNOWN');
   assert.deepEqual(observation.sources, ['doctor']);
+  assert.equal(Object.hasOwn(groups, 'advisory'), true);
+  const emptyGroups = project({ doctor: { findings: [] }, backlogHealth: { findings: [] } });
+  assert.deepEqual(emptyGroups, { owner: [], fleet: [], arbiter: [] });
+  assert.equal(Object.hasOwn(emptyGroups, 'advisory'), false);
 });

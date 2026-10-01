@@ -968,7 +968,7 @@ function renderAttention(groups) {
   const total = attentionItemCount(groups);
   setText('#attention-count', `${total} ${total === 1 ? 'item' : 'items'}`);
   setHtml('#attention-list', definitions.map(([key, title, description]) => {
-    const items = groups[key];
+    const items = groups[key] ?? [];
     return `<section class="attention-group attention-group-${key}" aria-labelledby="attention-${key}-title">
       <div class="attention-group-heading"><h3 id="attention-${key}-title">${title}</h3><span>${items.length}</span></div>
       ${items.length ? items.map((item) => `<article class="attention-item tone-${escapeHtml(item.tone)}">
@@ -981,7 +981,7 @@ function renderAttention(groups) {
           ${item.observations ? `<details class="attention-cohort-details"><summary>Recheck observations (${item.observations.length})</summary><ul>${item.observations.map((observation) => `<li>
             <code>${escapeHtml(observation.taskId ?? 'Task reference not recorded')}</code> · ${escapeHtml(observation.code)}
             · Owner: ${escapeHtml(observation.owner ?? 'Owner not recorded')}
-            · Observed at: ${escapeHtml(observation.observedAt ?? 'Not recorded')}
+            · Observed source/revision: ${escapeHtml(observation.observedAt ?? 'Not recorded')}
             · Current observed commit: ${escapeHtml(observation.currentObservedCommit ?? 'Not recorded')}
             · Reproduction: ${escapeHtml(observation.reproductionStatus ?? 'UNKNOWN')}
             · Sources: ${escapeHtml(observation.sources.join(', ') || 'Not recorded')}
