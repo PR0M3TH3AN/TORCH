@@ -1,5 +1,12 @@
 # Current pilot remaining-work handoff
 
+Current owner **28e814a2** confirms arbiter actually resumed EXISTING Work read-only
+for the concrete integrity-record and B2 native plan/bootstrap/private-init decisions
+against the pinned17:53 packet. This replaces the prospective Work re-entry below:
+Work contract WIP is running alongside existing Release privacy correction; no
+Manager launch, source authority, new assignment or full-task acceptance. Existing
+6e4verification and a655blocked metadata record this bounded WIP without new fields.
+
 ## Latest reviewed outcome and concrete session handoff, 18:12 UTC
 
 Fresh addressed unread/current56 tasks/actual queue/check-in18:11 reviewed.

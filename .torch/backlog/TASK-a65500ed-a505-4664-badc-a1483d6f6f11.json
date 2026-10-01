@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-a65500ed-a505-4664-badc-a1483d6f6f11",
   "title": "Preserve test-integrity evidence in immutable per-change records with a validated index",
-  "description": "Owner795de3fc observes repeated independent additive docs/TEST_INTEGRITY.md prepend merge conflicts in Runtime/Kernel convergence, requiring lossless peer reconciliation. Propose ONE bounded QA-led evidence organization change with Work Integration validation/discovery consent. Design immutable per-task/change integrity records and discoverable gate-validated index, preserving all historical notes, IDs, strict scenarios, hashes and original QA ownership. No immediate migration, current merge-protocol bypass, assertion weakening, acceptance shortcut or provider start. Existing frozen candidates must still reconcile notes under QA consent; this proposal remains unassigned until reliability sequence and peer review.\n\nCurrent17:58 owner5d8/4646 identifies INTERNAL QA decision, not human strategic permission wait. Actual QA1e477 as reported by owner4646 needs concrete Work version-pinned integrity-record schema/canonical preimage/exact YAML/test paths/scenarios; old6a935/157 references alone insufficient. Managerca0b requests durable read-only packet and named QA/Work decisions. No usable consent yet, no code/migration/enforcement or second Work implementation; full6e4 continuity preserved.",
+  "description": "Owner795de3fc observes repeated independent additive docs/TEST_INTEGRITY.md prepend merge conflicts in Runtime/Kernel convergence, requiring lossless peer reconciliation. Propose ONE bounded QA-led evidence organization change with Work Integration validation/discovery consent. Design immutable per-task/change integrity records and discoverable gate-validated index, preserving all historical notes, IDs, strict scenarios, hashes and original QA ownership. No immediate migration, current merge-protocol bypass, assertion weakening, acceptance shortcut or provider start. Existing frozen candidates must still reconcile notes under QA consent; this proposal remains unassigned until reliability sequence and peer review.\n\nCurrent17:58 owner5d8/4646 identifies INTERNAL QA decision, not human strategic permission wait. Actual QA1e477 as reported by owner4646 needs concrete Work version-pinned integrity-record schema/canonical preimage/exact YAML/test paths/scenarios; old6a935/157 references alone insufficient. Managerca0b requests durable read-only packet and named QA/Work decisions. No usable consent yet, no code/migration/enforcement or second Work implementation; full6e4 continuity preserved.\n\nCurrent owner28e814a2 confirms existing Work actually resumed READ-ONLY for concrete integrity-record schema/preimage/YAML/test/scenario contract and B2 native plan/bootstrap/private-init positive protocol against pinned17:53 packet. Bounded WIP on existing task metadata only; full6e4 verification and integrity-record blocked lifecycle remain. No source/docs/tests/config implementation, new assignment or code authority. Await actual returned contract and named QA/Kernel decisions, not generic human permission.",
   "priority": "high",
   "affectedDomains": [
     "qa",
@@ -39,14 +39,15 @@
     "baseline:07a2bc:TEST_INTEGRITY:sha256:239fb5539e9f7cfc8562ac5351c61e7e1d345f00737a557ce9fa1b6d702e941a",
     "message:5d8c8f1d-7c77-45b5-84b7-4860f8e90f0c:current-reviewed-decision-see-17:57-handoff",
     "message:4646e5ce-c535-48f8-a3fc-3922ce683e08:current-reviewed-decision-see-17:57-handoff",
-    "message:ca0b2674-b5ad-40db-994c-68ea50fb85c0:current-reviewed-decision-see-17:57-handoff"
+    "message:ca0b2674-b5ad-40db-994c-68ea50fb85c0:current-reviewed-decision-see-17:57-handoff",
+    "message:28e814a2-9742-4a40-a156-1b9e39dedc26:actual-existing-Work-read-only-contract-WIP"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": "Read-only preparation complete. Actionable INTERNAL Work/QA contract decision: return concrete version-pinned record schema/canonical preimage/exact YAML/test paths/scenarios requested by actual QA1e477 (owner4646), then obtain named contributor/gate consent and sequence bounded implementation. Historical61de permits evidence preparation only. This is not an owner strategic permission hold; no code/migration/acceptance or automatic dependency unblocking.",
   "createdAt": "2026-10-01T07:36:25.425Z",
-  "updatedAt": "2026-10-01T17:58:30.000Z",
-  "revision": 6,
+  "updatedAt": "2026-10-01T18:15:19.000Z",
+  "revision": 7,
   "history": [
     {
       "from": null,
@@ -89,6 +90,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T17:58:30.000Z",
       "note": "Reviewed metadata-only current evidence/recipient decision reconciliation under owner5d8/4646/c3be/93b8. Preserve state, owner, original candidate/request, all historical evidence/criteria and history. No new assignment, source authority, broad acceptance, live/schema/activation or integration."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T18:15:19.000Z",
+      "note": "Record actual owner28 existing Work read-only contract turn WIP; no new assignment/status/schema field, implementation permission, consent assumption or lifecycle change. All original source/criteria/history/refusals preserved; concrete returned contract and QA contributor decisions remain required."
     }
   ]
 }
