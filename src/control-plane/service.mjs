@@ -41,6 +41,24 @@ function optionalText(value, name) {
   return requiredText(value, name);
 }
 
+function messageObservationSelection(value) {
+  if (value !== 'unread' && value !== 'history') {
+    throw new TorchError('Message observation selection must be unread or history', {
+      code: 'INVALID_MESSAGE_SELECTION', details: { selection: value, allowed: ['unread', 'history'] },
+    });
+  }
+  return value;
+}
+
+function messageObservationLimit(value) {
+  if (!Number.isInteger(value) || value < 1 || value > 1000) {
+    throw new TorchError('Message observation limit must be an integer from 1 through 1000', {
+      code: 'INVALID_MESSAGE_LIMIT', details: { limit: value, minimum: 1, maximum: 1000 },
+    });
+  }
+  return value;
+}
+
 function requiredRecord(value, name) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new TorchError(`${name} must be a structured record`, {
@@ -372,6 +390,10 @@ export class ControlPlane {
 
   assertIdentity(areaId) {
     this.refreshRoster();
+    return this.assertLoadedIdentity(areaId);
+  }
+
+  assertLoadedIdentity(areaId) {
     const normalized = requiredText(areaId, 'areaId');
     if (!this.agents.has(normalized)) {
       throw new TorchError(`Unknown Fleet identity: ${normalized}`, {
@@ -521,6 +543,55 @@ export class ControlPlane {
       LIMIT ?
     `;
     return this.database.prepare(query).all(recipientId, recipientId, normalizedLimit).map(rowToMessage);
+  }
+
+  observeMessages({ recipient, selection, limit } = {}) {
+    // Unlike legacy readMessages, this observation must not refresh the roster: refreshRoster
+    // maintains identity rows and is therefore not a read-only observation.
+    const recipientId = this.assertLoadedIdentity(recipient);
+    const normalizedSelection = messageObservationSelection(selection);
+    const normalizedLimit = messageObservationLimit(limit);
+    const rows = this.database.prepare(`
+      WITH visible_messages AS MATERIALIZED (
+        SELECT m.*, a.acknowledged_at
+        FROM messages m
+        LEFT JOIN message_acks a ON a.message_id = m.id AND a.area_id = ?
+        WHERE m.recipient_id = ? OR m.recipient_id = 'all'
+      ),
+      selected_messages AS MATERIALIZED (
+        SELECT * FROM visible_messages
+        WHERE ? = 'history' OR acknowledged_at IS NULL
+      ),
+      page AS MATERIALIZED (
+        SELECT * FROM selected_messages
+        ORDER BY created_at ASC, id ASC
+        LIMIT ?
+      ),
+      metadata AS (
+        SELECT
+          (SELECT COUNT(*) FROM selected_messages) AS selected_count,
+          (SELECT COUNT(*) FROM visible_messages WHERE acknowledged_at IS NULL) AS pending_unread_count
+      )
+      SELECT page.*, metadata.selected_count, metadata.pending_unread_count
+      FROM metadata
+      LEFT JOIN page ON TRUE
+      ORDER BY page.created_at ASC, page.id ASC
+    `).all(recipientId, recipientId, normalizedSelection, normalizedLimit);
+    const messages = rows.filter((row) => row.id !== null).map(rowToMessage);
+    const selectedCount = Number(rows[0]?.selected_count ?? 0);
+    const complete = selectedCount <= normalizedLimit;
+    return {
+      recipient: recipientId,
+      messages,
+      observation: {
+        selection: normalizedSelection,
+        requestedLimit: normalizedLimit,
+        returnedCount: messages.length,
+        complete,
+        truncated: !complete,
+        pendingUnreadCount: Number(rows[0]?.pending_unread_count ?? 0),
+      },
+    };
   }
 
   ackMessage({ recipient, messageId } = {}) {

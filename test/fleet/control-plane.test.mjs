@@ -70,6 +70,82 @@ test('SCN-durable-message: direct and group messages survive restart and require
   control.close();
 });
 
+test('SCN-control-plane-unread-observation-metadata: a bound inbox observation is complete, counted and read-only', () => {
+  const fixture = installedFixture();
+  const control = openControlPlane(deterministicOptions(fixture));
+  const acknowledgedHistory = Array.from({ length: 21 }, (_, index) => control.sendMessage({
+    sender: 'session-manager', recipient: fixture.worker, body: `Acknowledged history ${index + 1}.`,
+  }));
+  for (const message of acknowledgedHistory) control.ackMessage({ recipient: fixture.worker, messageId: message.id });
+  const directUnread = control.sendMessage({
+    sender: 'session-manager', recipient: fixture.worker, body: 'Direct unread handoff.',
+  });
+  const allUnread = control.sendMessage({
+    sender: 'session-manager', recipient: 'all', body: 'Shared unread handoff.',
+  });
+  const before = readFileSync(join(control.stateRoot, 'state.db'));
+
+  const firstUnread = control.observeMessages({ recipient: fixture.worker, selection: 'unread', limit: 1 });
+  assert.deepEqual(firstUnread.messages.map((message) => message.id), [directUnread.id]);
+  assert.deepEqual(firstUnread.observation, {
+    selection: 'unread', requestedLimit: 1, returnedCount: 1,
+    complete: false, truncated: true, pendingUnreadCount: 2,
+  });
+
+  const completeUnread = control.observeMessages({ recipient: fixture.worker, selection: 'unread', limit: 2 });
+  assert.deepEqual(completeUnread.messages.map((message) => message.id), [directUnread.id, allUnread.id]);
+  assert.deepEqual(completeUnread.observation, {
+    selection: 'unread', requestedLimit: 2, returnedCount: 2,
+    complete: true, truncated: false, pendingUnreadCount: 2,
+  });
+
+  const history = control.observeMessages({ recipient: fixture.worker, selection: 'history', limit: 20 });
+  assert.deepEqual(history.messages.map((message) => message.id), acknowledgedHistory.slice(0, 20).map((message) => message.id));
+  assert.deepEqual(history.observation, {
+    selection: 'history', requestedLimit: 20, returnedCount: 20,
+    complete: false, truncated: true, pendingUnreadCount: 2,
+  });
+  assert.deepEqual(readFileSync(join(control.stateRoot, 'state.db')), before,
+    'observing messages must not acknowledge or otherwise mutate durable state');
+
+  control.ackMessage({ recipient: fixture.worker, messageId: directUnread.id });
+  control.ackMessage({ recipient: fixture.worker, messageId: allUnread.id });
+  const beforeEmpty = readFileSync(join(control.stateRoot, 'state.db'));
+  const empty = control.observeMessages({ recipient: fixture.worker, selection: 'unread', limit: 1 });
+  assert.deepEqual(empty.messages, []);
+  assert.deepEqual(empty.observation, {
+    selection: 'unread', requestedLimit: 1, returnedCount: 0,
+    complete: true, truncated: false, pendingUnreadCount: 0,
+  });
+  assert.deepEqual(readFileSync(join(control.stateRoot, 'state.db')), beforeEmpty,
+    'an empty observation must not mutate acknowledgement, task or ownership state');
+  control.close();
+});
+
+test('SCN-control-plane-unread-observation-refusal: invalid observation inputs fail closed', () => {
+  const fixture = installedFixture();
+  const control = openControlPlane(deterministicOptions(fixture));
+  for (const selection of [undefined, 'all', 'unacknowledged']) {
+    assert.throws(
+      () => control.observeMessages({ recipient: fixture.worker, selection, limit: 1 }),
+      (error) => error.code === 'INVALID_MESSAGE_SELECTION',
+    );
+  }
+  for (const limit of [undefined, 0, 1.5, 1001]) {
+    assert.throws(
+      () => control.observeMessages({ recipient: fixture.worker, selection: 'history', limit }),
+      (error) => error.code === 'INVALID_MESSAGE_LIMIT',
+    );
+  }
+  for (const recipient of ['all', 'unregistered-recipient']) {
+    assert.throws(
+      () => control.observeMessages({ recipient, selection: 'history', limit: 1 }),
+      (error) => error.code === 'UNKNOWN_FLEET_IDENTITY',
+    );
+  }
+  control.close();
+});
+
 test('SCN-identity-presence-authority: stable Fleet identity outlives runtime IDs and forged actors are rejected', () => {
   const fixture = installedFixture();
   const control = openControlPlane(deterministicOptions(fixture));

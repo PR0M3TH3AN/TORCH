@@ -2596,3 +2596,35 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Consistent unread inbox observation (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-control-plane-unread-observation-metadata
+      given: ">20 acknowledged historical messages plus newer direct and literal-all unread handoffs in a hermetic installed fixture"
+      when: "The receiving identity observes unread and history selections at boundary limits"
+      then: "The returned page, counts, completeness and truncation describe one recipient-visible snapshot; the read is byte-for-byte free of acknowledgement, task or ownership mutation"
+    - id: SCN-control-plane-unread-observation-refusal
+      given: "A hermetic installed fixture and an untrusted selection, limit or recipient"
+      when: "A caller requests a bound inbox observation"
+      then: "Unsupported groups, foreign identities, invalid selections and non-integer or out-of-range limits fail closed"
+  observable_outcomes:
+    - "Direct-plus-literal-all message page in deterministic createdAt/id order"
+    - "requestedLimit, returnedCount, complete, truncated and pendingUnreadCount"
+    - "Unchanged SQLite bytes during observation"
+  determinism_controls:
+    - "Disposable Git and XDG fixtures with deterministic timestamps and message IDs"
+    - "No provider, host, network, live-project database or runtime activation"
+  anti_cheat_rationale:
+    prevents:
+      - "Reading a broad or arbitrary group instead of the bound recipient visibility"
+      - "Returning independently sampled page and count metadata"
+      - "Acknowledging or mutating durable work while claiming to observe"
+      - "Silently coercing invalid selection or limit inputs"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
