@@ -1,0 +1,62 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-565fa463-c9b0-49e6-a902-9f12a49b6615",
+  "title": "Implement Kernel-bound consistent inbox observation for the unread-first MCP contract",
+  "description": "Actual critical dependency of assigned TASK-e440d8c1, not a second Runtime assignment. Runtime7abee039 reviewed wrapper request9a173a7b/c97e7983 requires consistent bound metadata; Kernel da0d22aa/954701d4 confirms no API exists and names Kernel-only observeMessages({recipient,selection,limit}) -> {recipient,messages,observation:{selection,requestedLimit,returnedCount,complete,truncated,pendingUnreadCount}}. QA1dfe8f90 explicitly authorizes Kernel only src/control-plane/service.mjs + test/fleet/control-plane.test.mjs for strict additive scenarios. Preserve existing readMessages ASC array/history compatibility, literal all visibility only, validate registered recipient/selection/integer limits and derive page/counts from one shared SQLite visible-predicate snapshot/statement without DML/ack. Exact source owned by Kernel; Runtime may only consume actual qualified export. Dormant inventory component1e688 is blocked4 on pending contract/QA and sequenced after this urgent dependency; reservation125 remains blocked5. No control-plane schema/version change, production DB initialization/recovery, migration, credentials, host/install/activation/provider/wake action. Additive test integrity note needs its separately confirmed destination or machine-readable review/PR note, not unconsented doc edits. Full exact-source gates, independent QA and guarded integration retained; fixture evidence cannot qualify production.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "provider-runtime",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Implement the exact peer-reviewed observeMessages API in Kernel-owned src/control-plane/service.mjs while retaining legacy readMessages ASC array/history behavior unchanged; only explicitly registered recipient, unread/history selection and integer limit 1..1000 are accepted.",
+    "Visibility is exactly existing addressed direct messages plus literal all, with unsupported group/foreign identity/invalid selection/noninteger/out-of-range requests failing closed through bound authorization; no caller state-root/DB handle/cursor bypass.",
+    "Return requestedLimit, returnedCount, complete, truncated and pendingUnreadCount with page/count/completeness from one shared SQLite visible-predicate snapshot/statement, deterministic createdAt/id ordering and explicit history versus unread semantics.",
+    "More than20 acknowledged historical messages plus newer direct/all unread handoffs yields correct unread selection/count/truncation; explicit history does not masquerade as a complete unread check, including empty/no-unread and boundary-limit cases.",
+    "Reading performs zero acknowledgement/message/task/ownership/DML mutation and no schema change; tests are actual strict QA-consented additive boundary checks in test/fleet/control-plane.test.mjs, preserve existing assertions and record a Test Integrity Note.",
+    "Kernel hands implemented exact export/commit to Runtime; qualify clean exact candidate through actual source checks and independent QA/serialized landing, preserving genuine schema/engine/tool refusals and distinguishing isolated tests from real-project receipts."
+  ],
+  "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
+  "feature": "Unread-first inbox dependency",
+  "milestone": "Before Runtime inbox integration and dormant service components",
+  "state": "assigned",
+  "owner": "project-kernel",
+  "evidence": [
+    "message:7abee039-9bde-4706-9876-4e50385d9ddb:Runtime-wrapper-contract",
+    "message:da0d22aa-0796-489f-b485-fd0c3dfef723:Kernel-owned-reviewed-API/separate-assignment-needed",
+    "message:1dfe8f90-a381-469a-9041-915480cf4bce:QA-exact-Kernel-source/test-contribution-and-strict-scenarios",
+    "TASK-1e688a36-9df7-47ad-a540-99de15979717:blocked4:sequenced-after-inbox",
+    "current-brief:d7e6d69:read-before-this-item"
+  ],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T10:57:51.775Z",
+  "updatedAt": "2026-10-01T10:58:59.162Z",
+  "revision": 3,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:57:51.775Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:57:55.802Z",
+      "note": "Actual peer-reviewed urgent dependency of current owner-prioritized inbox slice. Kernel next idle after genuine inventory contract hold; scoped implementation only exact Kernel source and QA-consented test, no additional docs without permission. Preserve readMessages compatibility and all schema/reservation/actor guards. No live DB/schema/host/install/provider work or qualification waiver."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:58:59.162Z",
+      "note": "Fresh current brief/ownership and native next readyTHIS/no active Kernel assignment after inventory blocked4; actual prior Kernel branch clean e8e33f1, preserve unique reservation/design commits. Assign actual da0/954701d4 observeMessages API dependency of e440. Implement ONLY src/control-plane/service.mjs plus exact QA1dfe-consented additive test/fleet/control-plane.test.mjs; keep legacy readMessages ASC/history array, one shared SQLite observation snapshot, strict registered recipient/selection/limit, literal all visibility, zero DML/ack and no source schema guard/version alteration. Return exact API/candidate and strict Test Integrity Note through agreed destination/review note; unconsented doc edits forbidden. Runtime only later consumes Kernel export, no Kernel contribution permission to Runtime. Fresh source gates/independent QA/native integration policy remain required; real schema/engine/tool refusal blocks qualification, fixture tests alone never PASS receipt. Inventory1e688 remains blocked4 contract pending; reservation125 blocked5 preserved, no duplicate active Kernel item or live DB/host/install/activation/provider action. Arbiter controls provider turn."
+    }
+  ]
+}

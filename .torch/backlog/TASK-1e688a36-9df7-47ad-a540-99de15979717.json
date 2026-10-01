@@ -1,0 +1,73 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-1e688a36-9df7-47ad-a540-99de15979717",
+  "title": "Implement the Kernel-owned pure persistent-service inventory API",
+  "description": "Bounded component phase of existing TASK-conversation-persistent-operations, explicitly requested by owner08d6cbe5 and current resume to name actual implementers for APIs that Kernel b3e17d6b proposed but did not implement and declined Release contribution to. Project Kernel is the implementer; Release is consumer, Runtime reviews launcher compatibility, QA owns behavioral truth and contributor permission. Proposed precise primary source is src/kernel/service-inventory.mjs (live ownership verified); first pin actual export/input/output/version/digest and constraints with Release/Runtime/QA before code. Any additional install/config source path needs an explicitly returned narrow map, not assumed scope. Implement only pure validated inventory/manifest-projection computation from declared inputs, no file/DB/service/provider side effects or config/schema changes. Preserve blocked reservation task125 owner/candidate/guard/history separately. This phase makes an actual separately qualified API available before Release consumption; no guessed export, full persistent-operations completion, unqualified landing, host activation, active runtime switch, live schema recovery or new identity.",
+  "priority": "high",
+  "affectedDomains": [
+    "project-kernel",
+    "release-self-host",
+    "provider-runtime",
+    "qa"
+  ],
+  "dependencies": [],
+  "acceptanceCriteria": [
+    "Kernel, Release, Runtime and QA pin a versioned pure inventory export with exact owned source paths, explicit input/output schema and digest/provenance binding plus named test contribution permission before implementation.",
+    "Valid declared schedules/services produce a deterministic manifest-owned inventory and preview projection including identity, declared lifetime, destination, timezone, missed-run/restart/budget/pause policy and content/config digests; absence of activation approval never becomes enabled or operational status.",
+    "Invalid or ambiguous project identity, lifetime, policy, destination ownership or stale digest fails closed or remains explicitly unresolved; unknown/user-edited integrations are preserved rather than claimed, removed or silently normalized.",
+    "Pure planning leaves input objects, filesystem, manifest, production DB schema/data, timers, processes and provider/wake state unchanged; no ControlPlane initialization, shell/systemctl invocation or host discovery/activation side effects.",
+    "QA approves exact additive boundary scenarios and contributor paths with deterministic declared inputs, fixed clock/timezone where applicable and Test Integrity Note; no existing assertion or snapshot weakening.",
+    "Actual implemented export and candidate commit/API contract are handed directly to Release/Runtime; fresh exact source checks, independent QA and serialized guarded integration are required before production consumption, with any schema/engine/tool refusal retained as a blocker rather than fixture promotion."
+  ],
+  "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
+  "feature": "Dormant persistent-operations component API",
+  "milestone": "Owned component qualification before Release integration",
+  "state": "blocked",
+  "owner": "project-kernel",
+  "evidence": [
+    "message:08d6cbe5-d561-4375-abff-19b13e490481:explicit-component-implementer/phase-direction",
+    "message:1849beb0-0c6a-4a4f-a3aa-90d3bfc7c2a8:current-delegated-coordination-and-resume-boundaries",
+    "ownership:src/kernel/service-inventory.mjs=project-kernel",
+    "TASK-conversation-persistent-operations:blocked5:unimplemented-peer-API",
+    "current-brief:d7e6d69:read-before-this-item",
+    "message:da0d22aa-0796-489f-b485-fd0c3dfef723:reviewed-unimplemented-Kernel-inbox-API",
+    "message:1dfe8f90-a381-469a-9041-915480cf4bce:QA-exact-inbox-source/test-consent",
+    "message:7abee039-9bde-4706-9876-4e50385d9ddb:actual-active-Runtime-dependency"
+  ],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": "Pure inventory export/input/output and exact QA contributor/scenario review remain pending. Actual Kernel da0d22aa confirms urgent Runtime inbox dependency observeMessages is unimplemented and requires separate Kernel-only assignment; prioritize that accepted API contract before the dormant inventory phase. Keep this actual inventory task/owner and full criteria, no simultaneous active Kernel item.",
+  "createdAt": "2026-10-01T10:51:05.872Z",
+  "updatedAt": "2026-10-01T10:56:37.323Z",
+  "revision": 4,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:51:05.872Z",
+      "note": "Task created."
+    },
+    {
+      "from": "proposed",
+      "to": "ready",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:51:26.631Z",
+      "note": "Fresh Kernel next idle, blocked reservation5 retained. Triage bounded actual Kernel API phase for the current approved dormant-service dependency. First actual export/contract/path/scenario review with Release/Runtime/QA; only then pure Kernel-owned module implementation. No other-owned edits or tests before named QA contribution consent; no live/schema/config/host/provider/installation actions or qualification shortcuts. Preserve existing branch/unique commits; exact source gates and independent QA/guarded integration required."
+    },
+    {
+      "from": "ready",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:51:49.562Z",
+      "note": "Fresh native next readyTHISitem/no active Kernel item; actual Kernel branch clean at e8e33f1, preserve all unique reservation/design commits and blocked125 revision5. Assign Kernel as actual implementer for pure inventory dependency, not Release consume-only proposal. First pin exact versioned export/inputs/output/digest and additive QA contributor permission with Release/Runtime; no implementation before contract/scenario review. Proposed new primary src/kernel/service-inventory.mjs only; any additional source map returned explicitly and peer edits consented. Pure declared input/inventory/manifest-projection computation only, no ControlPlane construction, production schema/DB/files/host/service/provider/wake/installation changes. Kernel may resolve current Runtime inbox metadata consent as routine peer coordination without silently expanding this task; a separate implementation phase requires sequencing. Actual source qualification guard/tool refusals stay blockers; isolated attestations never real receipts. Return implemented exact API/candidate for independent QA and guarded landing before Release consumption. Arbiter alone starts provider turn."
+    },
+    {
+      "from": "assigned",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:56:37.323Z",
+      "note": "Sequence actual higher-priority inbox API dependency, not completion or silent expansion of inventory/reservation. Kernel inventory remains blocked on genuine contract/QA boundary; existing reservation125 blocked5 preserved. A separately named Kernel observation implementation will have one active owner after fresh lookup. No code/host/schema/recovery/activation."
+    }
+  ]
+}

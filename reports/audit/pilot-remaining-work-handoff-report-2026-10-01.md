@@ -1,5 +1,118 @@
 # Current pilot remaining-work handoff
 
+## Current peer contracts and sequenced implementation at 11:04 UTC
+
+Canonical briefs still match `d7e6d69`; startup readonly DB failure was retried
+only with the narrowly authorized exact brief. Own branch starts clean at
+`b00f727`, canonical remains0fdf. Explicit own unread reads used
+`{recipient:"session-manager",unacknowledged_only:true,limit:100}` throughout.
+Owner **`1849beb0`** is read and acknowledged: arbiter resumed existing Runtime
+on e440 assigned3 and Work on pending read-only engine design; Console remained
+active. Historical idle presence timestamps are not current task/session proof.
+The latest human five-PNG permission applies solely to already completed Runtime
+recovery at286bfa72; no second overwrite, upgrade or schema recovery is implied.
+Approval75 remains pending, and wakes/install/schema/host/provider actions remain
+outside this turn. A foreign-area receipt list was refused by the bound identity
+guard (Manager cannot act as owner-console); no peer impersonation followed.
+Actual receipts are requested from the candidate owner, not inferred from refusal.
+
+Runtime **`7abee039`** gives a concrete wrapper contract: bound claimedIdentity,
+selection unread/history (default unread), explicit legacy boolean alias with
+conflicts refused, integer1..1000 limit, no caller group/root/cursor/ack authority.
+Observation returns selection, requestedLimit, returnedCount, complete, truncated
+and pendingUnreadCount. Kernel **`da0d22aa`/`954701d4`** confirms no implementation
+exists and names `observeMessages({recipient,selection,limit})`: registered
+recipient, existing direct+literal-all visibility, strict inputs and one shared
+SQLite visible-predicate snapshot/statement for page/count/completeness, zero
+DML/ack; legacy readMessages ASC array/history remains unchanged. Kernel refuses
+Runtime edits of its source. QA **`1dfe8f90`/`551a589d`** supplies actual exact
+contributor consent: Runtime tools.mjs + mcp-adapter.test.mjs + additive integrity
+note; Kernel control-plane/service.mjs + control-plane.test.mjs only. Strict
+unread/history/group/identity/limit/conflict/truncation and no-state-change
+scenarios remain intact. Earlier missing-proposal/QA waits are superseded.
+
+Actual implementation phases now have durable tasks and named implementers:
+
+- **`TASK-565fa463-c9b0-49e6-a902-9f12a49b6615` assigned3 to Project Kernel**:
+  implement the reviewed bound observation API and exact QA-consented test.
+  Fresh brief, live ownership and next idle→readyTHIS preceded assignment.
+  Kernel branch is cleane8e33f1 with unique reservation/design commits preserved.
+  Runtime keeps its same **e440 assigned3**, consuming the actual checked API
+  through the peer handoff; no Kernel edits or second Runtime assignment.
+  QA **8b7bc550 at11:00:54** additionally grants Kernel the exact additive
+  docs/TEST_INTEGRITY.md append for this fixed API contract; its note-destination
+  wait is resolved. This does not grant other paths or a schema/qualification waiver.
+- **`TASK-1e688a36-9df7-47ad-a540-99de15979717` blocked4, owner Kernel**:
+  pure persistent-service inventory API. It was separately assigned3 after
+  next-idle/ownership review, then genuinely blocked on its unreviewed exact
+  export/input/output/QA contract and sequenced behind the urgent inbox API.
+  Initial proposed source is kernel/service-inventory.mjs; no guessed export or
+  install/config mutation is permitted. Preserve its full criteria/history.
+- **`TASK-2b4a6ab5-c354-4bc0-b885-0f1f01c22022` proposed1**:
+  Runtime is the named future implementer of the dormant launcher API, dependent
+  on completed e440 and the qualified inventory task. Proposed narrow source
+  schedules/dormant-plan.mjs; exact export/effect/QA contract first. It is not
+  assigned while Runtime has active inbox work. Disabled declarative planning
+  cannot claim host activation, operational services or trusted writer fencing.
+- Release's existing persistent-operations remains blocked5 and is the eventual
+  consumer of independently qualified, landed APIs. QA **167f5c1b/cc381fd5**
+  resolves its test contributor prohibition for only the new persistent test,
+  under five strict SCNs: digest-preview/no-effects, disabled dormant provision,
+  idempotent install/restore/upgrade, preserved drift/uninstall, explicit policy
+  without catchup; hermetic home/project, fake systemctl and fixed clock/timezone.
+  Actual API implementations remain unavailable; the older blockedReason's QA
+  wait is historical and is not the current unresolved gate.
+
+Kernel reservation125 and Runtime starting-presence retain their original blocked
+owners/candidates/receipts. Owner **691c45e3** explicitly confirms the schema3
+candidate's eventual exact gate problem remains real. Pure planning/source work
+does not solve that production compatibility/writer-isolation gate. Every new
+phase retains exact-source/native checks, independent QA and serialized landing;
+preserve real refusals, no old-checker/fixture promotion or guard waiver.
+
+Work **2e53520a** delivered an actual three-class engine/adapter/attestation
+proposal. Owner **e736676a** identifies two substantive gaps. Manager **103900da**
+recommends a reusable exact engine with separately authenticated fixture and
+native contexts; immutable fixture attestations can never be copied/promoted
+into a native attempt. Digests authenticate bytes, not actors. Work must remove
+the fixture-only-versus-later-native contradiction and identify actual spec
+authority, QA scenarios, exact integration consumer changes and owner review for
+any qualification-policy change. Native landing currently requires real PASS
+receipts; prose does not authorize isolated-attestation landing. Task6e4 stays
+proposed/unassigned with its complete scope and downgrade refusal retained.
+
+Console's actual dirty files at10:54 are script dashboard driver, console.js and
+navigation test; source HEAD stillb5b5f10. Preserve those owned/consented edits.
+Owner **ba24f4e9** reproduces a secondary-section defect (#work→organization-
+proposals selects the view but leaves target1559px below viewport/no focus),
+missed by the existing nested-child test. Owner **3b12490e** separately confirms
+stale preview N→N+1 retains old revision/token/Confirm after refresh; this is not
+proof backend accepts a stale confirmation. The isolated no-screenshot probe is
+scoped diagnostic evidence, not live computer-use acceptance. Manager routed
+both to Console/QA (**8c14e149**, **73ef6a68**, **50480531**, **66f26929**).
+Approved console.js already owns apply(snapshot) and priority-preview handlers;
+start narrow revision-aware invalidation there, preserving unsent values and
+unchanged-current previews. No live-refresh.js/backend expansion is inferred;
+additional paths require precise consent. Keep strict section target/history and
+newer-evidence tests; don't weaken them to match the discovered bugs. Old frozen
+MCP receipts stay nonqualifying; amended clean/converged candidate needs four
+actual source CLI gates, existing valid user environment/provenance and independent
+QA. Real desktop/mobile browser acceptance remains separate and open.
+QA8b7bc550 independently reviews the isolated diagnostic and explicitly confirms
+the exact Console source/test/driver/note permission and both invariants. Its
+decision was routed directly; no backend expansion or live acceptance follows.
+
+Assessments before dispatch and after intake retain six specialists: eight Fleet
+recurring domain sets (the shared dormant-service set now includes five tasks)
+and ten historical Manager coordination requests. Better exact interfaces and
+named phases cover the measured friction; no role/domain activation. Backlog55
+integrity checks pass:39 proposed, seven blocked, six completed, two assigned
+(Runtime e440, Kernel565), one in_progress (Console), one active per specialist,
+all histories/revisions and dependency acyclicity valid. Health37 stale-observation
+and two resolved-dependency warnings remain, not auto-fixed. Own ACKs mean read;
+peer contract/implementation/qualification waits remain open. Checkpoint only
+reviewed Manager ledger/handoff, no feature/source or external publication claim.
+
 ## Current reconciliation and prioritized inbox assignment at 10:42 UTC
 
 Startup and pre-item canonical briefs match `d7e6d69`; the initial readonly DB

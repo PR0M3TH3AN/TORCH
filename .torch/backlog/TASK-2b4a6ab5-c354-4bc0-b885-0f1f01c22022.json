@@ -1,0 +1,46 @@
+{
+  "schema": "torch.dev/backlog-item/v1alpha1",
+  "id": "TASK-2b4a6ab5-c354-4bc0-b885-0f1f01c22022",
+  "title": "Implement the Runtime-owned dormant launcher provisioning API",
+  "description": "Named next Runtime component phase for existing TASK-conversation-persistent-operations under owner08/current resume. Runtime2b4834f5 declined Release edits and offered an unimplemented API; Runtime is actual implementer, Kernel supplies pure inventory contract, Release consumes exact qualified export, QA owns truth/contributor consent. Sequence after Runtime's active unread-first task and Kernel inventory component; no second active Runtime assignment. Proposed narrow Runtime primary source src/schedules/dormant-plan.mjs (live ownership verified), with any additional launcher-path edits explicitly mapped/reviewed before code. First pin exact export/input/output/version/digest and dormant reconciliation effect boundary with Release/Kernel/QA. Implement pure declarative disabled-unit/dormant provisioning/reconciliation plan from validated inventory and supplied observed evidence; any fixture-only apply adapter must be separately explicit, hermetic and consented. No host actions, systemctl/linger/enable/start, provider launches/wakes, manifest/config ownership edits, DB initialization/recovery, installation switch or process/fence inference. Preserve blocked starting-presence task and old guard/receipt evidence. Independent source qualification and guarded landing precede Release consumption.",
+  "priority": "high",
+  "affectedDomains": [
+    "provider-runtime",
+    "project-kernel",
+    "release-self-host",
+    "qa"
+  ],
+  "dependencies": [
+    "TASK-e440d8c1-479b-418e-bb0f-a693594d891c",
+    "TASK-1e688a36-9df7-47ad-a540-99de15979717"
+  ],
+  "acceptanceCriteria": [
+    "Runtime, Kernel, Release and QA pin an actual versioned export, exact owned source/test paths and named contributor permission; no Release editing Runtime paths or consuming a merely proposed export.",
+    "Validated inventory and explicit observed-state inputs produce deterministic digest-bound dormant plans retaining declared lifetime/timezone/budget/restart/missed-run/pause and exact owned unit metadata, with every unit disabled and no operational/activation claim.",
+    "Repeated install/restore/upgrade planning is idempotent; unknown units, user edits, ownership/drift, unsupported destinations or stale source/config/artifact digests are preserved or explicitly blocked, never blindly overwritten/removed/adopted.",
+    "Planning/import has no filesystem/manifest/DB/process/systemctl/provider effects; disabled state cannot imply wake scheduling, active service, catchup permission or a trusted writer fence. Any fixture-only apply adapter remains hermetic and visibly isolated, without operational receipt promotion.",
+    "QA strict additive scenarios use temp home/project, fake systemctl and fixed clock/timezone; demonstrate no effects, dormant state, idempotence, preserved drift and explicit policy/no implicit catchup, with a Test Integrity Note and no weaker existing tests.",
+    "Runtime hands actual implemented candidate/export/version to Release after independent exact-source checks and QA acceptance/serialized guarded integration; record genuine incompatible-engine/schema/tool refusals rather than unqualified landing, fixture PASS promotion or host activation."
+  ],
+  "observedAt": "0fdfcb3b68e4511f2993d03e1fff8f89124b731c",
+  "feature": "Dormant persistent-operations component API",
+  "milestone": "After unread-first reliability and pure inventory API",
+  "state": "proposed",
+  "owner": null,
+  "evidence": [],
+  "commit": null,
+  "integrationRequest": null,
+  "blockedReason": null,
+  "createdAt": "2026-10-01T10:52:29.219Z",
+  "updatedAt": "2026-10-01T10:52:29.219Z",
+  "revision": 1,
+  "history": [
+    {
+      "from": null,
+      "to": "proposed",
+      "actorId": "session-manager",
+      "at": "2026-10-01T10:52:29.219Z",
+      "note": "Task created."
+    }
+  ]
+}
