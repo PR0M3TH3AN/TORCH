@@ -17,7 +17,7 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "owner-console",
   "evidence": [
     "message:89c92c3e-4f00-4213-877d-6c2afeb4b22c:focused-view-routing/mobile-navigation/title-provenance-design-observations",
@@ -55,14 +55,23 @@
     "message:1b19a436-44d8-4e6c-8868-19f1e65591db:QA-exact-Fleet-markup-and-scenario-contribution-consent",
     "message:1b2d96bc-ec77-4cb2-b5be-a1b9b6ef47ae:owner-explicit-same-task-scope",
     "message:6a37283a-5baf-4b3f-b84c-1aa7cdecf223:actual-bounded-peer-request",
-    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:stale-wait-evidence-refresh-required"
+    "message:22df881a-9d38-4706-b0bf-da05c6b674c8:stale-wait-evidence-refresh-required",
+    "source-cli:test:4ca6a5ab-3fbb-45f4-a6d6-76838c9b4b73:PASS:candidate=e8c4c4249e49d91393394ac205d918826ddd1891",
+    "source-cli:check:00a9b411-caec-4205-b0c5-d6e205c4dbdd:PASS:candidate=e8c4c4249e49d91393394ac205d918826ddd1891",
+    "source-cli:test-dashboard:43d7b57f-48a8-4131-8906-7ebde0112c8e:PASS:11-generated-PNG-artifacts:candidate=e8c4c4249e49d91393394ac205d918826ddd1891",
+    "source-cli:lint:111f3067-d8dc-4d2d-8b96-b3dbd5dbad39:PASS:candidate=e8c4c4249e49d91393394ac205d918826ddd1891",
+    "QA-review-request-pending:full-diff-and-receipts",
+    "message:333bf5ab-558b-40f1-8245-f3333032c397:independent-protected-details-driver-toggle-proof",
+    "message:9a83dde8-af7e-411b-890b-ee1582266e32:independent-focused-corrected-navigation-10/10-development-evidence",
+    "message:4ff2beb2-8cf5-4a05-96fa-9e09ced8ebb3:independent-exact-e8c-source-acceptance-four-native-PASS-and-11-artifact-hashes-not-full-task/operational",
+    "message:f9a645d0-8f0a-4539-bbdd-326721aa47bd:exact-source-integration-request-handoff-no-self-landing"
   ],
-  "commit": "6870c3a61073b950710eb7720f63ccd21da58f38",
+  "commit": "e8c4c4249e49d91393394ac205d918826ddd1891",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Exact clean e8c4c424 independent QA source acceptance received in actual4ff2beb2; all four native PASS and 11 regular-file PNG receipt-manifest hashes verified by QA. The prior QA-pending clause is resolved/historical. Manager requested exact source integration request through Console registered branch (f9a645d0); serialized native authority/clean canonical/ancestry gates still required. Full workflow remains blocked on actual live desktop/mobile/installed-alpha2 and owner acceptance requirements; generated demo screenshots and source acceptance do not prove operational acceptance. No task completion, install switch, live schema recovery or provider/wake/host authority.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T12:27:44.625Z",
-  "revision": 13,
+  "updatedAt": "2026-10-01T13:49:46.389Z",
+  "revision": 15,
   "history": [
     {
       "from": null,
@@ -154,6 +163,20 @@
       "actorId": "owner-console",
       "at": "2026-10-01T12:27:44.625Z",
       "note": "Resuming the same workflow on clean HEAD 6870c3a under Manager reassignment revision 12. Actual QA b4449652 and owner 46cd85d9 authorize the exact second-Fleet-section layout/routing scenario and narrow driver scope; preserve strict ownership assertions and all existing coverage."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "owner-console",
+      "at": "2026-10-01T13:44:07.635Z",
+      "note": "Forward-corrected only the approved navigation test stimulus, dashboard owning-view driver selection and closed-disclosure interaction. Preserved exact scroll equality and all prior scenarios/captures/artifact safeguards."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T13:49:46.389Z",
+      "note": "Reviewed Manager-owned authoritative ledger metadata-only reconciliation after fresh current blocked14 and actual QA4ff2 exact source acceptance. Prior QA-pending hold resolved, actual guarded source integration handoff and live full-task acceptance remain open. Preserve owner/state/candidate/full criteria/dependencies/all receipt and failure history; no lifecycle churn or automatic completion. Native service lacks metadata-amend API; no blocked transition bypass or native gate waiver."
     }
   ]
 }

@@ -1,5 +1,115 @@
 # Current pilot remaining-work handoff
 
+## Phase A authorized and Console exact-source QA accepted at 13:51 UTC
+
+Fresh canonical brief digest **d7e6d69** was read through the approved narrowly
+scoped retry after the ordinary sandbox returned readonly-database failure.
+CURRENT tasks were read before explicit addressed unread100; actual Work
+**59933112**, owner **36788020/21997bf1**, QA **a0e8ae17**, owner **333bf5ab/9a83dde8**,
+Console **6d1eed3f** and QA **4ff2beb2** were understood and individually acknowledged.
+Historical own messages **44512241**, **eca7ded3**, Kernel **b952872d/42e3108b** and
+QA **d29c68c8** were separately reread; historical pages did not establish inbox
+completeness. Final explicit unread100 returned empty at 13:50 UTC. Acknowledged
+handoffs remain open until their actual outcomes arrive.
+
+**Concrete same-assignment Phase A.** Actual owner367 authorizes bounded
+implementation after named QA permission; actual QAa0 grants the exact paths and
+owner219 confirms the condition resolved. SAME Work **TASK-6e4 assigned3 ->
+assigned4** is a reviewed metadata-only phase amendment, preserving owner, state,
+all seven full criteria, dependencies, candidate null and complete history.
+Only NEW **src/checks/candidate-engine.mjs**, **src/checks/artifact-manifest.mjs**,
+NEW **test/fleet/candidate-engine.test.mjs**, **test/fleet/candidate-artifact-manifest.test.mjs**
+and append-only **docs/TEST_INTEGRITY.md** are authorized. Work receives concrete
+handoff **d36ff182**: first pin frozen inputs/args/env/output/artifact limits and
+scenario plan, then pure raw-terminal execution and trusted parent artifact
+collection; no candidate writer/token/socket/DB authority. Strict capped sorted
+regular-file hash/length manifest must reject traversal, links, special files,
+overwrite and seal drift. Hermetic fixtures/fake adapters are permanently
+nonpromotable development evidence. No current conditions behavior change,
+CheckService/CLI/integration wiring, registered store/provisioner/schema/DDL,
+consumer/gate/lease policy change or full-task/operational acceptance. QA receives
+**beb6f3a3** and remains final test owner. Manager launches no provider; arbiter
+controls any resume. Work branch was independently clean at **1a2b5b0** before
+handoff; preserve its unique commits and all peer work.
+
+Actual Work599 synthesized reviewed Kernel **6fdb88ea**, Release CLI/parent
+transport and QA contracts. Later phases remain explicitly proposed: **B Kernel
+registered-store provisioner/context/adapter**, **C Release candidate-plan/run
+before initializer**, **D Work named allowlisted source-requirement consumer**,
+with **E QA independent per-phase qualification**. B and D are not authorized by
+Phase A, and no current CLI wiring is authorized. Existing exactPasses, compatible
+legacy schema2 receipts and be1 schema3/current2 refusal remain intact. UNKNOWN
+is durable unfinalized AttemptRecord/no ResultRecord with evidence and fences;
+proven FAIL/INCOMPLETE cannot become PASS or new lease-release authority.
+Kernel **140cd5e4** and Release **e37d6dd0** receive this exact phase boundary.
+Dormant-service roadmap remains Kernel inventory1e688 contract/qualification ->
+Runtime2b4 dormant launcher after currente440 -> Release consumes qualified APIs.
+No duplicate active assignments or new component queue was created.
+
+**Console source accepted, full workflow still blocked.** Manager independently
+observed clean **e8c4c4249e49d91393394ac205d918826ddd1891**, unchanged clean canonical
+**0fdfcb3b68e4511f2993d03e1fff8f89124b731c**, and successful exact ancestry check.
+Native receipts on e8c: **4ca6a5ab test**, **00a9b411 check**, **43d7b57f dashboard**,
+**111f3067 lint**, all PASS/invalidReason null. The cfb-to-e8c delta contains only
+navigation test, narrow demo driver and integrity note: fixed numeric347 with
+observed347 baseline/exact equality removes wheel/scrollend/global tracing/async
+trace diagnostics; real summary click occurs only when details.open is false;
+reset selects the actual approval-count owner. All original Review/token/revision
+assertions remain. Owner333's isolated demonstration proves the old unconditional
+click closed the protected disclosure; owner9a83 focused10/10 on the prior dirty
+correction is separate independent focused evidence, not a native clean receipt.
+
+After Manager request **f8bb6152**, actual QA **4ff2beb2** independently ACCEPTS
+exact-source e8c only: clean ancestry/diff/four receipts, strict numeric scroll
+and conditional driver, additive TIN, all11 generated regular-file PNG bytes and
+SHA256 equal the dashboard receipt manifest. This resolves the source QA wait;
+it does not establish actual live desktop/mobile/installed-alpha2/owner workflow
+acceptance. Console self-recorded **blocked14** before this verdict; reviewed
+Manager-owned metadata amendment **blocked15** replaces its stale QA-pending
+reason with actual source acceptance, pending guarded integration handoff and
+remaining live gate. All criteria, owner, exact candidate and historical failures
+remain. Console receives **f9a645d0** to submit its own exact-commit integration
+request after fresh brief/current/inbox/clean checks; Manager must then evaluate
+and use serialized native authority/clean canonical/ancestry gates without
+waivers. No source request/landing is claimed by this snapshot; task is not closed.
+Generated demo screenshots/source acceptance never become operational acceptance.
+
+**Implemented API and real refusal retained.** Kernel observeMessages exists at
+inbox candidate **a4bba018**, with actual narrow QA source/test-integrity acceptance.
+Owner445's WAL mutant exposed the original test gap, not actual read mutation;
+strengthened actual connection DML counting/logical-state assertions and multiline
+mutant rejection remain. External unreviewed mutation-script execution refusal
+was preserved. Native currentControlPlane2/required3 qualification still refuses:
+no eligible native receipt/landing or live recovery is inferred. Inventory's
+old missing-API clause and inbox's old QA-pending clause are historical. Overview
+initial/return title exactly TORCH Dashboard is the resolved delegated eca decision,
+not a new owner hold or permission to weaken the original expectation.
+
+**Fleet judgment and validation.** Current55 tasks are **38 proposed,9 blocked,
+6 completed,2 assigned**: Work4 and Runtime6 are the single active assignments;
+Console15 keeps genuine full-task acceptance blocked. Readonly check-in refreshed
+six reports and own addressed findings; presence idle timestamps do not prove
+process absence/completion. Evolution reports8 recurring domain sets, hierarchy10
+signals, changes none. Keep the six coherent domain owners: explicit API/store
+contracts, phase boundaries and named handoffs resolve current friction better
+than promoting an identity or adding a manager. Health37 stale-observation and2
+resolved-dependency warnings remain observational, no auto-fix or mass cleanup.
+Manager reviewed append-only ledger metadata, preserved histories/criteria,
+validated55 unique IDs, revision/history consistency, known acyclic dependencies,
+one active item per owner and diff whitespace. No new tests are needed for these
+metadata/report changes; Console native evidence is distinct from Manager running
+any peer checks. Owner-addressed informational send was refused **Unknown Fleet
+identity: owner**; no message was delivered and no alternate sender/tool bypass was
+attempted. This report is the owner-facing record.
+
+No automatic wakes, installation switch, live schema recovery, host activation,
+extra identity, provider launch, remote push/publication or destructive recovery.
+Five-PNG permission remains only the completed exact Runtime recovery. Native
+landing gates, approval boundaries and tool refusals are preserved. Open handoffs
+are Work Phase A implementation/independent validation and Console exact request/
+serialized integration/live acceptance; no idle/complete outcome is invented.
+
+
 ## Precise QA disposition received at 13:33 UTC
 
 After checkpoint5dee7c8, CURRENT tasks remain Console in_progress13, Work

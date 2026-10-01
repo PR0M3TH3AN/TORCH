@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-6e4ff870-a386-4a11-a59c-444ebc23732e",
   "title": "Separate candidate source qualification from live control-plane initialization",
-  "description": "Explicit owner a970326b-87a5-4292-8f22-e1bec0c15f11/92f7fd36 corrects the inventory: no explicit existing check-engine separation item exists. Add ONE proposed bounded item in the existing backlog. Incident observed on canonical cb145e56 and Kernel reservation candidate be1ae951: candidate CLI initialized production schema3 during qualification, installed/canonical schema2 writers relabel it, and native CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED currentVersion2 requiredVersion3 then prevents qualification, causing activation/landing circularity. Design supported separation of exact candidate-source execution engine from a versioned, independently fingerprinted compatible receipt/control-plane adapter without migrating live production state merely to test candidate. Preserve actual authenticated native project/area/commit/definition/run/resource/guard/outcome evidence and immutable artifacts. Work owns src/checks, Kernel src/control-plane, Release CLI wiring and QA scenarios/acceptance; agree exact contract, owned paths and scenario consent before any implementation. No old-checker shortcut, fake isolated real-project receipts, gate waiver, install activation, production DB recovery, new identity or parallel queue. TASK-4dc metadata/candidate preparation remains completed; its retained deeper provenance roadmap was not an explicit task until this proposal.",
+  "description": "Explicit owner a970326b-87a5-4292-8f22-e1bec0c15f11/92f7fd36 corrects the inventory: no explicit existing check-engine separation item exists. Add ONE proposed bounded item in the existing backlog. Incident observed on canonical cb145e56 and Kernel reservation candidate be1ae951: candidate CLI initialized production schema3 during qualification, installed/canonical schema2 writers relabel it, and native CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED currentVersion2 requiredVersion3 then prevents qualification, causing activation/landing circularity. Design supported separation of exact candidate-source execution engine from a versioned, independently fingerprinted compatible receipt/control-plane adapter without migrating live production state merely to test candidate. Preserve actual authenticated native project/area/commit/definition/run/resource/guard/outcome evidence and immutable artifacts. Work owns src/checks, Kernel src/control-plane, Release CLI wiring and QA scenarios/acceptance; agree exact contract, owned paths and scenario consent before any implementation. No old-checker shortcut, fake isolated real-project receipts, gate waiver, install activation, production DB recovery, new identity or parallel queue. TASK-4dc metadata/candidate preparation remains completed; its retained deeper provenance roadmap was not an explicit task until this proposal.\n\nCurrent authorized phase (owner36788020/21997bf1, QAa0e8ae17): bounded Phase A implementation preparation/development on this SAME Work assignment. Only NEW src/checks/candidate-engine.mjs and src/checks/artifact-manifest.mjs, new QA-consented test/fleet/candidate-engine.test.mjs and test/fleet/candidate-artifact-manifest.test.mjs, and append-only docs/TEST_INTEGRITY.md. Extract reviewed pure raw-terminal execution and trusted parent artifact-collection seams; frozen inputs/args/env/artifact limits, parent-only observed terminal/envelope with no candidate writer capability, capped canonical regular-file manifest and strict traversal/link/special/overwrite/seal-drift rejection. Hermetic fixture/fake-adapter evidence is permanently development-only/nonpromotable. No existing conditions behavior changes or CheckService/CLI/integration/consumer wiring; no store/provisioner/schema/DDL/receipt-consumer/gate-policy/resource-lease changes, live recovery, installation/host/provider/wake/publication actions. QA remains final test owner. Phase A does not complete this full task or qualify native/operational acceptance. Later Kernel store/context/adapter, Release CLI and Work explicit source-consumer phases remain proposed and require separate scoped decisions; retain actual native guards and all existing full acceptance criteria.",
   "priority": "high",
   "affectedDomains": [
     "work-integration",
@@ -31,14 +31,18 @@
     "message:28f03fa6-ff6e-4af8-87e0-631218f1ec55:owner-bounded-design-document-phase",
     "message:7f3964b1-7c4e-464e-8d8e-8cdb8e7e61b8:Kernel-owned-interface-reviewed",
     "message:9f974c64-0d46-4825-97b4-5a9b02cab30a:three-axis-draft",
-    "message:0c3462cf-d312-407c-9b09-eacda53ad080:tuple-scoped-compatibility-and-artifact-transport-correction"
+    "message:0c3462cf-d312-407c-9b09-eacda53ad080:tuple-scoped-compatibility-and-artifact-transport-correction",
+    "message:59933112-c99e-486a-b186-9aca37cc0174:reviewed-phased-engine/store/transport-proposal",
+    "message:36788020-8960-4fbc-8ed9-db8d5cacbe04:owner-exact-Phase-A-conditional-authorization",
+    "message:a0e8ae17-8525-46d7-b213-0031aa85f2a0:QA-named-Phase-A-source/test-path/scenario-contributor-consent",
+    "message:21997bf1-b1c1-4808-88fe-9d673c55fb23:owner-condition-resolved-record-same-assignment-phase"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T10:14:01.401Z",
-  "updatedAt": "2026-10-01T12:17:15.519Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T13:45:39.303Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -60,6 +64,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T12:17:15.519Z",
       "note": "Assign ONE bounded DESIGN-DOCUMENT phase under owner28f, after native Work nextreadyTHIS/noactive. Work is design lead/reviewer, not code implementer in this phase. Named contributor Project Kernel alone drafts two owned paths: nonnormative clearly PROPOSED additions inside docs/PORTABLE_AGENT_FLEET_SPEC.md sections18/20, additive next-free ADR in docs/ARCHITECTURE_DECISIONS.md; do not rewrite accepted rules/ADR024 or existing proposedADR025. Work pins/reviews versioned engine/result envelope and immutable digests, Kernel authenticated subject/no-DDL registered adapter/opaque fresh attempt transport, Release CLI worker/env/artifact boundary, QA strict scenario/interface truth. Mark missing policy decisions explicitly. No src/schema/config/test edit, live DB/control-plane initialization, gate-semantic change, fixture promotion, operational acceptance, install/provider/wake/host action. Kernel inbox565 blocked7 at a4 and inventory/reservation histories remain blocked, not reactivated or duplicated. Runtime e440 and Console workflow remain their existing single implementations. Return exact proposed amendment and named peer decisions for final review before any code scope."
+    },
+    {
+      "from": "assigned",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T13:45:39.303Z",
+      "note": "Explicit owner21997bf1 requests reviewed metadata-only phase/revision/evidence amendment after actual owner367 and QAa0 consent. Expected revision3; SAME existing Work assignment, phase A preparation/development now authorized only exact two new modules, two additive hermetic test files and append-only integrity note. No assertion of code begun/finished, no lifecycle transition or duplicate assignment; owner/state/full criteria/dependencies/candidate/integration and all prior history preserved. Service has no metadata-amend API; no transition/gate workaround. Kernel/Release/consumer/store/schema phases remain proposed; no runtime/provider launch or operational acceptance."
     }
   ]
 }
