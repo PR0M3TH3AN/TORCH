@@ -20,20 +20,25 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "release-self-host",
   "evidence": [
     "message:94010b22-c6ce-4d34-9ed9-01b2330106db:sequence-real-next-Release-persistent-setup-owned-work",
     "message:2d4318ba-d6b7-4b17-aef3-2ba450776dbc:current-closure-and-next-owned-work",
     "TASK-4dc17235-e528-4582-ae49-ebde9006c753:completed:revision13",
-    "canonical-brief:d7e6d69:continued-existing-development"
+    "canonical-brief:d7e6d69:continued-existing-development",
+    "message:99ee5f01-e5ac-4537-8e46-b712e909c020:explicit-contract-and-portable-implementation-phase",
+    "message:703bb01b-6f7a-43f4-92c4-b86ca01b6153:Kernel-boundary-review",
+    "message:87c3b0a7-bd6f-46dd-a4cc-b72e27ee55c5:isolated-qualification/future-Release-fence",
+    "message:a10ce5dc-5f65-4ec6-8808-3a8ccbf6ec97:Runtime-design-review",
+    "message:c63ec499-fc6f-4246-9190-05d457d11de9:QA-strict-design-boundaries"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T19:34:25.620Z",
-  "updatedAt": "2026-10-01T09:04:54.875Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T09:56:38.861Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -55,6 +60,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:04:54.875Z",
       "note": "Assign ONLY read-only Release-owned setup/CLI/selfhost planning phase under explicit owner94010b22/2d4318ba next-work direction. Inspect current approved init/install/restore/upgrade/service preview paths and identify dormant/idempotent manifest-lifetime contracts, ownership boundaries and exact prospective peer requests. Outputs durable TORCH evidence/attachments only, no repository source/report/tests/config edits or host/provider/install actions. No credential inspection/live probe. Full multi-domaincriteria stayopen; later bounded implementation requires exactpath/QAconsent and reviewed scope; reservationreliability/wakepause retained. Arbiter alone starts native session; Managerlaunchesnone."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:56:38.861Z",
+      "note": "Current canonical brief reread and exact Release next resume SAME task. Owner99ee5 directs precise implementation contract/path map and actual named QA additive scenario consent, then reviewed Release-owned portable source work: combined digest-bound init/install preview and dormant schedule provisioning/reconciliation. Kernel config/manifest APIs and Runtime launcher/lifecycle remain peer-owned; exact consent required before edits there. Source paths begin Release src/cli.mjs/src/self-host/service.mjs/bin as individually named in returned plan; no package/global/provider/config/host changes inferred. Qualify strict isolated fixture state, distinguish from unavailable real-project schema3 gates; don't wait on live recovery to design/develop pure portable code once consent is sufficient. Return concrete enforceable future writer-fence proposal, not process absence/token alone. No host unit enable/linger/destination choice, service stop, production state relocation/live mutation, engine installation/activation or provider wake. Keep full criteria and independent final exact checks/QA/guarded integration requirements."
     }
   ]
 }

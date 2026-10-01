@@ -17,7 +17,7 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "blocked",
+  "state": "assigned",
   "owner": "owner-console",
   "evidence": [
     "message:89c92c3e-4f00-4213-877d-6c2afeb4b22c:focused-view-routing/mobile-navigation/title-provenance-design-observations",
@@ -26,14 +26,17 @@
     "message:fffedb05-8c64-4186-a8a1-8cda5c83da02:QA exact scenario and test-path consent request",
     "message:37f4db01-070e-4616-b320-c01ccb801b14:read-only route/view scope proposal for review",
     "ownership:site/console.html,site/console.js,site/styles.css=owner-console;test/fleet/**=qa",
-    "evidence:existing-console-ux-audit-and-live-console-arbiter-audit"
+    "evidence:existing-console-ux-audit-and-live-console-arbiter-audit",
+    "message:46d4a7a7-4c03-431a-a967-6136af2478f8:arbiter-accepts-design37f4/exact-three-source-paths;reports-QA6ce049-consent",
+    "message:6ce049e1-9021-4c9f-9b4b-8f8ff3f9768c:named-QA-additive-path/scenarios-consent-as-attested-by-arbiter",
+    "current-brief:d7e6d69:read-before-same-task-implementation-resume"
   ],
   "commit": null,
   "integrationRequest": null,
-  "blockedReason": "Read-only route/view proposal and exact QA scenario/path-consent request are recorded in durable Fleet messages fffedb05-8c64-4186-a8a1-8cda5c83da02 (QA) and 37f4db01-070e-4616-b320-c01ccb801b14 (Session Manager). Await QA consent for test/fleet/console-view-navigation.test.mjs and Manager/arbiter review before any implementation phase. No source/test/config/live mutations made.",
+  "blockedReason": null,
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T09:36:28.873Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T09:52:53.161Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -69,6 +72,13 @@
       "actorId": "owner-console",
       "at": "2026-10-01T09:36:28.873Z",
       "note": "Design/scoping deliverable is recorded. Pausing at the requested path-consent and implementation-phase review gate; no code or test changes are authorized in this assignment phase."
+    },
+    {
+      "from": "blocked",
+      "to": "assigned",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:52:53.161Z",
+      "note": "Resume SAME owner/task after actual design acceptance and arbiter-attested named QA consent. Exact Console next idle/no active item. Implement only site/console.html, site/console.js, site/styles.css plus QA-approved test/fleet/console-view-navigation.test.mjs; confirm actual addressed QA6ce049 constraints before test edits. Stable fragments/history/current accessible navigation, mobile all-area grid, selected view, human-readable task/status and accessible provenance; retain drafts, preview freshness/confirmation and all existing authority controls, unknown/live distinction, branding/dark mode. No live-refresh/backend/config scope expansion. Strict tests/Test Integrity Note through QA consent; fresh exact four gates and independent QA acceptance. Actual browser unavailability remains explicit final visual gate, not source implementation deadlock. Arbiter controls session start; Manager starts none."
     }
   ]
 }

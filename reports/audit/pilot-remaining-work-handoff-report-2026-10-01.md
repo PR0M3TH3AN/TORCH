@@ -1,5 +1,95 @@
 # Current pilot remaining-work handoff
 
+## Reconciled dispatch and retained gates at 09:57 UTC
+
+Canonical startup and pre-item briefs match
+`d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
+The sandbox's readonly-database brief error was retried only with approved access
+for that exact command. Canonical is clean at `cb145e56`; Manager's preceding
+local checkpoint is `72c8ca95`. Direct-report check-ins, own inbox, ownership,
+exact worktrees, health, approvals, Fleet evolution and hierarchy were refreshed.
+
+Console's SAME workflow task is **assigned revision 6** for implementation.
+Arbiter message `46d4a7a7` accepts design `37f4db01` and attests actual named QA
+consent `6ce049e1` for `test/fleet/console-view-navigation.test.mjs` and strict
+route/history/mobile/draft scenarios. Fresh Console next lookup was idle.
+The only production scope is `site/console.html`, `site/console.js` and
+`site/styles.css`; Console must read its actual addressed QA constraints before
+test edits. Manager handoff `b54cd965` preserves dark mode/branding, selected
+views, stable fragments/history, mobile navigation, drafts, stale-preview
+refusal, authority controls and unknown/live provenance. No live-refresh,
+backend or configuration expansion. Independent QA and actual browser
+qualification remain required; blocked audit/attention items are preserved.
+
+Standalone artifact task `TASK-3909cbf6-10c6-44ce-b82e-5bfb62cf34c8` is
+**verification revision 5**, exact clean
+`0fdfcb3b68e4511f2993d03e1fff8f89124b731c`. Manager read four immutable PASS
+receipts with null invalid reasons: test `79965427`, check `44ba4ca3`, lint
+`f28e9756`, dashboard `aa5da076`. QA `5f4eed01` reports segment-correct path
+containment, temporary-root validation and screenshot-target lstat preflight;
+Manager read the source and strict additive scenarios. Work `ddbf82fa`
+independently passed 3/3 focused scenarios and verified all 11 external PNGs and
+runner provenance. That verdict expressly stops short of final acceptance.
+Manager handoff `5b74907b` retains independent Console/Work acceptance and exact
+guarded integration waits. No integration request exists yet; old `014bdb4`
+counterexamples and prior unqualified evidence remain preserved.
+
+Release's SAME persistent-operations task is **in_progress revision 4**.
+Arbiter `99ee5f01` advances the previous design-only phase to precise technical
+contract/path mapping, actual QA scenario consent, then reviewed portable
+Release-owned combined init/install preview and dormant provisioning work.
+Fresh Release next lookup returned resume. Handoff `ca70a145` distinguishes
+isolated source fixtures from real-project qualification; Kernel manifest/API
+and Runtime launcher/lifecycle remain peer-owned. No host unit enablement,
+linger/destination choice, provider wake, service stop, production state
+relocation or runtime activation follows. A concrete future writer-fence
+proposal is requested within this same task, not a duplicate queue.
+
+Kernel task `TASK-125dd886` remains **blocked revision 5**, original reservation
+candidate `be1ae951` and failed schema gate preserved. Its later clean design
+checkpoint is `e8e33f1ef6d13b97374130087b6d2f2dc8f0e32f`, read independently.
+ADR-025 now states the circularity: isolated XDG fixture tests can qualify
+portable tooling but cannot produce real-project receipts. Readonly planning,
+consistent SQLite online backup and apply are separate phases. A future
+Release-verified lifetime fence must prevent old v2 writers restarting across
+backup/apply and afterwards; current alpha.2 has none. Owner `533c2662` questions
+and refinement `87c3b0a7` are routed in `4cd1ba40`, `50a5f4a8` and `1fe7e28e`.
+Next: exact Kernel portable planner/verifier scope, sufficient algorithm review
+and named QA strict scenario/path consent before same-task nonlive implementation.
+No production migration, backup, PRAGMA/row/index repair, old-checker retry or
+gate waiver is authorized. Runtime starting-presence waits on this actual gate.
+
+Work `70f8c184` confirms no supported Manager metadata publication route exists:
+native integration and delivery both reject the Manager as a feature source.
+The reviewed local Git checkpoint plus TORCH messages/backlog remain the durable
+handoff, without a feature landing, delivery or remote publication claim.
+Handoff `2a3d37b6` retains a possible authenticated metadata publication feature
+against existing delivery-qualification scope for later review, without bypass.
+
+Owner `d24458ef` requests faithful urgency rather than noisy warnings. Current
+health has 34 stale observed-commit findings, including completed diagnostics,
+and two resolved-dependency findings whose actual schema/ownership waits remain.
+Exact existing attention follow-ups `7e53f0e7`/`b5cb4afa` ask Console and Work
+for classification and strict scenarios; reviewed clean branch-ahead and old
+completed observations retain raw provenance. No bulk ACK, observation rewrite,
+automatic unblock, hidden real risk or competing implementation was performed.
+
+Fleet evolution finds eight recurring domain sets; hierarchy finds ten direct
+Manager coordination requests in the 30-day window. Existing domain ownership,
+precise consent contracts and artifact/writer guards address the measured
+friction more directly than another specialist or manager. Retain six specialists;
+no Fleet change is pending or activated. All 50 tasks remain: 37 proposed, five
+blocked, five completed, one assigned, one in progress and one in verification.
+Acknowledgements cover only individually read Manager-addressed messages; all
+unresolved handoffs remain tracked here or in their existing tasks.
+
+Owner approval `75a8ebae` remains pending with no new human activation answer.
+Automatic approval review previously refused the alpha.3 pointer/registry switch
+because it may affect live services and earlier consent covered candidate build.
+That refusal is preserved; no retry, owner impersonation or duplicate permission
+question. Automatic wakes stay paused. Manager started no provider and changed
+no installation, services, configuration, production database or remote branch.
+
 ## Closing coordination gates at 09:40 UTC
 
 Console returned its concrete read-only route/view proposal37f4 and is now
