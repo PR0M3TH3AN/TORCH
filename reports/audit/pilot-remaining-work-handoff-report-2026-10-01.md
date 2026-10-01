@@ -1,5 +1,58 @@
 # Current pilot remaining-work handoff
 
+## Complete current Kernel contract review at 15:04 UTC
+
+Authoritative brief d7e6d69 refreshed by exact narrowly approved retry after normal
+read-only SQLite refusal. Own branch starts clean547ec63. CURRENT tasks then own
+addressed unread100 supplied complete Kernel **b6818413** (14:54), owner **42f9**
+(15:00). Both read in full, specific peer decisions routed, then individually
+acknowledged. Manager check-in refreshed; idle historical presence badges do not
+prove resumed QA/Work are absent. Evolution8/hierarchy10 signals remain advisory;
+retain six coherent owners and direct protocol/test consent, no hierarchy proposal
+or identity/start action. Health48 stale-observation/2 dependency warnings are
+review evidence, not cleanup/closure permission. Extra two Kernel source paths
+were independently ownership-queried; existing six-path contract recorded.
+
+Proposal report now reviews b681 CandidateStore/v1 metadata/attempt/result/receipt
+tables and index, short BEGIN IMMEDIATE one-row CAS, UNKNOWN retention, parent/
+private issuer/managed reader and input/fence admission. Precise remaining decisions:
+executable DDL and unambiguous digest canonicalization; private fixture authority
+issuance through a reachable harness composition without caller target selectors;
+positive nonpromotable fixture CAS scenarios without fake native receipts;
+actual input-use boundary versus wrapper byte receipt; enforceable descendant
+coverage versus insufficient process-group emptiness. Unknown coverage refuses PASS,
+no same-user OS containment claimed. Current initialized MCP actor/claimedIdentity
+source was inspected and cannot be substituted as pure authority reader.
+
+Exact QA7fd/Work563/Kernel844 handoffs request current consent/protocol decisions,
+not a new generic review cycle. No agreed implementation scope until actual QA
+contributor consent plus Work protocol agreement; no source/tests/liveDDL/store/
+CLI/native consumer edits, new parallel assignment or provider launch. PhaseA316
+landed/pushed/nativeQA source acceptance remains resolved; full6e4verification7
+stays open. Runtimeassigned6 remains the other sole active item. Full56roadmap and
+all blocked histories stay intact; c178proposed/duplicatec532unauthorized preserved,
+no additional landing. Legacy2 receipts/current3vs2 refusal and pending human75
+are unchanged. Owner42 current live healthy Console observation supersedes its
+sandbox curl failure, without proving installed/mobile/full acceptance.
+
+Actual **QA78cd** at15:04 provides CONDITIONAL six-source/three-test/TIN consent,
+not actionable code permission. Conditions require byte-canonical DDL and FK
+verification, reachable closure fixture harness with no selectors, framed E/S/A,
+attempt/child/full-pipe proof excluding OS/semantic-use claims, PGID-only UNKNOWN
+and nonpromotable fixture finalizer for positive atomic transaction scenarios.
+Current PhaseA cannot supply that proof. Manager86de asks whether peer7992 copy
+matches current b681; Work476 receives exact current conditions and protocol
+decision request. Do not weaken full frozen-input/native consumption criterion by
+calling pipe receipt actual arbitrary-check use. **Work protocol agreement remains
+pending** after refreshed own unread100; no next implementation scope agreed.
+
+Final current-task refresh retains56 and only Workverification7/Runtimeassigned6;
+canonical independently clean316. Native queue is originala178landed, duplicate
+c532ready/unauthorized, oldcce needs_convergence. Current owner approval75 is still
+pending1/approverowner; no activation attempt. Only local report documents were
+edited through apply_patch; no tests/source/DDL execution, consumer/CLI wiring,
+provider/host/runtime/wake action, task lifecycle change or another landing.
+
 ## Final source-sync and Manager checkpoint at 14:53 UTC
 
 Actual own unread100 delivered owner548: arbiter independently inspected exact316

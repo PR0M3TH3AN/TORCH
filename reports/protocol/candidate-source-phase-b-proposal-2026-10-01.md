@@ -8,6 +8,59 @@ no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
 ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
+## Current complete contract review: Kernel b681, 15:04 UTC
+
+Manager read the complete durable message **b6818413-798a-450c-ad20-dfca25f45f77**
+(14:54 UTC), including all six paths, CandidateStore/v1 table definitions,
+issuer/reader/parent composition, lifecycle CAS and proof admission. The earlier
+959 shape discussion below is historical; current technical decisions target b681.
+Current task is Work verification7 at exact316/a178 landed; native QA and permitted
+development-ref source synchronization are resolved, not whole-task completion.
+No code, source/test edit, registered provisioning or activation is authorized.
+
+The new contract specifies candidate_store_meta, candidate_attempts,
+candidate_results, candidate_source_receipts and a reconciliation index; independent
+E/S/A and attempt/guard/lease/fence digests; busy_timeout=0 and short BEGIN IMMEDIATE
+mutations; issued -> executing -> sealed -> finalized one-row CAS; result plus
+eligible receipt in one transaction; SELECT-only reconciliation. UNKNOWN retains
+the open attempt and guards, never a terminal result or replay. Definition/input/
+output and artifact bounds are named. Module-private fixture authority, pure
+managed metadata reader and parent-only engine composition replace the previously
+unnamed seams. These are concrete progress, subject to the exact issues below.
+
+| Boundary | Manager review decision | Exact unresolved evidence/contract |
+| --- | --- | --- |
+| Executable DDL and digests | Not yet executable or uniquely canonical | Supply exact ordered CREATE TABLE/INDEX/PRAGMA statements, UTF-8/LF byte representation and a versioned length-framed or canonical envelope. Define which bytes/digests are inputs; exclude self-referential stored digest values. Pin schema_digest separately from ddl_digest, logical-state ordering and SQLite configuration. |
+| SQL invariants and byte limits | Application assertions alone are insufficient evidence | SQL length(TEXT) measures characters, while stated limits are bytes. Pin enforced UTF-8 limits and null/hex/type pairing for optional schema/proof fields; cross-row result/attempt/PASS-only receipt linkage must reject forged combinations at the declared boundary. |
+| Reachable private fixture issuer | Private WeakMap verification is useful, but issuance is undefined | An external harness cannot call a module-private issuer as stated. Specify a supported composition that creates its own fresh synthetic mkdtemp target, retains the private issuer, returns only bounded nonpromotable operations/attestation and rejects caller paths/registered selectors. No exported issue-from-path escape hatch. |
+| Fixture positive CAS evidence | Current blanket fixture rejection leaves a positive test gap | Define a separate nonpromotable fixture-result transaction surface for valid issue/start/seal/finalize/crash scenarios, while the registered receipt adapter always refuses fixtures. No fixture native PASS or copied registered-looking fixture receipt. |
+| Input read versus execution use | Wrapper hash attests byte receipt only | Pin a versioned consumer/dataflow that uses the bound immutable representation for the declared check, attempt/channel/direct-child identity binding and replay limits. An untrusted child statement, token echo or copied-byte digest cannot prove arbitrary executor use. |
+| Descendant terminal coverage | Process-group emptiness is insufficient | A child can leave the group. Name an enforceable supervised execution boundary and its verifier/coverage limits; if escape prevention or complete terminal coverage is unavailable, retain UNKNOWN and refuse PASS. PID/group sampling alone cannot discharge this requirement. No same-user OS containment claim. |
+| Trusted metadata composition | Initialized MCP seam cannot substitute pure reader | Actual server opens ControlPlane before assertIdentity; claimedIdentity uses that initialized instance. Pin pure launch binding validation, reader/verifier dependencies and refusal of unavailable/incompatible state without open/DDL. cwd/env are inputs to validate, not sufficient authority by themselves. |
+
+Manager routed exact decisions to current resumed QA **7fd57562**, Work **5638f592**
+and Kernel **8446d2bb**. These are bounded decisions on b681, not a new generic
+design loop or implementation assignment. QA contributor/scenario consent and Work
+parent/engine protocol agreement are distinct required decisions. Until their
+actual current replies, no bounded next implementation scope is recorded as agreed.
+Legacy compatible schema2 receipts retain meaning and current required3/current2
+native refusal stays intact. Host/provider/wake/installation/approval75, live DDL,
+CLI and existing native consumers remain excluded. Full56 backlog remains open;
+idempotencyc178 is proposed and both original/duplicate integration records remain.
+
+Actual QA **78cdac6d-0546-472d-b8c6-de1619f9e27e** at15:04 grants conditional
+scenario/path consent only for six Kernel paths, three tests and append-only TIN;
+it is **not actionable consent or code authority** until byte-canonical DDL with
+per-connection FK verification/no caller schema, reachable private fixture harness,
+framed E/S/A, attempt/child/full-pipe proof, PGID-only UNKNOWN and closure-only
+nonpromotable fixture finalization are pinned. QA excludes OS and semantic-use
+claims and says current Phase A cannot PASS under the proposed protocol. Work's
+current protocol agreement is separately pending. Manager requests confirmation
+that QA's peer-addressed Kernel7992 copy is the same concrete b681 revision.
+Byte receipt must stay visibly narrower than actual arbitrary-check input use;
+the full task's frozen-input/native consumption criterion remains unproved, not
+weakened by relabelling this bounded prototype. No next code scope is agreed yet.
+
 ## Entry conditions and scope decision
 
 Work Phase A corrected candidate b1c4c26b is implemented and currently clean.
@@ -30,7 +83,7 @@ assignment. Kernel's reservation125, inbox565 and inventory1e688 histories stay
 blocked and intact. A later Kernel implementation needs explicit sequencing;
 this proposal does not activate it or silently transfer the Work-led item.
 
-## Actual read-only interface review and remaining design decisions
+## Historical 959 interface shape review
 
 Kernel959d proposes protocolVersion1 APIs:
 
@@ -75,6 +128,8 @@ and src/kernel/**, QA owns test/**. Proposed new paths are:
 | Attempt/result store and transaction boundary | Project Kernel | src/control-plane/candidate-attempt-store.mjs |
 | Authenticated E/S/A context derivation and refusal | Project Kernel | src/kernel/check-subject-context.mjs |
 | No-DDL result finalizer/receipt adapter | Project Kernel | src/control-plane/check-receipt-adapter.mjs |
+| Pure managed-install/worktree metadata reader | Project Kernel | src/kernel/managed-subject-metadata.mjs |
+| Parent authority and engine composition | Project Kernel | src/kernel/candidate-source-parent.mjs |
 | Store/provisioner/transaction scenarios | Independent QA | test/fleet/candidate-attempt-store.test.mjs |
 | Subject/engine/adapter binding scenarios | Independent QA | test/fleet/check-subject-context.test.mjs |
 | Finalization/replay/artifact/outcome scenarios | Independent QA | test/fleet/check-receipt-adapter.test.mjs |
