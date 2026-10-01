@@ -15,7 +15,7 @@ import { defaultManagerCheckInSchedule, organizationGraphFromConfig } from '../.
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { ResourceService } from '../../src/resources/service.mjs';
 import {
-  createFleetBrief, detachFleet, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
+  createFleetBrief, detachFleet, planAreaUp, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
 } from '../../src/runtime/lifecycle.mjs';
 
 function fleetFixture({ workerRuntime = 'claude', hierarchy = false } = {}) {
@@ -331,7 +331,7 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   const started = startFleet({
     plan, controlPlane: control, adapters,
     executor: (launch) => launch.areaId === fixture.worker
-      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-worker-1"}\n' }
+      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-worker-1"}\n{"type":"turn.completed"}\n' }
       : { status: 0, stdout: 'claude-manager-1\n' },
   });
   assert.deepEqual(started.started.map((item) => item.runtimeSessionId), [
@@ -359,4 +359,125 @@ test('SCN-mixed-runtime: Codex and Claude share stable identities while planning
   assert.deepEqual(stoppedRuntimes, ['claude']);
   assert.equal(control.identity(fixture.worker).state, 'offline');
   control.close();
+});
+
+test('SCN-codex-terminal-completion: a captured Codex identity is not a completed turn without terminal evidence', () => {
+  const fixture = fleetFixture({ workerRuntime: 'codex' });
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const adapters = new Map([
+    ['claude', createClaudeAdapter()],
+    ['codex', createCodexAdapter({ executable: 'codex' })],
+  ]);
+  const plan = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh: true });
+  assert.throws(() => startFleet({
+    plan, controlPlane: control, adapters,
+    executor: (launch) => launch.areaId === fixture.worker
+      ? { status: 0, stdout: '{"type":"thread.started","thread_id":"codex-interrupted-1"}\n' }
+      : { status: 0, stdout: 'claude-manager-1\n' },
+  }), (error) => error.code === 'FLEET_START_FAILED'
+    && error.details.executorOutcome.reason === 'codex-terminal-event-missing');
+  assert.equal(control.identity(fixture.worker).state, 'working');
+  assert.equal(control.identity(fixture.worker).runtimeSessionId, 'codex-interrupted-1');
+  const duplicate = planAreaUp({
+    repositoryRoot: fixture.root, controlPlane: control, areaId: fixture.worker, adapters,
+  });
+  assert.equal(duplicate.canProceed, false);
+  assert.deepEqual(duplicate.blockers, [{
+    areaId: fixture.worker, code: 'RUNTIME_IDENTITY_ACTIVE', state: 'working',
+    runtimeSessionId: 'codex-interrupted-1',
+  }]);
+  control.close();
+});
+
+test('SCN-codex-startup-diagnostics: owner-visible startup failures prefer bounded structured Codex evidence without disclosure', () => {
+  const modelFixture = fleetFixture({ workerRuntime: 'codex' });
+  const modelControl = openControlPlane({ repositoryRoot: modelFixture.root, env: modelFixture.env });
+  const modelAdapters = new Map([
+    ['claude', createClaudeAdapter()],
+    ['codex', createCodexAdapter({ executable: 'codex' })],
+  ]);
+  const modelPlan = planFleetUp({
+    repositoryRoot: modelFixture.root, controlPlane: modelControl, adapters: modelAdapters, fresh: true,
+  });
+  let modelFailure;
+  assert.throws(
+    () => startFleet({
+      plan: modelPlan, controlPlane: modelControl, adapters: modelAdapters,
+      executor: (launch) => launch.areaId === modelFixture.worker
+        ? {
+          status: 23,
+          stdout: '{"type":"error","code":"MODEL_NOT_SUPPORTED","message":"Requested model fixture-model is not supported","prompt":"fixture prompt must not leak"}\n',
+          stderr: 'Vercel MCP authentication warning: token=fixture-token password=fixture-password',
+        }
+        : { status: 0, stdout: 'claude-manager-1\n' },
+    }),
+    (error) => {
+      modelFailure = error;
+      return error.code === 'FLEET_START_FAILED' && error.details.status === 23;
+    },
+  );
+  assert.deepEqual(modelFailure.details.diagnostic, {
+    schema: 'torch.dev/runtime-startup-diagnostic/v1alpha1', outcome: 'known',
+    category: 'model-rejection', code: 'MODEL_NOT_SUPPORTED',
+    message: 'Requested model fixture-model is not supported',
+    stderr: 'Vercel MCP authentication warning: token=[REDACTED] password=[REDACTED]',
+  });
+  assert.equal(modelFailure.details.stderr, modelFailure.details.diagnostic.stderr);
+  assert.doesNotMatch(JSON.stringify(modelFailure.details), /fixture prompt|fixture-token|fixture-password/);
+  assert.equal(modelControl.identity(modelFixture.worker).state, 'offline');
+  modelControl.close();
+
+  const malformedFixture = fleetFixture({ workerRuntime: 'codex' });
+  const malformedControl = openControlPlane({ repositoryRoot: malformedFixture.root, env: malformedFixture.env });
+  const malformedAdapters = new Map([
+    ['claude', createClaudeAdapter()],
+    ['codex', createCodexAdapter({ executable: 'codex' })],
+  ]);
+  const malformedPlan = planFleetUp({
+    repositoryRoot: malformedFixture.root, controlPlane: malformedControl, adapters: malformedAdapters, fresh: true,
+  });
+  let malformedFailure;
+  assert.throws(
+    () => startFleet({
+      plan: malformedPlan, controlPlane: malformedControl, adapters: malformedAdapters,
+      executor: (launch) => launch.areaId === malformedFixture.worker
+        ? { status: 24, stdout: '{malformed Codex event', stderr: 'MCP warning' }
+        : { status: 0, stdout: 'claude-manager-2\n' },
+    }),
+    (error) => {
+      malformedFailure = error;
+      return error.code === 'FLEET_START_FAILED' && error.details.status === 24;
+    },
+  );
+  assert.equal(malformedFailure.details.diagnostic.outcome, 'unknown');
+  assert.equal(malformedFailure.details.diagnostic.reason, 'stdout-malformed-json');
+  assert.equal(malformedFailure.details.diagnostic.stderr, 'MCP warning');
+  malformedControl.close();
+
+  const oversizedFixture = fleetFixture({ workerRuntime: 'codex' });
+  const oversizedControl = openControlPlane({ repositoryRoot: oversizedFixture.root, env: oversizedFixture.env });
+  const oversizedAdapters = new Map([
+    ['claude', createClaudeAdapter()],
+    ['codex', createCodexAdapter({ executable: 'codex' })],
+  ]);
+  const oversizedPlan = planFleetUp({
+    repositoryRoot: oversizedFixture.root, controlPlane: oversizedControl, adapters: oversizedAdapters, fresh: true,
+  });
+  let oversizedFailure;
+  assert.throws(
+    () => startFleet({
+      plan: oversizedPlan, controlPlane: oversizedControl, adapters: oversizedAdapters,
+      executor: (launch) => launch.areaId === oversizedFixture.worker
+        ? { status: 25, stdout: 'x'.repeat((16 * 1024) + 1), stderr: 'MCP warning' }
+        : { status: 0, stdout: 'claude-manager-3\n' },
+    }),
+    (error) => {
+      oversizedFailure = error;
+      return error.code === 'FLEET_START_FAILED' && error.details.status === 25;
+    },
+  );
+  assert.equal(oversizedFailure.details.diagnostic.outcome, 'unknown');
+  assert.equal(oversizedFailure.details.diagnostic.reason, 'stdout-exceeds-bound');
+  assert.doesNotMatch(JSON.stringify(oversizedFailure.details), /x{512}/);
+  oversizedControl.close();
 });
