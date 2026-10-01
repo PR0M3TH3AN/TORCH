@@ -19,15 +19,22 @@
   "observedAt": "d636cae93c5a",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "provider-runtime",
-  "evidence": [],
-  "commit": null,
+  "evidence": [
+    "receipt:b346e435-f3e2-45f8-935d-0d4fe67dd3ea:test:pass",
+    "receipt:d31e6536-153a-461f-a089-1b83b39b4649:check:pass",
+    "receipt:6a9197a8-fe6f-4bae-a01b-87e43c65faad:lint:pass",
+    "message:a15b31cf-d9d3-4c7c-8e8e-f45dd1da8902:clean-checkpoint-dashboard-unrun-QA-request",
+    "message:35873142-9510-4dda-b8f4-7893557a726f:late-early-ID-safe-diagnostics-native-boundary-gates",
+    "message:ee08d4d4-c170-44ae-81be-f26ca7456dda:independent-six-scenarios-not-full-qualification"
+  ],
+  "commit": "12e1e33cc80d8babda008e2d65bdcb1f64675e3f",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-09-30T23:19:49.273Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T00:32:36.466Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -49,6 +56,13 @@
       "actorId": "session-manager",
       "at": "2026-09-30T23:19:49.273Z",
       "note": "Next provider-runtime ready after diagnostics explicitly blocked; assign one active runtime item only. Implement owned runtime/adapter/schedule executor completion classification and bounded output handling, retaining durable identity and uncertain outcomes. Reproduce true zero-exit ETIMEDOUT/ENOBUFS and signal/error boundaries; actual terminal completion required, not controller exit/idle badge. Release CLI path consent200dcdba and QA additive test consente198e23b pending and required before their files. Preserve ae18a98e diagnostics work, full receipt/QA history and all other agents' edits; safe clean convergence then exact required checks. No private reasoning/prompt/credential exposure, gate waivers or history rewriting. Arbiter alone starts, accepts, integrates and updates installation; wakes remain paused."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T00:32:36.466Z",
+      "note": "Reconcile actual implemented clean checkpoint and immutable three PASS receipts after specialist next returned resume/assigned rev3; do not leave code committed with empty assigned ledger. Work remains in_progress because candidate12e1e33 emits thread ID only at child.close and omits actionable free-form startup diagnostics; owner late review requires early retained identity, allowlisted diagnostics and native spawn/signal/failed-terminal/full CLI-scheduled evidence. Dashboard gate unrun and artifact/convergence dependency unresolved; not verification acceptance or integration readiness. Diagnostics remains blocked, no second active Runtime item, wakes paused, no starts/landing."
     }
   ]
 }
