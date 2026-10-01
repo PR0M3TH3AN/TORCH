@@ -19,7 +19,7 @@
   "observedAt": "d636cae93c5a",
   "feature": null,
   "milestone": null,
-  "state": "in_progress",
+  "state": "blocked",
   "owner": "provider-runtime",
   "evidence": [
     "receipt:b346e435-f3e2-45f8-935d-0d4fe67dd3ea:test:pass",
@@ -27,14 +27,19 @@
     "receipt:6a9197a8-fe6f-4bae-a01b-87e43c65faad:lint:pass",
     "message:a15b31cf-d9d3-4c7c-8e8e-f45dd1da8902:clean-checkpoint-dashboard-unrun-QA-request",
     "message:35873142-9510-4dda-b8f4-7893557a726f:late-early-ID-safe-diagnostics-native-boundary-gates",
-    "message:ee08d4d4-c170-44ae-81be-f26ca7456dda:independent-six-scenarios-not-full-qualification"
+    "message:ee08d4d4-c170-44ae-81be-f26ca7456dda:independent-six-scenarios-not-full-qualification",
+    "receipt:9c471c24-28a5-41e5-a6b5-c2024d52d1f0:test:pass:5bbd81a",
+    "receipt:eb4fe200-c7cb-481d-b8cb-2e9a06739d68:check:pass:5bbd81a",
+    "receipt:720ef36e-bbf1-461e-882a-68878c78a5b0:lint:pass:5bbd81a",
+    "message:7b8bab75-d086-4083-9182-a557aae2e429:QA-nine-scenarios-accepted-not-final-integration",
+    "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md"
   ],
-  "commit": "12e1e33cc80d8babda008e2d65bdcb1f64675e3f",
+  "commit": "5bbd81a01fa5281ee17c4b4fbafc2e58d1327f7d",
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Clean candidate5bbd81a has exact test/check/lint PASS and QA9/9 acceptance of the pre-launch fail-open concern. Required test-dashboard remains UNRUN/unwaived: artifact-isolation candidatee350 is accepted but unlanded, integrationcce22c51 ready/UNAUTHORIZED pending owner2b2dfb35 after automatic approval-review rejection. No supported peer-source guarded convergence route confirmed. Preserve candidate, old receipts/verdicts and invalid earlier hermetic run; not final integration acceptance. Recovery406ff remains separately pending under interruption hold; no retry, landing, start or wake enablement.",
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-10-01T00:32:36.466Z",
-  "revision": 4,
+  "updatedAt": "2026-10-01T01:18:42.559Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -63,6 +68,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T00:32:36.466Z",
       "note": "Reconcile actual implemented clean checkpoint and immutable three PASS receipts after specialist next returned resume/assigned rev3; do not leave code committed with empty assigned ledger. Work remains in_progress because candidate12e1e33 emits thread ID only at child.close and omits actionable free-form startup diagnostics; owner late review requires early retained identity, allowlisted diagnostics and native spawn/signal/failed-terminal/full CLI-scheduled evidence. Dashboard gate unrun and artifact/convergence dependency unresolved; not verification acceptance or integration readiness. Diagnostics remains blocked, no second active Runtime item, wakes paused, no starts/landing."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T01:18:42.559Z",
+      "note": "Owner24878d40 requested an authoritative remaining-work handoff using actual QA disposition. Record actual unresolved dashboard/artifact-convergence dependency instead of idle/in_progress with stale12e1e33 candidate. Next lookup returned resume before transition; no task completion or second dispatch. QA7b8 confirms current strict9/9 and cleanworktree; immutable5bb test/check/lint verified, dashboard absent. Preserve all earlier evidence/history."
     }
   ]
 }
