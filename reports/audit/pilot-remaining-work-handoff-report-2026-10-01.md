@@ -1,6 +1,65 @@
 # Current pilot remaining-work handoff
 
-## Current reconciliation at 03:49 UTC
+## Current reconciliation at 06:27 UTC
+
+Installed brief reread matches digest `d7e6d69f06a71971182f6c5944e5b1769324fb10b4c67a9b048b4633b8a6f7a8`.
+Canonical remains clean at landed `1a2b5b0`; no newer candidate/request exists.
+Arbiter message `425ec166-7ea7-4edc-90d6-6eea2586b0c3` reports verified remote
+rewrite at `1a2b5b0`, remote main unchanged at `a468`, and manager branch pushed
+at `98a3c54`. These are arbiter-reported remote results, not a Manager push.
+
+Kernel and Runtime resumed their existing items, then both guarded merges stopped
+at exactly QA-owned `docs/TEST_INTEGRITY.md`. Manager inspected both conflicts:
+complete strict local routine/executor notes must coexist with the canonical
+generated-artifact note as separate machine-readable entries. The other five
+merge-applied paths and both unique HEADs remain preserved. No post-merge checks
+or qualification candidate exist yet. Native qualification turns are terminal
+per arbiter `a7b8861f`; idle presence does not resolve the tasks.
+
+Manager recorded both actual QA peer waits as blocked, preserving old candidates,
+receipts and verdicts. Closing read received QA
+`9d671f19-4184-4dc0-b98f-0b0d9cb2d868`: independent index inspection and exact
+additive resolution/path consent were issued directly to both specialists.
+That consent wait is resolved. Same Kernel task is now **in_progress revision 10**;
+same Runtime executor task is **in_progress revision 8**. Owners finish only the
+approved note reconciliation and their own preserved merge, then all four gates
+on resulting clean exact HEAD, independent QA and new serialized requests.
+Manager changes no peer file, starts no provider and waives no gate.
+
+Kernel-owned roadmap link request
+`0bdaff0a-6471-4376-af8b-7c32b46b765a` tracks the outstanding `docs/TODO.md`
+link to high-priority authority proposal `TASK-874ed1e4-9414-4a8f-8575-a6c5aceefc56`.
+Full project authority and bounded grants are required; the proposal remains
+unassigned after reliability dependencies and activates no grant.
+
+Console audit remains blocked. Additional arbiter evidence
+`fdc215b6-1067-4bdb-ad5a-301f75566bb8` reports the existing browser binding returned
+`Browser is not available` and one supported browser-list call returned `[]`.
+No visible capture was produced. API 200 and healthy backlog do not prove visual
+coverage. Preserve the previous capture timeout and current connection failure;
+future audit should expose browser dependency, last actual capture and supported
+reconnect guidance without labelling API/source checks visual PASS.
+
+Existing **TASK-owner-agent-chat** additionally tracks the live missing owner
+report route: Manager's addressed `torch_send_message` to `owner` returned
+`Unknown Fleet identity: owner`. Owner request `41099eeb` asks for a supported,
+audited route, not a parallel queue. This task-linked handoff supplements its
+unchanged proposed ledger; no unsupported same-state amendment is invented.
+Acceptance must cover an authenticated Manager report reaching the actual owner
+conversation with durable actor/task/evidence and queued/delivered/failed status,
+while forged issuer/recipient and external notifications remain unauthorized.
+
+Current check-in has no structured approval waits or pending Fleet changes;
+backlog health is healthy with no anomalies, historical activity coverage remains
+truncated/unknown. Forty proposed, two in_progress, two blocked, one completed.
+Hierarchy's 30-day recurrence threshold and evolution overlap signals are advisory.
+Existing QA ownership resolves this note conflict; retaining six specialists and
+improving append-only integrity-note organization is preferable to a new role.
+No hierarchy/domain proposal or activation is justified by this incident.
+Automatic wakes remain paused. Next action is arbiter-controlled owner resumes
+after QA consent, not another assignment or human relay request.
+
+## Historical reconciliation at 03:49 UTC
 
 Artifact candidate `1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4` is **landed**
 on `rewrite/portable-agent-fleet`, via fresh request

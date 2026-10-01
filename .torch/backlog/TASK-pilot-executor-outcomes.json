@@ -19,7 +19,7 @@
   "observedAt": "d636cae93c5a",
   "feature": null,
   "milestone": null,
-  "state": "blocked",
+  "state": "in_progress",
   "owner": "provider-runtime",
   "evidence": [
     "receipt:b346e435-f3e2-45f8-935d-0d4fe67dd3ea:test:pass",
@@ -32,14 +32,17 @@
     "receipt:eb4fe200-c7cb-481d-b8cb-2e9a06739d68:check:pass:5bbd81a",
     "receipt:720ef36e-bbf1-461e-882a-68878c78a5b0:lint:pass:5bbd81a",
     "message:7b8bab75-d086-4083-9182-a557aae2e429:QA-nine-scenarios-accepted-not-final-integration",
-    "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md"
+    "reports/audit/pilot-remaining-work-handoff-report-2026-10-01.md",
+    "message:47308bba-aa1d-4712-b871-e7bc57aba3a6:owner-artifact-dependency-landed",
+    "message:4eb63056-e77c-4c1e-b8f1-d742869b813e:QA-exact-additive-note-reconciliation",
+    "message:9d671f19-4184-4dc0-b98f-0b0d9cb2d868:QA-exact-note-reconciliation-consent"
   ],
   "commit": "5bbd81a01fa5281ee17c4b4fbafc2e58d1327f7d",
   "integrationRequest": null,
-  "blockedReason": "Clean candidate5bbd81a has exact test/check/lint PASS and QA9/9 acceptance of the pre-launch fail-open concern. Required test-dashboard remains UNRUN/unwaived: artifact-isolation candidatee350 is accepted but unlanded, integrationcce22c51 ready/UNAUTHORIZED pending owner2b2dfb35 after automatic approval-review rejection. No supported peer-source guarded convergence route confirmed. Preserve candidate, old receipts/verdicts and invalid earlier hermetic run; not final integration acceptance. Recovery406ff remains separately pending under interruption hold; no retry, landing, start or wake enablement.",
+  "blockedReason": null,
   "createdAt": "2026-09-30T20:20:17.000Z",
-  "updatedAt": "2026-10-01T01:18:42.559Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T06:26:55.754Z",
+  "revision": 8,
   "history": [
     {
       "from": null,
@@ -75,6 +78,27 @@
       "actorId": "session-manager",
       "at": "2026-10-01T01:18:42.559Z",
       "note": "Owner24878d40 requested an authoritative remaining-work handoff using actual QA disposition. Record actual unresolved dashboard/artifact-convergence dependency instead of idle/in_progress with stale12e1e33 candidate. Next lookup returned resume before transition; no task completion or second dispatch. QA7b8 confirms current strict9/9 and cleanworktree; immutable5bb test/check/lint verified, dashboard absent. Preserve all earlier evidence/history."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "actorId": "provider-runtime",
+      "at": "2026-10-01T03:54:19.217Z",
+      "note": "No new task claimed; automatic wakes remain paused and no integration request is submitted."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:26:14.282Z",
+      "note": "Live 06:24 UTC reconciliation confirms actual interrupted merge, not artifact dependency anymore: artifact1a2 is landed and Kernel five-PNG recovery complete. Same owners and unique commits/history/old receipts retained. Both native qualification turns ended without checks. Route routine QA-owned conflict directly to QA, no human decision or second assignment; resume same item after exact resolution, finish owned merge then all four exact checks and fresh independent QA/request."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T06:26:55.754Z",
+      "note": "Closing read received actual QA9d671f19: QA independently inspected both merge indexes and issued exact additive reconciliation/path consent to each owner. Named peer consent wait resolved; resume SAME existing assignment to preserve complete strict local notes plus canonical generated-artifact note and remove only conflict markers/duplicates. Specialists alone finish/stage/commit own preserved merge, all four required checks on resulting clean exact candidate, independent QA/newrequest. Unmerged tree is work in progress, not qualification; Manager edits no peer files and starts no providers. Old candidates, receipts, verdicts and archive retained; wakes paused."
     }
   ]
 }
