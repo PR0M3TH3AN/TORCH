@@ -1,5 +1,33 @@
 # Current pilot remaining-work handoff
 
+## Final source review updates at 09:35 UTC
+
+Console workflow actually resumed its assigned read-only design phase and is
+in_progress revision4; this does not authorize source/test changes or claim
+visual acceptance. QA standalone artifact item3909 is now in_progress revision4
+at candidate `014bdb4f970cd0834b87b803218628f5830cad2a`. Focused3/3/check PASS
+is insufficient: full tests/dashboard/lint lack declared project dependencies,
+Playwright and project ESLint. No integration request or qualification claimed.
+Ownerbd4b's actual hermetic source review reproduces accepted unsafe repo child
+`..captures`, pre-existing screenshot bytes, and screenshot symlink to baseline;
+temporaryRoot/TMPDIR also needs protected-root validation before mkdtemp and
+fileURLToPath is needed for spaced/non-ASCII roots. Real baselines were untouched
+by the isolated fixture. SAME task strict fixes/regressions and independent
+Work/Console re-review are routed; no test/golden expectation relaxation.
+
+Pipeline Worke4ec and QA935ff690 agree the exact Work-owned prefix draft;
+Kernel review and owner/applier decision remain open, with later regeneration
+against actual earlier configuration landing mandatory. Release design QA
+c63ec499 additionally requires no-side-effect planning, drift/idempotence and
+pause/down/uninstall truth, plus ambiguous-destination/missing-authority/old-engine
+negative scenarios; this is peer design review, not host/service consent.
+All50 tasks and actual Kernel schema/Runtime/browser/ownership/activation waits
+below remain. No Manager provider launch or migration retry. The Manager's local
+checkpoint was merged through blocker-free guarded convergence to canonical
+cb145, retaining every unique commit; historical resume evidence kept intact
+except one extra EOF blank line removed for clean diff-check. Current candidate
+contains coordination metadata/reports/proposal artifacts only relative to cb145.
+
 ## Reconciled outcomes and remaining gates at 09:30 UTC
 
 This section supersedes the earlier snapshots below. Current canonical brief

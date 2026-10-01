@@ -3,7 +3,8 @@
 Status: draft; no owner approval, assignment or configuration application.
 Work Integration peer `e4ecfb88-4f89-4db0-867b-79975920fc11` agrees the precise
 prefix/owner proposal after independent artifact hash and live ownership checks.
-Kernel and QA peer reviews remain open; Work agreement is not owner approval.
+QA peer `935ff690-3662-4f62-ba46-d1c3160f5871` also agrees the owner/interface
+choice. Kernel review remains open; peer agreement is not owner approval.
 Existing `TASK-conversation-pipeline-definitions` remains proposed revision1.
 Owner request `94010b22` asks for a reviewed amendment before implementation.
 Live `src/pipelines/definitions.mjs` has no primary or shared owner.

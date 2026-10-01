@@ -17,19 +17,23 @@
   "observedAt": "ff0712534829",
   "feature": "Self-host development readiness",
   "milestone": "Owner-reviewed first development backlog",
-  "state": "assigned",
+  "state": "blocked",
   "owner": "owner-console",
   "evidence": [
     "message:89c92c3e-4f00-4213-877d-6c2afeb4b22c:focused-view-routing/mobile-navigation/title-provenance-design-observations",
     "message:799d0275-c113-45cd-a0cb-06ca78f9c71f:sequence-existing-focused-UI-roadmap-after-source-qualification",
-    "integration:9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b:attention-source-landed;fullvisual-task-blocked8"
+    "integration:9b39e0f8-3ff9-44c5-8b03-9f7d7bdc524b:attention-source-landed;fullvisual-task-blocked8",
+    "message:fffedb05-8c64-4186-a8a1-8cda5c83da02:QA exact scenario and test-path consent request",
+    "message:37f4db01-070e-4616-b320-c01ccb801b14:read-only route/view scope proposal for review",
+    "ownership:site/console.html,site/console.js,site/styles.css=owner-console;test/fleet/**=qa",
+    "evidence:existing-console-ux-audit-and-live-console-arbiter-audit"
   ],
   "commit": null,
   "integrationRequest": null,
-  "blockedReason": null,
+  "blockedReason": "Read-only route/view proposal and exact QA scenario/path-consent request are recorded in durable Fleet messages fffedb05-8c64-4186-a8a1-8cda5c83da02 (QA) and 37f4db01-070e-4616-b320-c01ccb801b14 (Session Manager). Await QA consent for test/fleet/console-view-navigation.test.mjs and Manager/arbiter review before any implementation phase. No source/test/config/live mutations made.",
   "createdAt": "2026-09-30T19:30:23.720Z",
-  "updatedAt": "2026-10-01T09:17:36.822Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T09:36:28.873Z",
+  "revision": 5,
   "history": [
     {
       "from": null,
@@ -51,6 +55,20 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:17:36.822Z",
       "note": "Exact fresh lookup readyTHISitem/noactiveitem after attention blocked8. Assign read-only focused UI design/scoping phase only, owner89c92c3e/799d0275, currentbriefd7e6d69. Return exact source-path scope and named QA consent/scenarios before implementation. No source/test/config/live edits or full visual audit/completion inferred. Browser unavailable remains explicit; preserve attention owner/candidate/landed receipts and allcontrols. Arbiter launches/resumes, Manager none."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "owner-console",
+      "at": "2026-10-01T09:33:50.813Z",
+      "note": "Resumed exact assigned revision 3 from current brief. Beginning only the assigned read-only route/view design and scoping phase; no source, test, configuration, or live-console mutations. Prior UX evidence and owners reviewed."
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "actorId": "owner-console",
+      "at": "2026-10-01T09:36:28.873Z",
+      "note": "Design/scoping deliverable is recorded. Pausing at the requested path-consent and implementation-phase review gate; no code or test changes are authorized in this assignment phase."
     }
   ]
 }

@@ -20,20 +20,22 @@
   "observedAt": "cb145e56cb7d530f9563b98d4f9920ff0372a67a",
   "feature": "Check artifact safety",
   "milestone": "Owner-reviewed reliability follow-up",
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "qa",
   "evidence": [
     "message:97e2a19a-080a-4865-9c33-2204e842626a:explicit-QA-owned-safe-default-followup",
     "message:ad1c2a86-e25a-440c-818f-86d9c3ecfa71:create-one-actual-item/assignment-afterreview",
     "message:79d19fd6-43e4-4113-9855-4f0a266e4e6c:directnpm-provenance-correction",
-    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:fresh-QA-recovery-disposition-complete;Kernel-only-application"
+    "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:fresh-QA-recovery-disposition-complete;Kernel-only-application",
+    "message:4cec1df1-4712-443e-8727-97d8679d791b:actualsourcecommit/focused3PASS/check-only/not-fullgates",
+    "message:bd4b6aca-20b5-4f1a-a196-24b739071ff3:independenthermetic-unsafe-target-counterexamples"
   ],
-  "commit": null,
+  "commit": "014bdb4f970cd0834b87b803218628f5830cad2a",
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T09:21:25.674Z",
-  "updatedAt": "2026-10-01T09:22:37.095Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T09:36:33.572Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -55,6 +57,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:22:37.095Z",
       "note": "Exact nextQA readyTHIStask/noactive; current Kernel recovery review/disposition alreadycomplete. Assign actual script/test implementation only within QAowned paths, strict added scenario integrity note, safe standalone external output, repo/symlink refusal/priorbyte preservation, no golden rewrite/directnpm-qualifiedclaims. Independent Work/Console review plus exactfinal4gates/nativeintegration required; Arbiter starts QA, Manager none. Recovery consent doesn'tgrantQAeditKernel tree."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "session-manager",
+      "at": "2026-10-01T09:36:33.572Z",
+      "note": "ActualQA-ownedimplementation nowcommitted; reconcile sameassigneditem intoinprogress, not verification/acceptance. Independentcounterexamples require strictsame-task source/scenario correction; fullcandidatequalificationblockedmissingdeclareddeps/Playwright/projectlint. Preserveallgoldens/assertions and independent Work/Console finalreview; no DB/provider/install actions."
     }
   ]
 }
