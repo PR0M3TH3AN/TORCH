@@ -42,6 +42,90 @@ function deterministicOptions(fixture) {
   };
 }
 
+function writeCapableSql(sql) {
+  return /(?:^|[);]\s*)(?:INSERT|UPDATE|DELETE|REPLACE|CREATE|ALTER|DROP|VACUUM)\b/i.test(sql);
+}
+
+function quoteIdentifier(identifier) {
+  return `"${identifier.replaceAll('"', '""')}"`;
+}
+
+function durableObservationState(control, recipient) {
+  const tables = control.database.prepare(`
+    SELECT name FROM sqlite_master
+    WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+    ORDER BY name ASC
+  `).all();
+  const durableTables = Object.fromEntries(tables.map(({ name }) => [name,
+    control.database.prepare(`SELECT * FROM ${quoteIdentifier(name)} ORDER BY rowid ASC`).all(),
+  ]));
+  const visibleMessages = control.database.prepare(`
+    SELECT m.*, a.acknowledged_at
+    FROM messages m
+    LEFT JOIN message_acks a ON a.message_id = m.id AND a.area_id = ?
+    WHERE m.recipient_id = ? OR m.recipient_id = 'all'
+    ORDER BY m.created_at ASC, m.id ASC
+  `).all(recipient, recipient);
+  return {
+    durableTables,
+    visibleMessages,
+    ownership: control.whoOwns({ path: 'index.js' }),
+  };
+}
+
+function observeConnectionWrites(control) {
+  const database = control.database;
+  const writeCalls = [];
+  const instrumentStatement = (statement, sql) => new Proxy(statement, {
+    get(target, property) {
+      const value = Reflect.get(target, property, target);
+      if (writeCapableSql(sql) && ['run', 'all', 'get', 'iterate'].includes(property)) {
+        return (...args) => {
+          writeCalls.push({ method: property, sql: sql.replace(/\s+/g, ' ').trim() });
+          return value.apply(target, args);
+        };
+      }
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  control.database = new Proxy(database, {
+    get(target, property) {
+      const value = Reflect.get(target, property, target);
+      if (property === 'prepare') return (sql) => instrumentStatement(value.call(target, sql), sql);
+      if (property === 'exec') {
+        return (sql) => {
+          if (writeCapableSql(sql)) writeCalls.push({ method: 'exec', sql: sql.replace(/\s+/g, ' ').trim() });
+          return value.call(target, sql);
+        };
+      }
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  return {
+    writeCalls,
+    restore() { control.database = database; },
+  };
+}
+
+function observeWithoutDurableWrite(control, fixture, input) {
+  const beforeState = durableObservationState(control, fixture.worker);
+  const beforeBytes = readFileSync(join(control.stateRoot, 'state.db'));
+  const observer = observeConnectionWrites(control);
+  let observation;
+  try {
+    observation = control.observeMessages(input);
+  } finally {
+    observer.restore();
+  }
+  assert.equal(observer.writeCalls.length, 0,
+    `observeMessages executed ${observer.writeCalls.length} DML write execution(s): ${JSON.stringify(observer.writeCalls)}`);
+  assert.deepEqual(durableObservationState(control, fixture.worker), beforeState,
+    'observing messages must preserve message visibility/order and every logical durable fixture record');
+  assert.deepEqual(readFileSync(join(control.stateRoot, 'state.db')), beforeBytes,
+    'observing messages must leave the main SQLite database bytes unchanged');
+  return observation;
+}
+
 test('SCN-durable-message: direct and group messages survive restart and require recipient acknowledgement', () => {
   const fixture = installedFixture();
   const options = deterministicOptions(fixture);
@@ -85,21 +169,24 @@ test('SCN-control-plane-unread-observation-metadata: a bound inbox observation i
   });
   const before = readFileSync(join(control.stateRoot, 'state.db'));
 
-  const firstUnread = control.observeMessages({ recipient: fixture.worker, selection: 'unread', limit: 1 });
+  const firstUnread = observeWithoutDurableWrite(control, fixture,
+    { recipient: fixture.worker, selection: 'unread', limit: 1 });
   assert.deepEqual(firstUnread.messages.map((message) => message.id), [directUnread.id]);
   assert.deepEqual(firstUnread.observation, {
     selection: 'unread', requestedLimit: 1, returnedCount: 1,
     complete: false, truncated: true, pendingUnreadCount: 2,
   });
 
-  const completeUnread = control.observeMessages({ recipient: fixture.worker, selection: 'unread', limit: 2 });
+  const completeUnread = observeWithoutDurableWrite(control, fixture,
+    { recipient: fixture.worker, selection: 'unread', limit: 2 });
   assert.deepEqual(completeUnread.messages.map((message) => message.id), [directUnread.id, allUnread.id]);
   assert.deepEqual(completeUnread.observation, {
     selection: 'unread', requestedLimit: 2, returnedCount: 2,
     complete: true, truncated: false, pendingUnreadCount: 2,
   });
 
-  const history = control.observeMessages({ recipient: fixture.worker, selection: 'history', limit: 20 });
+  const history = observeWithoutDurableWrite(control, fixture,
+    { recipient: fixture.worker, selection: 'history', limit: 20 });
   assert.deepEqual(history.messages.map((message) => message.id), acknowledgedHistory.slice(0, 20).map((message) => message.id));
   assert.deepEqual(history.observation, {
     selection: 'history', requestedLimit: 20, returnedCount: 20,
@@ -111,7 +198,8 @@ test('SCN-control-plane-unread-observation-metadata: a bound inbox observation i
   control.ackMessage({ recipient: fixture.worker, messageId: directUnread.id });
   control.ackMessage({ recipient: fixture.worker, messageId: allUnread.id });
   const beforeEmpty = readFileSync(join(control.stateRoot, 'state.db'));
-  const empty = control.observeMessages({ recipient: fixture.worker, selection: 'unread', limit: 1 });
+  const empty = observeWithoutDurableWrite(control, fixture,
+    { recipient: fixture.worker, selection: 'unread', limit: 1 });
   assert.deepEqual(empty.messages, []);
   assert.deepEqual(empty.observation, {
     selection: 'unread', requestedLimit: 1, returnedCount: 0,
@@ -119,6 +207,30 @@ test('SCN-control-plane-unread-observation-metadata: a bound inbox observation i
   });
   assert.deepEqual(readFileSync(join(control.stateRoot, 'state.db')), beforeEmpty,
     'an empty observation must not mutate acknowledgement, task or ownership state');
+  const originalObserveMessages = control.observeMessages;
+  control.observeMessages = function auditedReadMutant(input) {
+    const observed = originalObserveMessages.call(this, input);
+    this.audit({
+      actorId: input.recipient,
+      operation: 'diagnostic.forbidden-observation-write',
+      entityType: 'message-observation',
+    });
+    return observed;
+  };
+  try {
+    assert.throws(
+      () => observeWithoutDurableWrite(control, fixture,
+        { recipient: fixture.worker, selection: 'unread', limit: 1 }),
+      (error) => /DML write execution/.test(error.message),
+    );
+  } finally {
+    control.observeMessages = originalObserveMessages;
+  }
+  assert.equal(control.observeMessages, originalObserveMessages,
+    'the mutation wrapper must be restored after its required invariant failure');
+  assert.deepEqual(observeWithoutDurableWrite(control, fixture,
+    { recipient: fixture.worker, selection: 'unread', limit: 1 }).messages, [],
+  'the restored original observation still passes the complete no-write invariant');
   control.close();
 });
 

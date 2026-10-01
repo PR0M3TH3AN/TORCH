@@ -2606,7 +2606,7 @@ test_integrity_note:
     - id: SCN-control-plane-unread-observation-metadata
       given: ">20 acknowledged historical messages plus newer direct and literal-all unread handoffs in a hermetic installed fixture"
       when: "The receiving identity observes unread and history selections at boundary limits"
-      then: "The returned page, counts, completeness and truncation describe one recipient-visible snapshot; the read is byte-for-byte free of acknowledgement, task or ownership mutation"
+      then: "The returned page, counts, completeness and truncation describe one recipient-visible snapshot; every observation executes zero fixture-connection writes and preserves logical durable state"
     - id: SCN-control-plane-unread-observation-refusal
       given: "A hermetic installed fixture and an untrusted selection, limit or recipient"
       when: "A caller requests a bound inbox observation"
@@ -2614,7 +2614,9 @@ test_integrity_note:
   observable_outcomes:
     - "Direct-plus-literal-all message page in deterministic createdAt/id order"
     - "requestedLimit, returnedCount, complete, truncated and pendingUnreadCount"
-    - "Unchanged SQLite bytes during observation"
+    - "Zero INSERT/UPDATE/DELETE/REPLACE or equivalent write executions at the fixture connection boundary"
+    - "Equal message ordering, acknowledgements, audit, identity, task, ownership and all present durable-table state before and after each observation"
+    - "Original implementation passes the full invariant; a test-local post-read audit INSERT mutant fails it and is restored deterministically"
   determinism_controls:
     - "Disposable Git and XDG fixtures with deterministic timestamps and message IDs"
     - "No provider, host, network, live-project database or runtime activation"
@@ -2622,7 +2624,8 @@ test_integrity_note:
     prevents:
       - "Reading a broad or arbitrary group instead of the bound recipient visibility"
       - "Returning independently sampled page and count metadata"
-      - "Acknowledging or mutating durable work while claiming to observe"
+      - "WAL-only audit or acknowledgement writes hidden by unchanged main-database bytes"
+      - "A source mutation that adds a post-read write while preserving message output"
       - "Silently coercing invalid selection or limit inputs"
   relaxation:
     did_relax_any_assertion: false
