@@ -1,5 +1,33 @@
 # Current pilot remaining-work handoff
 
+## Closing readback at 07:55 UTC
+
+Manager checkpoint `0e37e3d` was followed by guard-approved clean merge to
+`05e87ff046af6fcf03cf5507877e4dc1f72f0fc9`, preserving all33 unique Manager commits
+and canonical286 ancestry; tree clean, JSON readback and diff integrity pass.
+Manager has no required project gates for coordination-only changes.
+
+Kernel message `4f270ef7` now reports actual guarded merge
+`07a2bc0fc97f66bf1d6f9933d117cfaf25f342a5`. Manager independently read clean exact
+native HEAD/canonical286 ancestry and four fresh PASS/no-invalid receipts:
+test `d18b11e8-2d3a-4534-9d83-8bdb5ca208e5`, check
+`c86a5ab6-f960-420f-8cb2-9de485a1e6e2`, dashboard
+`555b81c1-c91b-4af3-b077-e6a4dec3d65a`, lint
+`059d39c1-15a0-4c63-acb3-9bbeefd134f3`. Same Kernel task is **verification
+revision16**, pending fresh independent QA request `e056ae76`; no native
+integration request yet. Olddd62 acceptance remains history. This supersedes
+the earlier in_progress15 gate below without claiming acceptance/landing.
+
+Owner `60ed461c` reports another actual connected browser discovery returning
+no browsers; desktop/mobile visual audit remains blocked independently of
+functional gates. Console has an uncommitted shortcut/evidence draft and a
+strict focused test failure routed to native Console/QA, so no UI PASS inferred.
+That message also records repeated arbiter observation/manual native resumes
+needed for short peer consents. Retain this measured friction in existing
+event-driven-wakes, owner-agent-chat and selfhost-trial follow-up; atomic identity
+reservation, terminal evidence and paused policy still gate any future wake
+activation. No new queue/role or automatic native resume.
+
 ## Authoritative reconciliation at 07:51 UTC
 
 The executor fix **actually landed** at `286bfa72e3202ec0806f7c3075821c8057d6e132`
