@@ -143,7 +143,7 @@ test('SCN-console-operational-deeplink-layout-history-and-refresh: Fleet deep li
     await page.locator('.console-rail a[href="#work"]').click();
     await page.mouse.wheel(0, 180);
     const beforeRefresh = await page.evaluate(() => scrollY);
-    await page.locator('#refresh-console').click();
+    await page.locator('#refresh-console').evaluate((button) => button.click());
     await page.locator('#live-refresh-status[data-generation="2"]').waitFor();
     assert.equal(new URL(page.url()).hash, '#work');
     await assertSelectedView(page, 'work', 'Work');
