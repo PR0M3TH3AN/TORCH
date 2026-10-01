@@ -152,9 +152,19 @@ footer div { display: flex; gap: 1.5rem; }
 .console-rail { position: sticky; top: 0; align-self: start; display: grid; gap: .2rem; padding: 1.5rem .75rem; border-right: 1px solid var(--line); }
 .console-rail a { padding: .55rem .7rem; color: var(--muted); font-weight: 650; text-decoration: none; border-left: 3px solid transparent; }
 .console-rail a:hover, .console-rail a:focus-visible { color: var(--ink); background: var(--paper); border-left-color: var(--route); }
-.rail-note { margin: 2rem .7rem 0; color: var(--muted); font-size: .76rem; line-height: 1.7; }
-.rail-note span { color: var(--ink); font-family: ui-monospace, monospace; }
+.console-rail a[aria-current="page"] { color: var(--ink); background: var(--paper); border-left-color: var(--route); }
+.rail-provenance { margin: 1.5rem .7rem 0; color: var(--muted); font-size: .72rem; line-height: 1.55; overflow-wrap: anywhere; }
+.rail-provenance summary, .briefing-provenance summary, .task-reference summary { cursor: pointer; color: var(--route); font-weight: 650; }
+.rail-provenance > span { display: block; margin-top: .35rem; }
+.rail-provenance code { color: var(--ink); overflow-wrap: anywhere; }
 .console-workspace { min-width: 0; padding: 0 clamp(1rem, 2.5vw, 2.5rem) 3rem; }
+.console-workspace > [data-console-view][hidden] { display: none !important; }
+.screen-reader-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.briefing-provenance { margin-top: .4rem; color: var(--muted); font-size: .78rem; overflow-wrap: anywhere; }
+.briefing-provenance p { margin: .3rem 0; }
+.briefing-provenance code { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+.task-reference { margin-top: .55rem; color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }
+.task-reference code { display: inline-block; margin-top: .3rem; color: var(--ink); }
 .console-error { margin: 1.2rem 0 0; background: var(--warning-surface); color: var(--warning-ink); border-left: 4px solid var(--signal); padding: 1rem; }
 .pulse-zone { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(270px, .8fr); border-bottom: 1px solid var(--ink); }
 .pulse-main { min-width: 0; padding: 2rem 2rem 1.6rem 0; }
@@ -578,10 +588,10 @@ footer div { display: flex; gap: 1.5rem; }
   .blueprint article { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   .blueprint-index { margin-bottom: 2rem; }
   .console-layout { grid-template-columns: 1fr; }
-  .console-rail { position: sticky; z-index: 5; top: 0; display: flex; overflow-x: auto; padding: .35rem .6rem; border-right: 0; border-bottom: 1px solid var(--line); background: var(--paper); }
-  .console-rail a { flex: 0 0 auto; padding: .5rem .65rem; border-left: 0; border-bottom: 3px solid transparent; }
-  .console-rail a:hover, .console-rail a:focus-visible { border-left-color: transparent; border-bottom-color: var(--route); }
-  .rail-note { display: none; }
+  .console-rail { position: sticky; z-index: 5; top: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .25rem; padding: .4rem .6rem; border-right: 0; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .console-rail a { min-width: 0; padding: .45rem .5rem; border-left: 0; border-bottom: 3px solid transparent; overflow-wrap: anywhere; }
+  .console-rail a:hover, .console-rail a:focus-visible, .console-rail a[aria-current="page"] { border-left-color: transparent; border-bottom-color: var(--route); }
+  .rail-provenance { grid-column: 1 / -1; margin: .25rem .5rem; }
   .console-workspace { padding-inline: clamp(1rem, 3vw, 2rem); }
   .pulse-zone { grid-template-columns: minmax(0, 1.15fr) minmax(240px, .85fr); }
   .work-filter-row { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); }
@@ -611,11 +621,13 @@ footer div { display: flex; gap: 1.5rem; }
   .console-nav { min-height: 62px; gap: .7rem; }
   .console-project { margin-right: 0; }
   .console-project span { display: none; }
-  .console-tools > span { display: none; }
+  .console-tools { flex-wrap: wrap; gap: .5rem; }
+  .console-tools > span { display: inline-flex; flex-basis: 100%; }
   .console-rail { top: 0; }
   .section-heading { flex-wrap: wrap; }
   .section-heading > div, .section-heading > span { min-width: 0; overflow-wrap: anywhere; }
   .console-workspace { padding-inline: .8rem; }
+  .console-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pulse-zone, .fleet-columns, .evidence-columns, .delivery-columns, .flow-watch-grid { grid-template-columns: 1fr; }
   .owner-request-fields, .runtime-profile-fields { grid-template-columns: 1fr; }
   .schedule-launcher-actions { align-items: stretch; flex-direction: column; }

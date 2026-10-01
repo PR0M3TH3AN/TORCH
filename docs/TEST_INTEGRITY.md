@@ -2559,3 +2559,79 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Console dashboard navigation and preview freshness (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: [new_tests, refactor_tests]
+  scenarios:
+    - id: SCN-dashboard-fragment-navigation-preserves-existing-captures
+      given: "The existing dashboard scenarios and eleven screenshot destinations run in their established order"
+      when: "The driver selects each target section's supported fragment immediately before its unchanged checks and captures"
+      then: "Each original assertion and capture executes against the selected view without changing capture order, viewport coverage, artifact destination, or artifact safeguards"
+    - id: SCN-console-priority-preview-invalidates-on-newer-evidence
+      given: "A task priority preview and unsent priority and reason values are created from task evidence revision N"
+      when: "A separate confirmed sample API action advances that task to authoritative revision N+1, then the reader refreshes again after navigating away and back"
+      then: "The revision N token, preview, and confirmation control remain absent; revision N+1 is visible, the unsent values remain intact and editable across both refreshes, a new preview is bound to N+1, and that current preview survives another unchanged refresh"
+    - id: SCN-console-current-preview-and-draft-survive-unchanged-refresh
+      given: "A task has an active priority preview and unsent priority and reason values bound to its current evidence revision"
+      when: "Console refresh returns the same task revision"
+      then: "The preview token, review panel, confirmation boundary, and unsent field values remain available unchanged"
+    - id: SCN-console-view-navigation
+      given: "The Console has addressable work, fleet, evidence, and flow-watch views"
+      when: "A reader opens fragments, follows navigation, and uses browser Back and Forward"
+      then: "Exactly one matching view is visible with the matching title, accessible current-page link, and persistent project and freshness context"
+    - id: SCN-console-mobile-navigation
+      given: "The Console is rendered at a 390x844 viewport"
+      when: "Each supported destination is selected"
+      then: "Every navigation destination remains visible and the document and navigation have no horizontal overflow"
+    - id: SCN-console-view-title-mapping
+      given: "The Console loads Overview and a reader selects each other supported view"
+      when: "The reader returns to Overview after visiting contextual views"
+      then: "Overview has the exact title TORCH Dashboard on initial and return navigation; all other views keep their exact contextual titles"
+    - id: SCN-console-owner-briefing-evidence-limitation-stays-visible
+      given: "The sample Console has a published owner briefing with reporting provenance"
+      when: "The owner briefing is rendered without opening compact provenance details"
+      then: "The warning that recorded evidence is not independent live verification remains visible, while exact publication time and reporting-window details stay in the collapsed disclosure"
+    - id: SCN-console-secondary-deeplink-focus-and-history
+      given: "The Console is loaded at the organization-proposals or approval-request-list fragment"
+      when: "The reader opens either direct link and uses browser Back and Forward"
+      then: "Exactly the matching view is selected and the actual secondary target is focused inside the viewport"
+    - id: SCN-console-operational-deeplink-fleet
+      given: "Operations, resources, schedules, providers, decisions, context, and manager-wakes are grouped in the Fleet workspace at 1280x900 and 390x844"
+      when: "The reader loads #manager-wakes directly, follows its existing attention link, or returns to it through Back and Forward, then later navigates, scrolls, and refreshes"
+      then: "After the first deterministic data/layout application Fleet is selected, the Operations disclosure opens, manager-wakes receives focus fully inside the viewport, a later refresh retains the user's selected view and scrolled position without refocusing manager-wakes, and Operations is hidden on unrelated views"
+    - id: SCN-console-view-drafts
+      given: "A task draft and an owner approval preview are present"
+      when: "The reader changes views and refreshes the sample Console"
+      then: "The unsent draft and same-revision preview remain available with their existing explicit owner confirmation boundary"
+  observable_outcomes:
+    - "Selected fragment, visible view, original assertion results, and the unchanged ordered screenshot set"
+    - "Revision N+1 displayed after refresh, with the old preview token and confirmation control unavailable"
+    - "Unsent priority and reason values retained and editable after newer evidence invalidates the old preview"
+    - "The same draft remains dirty and intact after another unchanged refresh and route transition, with the old token and confirmation control still absent"
+    - "An unchanged current-revision preview, confirmation boundary, and draft retained after refresh"
+    - "A regenerated preview token and displayed revision bound to N+1"
+    - "Exact Overview and contextual view titles, plus focused in-viewport secondary targets across direct loads and browser history"
+    - "The manager-wakes route selects Fleet and opens/focuses its nested target fully inside desktop and mobile viewports after first render and across browser history; later refresh retains the user's selected view and scrolled position without refocusing manager-wakes; operations stay hidden outside Fleet"
+    - "Visible recorded-evidence limitation beside owner briefing content while exact provenance remains compact and collapsed"
+    - "No browser requests to live project APIs and no changes to tracked screenshot expectations"
+  determinism_controls:
+    - "The existing isolated sample Console, fixed Playwright clock, and fixed desktop/mobile viewports"
+    - "Manager-wakes routing uses the existing isolated sample Console, a deterministic two-frame first-generation layout-completion marker, and browser fragment history without changing project state"
+    - "The test establishes a fixed nonzero numeric scroll baseline, observes that exact position, dispatches the actual non-scrolling Refresh button event, waits for generation two, and retains the exact scroll-position equality assertion"
+    - "Newer evidence is introduced through the sample's supported preview/confirm API before an explicit refresh"
+    - "The browser test advances only the isolated sample API; it never submits the priority form or mutates a live project"
+    - "No network, live project mutation, retry, sleep, timeout, golden update, or direct fixture-source change"
+  anti_cheat_rationale:
+    prevents:
+      - "Capturing a view other than the one named by the scenario while retaining a passing screenshot call"
+      - "Passing scroll-preservation coverage because an unsettled smooth-scroll or Playwright auto-scroll masks refresh movement"
+      - "Reusing a revision N preview after authoritative task evidence advances to N+1"
+      - "Treating an unchanged preview on refresh as proof of stale-preview invalidation"
+      - "Passing because of changed screenshot expectations, weakened assertions, or bypassed artifact provenance"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

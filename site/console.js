@@ -1,4 +1,148 @@
+const consoleViewDefinitions = Object.freeze({
+  overview: { title: 'Overview' },
+  'owner-briefing': { title: 'Briefing' },
+  'flow-watch': { title: 'Flow watch' },
+  work: { title: 'Work' },
+  'initiative-progress': { title: 'Progress' },
+  fleet: { title: 'Fleet' },
+  communications: { title: 'Conversations' },
+  organization: { title: 'Organization' },
+  evidence: { title: 'Evidence' },
+  delivery: { title: 'Release gates' },
+});
+
+function installConsoleViewRouting() {
+  const nav = document.querySelector('.console-rail');
+  const sections = [...document.querySelectorAll('.console-workspace > [data-console-view]')];
+  const links = [...(nav?.querySelectorAll('a[href^="#"]') ?? [])];
+  if (!nav || !sections.length || !links.length) return { sync: () => 'overview' };
+
+  let lastHash = null;
+  const initialHash = globalThis.location.hash;
+  const decodeHash = (hash) => {
+    try { return decodeURIComponent(String(hash ?? '').replace(/^#/, '')); } catch { return ''; }
+  };
+
+  function resolveView(hash) {
+    const fragment = decodeHash(hash);
+    if (consoleViewDefinitions[fragment]) return fragment;
+    const target = document.getElementById(fragment);
+    const containingView = target?.closest('[data-console-view]')?.dataset.consoleView;
+    return consoleViewDefinitions[containingView] ? containingView : 'overview';
+  }
+
+  function accountForStickyNavigation(target) {
+    const workspace = document.querySelector('.console-workspace');
+    if (!workspace || !target) return;
+    const railBounds = nav.getBoundingClientRect();
+    const workspaceBounds = workspace.getBoundingClientRect();
+    const overlapsWorkspace = railBounds.right > workspaceBounds.left + 1
+      && workspaceBounds.right > railBounds.left + 1;
+    if (overlapsWorkspace) {
+      target.style.scrollMarginTop = `${Math.ceil(railBounds.height + 8)}px`;
+    } else {
+      target.style.removeProperty('scroll-margin-top');
+    }
+  }
+
+  function positionNestedTarget(target, targetId, view) {
+    const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
+    if (!target || targetId === view || targetView !== view) return;
+    for (let ancestor = target; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+    }
+    accountForStickyNavigation(target);
+    if (!target.hasAttribute('tabindex') && !target.matches('a[href], button, input, select, textarea, summary')) {
+      target.tabIndex = -1;
+    }
+    target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+    target.focus?.({ preventScroll: true });
+  }
+
+  const initialFragment = decodeHash(initialHash);
+  let initialPositionPending = Boolean(initialFragment && !consoleViewDefinitions[initialFragment]
+    && document.getElementById(initialFragment));
+  let userIntentVersion = 0;
+  const abandonInitialPosition = () => {
+    initialPositionPending = false;
+    userIntentVersion += 1;
+  };
+  const onNavigation = () => {
+    abandonInitialPosition();
+    sync({ focus: true });
+  };
+
+  function sync({ focus = false, force = false } = {}) {
+    const hash = globalThis.location.hash || '#overview';
+    if (!force && hash === lastHash) return resolveView(hash);
+    lastHash = hash;
+    const view = resolveView(hash);
+    const definition = consoleViewDefinitions[view];
+    const visible = sections.filter((section) => section.dataset.consoleView === view);
+    sections.forEach((section) => { section.hidden = section.dataset.consoleView !== view; });
+    links.forEach((link) => {
+      const route = resolveView(link.getAttribute('href'));
+      if (route === view) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    const workspace = document.querySelector('.console-workspace');
+    if (workspace) workspace.dataset.currentView = view;
+    document.title = view === 'overview' ? 'TORCH Dashboard' : `${definition.title} | TORCH Local Fleet Console`;
+    const announcement = document.querySelector('#console-view-status');
+    if (announcement) announcement.textContent = `Viewing ${definition.title}.`;
+
+    if (focus) {
+      const targetId = decodeHash(hash);
+      const target = document.getElementById(targetId);
+      const targetView = target?.closest('[data-console-view]')?.dataset.consoleView;
+      if (target && targetId !== view && targetView === view) {
+        positionNestedTarget(target, targetId, view);
+      } else {
+        const labelledBy = visible[0]?.getAttribute('aria-labelledby');
+        const heading = (labelledBy && document.getElementById(labelledBy))
+          ?? visible[0]?.querySelector('h1, h2');
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus({ preventScroll: true });
+        }
+        if (target && targetId === view && targetView === view) {
+          accountForStickyNavigation(target);
+          target.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+        } else {
+          globalThis.scrollTo?.({ top: 0, behavior: 'instant' });
+        }
+      }
+    }
+    return view;
+  }
+
+  globalThis.addEventListener('hashchange', onNavigation);
+  globalThis.addEventListener('popstate', onNavigation);
+  globalThis.addEventListener('wheel', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('touchstart', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('pointerdown', abandonInitialPosition, { passive: true });
+  globalThis.addEventListener('keydown', (event) => {
+    if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key)) {
+      abandonInitialPosition();
+    }
+  });
+  sync({ focus: Boolean(initialFragment && !consoleViewDefinitions[initialFragment]) });
+  return {
+    sync,
+    afterInitialLayout() {
+      if (!initialPositionPending) return;
+      initialPositionPending = false;
+      if (globalThis.location.hash !== initialHash) return;
+      const targetId = decodeHash(initialHash);
+      const view = resolveView(initialHash);
+      positionNestedTarget(document.getElementById(targetId), targetId, view);
+    },
+    userIntentVersion: () => userIntentVersion,
+  };
+}
+
 const $ = (selector) => document.querySelector(selector);
+const consoleViewRouter = installConsoleViewRouting();
 const demoWorkspace = globalThis.TorchConsoleDemo;
 const workViews = globalThis.TorchWorkViews;
 const workProgress = globalThis.TorchWorkProgress;
@@ -12,6 +156,38 @@ const refreshProtection = globalThis.TorchLiveRefresh.createProtection(document)
 refreshProtection.remember();
 let renderingSnapshot = false;
 let heldPanels = 0;
+
+function invalidateStalePriorityPreviews(tasks = []) {
+  const currentById = new Map(tasks.map((task) => [task.id, task]));
+  for (const form of document.querySelectorAll('.priority-change-form[data-preview-token]')) {
+    const task = currentById.get(form.dataset.taskId);
+    const currentRevision = Number(task?.revision);
+    const previewRevision = Number(form.dataset.revision);
+    if (!task || !Number.isSafeInteger(currentRevision) || currentRevision === previewRevision) continue;
+
+    const ticket = form.closest('.task-ticket');
+    if (!ticket) continue;
+    const priority = task.priority ?? 'normal';
+    const priorityBadge = ticket.querySelector('.ticket-topline .priority');
+    if (priorityBadge) {
+      priorityBadge.className = `priority priority-${escapeHtml(priority)}`;
+      priorityBadge.textContent = priority;
+    }
+    form.dataset.revision = String(currentRevision);
+    delete form.dataset.previewToken;
+    delete form.dataset.planHash;
+    const priorityField = form.querySelector('[name="priority"]');
+    const reasonField = form.querySelector('[name="reason"]');
+    if (priorityField) priorityField.disabled = false;
+    if (reasonField) reasonField.disabled = false;
+    const preview = form.querySelector('[data-priority-preview]');
+    if (preview) {
+      preview.replaceChildren();
+      preview.hidden = true;
+    }
+    priorityStatus(form, `Task evidence advanced to revision ${currentRevision}. The older preview was cleared; review the current task before previewing again.`);
+  }
+}
 
 const escapeHtml = (value) => {
   const element = document.createElement('span');
@@ -45,6 +221,55 @@ function setText(selector, value) {
   if (element) element.textContent = value ?? '';
 }
 
+function compactOwnerBriefingProvenance() {
+  const publication = $('#owner-briefing-content')?.querySelector('.briefing-publication');
+  if (!publication) return;
+
+  const timestamp = publication.querySelector('p time');
+  const window = [...publication.querySelectorAll('.briefing-muted')]
+    .find((paragraph) => paragraph.textContent.trim().startsWith('Window:'));
+  if (timestamp || window) {
+    const disclosure = document.createElement('details');
+    disclosure.className = 'briefing-provenance';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Publication time and reporting window';
+    disclosure.append(summary);
+    if (timestamp) {
+      const exactTime = timestamp.cloneNode(true);
+      exactTime.textContent = timestamp.getAttribute('datetime') || timestamp.textContent;
+      const published = document.createElement('p');
+      published.append('Published ', exactTime);
+      disclosure.append(published);
+      timestamp.textContent = ageLabel(timestamp.getAttribute('datetime'));
+      timestamp.title = exactTime.textContent;
+    }
+    if (window) {
+      const limitation = 'Recorded evidence, not independent live verification.';
+      if (window.textContent.includes(limitation)) {
+        const visibleLimitation = window.cloneNode(false);
+        visibleLimitation.textContent = limitation;
+        window.textContent = window.textContent.replace(limitation, '').trim();
+        window.after(visibleLimitation);
+      }
+      disclosure.append(window);
+    }
+    publication.append(disclosure);
+  }
+
+  for (const code of publication.querySelectorAll('code')) {
+    const commit = code.textContent.trim();
+    if (!/^[a-f0-9]{40}$/i.test(commit)) continue;
+    const disclosure = document.createElement('details');
+    disclosure.className = 'briefing-provenance';
+    const summary = document.createElement('summary');
+    summary.textContent = `Commit ${shortCommit(commit)}`;
+    const exact = document.createElement('code');
+    exact.textContent = commit;
+    disclosure.append(summary, exact);
+    code.replaceWith(disclosure);
+  }
+}
+
 function shortCommit(value) {
   return value ? String(value).slice(0, 9) : '—';
 }
@@ -69,9 +294,10 @@ function taskCard(task, healthFindings = []) {
   const staleEvidence = healthFindings.find((finding) => finding.taskId === task.id
     && ['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING'].includes(finding.code));
   return `<article class="task-ticket">
-    <div class="ticket-topline"><code>${escapeHtml(task.id)}</code><span class="priority priority-${escapeHtml(task.priority ?? 'normal')}">${escapeHtml(task.priority ?? 'normal')}</span></div>
+    <div class="ticket-topline"><span class="priority priority-${escapeHtml(task.priority ?? 'normal')}">${escapeHtml(task.priority ?? 'normal')}</span></div>
     <h4>${escapeHtml(task.title ?? 'Untitled task')}</h4>
     <p>${escapeHtml(detail || 'No task description recorded.')}</p>
+    <details class="task-reference"><summary>Task reference</summary><code>${escapeHtml(task.id)}</code></details>
     ${staleEvidence ? `<div class="evidence-warning" role="status"><strong>Evidence needs refresh</strong><p>${escapeHtml(staleEvidence.recommendation)}</p></div>` : ''}
     <dl class="ticket-meta">
       <div><dt>Owner</dt><dd>${escapeHtml(task.owner ?? 'Unassigned')}</dd></div>
@@ -772,6 +998,7 @@ function render(snapshot) {
 
   setText('#project-name', project?.name ?? project?.id ?? 'Not installed');
   setText('#project-branch', branch);
+  setText('#project-branch-detail', branch);
   setText('#project-commit', shortCommit(snapshot.repository?.head));
   setText('#fleet-health', snapshot.mode === 'installed'
     ? (snapshot.doctor?.healthy ? 'Healthy' : 'Review findings') : 'Not installed');
@@ -794,6 +1021,7 @@ function render(snapshot) {
   renderRuntimeProfileEditor(agents, snapshot.runtimeAdapters ?? [], snapshot.mode === 'installed');
   renderFlowWatch(snapshot);
   setHtml('#owner-briefing-content', globalThis.TorchOwnerDigest.render(snapshot.ownerDigest));
+  compactOwnerBriefingProvenance();
 
   renderAttention(attention);
 
@@ -918,15 +1146,27 @@ const refreshScheduler = globalThis.TorchLiveRefresh.createScheduler({
     return snapshot;
   },
   apply: (snapshot) => {
+    const viewportBeforeRender = appliedRefreshes > 0
+      ? { left: globalThis.scrollX, top: globalThis.scrollY } : null;
+    const userIntentAtRender = consoleViewRouter.userIntentVersion();
     const editedBeforeRender = refreshProtection.dirty();
     heldPanels = 0;
     renderingSnapshot = true;
     try { render(snapshot); } finally { renderingSnapshot = false; }
+    invalidateStalePriorityPreviews(snapshot.backlog ?? []);
     refreshProtection.remember({ preserve: editedBeforeRender });
     $('#console-error').hidden = true;
     const status = $('#live-refresh-status');
-    status.dataset.generation = String(++appliedRefreshes);
+    const renderGeneration = ++appliedRefreshes;
     status.textContent = `${liveUpdatesPaused ? 'Automatic updates paused.' : 'Updates every 15 seconds while visible.'}${heldPanels ? ' Edited forms and active previews retained; their panels may show older state.' : ''}`;
+    globalThis.requestAnimationFrame(() => globalThis.requestAnimationFrame(() => {
+        if (renderGeneration !== appliedRefreshes) return;
+        if (viewportBeforeRender && consoleViewRouter.userIntentVersion() === userIntentAtRender) {
+          globalThis.scrollTo?.(viewportBeforeRender.left, viewportBeforeRender.top);
+        }
+        if (renderGeneration === 1) consoleViewRouter.afterInitialLayout();
+        status.dataset.generation = String(renderGeneration);
+      }));
   },
   onError: (caught) => {
     const error = $('#console-error');
@@ -1910,11 +2150,11 @@ globalThis.addEventListener('pageshow', (event) => {
   if (event.persisted && !liveUpdatesPaused && document.visibilityState === 'visible') refresh();
 });
 if (demoWorkspace) {
-  document.title = 'TORCH Dashboard';
   $('#demo-banner').hidden = false;
   $('#reset-demo')?.addEventListener('click', () => {
     demoWorkspace.reset();
     globalThis.location.reload();
   });
 }
+consoleViewRouter.sync({ force: true });
 refresh();
