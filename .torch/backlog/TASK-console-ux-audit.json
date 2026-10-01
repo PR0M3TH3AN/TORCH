@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-console-ux-audit",
   "title": "Audit Console through computer use and design a focused multi-screen workspace",
-  "description": "Real owner feedback: excessive scrolling, everything on one page feels like a generic Bootstrap layout. Clean, clear and functional first. Session Manager must assign existing owner-console web UI specialist. Inspect actual live installed Console http://127.0.0.1:4174/console with computer use, not source-only review. Cover every navigation area, nested operational panels and action flows; read-only on live, explore writes only in isolated demo. Actually view screenshot evidence desktop and mobile, keyboard navigation, navigation position/history, refresh/draft retention, density, scrolling and empty/failure/loading states. Document visited screens and concrete issues with screenshot references. Propose focused routes/views, compact overview, contextual drilldowns and per-agent conversations, conditional pipelines, accessible navigation and honest runtime/approval status. Retain dark mode/TORCH mark. Audit and proposal only; do not rewrite UI before review. Use applicable frontend/browser skills and disclose computer-use capability blockers instead of claiming completion.",
+  "description": "Real owner feedback: excessive scrolling, everything on one page feels like a generic Bootstrap layout. Clean, clear and functional first. Session Manager must assign existing owner-console web UI specialist. Inspect actual live installed Console http://127.0.0.1:4174/console with computer use, not source-only review. Cover every navigation area, nested operational panels and action flows; read-only on live, explore writes only in isolated demo. Actually view screenshot evidence desktop and mobile, keyboard navigation, navigation position/history, refresh/draft retention, density, scrolling and empty/failure/loading states. Document visited screens and concrete issues with screenshot references. Propose focused routes/views, compact overview, contextual drilldowns and per-agent conversations, conditional pipelines, accessible navigation and honest runtime/approval status. Retain dark mode/TORCH mark. Audit and proposal only; do not rewrite UI before review. Use applicable frontend/browser skills and disclose computer-use capability blockers instead of claiming completion.\n\nOwner93b8 observed native39044f9d generated demo desktop1440x1000/mobile390x844: doctor-only Healthy misleads beside two urgent hazards; header/ten-link nav consumes first844px before owner/urgent panel. Record next separately consented health-label/adaptive-header scope. Generated screenshot observation is not actual live computer-use audit; browser disconnected/live desktop/mobile coverage remains incomplete, prior CDP failures retained.",
   "priority": "high",
   "affectedDomains": [
     "owner-console",
@@ -17,7 +17,8 @@
     "Prioritized usability findings trace to observed screens, not generic recommendations",
     "Information architecture proposes genuinely separate focused views, not anchor links on another long page",
     "Desktop/mobile and keyboard/refresh/draft behavior are covered; branding and permission gates preserved",
-    "Report defines measurable implementation acceptance criteria; no implementation or release is implied"
+    "Report defines measurable implementation acceptance criteria; no implementation or release is implied",
+    "Next separately consented UX phase labels doctor-derived health as repository checks or truthfully represents overall review/unknown while urgent Fleet hazards stay visible. At390x844, adaptive compact header/navigation brings useful owner decision/risk context near the first screen, preserving ten keyboard/deeplink/BackForward destinations, drafts/safe actions and no clipping/overflow. Owner93b8 inspected generated39044f9d artifacts, not live computer use; this criterion grants no expansion of current0c2 review."
   ],
   "observedAt": "ed1f7614d1ea",
   "feature": null,
@@ -25,14 +26,15 @@
   "state": "blocked",
   "owner": "owner-console",
   "evidence": [
-    "reports/design-system/task-console-ux-audit-owner-console-2026-09-30.md"
+    "reports/design-system/task-console-ux-audit-owner-console-2026-09-30.md",
+    "message:93b8eb98-0d4d-4773-8962-6d428be21146:current-reviewed-decision-see-17:57-handoff"
   ],
   "commit": "13fe10b765736984d02f6bca02f690d63dbb3a64",
   "integrationRequest": null,
   "blockedReason": "The audit requires visible mobile screenshots at desktop and mobile sizes. With a fresh browser session/tab, viewport set before navigation to 351x760 at DPR 0.9, DOM confirmed exactly 390x844 CSS and visible Overview content. The one fullPage:false screenshot attempt failed with `Timed out after 5000ms waiting for CDP command Page.captureScreenshot.` Previous 433x938 capture is not exact-size evidence; prior blank capture is retained as failure evidence. QA and Provider Runtime advise against retry loops or substituting another viewport. Other mobile views remain uninspected.",
   "createdAt": "2026-09-30T22:15:39.356Z",
-  "updatedAt": "2026-10-01T00:43:04.639Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T17:58:30.000Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -68,6 +70,13 @@
       "actorId": "owner-console",
       "at": "2026-10-01T00:43:04.639Z",
       "note": "Current audit checkpoint and exact screenshot blocker recorded. Desktop views and interactions are documented; mobile visual coverage remains incomplete after one fresh exact-viewport capture attempt. No completion or integration claimed."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:58:30.000Z",
+      "note": "Reviewed metadata-only current evidence/recipient decision reconciliation under owner5d8/4646/c3be/93b8. Preserve state, owner, original candidate/request, all historical evidence/criteria and history. No new assignment, source authority, broad acceptance, live/schema/activation or integration."
     }
   ]
 }

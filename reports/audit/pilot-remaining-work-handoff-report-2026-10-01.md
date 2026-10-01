@@ -1,5 +1,136 @@
 # Current pilot remaining-work handoff
 
+## Current guarded source landing, 18:07 UTC
+
+Console's single actual request **cb83a211-9f3f-4688-98fe-3faaece76da6** is native
+**LANDED at18:06:20.428Z**, source0c2/base4fa/targetrewrite/portable-agent-fleet.
+Fresh addressed inbox/current tasks, exact ready evaluation, clean source and
+canonical HEAD were checked. Actual QAe454 accepts exact six-path source; four
+current native PASS receipts were independently read. Manager authorization18:06:06
+and native plan18:06:10 returned blockers[]/canProceedtrue; serialized native land
+succeeded. Canonical is independently clean at exact0c2 afterward. No manual merge,
+second request, duplicatec532 landing, cce override or native guard waiver occurred.
+Arbiter's concrete next handoff is exact LANDED provenance/current remote recheck
+then permitted nonforce push ONLY existing origin development branch. Manager
+does not push. Prior queue dispositions/history and all56 full-task states remain.
+
+Workflow and attention metadata now distinguish resolved0c2 source review/landing
+from open installed/live/browser/provenance/blockedReason and separately scoped
+later93b UX criteria. No full-task closure. Earlier pending-review text below is
+timestamped history. Human75 and disconnected live browser remain genuine gaps.
+
+Release9a0 is under actual existing QA review per owner380; root flags an additional
+malformed absolute/external active-pointer privacy edge (raw invalid link target),
+not acceptance from green gates. After actual verdict, any candidate must converge
+clean to advanced0c2, preserve unique corrections/TIN and rerun four native checks
+on its resulting exact SHA with independent QA/artifacts before ONE request.
+No existing Release integration, source acceptance, installation or service change.
+
+## Fresh QA verdict and corrective candidate, 18:02 UTC
+
+Actual **QAe454442e** independently ACCEPTS exact clean Console0c2 source only:
+six consented paths, five strict scenarios with literal independent count oracle,
+old161664-byte TIN prefix unchanged/physical-end append, four exact native PASS
+under current definitions/invalidReason null and all eleven immutable PNG hashes.
+The earlier pending-review wording below is historical. Owner55c58 authorizes ONE
+normal native submission and has resumed existing Console for submission only;
+no source edits/new assignment or Manager launch. Current observed queue18:00 has
+no request for0c2 yet; use the actual forthcoming ID and current guarded evaluation/
+authority/plan before landing. Never land duplicatec532 or oldcce. Full workflow
+and attention tasks stay blocked on actual installed/live desktop/mobile acceptance;
+source acceptance does not resolve separate later93b UX criteria or human75.
+
+Release **8bb88290** returns corrected exact clean **9a0d635c7cddbf81f9b41405c14cc8fdbba1445d**
+on the same three paths: sorted aggregate positive acc9/declaration6bfe negative,
+relative-only reader identity, serialized path privacy and zero-argument regression,
+true TIN append/unchanged old prefix. Eight focused scenarios and fresh native
+d75732ec/b7d45c3e/b8e81b64/94e27b71 PASS are implementer handoff evidence pending
+actual independent QA. Preserve978 rejection and18a92 lint failure. No Release
+request/acceptance or whole-workflow/live claim from this handoff. If Console target
+advances, Release must converge clean preserving unique commits, rerun native gates
+on the resulting exact candidate and get independent QA of that exact source.
+
+## Actual decisions, source WIP and recipient handoffs, 17:57 UTC
+
+Refreshed installed Manager brief d7e6d69, explicit addressed unread100, all56
+current tasks, direct-report check-in17:48:58, queue, approval waits and Fleet/
+hierarchy assessments. Roadmap remains39 proposed/9blocked/6completed/1verification/
+1assigned. Check-in heartbeat badges are observations; actual owner4646/c3be says
+existing Release correction and existing Console QA review are running, not idle
+from an old badge. No assignment/start/identity/activation or task completion here.
+Canonical clean4fa and its earlier single0d46 landing/development-ref push remain
+resolved. cce needs_convergence; duplicatec532 ready/unauthorized; c178 proposed1.
+Neither current contribution has an integration request. Preserve both old records.
+
+Actual **QA9e0b3a39** REJECTS Release exact **978d83462418b61ccd7b7be3a2d818ac9108c95e**
+only for consented UI aggregate ordering and absolute-path privacy. Independent
+literal14-file/422-byte preimage yields sorted acc9d453ee6d2256c6efb9dafff17057e3a6a501328d2eb5a6509349567587fc,
+while declaration order produces6bfe963481147c4c0add95e79df883c9fd7b67eab7d01556973e7a14850afe97.
+Remove public moduleUrl/modulePath/packageRoot absolute leaks, expose approved
+relative identity, recursive serialization privacy regression and export.length0.
+QA confirms eight focused strict PASS, true append TIN with old161664-byte prefix
+SHA8f82a2ed5e84577b11f03b4c909f3c241ed641b450a5c01e54ed4e2b0cfd5e2a,
+four native exact PASS with invalidReason null and eleven immutable artifact hashes.
+Native receipts exist independently; they do not override the source rejection.
+Owner4646 authorizes correction ONLY inside same three paths and has already
+resumed existing Release. Manager163fe routes exact next candidate requirements;
+978 is not landable, earlier18a92 lint failure remains failure. Fresh clean newSHA,
+all four native gates/artifacts and actual independent QA precede one submission.
+
+Actual **Console6c203789/c3be1176** returns clean exact
+**0c2aeed1db670d1c7ffd68d55ee129871362afe4**, cumulative4fa delta exactly six paths
+and diffcheck clean. Corrected independent literal49+17/count/6shown/11remaining/
+overflow scenarios supersede earlier7ad/fcd candidate evidence without erasing it.
+Native exact receipts2c071e17/4f3a7f6e/645903f7/73b574c9 exist with invalidReason null;
+implementer reports four PASS and11 external PNG hashes. Existing QA has actually
+been resumed by arbiter for this exact source and provenance; verdict is pending,
+not acceptance or another consent/owner wait. SAMEworkflow/attention source WIP is
+now independent verification, not a second assignment. Do not submit or land until
+actual QA verdict and current guards. Generated demo artifacts are not live4174.
+
+Owner93b8's separately proposed UX findings are retained in existing workflow/audit:
+doctor-derived green Healthy must disclose its repository-check scope or truthfully
+reflect unresolved urgent Fleet hazards. At390x844 the first screen must give useful
+decision/risk context through compact adaptive header/nav while preserving ten
+keyboard/deeplink/BackForward destinations, safe actions and no clipping/overflow.
+Observed exact native39044f9d demo screenshots are generated evidence, not live
+computer use. These are NEXT separately consented paths/scenarios, not a change to
+current0c2 review or silent scope expansion. Metadata consumer snapshot/server/API
+and visible provenance renderer remain separately proposed after helper acceptance.
+
+B2 current proposed map and recipient decisions are pinned in the PhaseB report's
+17:53 section: added Work native bootstrap/private fence-init, existing Kernel
+config.mjs correction, real npm/Node/browser/transitive support, Kernel proposed
+task-scoped .torch/torch.yaml applier with no present registration permission.
+Positive native plan -> one-shot private parent admission -> issuedV2 -> frozen
+child consumption -> independently observed descendant closure -> compatible
+atomic receipt is the required direction. Actual issuer transport/policy bytes/
+exact QA scopes still need recipient agreement. Same-UID OS containment is not
+claimed; namespace availability is not closure proof; current schema3/2 and absent
+policy refusals remain. Full6e4verification13 seven criteria stay open; B1 fixture
+source acceptance955 is resolved, not a new approval hold or native acceptance.
+
+Owner5d8 distinguishes advisory completed-dependency flags from true blockers:
+reservation125 retains genuine writer-isolation/schema refusal and explicitly links
+full6e4 compatibility. Integrity-recorda655 is an internal Work/QA contract decision;
+owner4646 reports QA1e477 needs version-pinned complete schema/preimage/YAML/test
+paths/scenarios before usable consent. Managerca0b requests that actual Work packet,
+not a generic human permission loop. Keep a655 blocked until it arrives and QA
+decides; no second active Work implementation. Historical61de preparation approval
+does not authorize migration or record enforcement. Owner9d036 also queues Kernel's
+owned one-path docs/TODO current-handoff refresh, preserving all historical content
+and single ledger; no manager source/doc-boundary edit or provider start.
+
+Human runtime switch75 remains pending revision1. Owner e20's five-PNG recovery
+was already satisfied for exact completed Runtime recovery; no activation approval.
+Browser disconnected and live installed alpha2 blockedReason/API/UI provenance/full
+desktop/mobile owner-flow criteria remain open; alpha3switch alone cannot qualify
+those missing fields. Automatic wakesOFF, no install/host/schema/provider/publication.
+Fleet evolution8 recurring-domain and hierarchy10 signals favor existing domain
+ownership, concise pinned references and explicit boundary tests over extra roles.
+Health49 stale-observed warnings are advisory; two resolved-dependency warnings
+require the above actual blocker review, never automatic closure or cleanup.
+
 ## Authorized bounded Overview source work, 17:10 UTC
 
 Actual owner **6a6e4830** now authorizes existing Console's exact six-path compact

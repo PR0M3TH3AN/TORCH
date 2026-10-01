@@ -10,6 +10,137 @@ no new assignment, identity, queue or full-task closure is requested here.
 Current authoritative brief is d7e6d69. Kernel's proposed sections18/20 and
 ADR026 at 6fdb88ea supply design context, not normative gate changes.
 
+## Current B2 owned decisions and remaining registration seam, 17:53 UTC
+
+This section supersedes the 17:02 proposed map only by the specific deltas below.
+Actual Work **acc1d43e** and Kernel **9752d155**, with owner **7921552a** correcting
+two factual errors, are read-only protocol decisions. No B2 implementation,
+policy registration, DDL, source receipt or consumer permission follows. B1 exact955
+fixture-source acceptance remains resolved; full6e4 stays Work-owned verification
+with seven unchanged criteria. Legacy schema2 evidence and current3/2 refusal stay.
+
+Live ownership confirms existing **src/kernel/config.mjs**, not a new file. Actual
+registered test-dashboard invokes npm run test:dashboard; scripts/test-dashboard-demo.mjs
+imports Chromium at line3 and launches it at line49. A Node entry does not remove
+the browser/runtime/transitive dependency requirement. Browser-using test scenarios
+also require the relevant pinned dependencies. All four current check declarations
+lack a V2 snapshot policy; current undeclared-policy refusal is correct.
+
+### Exact additions to the owned map
+
+| Recipient | Exact proposed path and decision | Scope boundary |
+| --- | --- | --- |
+| Kernel | NEW src/kernel/candidate-source-parent.mjs; additive V2 src/kernel/check-subject-context.mjs; additive existing src/kernel/config.mjs | Derive and validate ParentSubjectBindingV2, policy schema/bytes and E/S/A admission; preserve fixtureV1 and existing config compatibility. Parent does not open ControlPlane. |
+| Work | NEW src/checks/candidate-source-bootstrap.mjs | Trusted installed native entry, bound registered plan and private one-shot parent transport. Requires the positive issuer protocol below, not a caller-selectable issuer. |
+| Work | NEW src/checks/candidate-input-snapshot.mjs; NEW src/checks/candidate-source-execution.mjs | Actual bounded frozen files and real npm/Node/browser consumption under the issued binding. No PhaseA fixture promotion. |
+| Work | NEW src/checks/candidate-execution-fence.mjs; NEW private src/checks/candidate-execution-fence-init.mjs | Fixed Linux user/PID namespace backend and independently proved init/descendant/closure observations. Private init is not a public executor selector. |
+| Kernel, proposed named config applier | .torch/torch.yaml | Manager names Project Kernel as task-scoped proposed applier of the reviewed four-check policy declaration. Native ownership still reports this file unowned; no permanent ownership-map change or present edit authority. Require Kernel agreement, exact QA policy consent and arbiter's bounded registration scope before applying anything. |
+| Work later native plan seam | Existing src/checks/service.mjs | Precisely reviewed registered-plan/private-bootstrap admission only, separate from eventual result consumer integration. It remains excluded from current authority; return exact needed hunk/API before code. |
+| Kernel later native adapter | src/control-plane/candidate-attempt-store.mjs; candidate-attempt-store-provisioner.mjs; NEW check-receipt-adapter.mjs | Compatibility, issuer/attempt transport and atomic finalization must be qualified without a migrating initializer. Existing writer edits, live DDL or schema repair are not implied. |
+| Work / Release later consumers | Existing src/integration/service.mjs / src/cli.mjs, with later CheckService result wiring | Independent exact-path consent and native compatibility precede real consumption. No default installed-engine equivalence. |
+
+Work ratifies V2-only snapshot exports capture/verify/describe/disposeCandidateInputSnapshotV2
+and execution exports create/run/cancel/closeCandidateSourceExecutionV2, with schema
+and limits constants. Their only state arguments are genuinely issued opaque
+parentBinding/snapshot/execution handles, plus a bounded cancel reason. No caller
+cwd/root/commit/definition/argv/env/manifest/DB/adapter/token/executor selector.
+Private paths never serialize. Kernel must return the exact zero-argument parent
+export name/version and canonical V2 bytes; the earlier proposed V1 parent name
+is not a ratified V2 API. Work must return exact bootstrap/fence-init entry contracts.
+
+Snapshot limits ratified by Work:8192 records,64MiB/file,512MiB total,4096 UTF8 path,
+1MiB descriptor/policy/manifest frame; enforce before allocation, bytewise canonical
+relative records, regular files/directories only. Stream-copy into unique owned
+scratch outside source and verify source/frozen manifests before and after.
+No atomic-directory or same-user filesystem containment claim. Proposed execution
+limits remain QA decisions:300s wall,1MiB each stdout/stderr; artifact limits retain
+actual ARTIFACT_MANIFEST_LIMITS(64 files,1MiB/file,8MiB total,4096 path,64KiB frame).
+No exit0 override for timeout/error/signal/ENOBUFS/overflow/artifact or input drift.
+
+E must bind registered definition bytes, fixed Node executable, npm CLI entry,
+raw package scripts/package metadata/lock, dependency-tree and necessary browser
+binary/runtime/transitive manifests. Frozen S plus separately pinned dependency
+domain is the sole execution root; explicit scrubbed env, no live cwd/PATH/HOME/cache
+fallback, install or network. Product links refuse. Dependency .bin links require
+both lexical and resolved targets inside the pinned domain with target bytes in
+its manifest. Missing real dependencies refuse, not an echo or all-refusal substitute.
+Kernel's policy canonicalization proposal is fixed UTF8/LF/noBOM length framing over
+schema/version/checkId/definition/raw-script/input rules/env/dependencies/limits;
+exact executable framing vectors and the YAML field name still need its decision.
+Preserve existing snapshot and source-definition semantics rather than silently
+reinterpreting them. Config changes are declarations for reviewed qualification,
+not automatic registered provisioning or runtime activation.
+
+### Positive native issuance decision to ratify
+
+The trust boundary is a trusted installed native coordinator/registered actor and
+an untrusted candidate child/caller. Candidate output, branch labels, JSON, same
+UID, WeakMap presence or namespace availability cannot assert native identity.
+A private capability is an in-process admission mechanism, not OS authentication.
+This bounded proposal excludes hostile same-user host processes/ptrace or privileged
+host interference; it does not claim containment against them. If that stronger
+threat model is required or the supported execution boundary cannot be established,
+refuse qualification explicitly. Do not conceal that limitation behind TerminalProof.
+
+Proposed actual positive path for Work/Kernel agreement: the fixed installed native
+plan seam authenticates the existing identity/project/check/lease/guard context
+through the supported compatible native authority, resolves a registered V2 policy,
+and creates a nonce/run/generation-bound one-shot private parent channel. The fixed
+bootstrap consumes that channel exactly once, verifies origin/tuple/policy/expiry,
+and issues the opaque V2 binding. The candidate receives only frozen input and
+bounded output/artifact channels; never the admission channel, nonce, writer/DB,
+receipt adapter or binding capability. Parent-only descriptor setup closes admission
+handles before candidate spawn. No public caller token/selector or copied fixture
+can enter this path. Work owns native plan/transport/bootstrap; Kernel owns policy,
+parent admission and native adapter compatibility. Name actual identity source,
+channel creation/closure, replay handling and exact additional shared paths before
+implementation. A pipe by itself is not proof of origin; the trusted native creation
+and validation boundary must be independently tested. This is the next concrete
+decision, not an implemented/authenticated seam or permission to open a migrating CP.
+
+Required positive qualification includes a real registered plan issuing an unchanged
+binding and invoking all four actual npm gate definitions with their dependencies,
+before landing any candidate that needs this protocol. Candidate/caller attempts to
+forge/replay/spread/cross-project/cross-generation or inherit the admission channel
+must refuse. Missing registration and current incompatible schema must still refuse.
+Real receipt issuance remains a separate adapter/CAS qualification; fixture tests
+and an all-refusal parent cannot complete full6e4 or satisfy native landing gates.
+
+### Fence and QA decisions still attributable to recipients
+
+Owner e137 observed unprivileged user/PID namespace creation available on util-linux
+2.39.3. That is a precondition only. Work proposes fixed absolute unshare with
+--user --map-current-user --pid --fork and pinned private init. Pin exact init API,
+argv/version/content digests, host PID and namespace identity/generation, PID1
+admission, child barriers, reaping and independently observed closure. Process-group
+emptiness, direct-parent exit or a successful kill is insufficient. Timeout/cancel
+ambiguity, changed/unreadable namespace or absent closure yields UNKNOWN with no
+TerminalProof/PASS. Positive setsid/double-fork descendants must remain covered
+beyond direct-parent exit; include actual browser subprocess lifetimes. No host
+services/cgroup setup, provider launches or automatic wakes.
+
+QA decisions requested on exact NEW candidate-source-parent.test.mjs,
+candidate-input-consumption.test.mjs and candidate-execution-fence.test.mjs under
+test/fleet, additive V2-only check-subject-context.test.mjs, proposed NEW
+test/fleet/candidate-source-bootstrap.test.mjs and NEW
+test/fleet/candidate-snapshot-policy.test.mjs, plus append-only docs/TEST_INTEGRITY.md.
+The last two paths are proposed additions requiring actual QA consent, not an
+invented approved scope. Positive scenarios: registered one-shot issuance; fixed
+Node/npm/browser dependency consumption; actual nested and >1MiB frozen-file reads
+after source mutation barrier; supported escaped-descendant closure; compatible
+native single-receipt CAS. Negatives include policy/frame/preimage drift, authority
+inheritance/replay, frozen mutation, E/A substitution, false group-only coverage,
+timeout/cancellation ambiguity and schema incompatibility. Independent literals/
+preimages and boundary outcomes must kill trivial echoes or production-helper oracles.
+
+Immediate recipient decisions are narrow: Kernel ratifies existing parser/four-policy
+canonical bytes, proposed config-applier role and parent admission; Work ratifies
+native positive issuer/private-channel and fixed init protocol, with exact existing
+service scope; QA grants the concrete source/test/policy/limit scenario list or
+names exact corrections. Arbiter can then review one bounded implementation scope.
+Until those decisions, this is pinned read-only progress, not a new assignment,
+source authority, live DDL/registration, gate waiver or full-task acceptance.
+
 ## Current B1 acceptance and concrete B2 implementation packet, 17:02 UTC
 
 Actual QA **a13b5c37-12a3-4757-832c-1938b392f962** ACCEPTS only clean exact

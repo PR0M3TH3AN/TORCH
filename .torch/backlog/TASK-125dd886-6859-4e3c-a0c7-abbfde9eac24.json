@@ -2,7 +2,7 @@
   "schema": "torch.dev/backlog-item/v1alpha1",
   "id": "TASK-125dd886-6859-4e3c-a0c7-abbfde9eac24",
   "title": "Provide the Kernel-owned atomic identity reservation contract for startup presence",
-  "description": "Explicit owner57e4712e requests one bounded Project Kernel-owned reservation contract/schema phase after TASK-bounded-routine-coordination safely lands/closes. Native Kernel24a4625a declined Runtime edits to src/control-plane/** and requires separately assigned owned implementation. This is a dependency of SAME TASK-pilot-starting-presence, whose Runtime owner retains lifecycle/schedule integration and Release exact CLI consent; it is not a second Runtime assignment or ownership transfer. Implement only the reviewed durable per-project identity reservation API/storage contract required by that slice; agree exact interface with Runtime and strict paths/tests with QA. Unknown interruption must prevent duplicate starts; no elapsed-time offline inference, wake activation, provider launch, installation or broader owner-grant/approval schema changes. Current Kernel task continuity outranks this proposal. Preserve all history/state/unique commits and exact-commit QA/integration gates.",
+  "description": "Explicit owner57e4712e requests one bounded Project Kernel-owned reservation contract/schema phase after TASK-bounded-routine-coordination safely lands/closes. Native Kernel24a4625a declined Runtime edits to src/control-plane/** and requires separately assigned owned implementation. This is a dependency of SAME TASK-pilot-starting-presence, whose Runtime owner retains lifecycle/schedule integration and Release exact CLI consent; it is not a second Runtime assignment or ownership transfer. Implement only the reviewed durable per-project identity reservation API/storage contract required by that slice; agree exact interface with Runtime and strict paths/tests with QA. Unknown interruption must prevent duplicate starts; no elapsed-time offline inference, wake activation, provider launch, installation or broader owner-grant/approval schema changes. Current Kernel task continuity outranks this proposal. Preserve all history/state/unique commits and exact-commit QA/integration gates.\n\nCurrent owner5d8 confirms completed bounded-routine dependency does not resolve genuine required3/current2 writer-isolation/schema refusal. Record explicit full6e4 compatibility dependency, no automatic unblocking/migration. Preserve this earlier Kernel recovery history separately from satisfied Runtime PNG approval and pending human75.",
   "priority": "high",
   "affectedDomains": [
     "project-kernel",
@@ -11,7 +11,8 @@
     "release-self-host"
   ],
   "dependencies": [
-    "TASK-bounded-routine-coordination"
+    "TASK-bounded-routine-coordination",
+    "TASK-6e4ff870-a386-4a11-a59c-444ebc23732e"
   ],
   "acceptanceCriteria": [
     "Runtime and Kernel agree a precise owned reservation interface and storage/schema contract for TASK-pilot-starting-presence before edits; peer consent covers any additional path, without transferring ownership.",
@@ -35,14 +36,15 @@
     "message:8a668aba-192e-4188-9cd0-3eb4b6241f10:fresh-exact-fivepath-consent",
     "message:1996ccdc-377b-4776-ba51-cd0fdb2d012e:cleanrecoveredbe1/testPASS/schema-refusal",
     "message:aa6f5d58-ac0d-45a6-93a4-d948e59cc84d:actualDBshape/zeroRows/strict-owned-recovery-plan",
-    "git:be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2:independently-clean"
+    "git:be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2:independently-clean",
+    "message:5d8c8f1d-7c77-45b5-84b7-4860f8e90f0c:current-reviewed-decision-see-17:57-handoff"
   ],
   "commit": "be1ae9511e74e3c4c7d8f3d3a5f1212b25c24cc2",
   "integrationRequest": null,
   "blockedReason": "Recovered five PNGs under fresh exact QA consent; independently clean be1ae951. Candidate CLI test185e9d68 passed, next check refused before execution CONTROL_PLANE_SCHEMA_DOWNGRADE_DETECTED currentVersion2 requiredVersion3. Owner verified reservation table12 columns/0rows/integrityok and oldv2 writers relabel after v3 initialization. Await exact Kernel-owned recovery/compatibility plan, strict QA consent and supported writer isolation; no migration retry, directPRAGMA reset, leaseclear, oldchecker qualification or provider relaunch.",
   "createdAt": "2026-10-01T07:57:28.590Z",
-  "updatedAt": "2026-10-01T09:28:27.110Z",
-  "revision": 5,
+  "updatedAt": "2026-10-01T17:58:30.000Z",
+  "revision": 6,
   "history": [
     {
       "from": null,
@@ -78,6 +80,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T09:28:27.110Z",
       "note": "Honest external-statequalification blocker, sameowner/currentcandidate/history. Exactowned recovery plan/QAstrictscenarios required before actualdatabasechange; oldguard preserved, noPNGbaseline rewrite or broadcleanup, current fourgate qualification incomplete. ConfigQA-prefix applier remainsdeferred during currentunresolvedKernelreliabilitywork; no secondKernelitem/activation/wakes."
+    },
+    {
+      "from": "blocked",
+      "to": "blocked",
+      "actorId": "session-manager",
+      "at": "2026-10-01T17:58:30.000Z",
+      "note": "Reviewed metadata-only current evidence/recipient decision reconciliation under owner5d8/4646/c3be/93b8. Preserve state, owner, original candidate/request, all historical evidence/criteria and history. Explicitly relate actual full6e4 compatibility blocker; no health auto-fix. No new assignment, source authority, broad acceptance, live/schema/activation or integration."
     }
   ]
 }
