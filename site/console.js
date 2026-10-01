@@ -954,9 +954,59 @@ function renderFlowWatch(snapshot) {
 function attentionGroups(snapshot) {
   return globalThis.TorchAttentionProjection.groups(snapshot);
 }
-function attentionItemCount(groups) {
-  return ['owner', 'fleet', 'advisory', 'arbiter']
-    .reduce((count, key) => count + (groups[key]?.length ?? 0), 0);
+function attentionSummary(groups) {
+  return globalThis.TorchAttentionProjection.summary(groups);
+}
+function renderAttentionItem(item) {
+  const severity = ({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown';
+  return `<article class="attention-item tone-${escapeHtml(item.tone)}" data-attention-record>
+    <span class="attention-mark" aria-hidden="true"></span><div class="attention-copy">
+      <strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
+      <small>Severity: ${escapeHtml(severity)} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''}</small>
+      ${item.evidence.length > 120
+        ? `<details class="attention-evidence"><summary>Evidence and references</summary><p>${escapeHtml(item.evidence)}</p></details>`
+        : `<small class="attention-evidence-short">Evidence: ${escapeHtml(item.evidence)}</small>`}
+      ${item.observations ? `<details class="attention-cohort-details"><summary>Recheck observations (${item.observations.length})</summary><ul>${item.observations.map((observation) => `<li>
+        <code>${escapeHtml(observation.taskId ?? 'Task reference not recorded')}</code> · ${escapeHtml(observation.code)}
+        · Owner: ${escapeHtml(observation.owner ?? 'Owner not recorded')}
+        · Observed source/revision: ${escapeHtml(observation.observedAt ?? 'Not recorded')}
+        · Current observed commit: ${escapeHtml(observation.currentObservedCommit ?? 'Not recorded')}
+        · Reproduction: ${escapeHtml(observation.reproductionStatus ?? 'UNKNOWN')}
+        · Sources: ${escapeHtml(observation.sources.join(', ') || 'Not recorded')}
+      </li>`).join('')}</ul></details>` : ''}
+      <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
+      ${item.decisionApprovalId ? `<div class="attention-quick-actions" role="group" aria-label="Owner decision shortcuts for ${escapeHtml(item.title)}">
+        <button type="button" data-attention-decision="approved" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Approve</button>
+        <button type="button" class="quiet-action" data-attention-decision="rejected" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Reject</button>
+        <p class="attention-action-status" role="status" aria-live="polite" hidden></p>
+      </div>` : ''}
+      ${item.requestOwner ? `<a href="#owner-request-form" data-attention-recipient="${escapeHtml(item.requestOwner)}">Request review from ${escapeHtml(item.owner)}</a>` : ''}
+    </div></article>`;
+}
+function renderAttentionGroup(key, title, description, items, idPrefix) {
+  const headingId = `${idPrefix}-${key}-title`;
+  return `<section class="attention-group attention-group-${key}" aria-labelledby="${headingId}">
+    <div class="attention-group-heading"><h3 id="${headingId}">${title}</h3><span>${items.length}</span></div>
+    ${items.length ? items.map(renderAttentionItem).join('') : `<p class="attention-empty">${escapeHtml(description)}</p>`}
+  </section>`;
+}
+function applyFleetAttentionFilter(query = '') {
+  const list = $('#fleet-attention-list');
+  if (!list) return;
+  const normalized = query.trim().toLocaleLowerCase();
+  const records = [...list.querySelectorAll('[data-attention-record]')];
+  let visible = 0;
+  for (const record of records) {
+    const matches = !normalized || record.textContent.toLocaleLowerCase().includes(normalized);
+    record.hidden = !matches;
+    if (matches) visible += 1;
+  }
+  for (const group of list.querySelectorAll('.attention-group')) {
+    group.hidden = ![...group.querySelectorAll('[data-attention-record]')].some((record) => !record.hidden);
+  }
+  setText('#fleet-attention-result-count', normalized
+    ? `${visible} of ${records.length} findings match.`
+    : `${records.length} Fleet and advisory findings available.`);
 }
 function renderAttention(groups) {
   const definitions = [
@@ -965,37 +1015,27 @@ function renderAttention(groups) {
     ['advisory', 'Advisory / recheck cohorts', 'Observed evidence grouped for rechecking; these findings do not assign an owner action.'],
     ['arbiter', 'Arbiter handling', 'No observed item has structured evidence assigning its next step exclusively to an arbiter.'],
   ];
-  const total = attentionItemCount(groups);
-  setText('#attention-count', `${total} ${total === 1 ? 'item' : 'items'}`);
-  setHtml('#attention-list', definitions.map(([key, title, description]) => {
-    const items = groups[key] ?? [];
-    return `<section class="attention-group attention-group-${key}" aria-labelledby="attention-${key}-title">
-      <div class="attention-group-heading"><h3 id="attention-${key}-title">${title}</h3><span>${items.length}</span></div>
-      ${items.length ? items.map((item) => `<article class="attention-item tone-${escapeHtml(item.tone)}">
-        <span class="attention-mark" aria-hidden="true"></span><div class="attention-copy">
-          <strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.detail)}</p>
-          <small>Severity: ${escapeHtml(({ urgent: 'Urgent', review: 'Review', decision: 'Decision required', info: 'Progress' })[item.tone] ?? 'Unknown')} · Owner: ${escapeHtml(item.owner)}${item.waitSince ? ` · Waiting ${escapeHtml(ageLabel(item.waitSince))}` : ''}</small>
-          ${item.evidence.length > 120
-            ? `<details class="attention-evidence"><summary>Evidence and references</summary><p>${escapeHtml(item.evidence)}</p></details>`
-            : `<small class="attention-evidence-short">Evidence: ${escapeHtml(item.evidence)}</small>`}
-          ${item.observations ? `<details class="attention-cohort-details"><summary>Recheck observations (${item.observations.length})</summary><ul>${item.observations.map((observation) => `<li>
-            <code>${escapeHtml(observation.taskId ?? 'Task reference not recorded')}</code> · ${escapeHtml(observation.code)}
-            · Owner: ${escapeHtml(observation.owner ?? 'Owner not recorded')}
-            · Observed source/revision: ${escapeHtml(observation.observedAt ?? 'Not recorded')}
-            · Current observed commit: ${escapeHtml(observation.currentObservedCommit ?? 'Not recorded')}
-            · Reproduction: ${escapeHtml(observation.reproductionStatus ?? 'UNKNOWN')}
-            · Sources: ${escapeHtml(observation.sources.join(', ') || 'Not recorded')}
-          </li>`).join('')}</ul></details>` : ''}
-          <a href="${escapeHtml(item.href)}">${escapeHtml(item.action)}</a>
-          ${item.decisionApprovalId ? `<div class="attention-quick-actions" role="group" aria-label="Owner decision shortcuts for ${escapeHtml(item.title)}">
-            <button type="button" data-attention-decision="approved" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Approve</button>
-            <button type="button" class="quiet-action" data-attention-decision="rejected" data-attention-approval="${escapeHtml(item.decisionApprovalId)}">Reject</button>
-            <p class="attention-action-status" role="status" aria-live="polite" hidden></p>
-          </div>` : ''}
-          ${item.requestOwner ? `<a href="#owner-request-form" data-attention-recipient="${escapeHtml(item.requestOwner)}">Request review from ${escapeHtml(item.owner)}</a>` : ''}
-        </div></article>`).join('') : `<p class="attention-empty">${escapeHtml(description)}</p>`}
-    </section>`;
-  }).join(''));
+  const summary = attentionSummary(groups);
+  const fleetPreview = globalThis.TorchAttentionProjection.fleetPreview(groups);
+  const remaining = Math.max(0, summary.fleetTotal - fleetPreview.length);
+  const priorQuery = $('#fleet-attention-filter')?.value ?? '';
+  setText('#attention-count', `${summary.actionable} actionable`);
+  setText('#owner-decision-count', `${summary.ownerDecisions} owner decision${summary.ownerDecisions === 1 ? '' : 's'}`);
+  setText('#urgent-hazard-count', `${summary.urgentHazards} urgent hazard${summary.urgentHazards === 1 ? '' : 's'}`);
+  setText('#advisory-count', summary.advisoryReferences
+    ? `${summary.advisoryCohorts} cohort${summary.advisoryCohorts === 1 ? '' : 's'} · ${summary.advisoryReferences} task references`
+    : `${summary.advisoryCohorts} advisory cohort${summary.advisoryCohorts === 1 ? '' : 's'}`);
+  setText('#fleet-preview-count', `Showing ${fleetPreview.length} of ${summary.fleetTotal} Fleet findings; ${remaining} remaining`);
+  setHtml('#attention-list', definitions.map(([key, title, description]) => renderAttentionGroup(
+    key, title, description, key === 'fleet' ? fleetPreview : groups[key] ?? [], 'overview-attention',
+  )).join(''));
+  setHtml('#fleet-attention-list', [
+    renderAttentionGroup('fleet', 'Fleet handling', 'No Fleet-owned findings are recorded.', groups.fleet ?? [], 'fleet-queue'),
+    renderAttentionGroup('advisory', 'Advisory / recheck cohorts', 'No advisory cohorts are recorded.', groups.advisory ?? [], 'fleet-queue'),
+  ].join(''));
+  const filter = $('#fleet-attention-filter');
+  if (filter) filter.value = priorQuery;
+  applyFleetAttentionFilter(priorQuery);
 }
 
 function render(snapshot) {
@@ -1025,9 +1065,9 @@ function render(snapshot) {
   const parts = [`${agents.length} persistent ${agents.length === 1 ? 'identity' : 'identities'}`,
     `${working} ${working === 1 ? 'task' : 'tasks'} in progress`];
   if (blocked) parts.push(`${blocked} blocked`);
-  const attentionCount = attentionItemCount(attention);
+  const attentionCounts = attentionSummary(attention);
   setText('#project-summary', snapshot.mode === 'installed'
-    ? `${parts.join(' · ')}. ${attentionCount ? `${attentionCount} item${attentionCount === 1 ? '' : 's'} need a named next step.` : 'No owner decision is currently waiting in the observed queues.'}`
+    ? `${parts.join(' · ')}. ${attentionCounts.ownerDecisions} owner decision${attentionCounts.ownerDecisions === 1 ? '' : 's'} · ${attentionCounts.urgentHazards} urgent hazard${attentionCounts.urgentHazards === 1 ? '' : 's'} · ${attentionCounts.actionable} actionable across the observed queues.`
     : 'This repository has not been installed as a TORCH Fleet. The view is showing repository intake only.');
   renderTaskCreateOptions(agents, tasks, snapshot.mode === 'installed');
   renderOwnerRequestOptions(agents, tasks, snapshot.mode === 'installed');
@@ -2136,6 +2176,7 @@ $('#attention-list')?.addEventListener('click', (event) => {
 });
 
 $('#refresh-console')?.addEventListener('click', () => refresh());
+$('#fleet-attention-filter')?.addEventListener('input', (event) => applyFleetAttentionFilter(event.currentTarget.value));
 $('#toggle-live-refresh')?.addEventListener('click', () => {
   liveUpdatesPaused = !liveUpdatesPaused;
   $('#toggle-live-refresh').textContent = liveUpdatesPaused ? 'Resume updates' : 'Pause updates';
