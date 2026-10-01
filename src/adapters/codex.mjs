@@ -111,13 +111,29 @@ function startupFailureEvent(record) {
   if (record.type === 'error' || record.type === 'turn.failed' || record.type === 'turn.error') {
     const error = record.error && typeof record.error === 'object' && !Array.isArray(record.error)
       ? record.error : record;
-    return { code: error.code ?? record.code, message: error.message ?? record.message };
+    return {
+      code: error.code ?? record.code,
+      category: error.category ?? record.category,
+      message: error.message ?? record.message,
+    };
   }
   return null;
 }
 
 function safeDiagnosticCode(value) {
   return typeof value === 'string' && /^[A-Z][A-Z0-9_.-]{0,79}$/.test(value) ? value : null;
+}
+
+function safeDiagnosticCategory(value) {
+  return ['model-rejection', 'authentication', 'quota'].includes(value) ? value : null;
+}
+
+function categoryFromDiagnosticCode(code) {
+  if (!code) return null;
+  if (/(?:MODEL|UNSUPPORTED|UNAVAILABLE|NOT_FOUND)/.test(code)) return 'model-rejection';
+  if (/(?:AUTH|UNAUTHORIZED|FORBIDDEN|CREDENTIAL)/.test(code)) return 'authentication';
+  if (/(?:QUOTA|RATE_LIMIT|RATE-LIMIT|LIMIT_EXCEEDED)/.test(code)) return 'quota';
+  return null;
 }
 
 export function diagnoseCodexStartupFailure({ stdout, stderr } = {}) {
@@ -138,11 +154,12 @@ export function diagnoseCodexStartupFailure({ stdout, stderr } = {}) {
   }
   const message = redactDiagnosticText(failure.message);
   const code = safeDiagnosticCode(failure.code);
+  const category = safeDiagnosticCategory(failure.category);
   const modelRejection = /\b(model|unsupported|not supported|unavailable|not available|does not exist)\b/i.test(message ?? '')
     || /MODEL|UNSUPPORTED/i.test(code ?? '');
   return {
     schema: 'torch.dev/runtime-startup-diagnostic/v1alpha1', outcome: 'known',
-    category: modelRejection ? 'model-rejection' : 'runtime-error',
+    category: category ?? categoryFromDiagnosticCode(code) ?? (modelRejection ? 'model-rejection' : 'runtime-error'),
     ...(code ? { code } : {}),
     ...(message ? { message } : {}),
     stderr: safeStderr,

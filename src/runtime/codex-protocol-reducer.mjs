@@ -13,13 +13,38 @@ let droppingOversizedLine = false;
 let threadStarted = null;
 let terminal = null;
 let childSpawnError = null;
+let forwardedSignal = null;
+let pendingWrites = 0;
+let finalOutcome = null;
 
 function safeCode(value) {
   return typeof value === 'string' && /^[A-Z][A-Z0-9_.-]{0,79}$/.test(value) ? value : null;
 }
 
+function safeFailureCategory(value) {
+  if (typeof value !== 'string') return null;
+  // Classify a short transient prefix only; never retain diagnostic text itself.
+  const text = value.slice(0, 512).toLowerCase();
+  if (/(?:requested\s+)?model\b|unsupported\s+model|model\s+.*(?:not supported|unavailable)/.test(text)) return 'model-rejection';
+  if (/\b(?:auth(?:entication|orization)?|unauthorized|forbidden|credential)\b/.test(text)) return 'authentication';
+  if (/\b(?:quota|rate[ -]?limit|usage[ -]?limit|limit exceeded)\b/.test(text)) return 'quota';
+  return null;
+}
+
 function emit(record) {
-  process.stdout.write(`${JSON.stringify(record)}\n`);
+  pendingWrites += 1;
+  process.stdout.write(`${JSON.stringify(record)}\n`, () => {
+    pendingWrites -= 1;
+    finishWhenFlushed();
+  });
+}
+
+function finishWhenFlushed() {
+  if (!finalOutcome || pendingWrites) return;
+  const { code, signal } = finalOutcome;
+  finalOutcome = null;
+  if (signal) exitWithSignal(signal);
+  else process.exitCode = Number.isInteger(code) && code >= 0 ? code : 1;
 }
 
 function inspectLine(line) {
@@ -29,12 +54,15 @@ function inspectLine(line) {
     && typeof (record.thread_id ?? record.threadId) === 'string'
     && (record.thread_id ?? record.threadId).length <= 256) {
     threadStarted = record.thread_id ?? record.threadId;
+    // Emit this durable identity before a later interruption can suppress close.
+    emit({ type: 'thread.started', thread_id: threadStarted });
   }
   if (record?.type === 'turn.completed') terminal = { type: 'turn.completed' };
   if (record?.type === 'turn.failed' || record?.type === 'turn.error' || record?.type === 'error') {
     const error = record.error && typeof record.error === 'object' ? record.error : record;
     const code = safeCode(error.code ?? record.code);
-    terminal = { type: 'turn.failed', ...(code ? { code } : {}) };
+    const category = code ? null : safeFailureCategory(error.message ?? record.message);
+    terminal = { type: 'turn.failed', ...(category ? { category } : {}), ...(code ? { code } : {}) };
   }
 }
 
@@ -65,7 +93,10 @@ child.on('error', (error) => { childSpawnError = safeCode(error?.code) ?? 'EXECU
 
 const forwardedSignals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
 for (const signal of forwardedSignals) {
-  process.on(signal, () => { if (!child.killed) child.kill(signal); });
+  process.on(signal, () => {
+    forwardedSignal ??= signal;
+    if (!child.killed) child.kill(signal);
+  });
 }
 
 function exitWithSignal(signal) {
@@ -75,9 +106,8 @@ function exitWithSignal(signal) {
 
 child.on('close', (code, signal) => {
   if (pending && !droppingOversizedLine) inspectLine(pending.trim());
-  if (threadStarted) emit({ type: 'thread.started', thread_id: threadStarted });
   if (childSpawnError) emit({ type: 'error', code: childSpawnError });
   else if (terminal) emit(terminal);
-  if (signal) exitWithSignal(signal);
-  else process.exit(Number.isInteger(code) && code >= 0 ? code : 1);
+  finalOutcome = { code, signal: signal ?? forwardedSignal };
+  finishWhenFlushed();
 });
