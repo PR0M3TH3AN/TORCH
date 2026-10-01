@@ -2,6 +2,15 @@
 
 ## Concrete Console attention preparation at 15:15 UTC
 
+Actual owner7eb supplies measured15:14:01.981 live4174snapshot->canonical316 pure
+projection owner1/fleet67/arbiter0,49 individual stale/missing cards PLUS duplicate
+49-record cohort. No mutation; not browser visual PASS. Exact evidence attached
+to existing criterion/QA21ff/Console9f4 handoffs and reviewed SAMEattention metadata
+blocked11->blocked12; all15 prior criteria/history/owner/candidate preserved,
+strict49-reference preservation criterion appended. Current blocker now explicitly
+names unimplemented source grouping as well as genuine live visual gates. No new
+task or implementation dispatch is inferred from preparation.
+
 New actual owner5c58 requests preparation on existing attentionblocked11, no new
 task. Before this item currentbriefd7 refreshed, ownership queried exact two site
 paths and new QA test path, native Console next lookup idle (no active assignment,
