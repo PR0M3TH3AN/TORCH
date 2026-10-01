@@ -1,12 +1,12 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 function isWithin(path, root) {
   const difference = relative(root, path);
-  return difference === '' || (!difference.startsWith('..') && !difference.includes('/../'));
+  return difference === '' || (!isAbsolute(difference) && difference !== '..' && !difference.startsWith(`..${sep}`));
 }
 
 function existingAncestor(path) {
@@ -36,6 +36,28 @@ function refusal(target, protectedRoot) {
   return error;
 }
 
+function targetExists(target) {
+  try {
+    lstatSync(target);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+function resolvePhysicalDirectory(directory) {
+  const requested = resolve(directory);
+  const ancestor = existingAncestor(requested);
+  return { requested, resolved: resolve(realpathSync(ancestor), relative(ancestor, requested)) };
+}
+
+function assertExternalDirectory({ requested, resolved }, repositoryRoot) {
+  for (const protectedRoot of trackedWorktreeRoots(repositoryRoot)) {
+    if (isWithin(resolved, protectedRoot)) throw refusal(requested, protectedRoot);
+  }
+}
+
 export function createDashboardArtifactDirectory({
   environment = process.env,
   repositoryRoot,
@@ -44,18 +66,33 @@ export function createDashboardArtifactDirectory({
   if (!repositoryRoot) throw new Error('repositoryRoot is required for dashboard artifact isolation');
   const requestedDirectory = environment.TORCH_CHECK_ARTIFACT_DIR;
   if (!requestedDirectory) {
-    const directory = mkdtempSync(join(temporaryRoot, 'torch-dashboard-artifacts-'));
+    const temporary = resolvePhysicalDirectory(temporaryRoot);
+    assertExternalDirectory(temporary, repositoryRoot);
+    const directory = mkdtempSync(join(temporary.resolved, 'torch-dashboard-artifacts-'));
     return { directory, provenance: 'standalone-temporary', requestedDirectory: null };
   }
 
-  const requested = resolve(requestedDirectory);
-  const ancestor = existingAncestor(requested);
-  const resolved = resolve(realpathSync(ancestor), relative(ancestor, requested));
-  for (const protectedRoot of trackedWorktreeRoots(repositoryRoot)) {
-    if (isWithin(resolved, protectedRoot)) throw refusal(requested, protectedRoot);
+  const output = resolvePhysicalDirectory(requestedDirectory);
+  assertExternalDirectory(output, repositoryRoot);
+  mkdirSync(output.resolved, { recursive: true });
+  return { directory: output.resolved, provenance: 'TORCH_CHECK_ARTIFACT_DIR', requestedDirectory: output.requested };
+}
+
+export function prepareDashboardArtifactTargets(artifacts, names) {
+  if (new Set(names).size !== names.length || names.some((name) => name !== basename(name))) {
+    throw new Error('Dashboard screenshot names must be unique plain filenames');
   }
-  mkdirSync(resolved, { recursive: true });
-  return { directory: resolved, provenance: 'TORCH_CHECK_ARTIFACT_DIR', requestedDirectory: requested };
+  const paths = {};
+  for (const name of names) {
+    const target = join(artifacts.directory, name);
+    if (targetExists(target)) {
+      const error = new Error(`DASHBOARD_ARTIFACT_TARGET_EXISTS: refusing to replace ${target}`);
+      error.code = 'DASHBOARD_ARTIFACT_TARGET_EXISTS';
+      throw error;
+    }
+    paths[name] = target;
+  }
+  return Object.freeze(paths);
 }
 
 function artifactFiles(directory, prefix = '') {

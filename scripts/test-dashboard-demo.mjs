@@ -1,17 +1,24 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { chromium } from '@playwright/test';
-import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createConsoleServer } from '../src/console/server.mjs';
-import { createDashboardArtifactDirectory, describeDashboardArtifacts } from './dashboard-artifacts.mjs';
+import { createDashboardArtifactDirectory, describeDashboardArtifacts, prepareDashboardArtifactTargets } from './dashboard-artifacts.mjs';
 
+const screenshotNames = [
+  'torch-dashboard-operation-outcomes.png', 'torch-dashboard-activity-review.png',
+  'torch-dashboard-check-evidence.png', 'torch-dashboard-owner-briefing-desktop.png',
+  'torch-dashboard-pilot-conclusion.png', 'torch-dashboard-pilot-review.png',
+  'torch-dashboard-manager-wakes.png', 'torch-dashboard-demo-desktop.png',
+  'torch-dashboard-demo-mobile.png', 'torch-dashboard-owner-briefing-mobile.png',
+  'torch-dashboard-live-refresh.png',
+];
 const artifacts = createDashboardArtifactDirectory({
   repositoryRoot: fileURLToPath(new URL('..', import.meta.url)),
 });
-const screenshotDirectory = artifacts.directory;
+const screenshotPaths = prepareDashboardArtifactTargets(artifacts, screenshotNames);
 function screenshotPath(name) {
-  return join(screenshotDirectory, name);
+  return screenshotPaths[name];
 }
 
 const server = createConsoleServer();
