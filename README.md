@@ -6,14 +6,26 @@ domain-specialized AI development sessions.
 The new TORCH is being extracted from the agent-fleet operating model proven
 in COMBATRIG. It is local-first, provider-independent, worktree-isolated, and
 designed to manage its own development. The former Nostr lock/scheduler product
-is preserved on the `legacy/nostr-torch` branch and is not part of this
-architecture.
+is preserved on the [`legacy/nostr-torch` branch](https://github.com/PR0M3TH3AN/TORCH/tree/legacy/nostr-torch)
+and is not part of this architecture.
 
 ## Current status
 
-The rewrite is under active development on `rewrite/portable-agent-fleet`.
-The current implementation provides the portable kernel, project bootstrap,
-and the first Claude reference-fleet path:
+The rewrite is under active development on the
+[`rewrite/portable-agent-fleet` branch](https://github.com/PR0M3TH3AN/TORCH/tree/rewrite/portable-agent-fleet).
+The repository declares version `0.1.0-alpha.3`. This remains experimental:
+the current owner-managed TORCH-on-TORCH development pilot is Codex-run, and
+does not qualify production use or a live switch among providers.
+
+The active pilot uses a previously accepted, immutable `0.1.0-alpha.3`
+installation artifact. Its installed source snapshot is separate from this
+development branch: later source commits do not become installed features
+automatically. Existing processes may also keep code loaded from the version
+they started with; changing the active installation pointer does not hot-reload
+them.
+
+The current source provides portable-kernel, project-bootstrap, and local
+coordination foundations:
 
 - read-only Git repository inspection;
 - repository inventory and check discovery;
@@ -45,8 +57,8 @@ and the first Claude reference-fleet path:
 - live ownership, neighbours, handoff, coordination, completion, and blocker operations;
 - equivalent CLI and identity-bound MCP surfaces;
 - current MCP stdio interoperability through the official protocol SDK;
-- explicit-capability Claude, Codex, and Pi adapters with per-identity
-  model/reasoning selection;
+- built-in Claude, Codex, and Pi adapters with explicit capabilities and
+  per-identity model/reasoning selection;
 - identity-bound MCP registration for Claude/Codex and a bundled Pi extension
   that exposes the same TORCH tool set through Pi's extension API;
 - invocation-scoped runtime configuration without changing the user's global
@@ -86,7 +98,7 @@ and the first Claude reference-fleet path:
 - validated system/session schedules with shell-free actions, authority,
   retries, durable run evidence, and explicit approval for mutation;
 - an owner-approved user-systemd launcher for system schedules, bound to the
-  exact tracked configuration digest and recorded for exact reversal.
+  exact tracked configuration digest and recorded for exact reversal;
 - durable Fleet evolution: the Session Manager can propose a justified new
   persistent domain after a read-only assessment of recurring backlog,
   handoff, and coordination signals, while owner approval gates the configuration commit,
@@ -97,14 +109,26 @@ and the first Claude reference-fleet path:
   deliberately cannot rewrite ownership: TORCH reports the separate migration
   proof still required for backlog, branches, prompts, worktrees, and neighbours.
 
-Live mixed-provider qualification, stable self-host bootstrapping, COMBATRIG
-cutover, installation of the implemented system-schedule launcher on this
-machine, and public deployment remain staged work.
+These capabilities have different evidence levels. Local scenarios and isolated
+fixtures cover many CLI, adapter, Pi-extension, and candidate workflows; they do
+not establish live mixed-provider operation, production readiness, or the
+security of every candidate-engine boundary. The current Codex pilot is real
+TORCH-on-TORCH development evidence, not proof that Claude and Pi were switched
+live in the same workflow.
+
+For this machine's pilot, the owner-approved per-user system-schedule timer is
+installed and running. This is distinct from defining a schedule or reviewing
+the generic launcher commands below. Automatic AI wakes remain paused. General
+first-install/init automation is not yet qualified. Deeper candidate engine,
+execution-fence, and private-admission assurance; pipeline execution and
+dashboard/served-provenance work; live UX review; stable self-host bootstrapping;
+COMBATRIG cutover; live mixed-provider qualification; and release/deployment
+qualification remain open.
 
 The canonical architecture and delivery plan is
-[docs/PORTABLE_AGENT_FLEET_SPEC.md](docs/PORTABLE_AGENT_FLEET_SPEC.md).
+[docs/PORTABLE_AGENT_FLEET_SPEC.md](https://github.com/PR0M3TH3AN/TORCH/blob/rewrite/portable-agent-fleet/docs/PORTABLE_AGENT_FLEET_SPEC.md).
 Resolved implementation choices and deliberately gated boundaries are recorded
-in [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md).
+in [docs/ARCHITECTURE_DECISIONS.md](https://github.com/PR0M3TH3AN/TORCH/blob/rewrite/portable-agent-fleet/docs/ARCHITECTURE_DECISIONS.md).
 
 ## Development
 
@@ -565,8 +589,8 @@ through the atomic active-version link; it refuses an unrelated existing path.
 ```bash
 node bin/torch.mjs candidate plan --source . --json
 node bin/torch.mjs candidate build --source . --yes --json
-node bin/torch.mjs upgrade --version 0.1.0-alpha.0 --dry-run --json
-node bin/torch.mjs upgrade --version 0.1.0-alpha.0 --yes --json
+node bin/torch.mjs upgrade --version 0.1.0-alpha.3 --dry-run --json
+node bin/torch.mjs upgrade --version 0.1.0-alpha.3 --yes --json
 node bin/torch.mjs rollback --dry-run --json
 ```
 
