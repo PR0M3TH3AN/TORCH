@@ -73,9 +73,18 @@ See the images under `artifacts/TASK-console-ux-audit/`.
   CDP screenshot timeout; it is not visual evidence of that view. Other mobile
   sections remain uninspected.
 
-The task-owned images are local browser evidence. They have not been published to
-TORCH artifact storage; publication will follow a committed full SHA and a stable
-mobile-capture path or a documented partial-evidence decision.
+Selected screenshots are registered in private TORCH artifact storage with task,
+session, and commit provenance:
+
+| Image | Artifact ID | Commit |
+|---|---|---|
+| Desktop Overview | `d4c3bd6c-92b8-4791-9a3b-56c636bd6848` | `e0637f8255b79401fb483dddf3fe8d602aae687c` |
+| Desktop Work | `703126cb-31b9-47ad-ba57-73d5f873b754` | `e0637f8255b79401fb483dddf3fe8d602aae687c` |
+| Desktop Conversations | `c81acd53-da4e-4113-b5a8-ea3c75b0ac16` | `e0637f8255b79401fb483dddf3fe8d602aae687c` |
+| Desktop Operations | `472d28b8-31f7-4130-abde-88f82c582970` | `e0637f8255b79401fb483dddf3fe8d602aae687c` |
+| Desktop keyboard focus | `9e93f19d-f826-4d93-8ef7-c4a2474cf3bf` | `e0637f8255b79401fb483dddf3fe8d602aae687c` |
+| Blank mobile capture (failure evidence) | `3bc724b8-a22f-4f93-8629-eec92ce06ce3` | `e0637f8255b79401fb483dddf3fe8d602aae687c` |
+| Fresh-tab narrow Overview | `6d7848d9-a679-4005-8a5a-e5d8eb7d67de` | `412643da93df7df9e2da7a79cd2fd45b945decc0` |
 
 The arbiter report provides the broader measured baseline: 50,288 px desktop
 document, Work 36,662 px with 43 active tasks and 41 queue cards, Conversations
