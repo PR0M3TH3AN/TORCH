@@ -32,6 +32,7 @@ import { IntegrationService } from './integration/service.mjs';
 import { analyzeCombatrigFleet } from './importers/combatrig.mjs';
 import { proposeDomains } from './kernel/domains.mjs';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
 import { fileHash, writeNewFile } from './kernel/files.mjs';
 import { createWorktrees, planWorktrees } from './kernel/worktrees.mjs';
@@ -42,6 +43,23 @@ import {
 import { ResourceService } from './resources/service.mjs';
 import { CANDIDATE_ACCEPTANCE_SCENARIOS, createVersionService } from './self-host/service.mjs';
 import { observeProject } from './observability/snapshot.mjs';
+
+// Provider output is evidence, not an unbounded artifact channel.  startFleet
+// classifies ENOBUFS as an interrupted outcome instead of a completed turn.
+const MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES = 1024 * 1024;
+const CODEX_PROTOCOL_REDUCER = fileURLToPath(new URL('./runtime/codex-protocol-reducer.mjs', import.meta.url));
+
+export function executeRuntimeLaunch(spawn, launch, options = {}) {
+  // Tests and adapter qualification inject a deterministic executor. The real
+  // synchronous CLI boundary alone needs protocol reduction before buffering.
+  // A tagged guard may delegate to native spawnSync after asserting hermetic
+  // launch preconditions; it must opt in rather than changing fake executors.
+  const usesNativeSpawn = spawn === spawnSync || spawn?.torchNativeSpawnGuard === true;
+  if (launch.runtime === 'codex' && usesNativeSpawn) {
+    return spawn(process.execPath, [CODEX_PROTOCOL_REDUCER, launch.command, ...launch.args], options);
+  }
+  return spawn(launch.command, launch.args, options);
+}
 import { OwnerDigestService } from './observability/owner-digest.mjs';
 import { ContextTelemetryService } from './telemetry/context.mjs';
 import { ScheduleService } from './schedules/service.mjs';
@@ -1106,8 +1124,9 @@ export async function runCli(argv = process.argv.slice(2), {
         }
         print(startFleet({
           plan, controlPlane: control, adapters,
-          executor: (launch) => spawn(launch.command, launch.args, {
-            cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+          executor: (launch) => executeRuntimeLaunch(spawn, launch, {
+            cwd: launch.cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+            maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES,
           }),
         }), { json });
         return 0;
@@ -1439,8 +1458,9 @@ export async function runCli(argv = process.argv.slice(2), {
           }
           print(startFleet({
             plan, controlPlane: control, adapters,
-            executor: (launch) => spawn(launch.command, launch.args, {
-              cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+            executor: (launch) => executeRuntimeLaunch(spawn, launch, {
+              cwd: launch.cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+              maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES,
             }),
           }), { json });
         } else throw new TorchError(`Unknown fleet operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
@@ -1613,9 +1633,9 @@ export async function runCli(argv = process.argv.slice(2), {
               }
               return startFleet({
                 plan, controlPlane: control, adapters,
-                executor: (launch) => spawn(launch.command, launch.args, {
-                  cwd: launch.cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
-                  timeout: 300_000, maxBuffer: 8 * 1024 * 1024, killSignal: 'SIGTERM',
+                executor: (launch) => executeRuntimeLaunch(spawn, launch, {
+                  cwd: launch.cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+                  timeout: 300_000, maxBuffer: MAX_RUNTIME_EXECUTOR_OUTPUT_BYTES, killSignal: 'SIGTERM',
                 }),
               });
             },
