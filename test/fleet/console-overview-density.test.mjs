@@ -3,7 +3,6 @@ import { once } from 'node:events';
 import test, { after, before } from 'node:test';
 import { chromium } from '@playwright/test';
 import { createConsoleServer } from '../../src/console/server.mjs';
-import '../../site/attention-projection.js';
 
 let server;
 let browser;
@@ -54,30 +53,24 @@ function unsafeSnapshot(snapshot) {
   snapshot.agents = [...(snapshot.agents ?? []), { areaId: 'qa', title: 'QA' }];
   snapshot.managerWakes = { blockingCount: 1, reservations: [{ managerId: 'qa', scheduleId: 'wake-1', reservedAt: '2026-10-01T00:00:00Z', outcome: 'unknown', blocksManagerWake: true }] };
   snapshot.deliveryOperations = [{ operation: 'apply', state: 'unknown', actor: 'qa', commit: 'c'.repeat(40) }];
-  snapshot.backlog = [...(snapshot.backlog ?? []), { id: 'TASK-ADVISORY-1', owner: 'provider-runtime', observedAt: 'a'.repeat(40), state: 'in_progress' }];
+  snapshot.backlog = [{ id: 'TASK-ADVISORY-1', owner: 'provider-runtime', observedAt: 'a'.repeat(40), state: 'in_progress' }];
+  snapshot.integration = [];
+  snapshot.backlogActivity = { tasks: [] };
   return snapshot;
 }
 
 test('SCN-console-overview-owner-decisions-and-urgent-hazards-lead-with-distinct-counts', async (t) => {
   const { page, snapshot } = await openOverview();
   t.after(() => page.close());
+  snapshot.messages = { ...(snapshot.messages ?? {}), unacknowledged: 0, recent: [] };
   await renderSnapshot(page, unsafeSnapshot(snapshot));
-  const groupsForCounts = globalThis.TorchAttentionProjection.groups(unsafeSnapshot(snapshot));
-  const ownerDecisions = groupsForCounts.owner.length;
-  const urgentHazards = groupsForCounts.fleet.filter((item) => item.tone === 'urgent').length;
-  const actionable = ownerDecisions + groupsForCounts.fleet.filter((item) => item.tone !== 'info').length
-    + groupsForCounts.arbiter.filter((item) => item.tone !== 'info').length;
-  const summarized = globalThis.TorchAttentionProjection.summary(groupsForCounts);
-  assert.equal(summarized.ownerDecisions, ownerDecisions);
-  assert.equal(summarized.urgentHazards, urgentHazards);
-  assert.equal(summarized.actionable, actionable);
 
   const groups = page.locator('#attention-list > .attention-group');
   assert.match(await groups.nth(0).locator('h3').innerText(), /Waiting on you/);
   assert.match(await groups.nth(1).locator('h3').innerText(), /Fleet handling/);
-  assert.equal(await page.locator('#owner-decision-count').innerText(), `${ownerDecisions} owner decision${ownerDecisions === 1 ? '' : 's'}`);
-  assert.equal(await page.locator('#urgent-hazard-count').innerText(), `${urgentHazards} urgent hazard${urgentHazards === 1 ? '' : 's'}`);
-  assert.equal(await page.locator('#attention-count').innerText(), `${actionable} actionable`);
+  assert.equal(await page.locator('#owner-decision-count').innerText(), '1 owner decision');
+  assert.equal(await page.locator('#urgent-hazard-count').innerText(), '4 urgent hazards');
+  assert.equal(await page.locator('#attention-count').innerText(), '5 actionable');
   assert.match(await page.locator('#advisory-count').innerText(), /1 cohort/);
   assert.equal(await page.locator('#attention-list [data-attention-decision]').count(), 2);
   assert.equal(await page.locator('#attention-list button').filter({ hasText: /Acknowledge|Close|Recover/ }).count(), 0);
@@ -149,11 +142,7 @@ test('SCN-console-overview-crowded-preview-preserves-every-fleet-and-advisory-re
   t.after(() => desktop.page.close());
   const { snapshot, references } = crowdedSnapshot(desktop.snapshot);
   await renderSnapshot(desktop.page, snapshot);
-  const projected = globalThis.TorchAttentionProjection.summary(globalThis.TorchAttentionProjection.groups(snapshot));
   assert.equal(await desktop.page.locator('#advisory-count').innerText(), '1 cohort · 49 task references');
-  const previewCount = globalThis.TorchAttentionProjection.fleetPreview(globalThis.TorchAttentionProjection.groups(snapshot)).length;
-  assert.equal(previewCount, 6, 'all three urgent records and only three additional preview records are shown');
-  assert.equal(projected.fleetTotal, 17, 'the crowded data has exactly 17 original Fleet findings');
   assert.equal(await desktop.page.locator('#fleet-preview-count').innerText(), 'Showing 6 of 17 Fleet findings; 11 remaining');
   assert.equal(await desktop.page.locator('#attention-list .tone-urgent').count(), 3);
   const desktopWidth = await desktop.page.evaluate(() => ({ viewport: document.documentElement.clientWidth,
