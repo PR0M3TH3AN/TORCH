@@ -1,5 +1,37 @@
 # Current pilot remaining-work handoff
 
+## Console preservation failure reconciled at 08:12 UTC
+
+Owner `daf0c497` conveys native Console `c3d87385` admission: the four generated
+PNG outputs of INCOMPLETE75afe were **restored before archiving**. Their generated
+bytes are lost. Earlier archive requests below are superseded, not fulfilled;
+do not invent archives or present committed baseline originals as lost-run
+evidence. Preserve actual public restore/provenance, strict expectations and
+historical75afe as permanently unqualified. Manager requested actual native
+restore actor/tool record; no Manager restore or cleanup occurred.
+
+Manager independently rechecked current clean exact
+`b600fc8beee2d15e68779b1a5939fcebc6047d33`: all four working PNGs match current
+committed originals, with byte-identical committed baseline continuity from
+366e3. This proves current baseline continuity, **not recoverability of lost
+generated outputs** or run qualification. QA is asked independently whether a
+guarded merge of actual canonical07a2bc and fresh correctly isolated engine run
+is safe despite this failure. That named disposition precedes merge/check; no
+old-engine rerun, golden update, manufactured visual PASS or external guard bypass.
+The Console task remains incomplete with actual browser acceptance separately
+blocked. Earlier current-clean/pending-archive statements do not close this wait.
+
+Capture under the existing generated-artifact/alpha.3 engine-provenance followup:
+**mechanical executing-engine/source capability preflight and mandatory artifact
+isolation**, not another prompt reminder. Actual installed alpha.2 and old UI
+candidateCLI both lacked isolation. Future Work Integration checks enforcement
+needs explicit owned phase/QA consent and fail-closed boundary scenarios; it is
+not implemented by metadata alpha.3 preparation, immutable-integrity design or
+this Manager coordination. Work Integration native task is now **in_progress
+revision4**, same read-only evidence-only preparation; no second active item.
+Release's fresh review requestdde78eb0 supersedes older0fca review without deleting
+history; exact28c941 acceptance/landing/build still pending.
+
 ## Closing qualification gates at 08:09 UTC
 
 Manager's actual latest guarded merge is clean

@@ -25,20 +25,21 @@
   "observedAt": "1a2b5b0fec32c2dddbfec76e2f0479de9cfc31c4",
   "feature": null,
   "milestone": null,
-  "state": "assigned",
+  "state": "in_progress",
   "owner": "work-integration",
   "evidence": [
     "message:d9705044-5bce-4806-b72a-b225bc617f50:explicit-preparation-authorization",
     "approval:61de48f4-bf5f-49d8-8aee-8df4f49f3025:approved:revision2:read-only-evidence-only",
     "TASK-pilot-executor-outcomes:completed:revision14",
-    "TASK-bounded-routine-coordination:completed:revision18"
+    "TASK-bounded-routine-coordination:completed:revision18",
+    "owner:d9705044-5bce-4806-b72a-b225bc617f50:preparation-only"
   ],
   "commit": null,
   "integrationRequest": null,
   "blockedReason": null,
   "createdAt": "2026-10-01T07:36:25.425Z",
-  "updatedAt": "2026-10-01T08:03:43.108Z",
-  "revision": 3,
+  "updatedAt": "2026-10-01T08:08:14.259Z",
+  "revision": 4,
   "history": [
     {
       "from": null,
@@ -60,6 +61,13 @@
       "actorId": "session-manager",
       "at": "2026-10-01T08:03:43.108Z",
       "note": "Assign ONLY read-only preparation phase under ownerd970 and QA61de approved2 after exactnextready/noactivework and both dependency completions. Native Work Integration may inventory historical note IDs/hashes and propose lossless immutable record/index/strict validation design; outputs only durable TORCH task evidence/attachments. NO repository paths/report creation, source/tests/integrity-note edits, migration, enforcement or implementation assignment; exact owned path consent and reviewed next implementation phase required later. QA retains scenarios/spec/notes ownership. This phase does not satisfy full task completion; retain all historical evidence/current protocols/criteria. Arbiter alone starts native session; no provider/wake/installation actions."
+    },
+    {
+      "from": "assigned",
+      "to": "in_progress",
+      "actorId": "work-integration",
+      "at": "2026-10-01T08:08:14.259Z",
+      "note": "Beginning the assigned read-only preparation phase: inventory existing integrity-note provenance and propose a lossless record/index and fail-closed discovery contract in durable TORCH evidence only."
     }
   ]
 }
