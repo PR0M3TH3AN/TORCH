@@ -57,8 +57,8 @@ try {
   const page = await popup;
   await page.waitForLoadState();
   await page.locator('#project-name').filter({ hasText: 'Northstar' }).waitFor();
-  await selectView(page, 'overview');
   assert.equal(await page.title(), 'TORCH Dashboard');
+  await selectView(page, 'work');
   assert.equal(await page.locator('.agent-row').count(), 6);
   assert.equal(await page.locator('.task-ticket').count(), 5);
   assert.equal(await page.getByRole('region', { name: 'Queue', exact: true }).locator('.task-ticket').count(), 2);
@@ -66,7 +66,6 @@ try {
   await selectViewFor(page, '#operation-outcomes');
   assert.match(await page.locator('#operation-outcomes').innerText(), /Outcome unknown — review required/);
   assert.equal(await page.locator('#operation-outcomes button').count(), 0);
-  await selectViewFor(page, '#operation-outcomes');
   await page.locator('#operation-outcomes .check-evidence').last().locator('summary').click();
   assert.match(await page.locator('#operation-outcomes').innerText(), /transient failure.*effects unknown/s);
   await selectViewFor(page, '#operation-outcomes');
