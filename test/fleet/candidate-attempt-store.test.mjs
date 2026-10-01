@@ -112,6 +112,7 @@ test('SCN-candidate-store-fixture-nonpromotion: fixture attestation cannot expos
   assert.equal(inspectCandidateAttemptStoreFixtureV1({ fixture }).nonpromotable, true);
   for (const forbiddenExport of [
     'issueAttemptV1', 'startAttemptV1', 'sealAttemptV1', 'finalizeAttemptV1', 'createCandidateSourceReceiptV1',
+    'initializeCandidateAttemptStoreV1', 'inspectCandidateAttemptStoreMetadataV1',
   ]) {
     assert.equal(Object.hasOwn(store, forbiddenExport), false, `${forbiddenExport} is outside B0`);
     assert.equal(Object.hasOwn(provisioner, forbiddenExport), false, `${forbiddenExport} is outside B0`);
@@ -123,6 +124,23 @@ test('SCN-candidate-store-fixture-authority: foreign, closed, reused, nonempty, 
   expectCode(() => createCandidateAttemptStoreFixtureHarnessV1({ root: '/tmp/not-allowed' }), 'CANDIDATE_STORE_FIXTURE_INPUT_INVALID');
   const foreign = { schema: 'torch.dev/candidate-attempt-fixture-authority/v1alpha1', fixtureIdentity: 'foreign' };
   expectCode(() => provisionCandidateAttemptStoreFixtureV1({ harness: foreign }), 'CANDIDATE_STORE_FIXTURE_AUTH_REQUIRED');
+
+  const executionCalls = [];
+  const arbitraryDatabase = Object.freeze({
+    exec(sql) { executionCalls.push(['exec', sql]); },
+    prepare(sql) { executionCalls.push(['prepare', sql]); return { get() {}, all() {}, run() {} }; },
+  });
+  const issuedForBypassAttempt = createCandidateAttemptStoreFixtureHarnessV1();
+  expectCode(
+    () => provisionCandidateAttemptStoreFixtureV1({ harness: issuedForBypassAttempt, database: arbitraryDatabase }),
+    'CANDIDATE_STORE_FIXTURE_INPUT_INVALID',
+  );
+  expectCode(
+    () => provisionCandidateAttemptStoreFixtureV1({ harness: { ...foreign, database: arbitraryDatabase } }),
+    'CANDIDATE_STORE_FIXTURE_AUTH_REQUIRED',
+  );
+  assert.deepEqual(executionCalls, [], 'public fixture APIs must reject caller database or forged authority before any database execution');
+  closeCandidateAttemptStoreFixtureHarnessV1({ harness: issuedForBypassAttempt });
 
   const closed = createCandidateAttemptStoreFixtureHarnessV1();
   closeCandidateAttemptStoreFixtureHarnessV1({ harness: closed });

@@ -5,14 +5,17 @@ import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { TorchError } from '../kernel/errors.mjs';
 import {
+  CANDIDATE_ATTEMPT_STORE_PROTOCOL_VERSION,
+  CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION,
+  candidateAttemptStoreDdlStatementsV1,
   candidateAttemptStoreDigestsV1,
-  initializeCandidateAttemptStoreV1,
-  inspectCandidateAttemptStoreMetadataV1,
 } from './candidate-attempt-store.mjs';
 
 const harnesses = new WeakMap();
 const fixtures = new WeakMap();
 const TEST_CORRUPTIONS = new Set(['nonempty', 'registered-relationship', 'ddl-drift', 'malformed-meta']);
+const DIGEST_PATTERN = /^[0-9a-f]{64}$/;
+const MAX_IDENTIFIER_BYTES = 128;
 
 function fail(message, code, details) {
   throw new TorchError(message, { code, details });
@@ -25,6 +28,111 @@ function exactObject(value, allowed, label) {
   for (const key of Object.keys(value)) {
     if (!allowed.has(key)) fail(`${label} contains an unsupported field`, 'CANDIDATE_STORE_FIXTURE_INPUT_INVALID', { field: key });
   }
+}
+
+function boundedIdentifier(value, field) {
+  if (typeof value !== 'string' || !value || Buffer.byteLength(value, 'utf8') > MAX_IDENTIFIER_BYTES) {
+    fail(`${field} must be a bounded identifier`, 'CANDIDATE_STORE_METADATA_INVALID', { field });
+  }
+  return value;
+}
+
+function assertConnection(database) {
+  database.exec('PRAGMA foreign_keys = ON');
+  const foreignKeys = database.prepare('PRAGMA foreign_keys').get()?.foreign_keys;
+  if (foreignKeys !== 1) fail('Candidate-store connection did not enable foreign keys', 'CANDIDATE_STORE_FOREIGN_KEYS_REQUIRED');
+  return foreignKeys;
+}
+
+function assertSchemaStatements(database) {
+  const actual = database.prepare(`
+    SELECT type, name, sql
+    FROM sqlite_master
+    WHERE type IN ('table', 'index') AND name NOT LIKE 'sqlite_%'
+    ORDER BY CASE name
+      WHEN 'candidate_attempt_store_meta' THEN 0
+      WHEN 'candidate_attempt_store_meta_fixture_identity_idx' THEN 1
+      ELSE 2
+    END ASC
+  `).all();
+  const statements = candidateAttemptStoreDdlStatementsV1();
+  const expected = [
+    { type: 'table', name: 'candidate_attempt_store_meta', sql: statements[0] },
+    { type: 'index', name: 'candidate_attempt_store_meta_fixture_identity_idx', sql: statements[1] },
+  ];
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    fail('Candidate-store DDL does not match the canonical v1 schema', 'CANDIDATE_STORE_SCHEMA_DRIFT');
+  }
+}
+
+/** Module-private: it is reachable only after a closure-owned harness has selected the synthetic target. */
+function initializeFixtureStore(database, metadata) {
+  const fixtureIdentity = boundedIdentifier(metadata.fixtureIdentity, 'fixtureIdentity');
+  const storeIdentity = boundedIdentifier(metadata.storeIdentity, 'storeIdentity');
+  if (typeof metadata.createdAt !== 'string' || !metadata.createdAt || Buffer.byteLength(metadata.createdAt, 'utf8') > 40) {
+    fail('createdAt must be bounded ISO text', 'CANDIDATE_STORE_METADATA_INVALID', { field: 'createdAt' });
+  }
+  assertConnection(database);
+  database.exec(`PRAGMA user_version = ${CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION}`);
+  for (const statement of candidateAttemptStoreDdlStatementsV1()) database.exec(statement);
+  const digests = candidateAttemptStoreDigestsV1();
+  database.prepare(`
+    INSERT INTO candidate_attempt_store_meta (
+      singleton, protocol_version, schema_version, ddl_digest, schema_digest,
+      fixture_identity, store_identity, promotion, created_at
+    ) VALUES (1, ?, ?, ?, ?, ?, ?, 'nonpromotable', ?)
+  `).run(
+    CANDIDATE_ATTEMPT_STORE_PROTOCOL_VERSION,
+    CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION,
+    digests.ddlDigest,
+    digests.schemaDigest,
+    fixtureIdentity,
+    storeIdentity,
+    metadata.createdAt,
+  );
+  return inspectFixtureMetadata(database);
+}
+
+/** Module-private read-only verifier; public callers can reach it only through fixture attestation. */
+function inspectFixtureMetadata(database) {
+  const foreignKeys = assertConnection(database);
+  const userVersion = database.prepare('PRAGMA user_version').get()?.user_version;
+  if (userVersion !== CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION) {
+    fail('Candidate-store user_version is incompatible', 'CANDIDATE_STORE_SCHEMA_MISMATCH', {
+      expected: CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION, observed: userVersion,
+    });
+  }
+  assertSchemaStatements(database);
+  const rows = database.prepare(`
+    SELECT protocol_version, schema_version, ddl_digest, schema_digest,
+      fixture_identity, store_identity, promotion, created_at
+    FROM candidate_attempt_store_meta
+    ORDER BY singleton ASC
+  `).all();
+  if (rows.length !== 1) fail('Candidate-store metadata must contain exactly one row', 'CANDIDATE_STORE_METADATA_INVALID');
+  const row = rows[0];
+  const digests = candidateAttemptStoreDigestsV1();
+  if (row.protocol_version !== CANDIDATE_ATTEMPT_STORE_PROTOCOL_VERSION || row.schema_version !== CANDIDATE_ATTEMPT_STORE_SCHEMA_VERSION
+    || row.ddl_digest !== digests.ddlDigest || row.schema_digest !== digests.schemaDigest
+    || row.promotion !== 'nonpromotable' || !DIGEST_PATTERN.test(row.ddl_digest) || !DIGEST_PATTERN.test(row.schema_digest)) {
+    fail('Candidate-store metadata is malformed or drifted', 'CANDIDATE_STORE_METADATA_INVALID');
+  }
+  boundedIdentifier(row.fixture_identity, 'fixtureIdentity');
+  boundedIdentifier(row.store_identity, 'storeIdentity');
+  if (typeof row.created_at !== 'string' || !row.created_at || Buffer.byteLength(row.created_at, 'utf8') > 40) {
+    fail('Candidate-store created_at is malformed', 'CANDIDATE_STORE_METADATA_INVALID');
+  }
+  return Object.freeze({
+    protocolVersion: row.protocol_version,
+    schemaVersion: row.schema_version,
+    ddlDigest: row.ddl_digest,
+    schemaDigest: row.schema_digest,
+    fixtureIdentity: row.fixture_identity,
+    storeIdentity: row.store_identity,
+    promotion: row.promotion,
+    createdAt: row.created_at,
+    connection: Object.freeze({ foreignKeys, userVersion }),
+  });
 }
 
 function assertHarness(harness) {
@@ -104,7 +212,7 @@ export function provisionCandidateAttemptStoreFixtureV1(input = {}) {
   const database = new DatabaseSync(databasePath(state));
   let metadata;
   try {
-    metadata = initializeCandidateAttemptStoreV1(database, {
+    metadata = initializeFixtureStore(database, {
       fixtureIdentity: state.fixtureIdentity,
       storeIdentity: `store-${randomUUID()}`,
       createdAt: '2026-10-01T00:00:00.000Z',
@@ -134,7 +242,7 @@ export function inspectCandidateAttemptStoreFixtureV1(input = {}) {
   const state = assertFixture(fixture);
   const database = new DatabaseSync(databasePath(state), { readOnly: true });
   try {
-    const metadata = inspectCandidateAttemptStoreMetadataV1(database);
+    const metadata = inspectFixtureMetadata(database);
     const digests = candidateAttemptStoreDigestsV1();
     if (metadata.fixtureIdentity !== fixture.fixtureIdentity || metadata.storeIdentity !== fixture.storeIdentity
       || metadata.ddlDigest !== digests.ddlDigest || metadata.schemaDigest !== digests.schemaDigest

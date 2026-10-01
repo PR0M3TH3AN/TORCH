@@ -2677,3 +2677,28 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+## 2026-10-01 — Candidate attempt-store B0 public database-boundary correction
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-store-fixture-authority
+      given: A caller-owned instrumented database and a forged or issued fixture authority
+      when: The public fixture provisioner is called with a database selector or forged authority
+      then: It rejects before any database method executes; raw-database initializer and raw-connection verifier exports are absent
+  observable_outcomes:
+    - Stable input or authority refusal and zero observed exec or prepare calls on the caller-owned instrumented database
+    - Public module namespaces omit the raw database initializer and raw metadata verifier
+  determinism_controls:
+    - In-memory instrumented database object, private WeakMap authority, hermetic harness-owned mkdtemp, no retry or live control-plane state
+  anti_cheat_rationale:
+    prevents:
+      - Exporting an initializer that executes PRAGMA, CREATE, or INSERT against a caller-selected database
+      - Treating an internal comment as an authority boundary
+      - Allowing a forged fixture authority to select or mutate registered storage
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
