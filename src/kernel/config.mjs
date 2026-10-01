@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
@@ -5,11 +6,103 @@ import { TorchError } from './errors.mjs';
 import { organizationGraphFromConfig, organizationGraphSchema } from './organization.mjs';
 
 export const PROJECT_CONFIG_SCHEMA = 'torch.dev/v1alpha1';
+export const CANDIDATE_EXECUTION_POLICY_V2_SCHEMA = 'torch.dev/candidate-execution-policy/v2alpha1';
+export const CANDIDATE_EXECUTION_POLICY_V2_VERSION = 2;
+export const CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES = 1024 * 1024;
+export const CANDIDATE_EXECUTION_POLICY_V2_MAX_SNAPSHOT_BYTES = 64 * 1024 * 1024;
+export const CANDIDATE_EXECUTION_POLICY_V2_MAX_SNAPSHOT_TOTAL_BYTES = 512 * 1024 * 1024;
+export const CANDIDATE_EXECUTION_POLICY_V2_MAX_RECORDS = 8192;
+export const CANDIDATE_EXECUTION_POLICY_V2_MAX_PATH_UTF8_BYTES = 4096;
 
 const text = z.string().trim().min(1);
 const id = text.regex(/^[a-z0-9][a-z0-9-]*$/);
 const textList = z.array(text);
 const launchPolicy = z.record(z.string().regex(/^[a-z][A-Za-z0-9]*$/), text).optional();
+const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
+const relativePath = z.string().min(1).max(1024).regex(/^(?!\/)(?!.*(?:^|\/)\.\.?\/)[A-Za-z0-9._/@+:*?-]+$/);
+const environmentName = z.string().regex(/^[A-Z_][A-Z0-9_]*$/);
+
+const candidateExecutionPolicyV2 = z.object({
+  schema: z.literal(CANDIDATE_EXECUTION_POLICY_V2_SCHEMA),
+  version: z.literal(CANDIDATE_EXECUTION_POLICY_V2_VERSION),
+  check_id: id,
+  registered_definition_sha256: sha256,
+  package_json_path: z.literal('package.json'),
+  package_script_name: z.string().min(1).max(256).regex(/^[A-Za-z0-9:_-]+$/),
+  package_script_raw: z.string().min(1).max(64 * 1024),
+  input_rules: z.object({
+    allowSpecial: z.literal(false),
+    allowSymlinks: z.literal(false),
+    exclude: z.array(relativePath).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_RECORDS),
+    include: z.array(relativePath).min(1).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_RECORDS),
+    roots: z.array(relativePath).min(1).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_RECORDS),
+  }).strict(),
+  environment_allowlist: z.array(environmentName).max(128),
+  runtime_manifest: z.object({
+    browser: z.null(),
+    dependencies: z.array(z.object({
+      realpath: z.string().min(1).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_PATH_UTF8_BYTES),
+      bytes: z.number().int().min(0).max(1024 * 1024 * 1024),
+      sha256,
+    }).strict()).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_RECORDS),
+    node: z.object({
+      entryBytes: z.number().int().min(0).max(1024 * 1024 * 1024),
+      entrySha256: sha256,
+      entryUtf8: z.string().max(CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES).optional(),
+      realpath: z.string().min(1).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_PATH_UTF8_BYTES),
+    }).strict(),
+    npm: z.object({
+      entryBytes: z.number().int().min(0).max(1024 * 1024 * 1024),
+      entrySha256: sha256,
+      entryUtf8: z.string().max(CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES).optional(),
+      realpath: z.string().min(1).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_PATH_UTF8_BYTES),
+    }).strict(),
+    packageJson: z.object({
+      bytes: z.number().int().min(0).max(CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES),
+      sha256,
+      utf8: z.string().max(CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES).optional(),
+    }).strict(),
+    packageLock: z.null(),
+  }).strict(),
+  limits: z.object({
+    maxFileBytes: z.literal(CANDIDATE_EXECUTION_POLICY_V2_MAX_SNAPSHOT_BYTES),
+    maxFrameBytes: z.literal(CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES),
+    maxPathUtf8Bytes: z.literal(CANDIDATE_EXECUTION_POLICY_V2_MAX_PATH_UTF8_BYTES),
+    maxRecords: z.literal(CANDIDATE_EXECUTION_POLICY_V2_MAX_RECORDS),
+    maxTotalBytes: z.literal(CANDIDATE_EXECUTION_POLICY_V2_MAX_SNAPSHOT_TOTAL_BYTES),
+  }).strict(),
+}).strict().superRefine((value, context) => {
+  if (new Set(value.input_rules.include).size !== value.input_rules.include.length) {
+    context.addIssue({ code: 'custom', path: ['input_rules', 'include'], message: 'input include paths must be unique' });
+  }
+  if (new Set(value.input_rules.exclude).size !== value.input_rules.exclude.length) {
+    context.addIssue({ code: 'custom', path: ['input_rules', 'exclude'], message: 'input exclude paths must be unique' });
+  }
+  if (new Set(value.environment_allowlist).size !== value.environment_allowlist.length) {
+    context.addIssue({ code: 'custom', path: ['environment_allowlist'], message: 'environment names must be unique' });
+  }
+  if (new Set(value.input_rules.roots).size !== value.input_rules.roots.length) {
+    context.addIssue({ code: 'custom', path: ['input_rules', 'roots'], message: 'input roots must be unique' });
+  }
+  for (const name of ['node', 'npm']) {
+    const entry = value.runtime_manifest[name];
+    if (entry.entryUtf8 !== undefined) {
+      const bytes = Buffer.from(entry.entryUtf8, 'utf8');
+      const entryDigest = createHash('sha256').update(bytes).digest('hex');
+      if (bytes.length !== entry.entryBytes || entryDigest !== entry.entrySha256) {
+        context.addIssue({ code: 'custom', path: ['runtime_manifest', name, 'entryUtf8'], message: 'runtime entryUtf8 must match its declared entryBytes and entrySha256' });
+      }
+    }
+  }
+  const packageJson = value.runtime_manifest.packageJson;
+  if (packageJson.utf8 !== undefined) {
+    const bytes = Buffer.from(packageJson.utf8, 'utf8');
+    const packageDigest = createHash('sha256').update(bytes).digest('hex');
+    if (bytes.length !== packageJson.bytes || packageDigest !== packageJson.sha256) {
+      context.addIssue({ code: 'custom', path: ['runtime_manifest', 'packageJson', 'utf8'], message: 'package json utf8 must match its declared bytes and sha256' });
+    }
+  }
+});
 
 const domain = z.object({
   id,
@@ -36,6 +129,7 @@ const check = z.object({
   command: text,
   args: textList.optional(),
   source: z.record(z.string(), z.unknown()).optional(),
+  candidate_execution_policy: candidateExecutionPolicyV2.optional(),
   resources: textList.optional(),
   snapshot: z.object({
     paths: textList.min(1),
@@ -385,4 +479,140 @@ export function planProjectConfigMigration(value) {
     changed: false, mutationPerformed: false,
     blockers: [{ code: 'CONFIG_MIGRATION_UNAVAILABLE', schema: value?.schema ?? null }],
   };
+}
+
+function policyFail(message, code, details) {
+  throw new TorchError(message, { code, details });
+}
+
+function canonicalJson(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+}
+
+function fieldFrame(label, value) {
+  const bytes = Buffer.from(value, 'utf8');
+  return Buffer.concat([Buffer.from(`${label}:${bytes.length}\n`, 'ascii'), bytes, Buffer.from('\n', 'ascii')]);
+}
+
+function digest(bytes) {
+  return createHash('sha256').update(bytes).digest('hex');
+}
+
+function deepFreeze(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+/**
+ * A data-only, versioned representation of the registered check definition.
+ * The policy itself is deliberately excluded so its digest cannot self-reference.
+ */
+export function canonicalRegisteredCheckDefinitionBytesV2(checkDefinition) {
+  const parsed = z.object({
+    id,
+    title: text.optional(),
+    command: text,
+    args: textList.optional(),
+    source: z.record(z.string(), z.unknown()).optional(),
+    resources: textList.optional(),
+    snapshot: z.object({ paths: textList.min(1), source_commit_file: text }).strict().optional(),
+    conditions: z.unknown().optional(),
+  }).strict().safeParse(checkDefinition);
+  if (!parsed.success) policyFail('Registered check definition is invalid', 'CANDIDATE_EXECUTION_POLICY_INVALID', formatIssues(parsed.error.issues));
+  const bytes = Buffer.from(`candidate-check-definition/v2alpha1\n${canonicalJson(parsed.data)}\n`, 'utf8');
+  if (bytes.length > CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES) {
+    policyFail('Registered check definition exceeds the policy frame bound', 'CANDIDATE_EXECUTION_POLICY_FRAME_TOO_LARGE');
+  }
+  return bytes;
+}
+
+export function registeredCheckDefinitionDigestV2(checkDefinition) {
+  return digest(canonicalRegisteredCheckDefinitionBytesV2(checkDefinition));
+}
+
+/**
+ * Produces the fixed UTF-8/LF v2 policy preimage. It has no filesystem, process,
+ * ControlPlane, or registration side effects; an issued native parent is required
+ * before a parsed policy becomes execution authority.
+ */
+export function canonicalCandidateExecutionPolicyBytesV2(policy) {
+  const parsed = candidateExecutionPolicyV2.safeParse(policy);
+  if (!parsed.success) policyFail('Candidate execution policy is invalid', 'CANDIDATE_EXECUTION_POLICY_INVALID', formatIssues(parsed.error.issues));
+  const value = parsed.data;
+  const fields = [
+    ['schema', value.schema],
+    ['version', String(value.version)],
+    ['check_id', value.check_id],
+    ['registered_definition_sha256', value.registered_definition_sha256],
+    ['package_json_path', value.package_json_path],
+    ['package_script_name', value.package_script_name],
+    ['package_script_raw', value.package_script_raw],
+    ['input_rules_json', canonicalJson(value.input_rules)],
+    ['environment_allowlist_json', canonicalJson(value.environment_allowlist)],
+    ['runtime_manifest_json', canonicalJson(value.runtime_manifest)],
+    ['limits_json', canonicalJson(value.limits)],
+  ];
+  const bytes = Buffer.concat([
+    Buffer.from('candidate-execution-policy/v2alpha1\n', 'ascii'),
+    ...fields.map(([label, fieldValue]) => fieldFrame(label, fieldValue)),
+  ]);
+  if (bytes.length > CANDIDATE_EXECUTION_POLICY_V2_MAX_FRAME_BYTES) {
+    policyFail('Candidate execution policy exceeds the policy frame bound', 'CANDIDATE_EXECUTION_POLICY_FRAME_TOO_LARGE');
+  }
+  return bytes;
+}
+
+export function candidateExecutionPolicyDigestV2(policy) {
+  return digest(canonicalCandidateExecutionPolicyBytesV2(policy));
+}
+
+/**
+ * Resolves only a policy already present in a parsed project configuration. This
+ * validates declaration consistency but does not authenticate a caller or issue
+ * native authority; Work's registered CheckService admission remains that origin.
+ */
+export function resolveRegisteredCandidateExecutionPolicyV2(input = {}) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)
+    || Object.keys(input).some((key) => !new Set(['config', 'checkId']).has(key))) {
+    policyFail('Candidate policy resolver input is invalid', 'CANDIDATE_EXECUTION_POLICY_INPUT_INVALID');
+  }
+  const { config, checkId } = input;
+  validateProjectConfig(config);
+  if (typeof checkId !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(checkId)) {
+    policyFail('Candidate policy check ID is invalid', 'CANDIDATE_EXECUTION_POLICY_INPUT_INVALID');
+  }
+  const checkDefinition = config.checks.find((entry) => entry.id === checkId);
+  if (!checkDefinition) policyFail('Registered check definition is absent', 'CANDIDATE_CHECK_UNREGISTERED', { checkId });
+  const policy = checkDefinition.candidate_execution_policy;
+  if (!policy) {
+    policyFail('Candidate snapshot policy is not registered for this check', 'CANDIDATE_SNAPSHOT_POLICY_UNDECLARED', { checkId });
+  }
+  const definition = { ...checkDefinition };
+  delete definition.candidate_execution_policy;
+  const definitionDigest = registeredCheckDefinitionDigestV2(definition);
+  if (policy.check_id !== checkDefinition.id || policy.registered_definition_sha256 !== definitionDigest) {
+    policyFail('Candidate policy does not bind the registered check definition', 'CANDIDATE_EXECUTION_POLICY_BINDING_MISMATCH');
+  }
+  const scriptName = checkDefinition.args?.[1];
+  const scriptRaw = checkDefinition.source?.type === 'package-script' ? checkDefinition.source.command : undefined;
+  if (checkDefinition.command !== 'npm' || checkDefinition.args?.[0] !== 'run'
+    || typeof scriptName !== 'string' || policy.package_script_name !== scriptName
+    || typeof scriptRaw !== 'string' || policy.package_script_raw !== scriptRaw) {
+    policyFail('Candidate policy does not bind the registered npm package script', 'CANDIDATE_EXECUTION_POLICY_BINDING_MISMATCH');
+  }
+  const bytes = canonicalCandidateExecutionPolicyBytesV2(policy);
+  return deepFreeze({
+    schema: CANDIDATE_EXECUTION_POLICY_V2_SCHEMA,
+    checkId,
+    policy: structuredClone(policy),
+    bytes,
+    digest: digest(bytes),
+    registeredDefinitionBytes: canonicalRegisteredCheckDefinitionBytesV2(definition),
+    registeredDefinitionDigest: definitionDigest,
+  });
 }
