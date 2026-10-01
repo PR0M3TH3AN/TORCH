@@ -2765,6 +2765,53 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
+# Compact Console Overview density (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-console-overview-owner-decisions-and-urgent-hazards-lead-with-distinct-counts
+      given: "An owner-addressed pending decision, unsafe Fleet findings, a manager-wake reservation, and advisory evidence"
+      when: "The Console renders its Overview attention summary"
+      then: "Owner decisions and urgent hazards lead, exact owner/action/advisory counts stay distinct, and only the guarded owner decision shortcuts appear"
+    - id: SCN-console-overview-clean-unique-commits-stay-informational-and-unsafe-workstays-reviewable
+      given: "One clean branch-ahead worktree and a separate dirty worktree"
+      when: "The Overview projects worktree evidence"
+      then: "Unique commits remain informational and inspectable while dirty work remains a named review finding"
+    - id: SCN-console-overview-crowded-preview-preserves-every-fleet-and-advisory-record-at-desktop-and-mobile
+      given: "A fixed 49-reference advisory cohort with one conflicting observation and 17 Fleet findings including unknown ownership and long evidence"
+      when: "The Overview is measured at 1440x1000 and 390x844 and View all Fleet opens the full queue"
+      then: "Shown/total/remaining counts are exact, urgent findings stay visible, every Fleet record and all advisory provenance/conflicts/unknowns remain reachable, and no horizontal overflow or clipped record occurs"
+    - id: SCN-console-overview-refresh-and-navigation-preserve-owner-drafts-without-adding-unsafe-actions
+      given: "An unsent task draft and a pending owner decision in the isolated demo"
+      when: "The owner navigates away and refreshes the Console"
+      then: "The draft remains intact, the owner shortcut boundary remains explicit, and no acknowledgement, close, recovery, or non-owner decision action is introduced"
+    - id: SCN-console-overview-retains-ten-destinations-keyboard-routing-and-manager-wake-deep-links
+      given: "The ten existing Console view destinations and an urgent manager-wake finding on a mobile viewport"
+      when: "The owner uses keyboard navigation and opens the manager-wakes route directly and through browser history"
+      then: "Each route selects its owning view, nested targets receive focus, Back/Forward remain coherent, and the urgent manager-wakes target is reachable"
+  observable_outcomes:
+    - "Owner and urgent counts are separate from advisory counts and clean unique commits do not inflate hazards"
+    - "A bounded Fleet preview states exact shown, total, and remaining values and links to every original Fleet record"
+    - "The full queue retains long evidence, conflicting advisory observations, exact task references, source provenance, and unknown ownership"
+    - "The ten existing destinations, guarded owner action, drafts, mobile keyboard focus, and manager-wakes deep link remain observable"
+    - "Fixed crowded data has no horizontal overflow or clipped urgent/evidence content at 1440x1000 and 390x844"
+  determinism_controls:
+    - "Hermetic loopback Console server with the isolated in-memory demo snapshot replaced by fixed task, owner, finding, evidence, and commit values"
+    - "Fixed Playwright viewport dimensions and deterministic route/history actions; no live project mutation, external service, retry, or sleep"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded preview/count labels that omit original findings"
+      - "Hiding urgent or unknown-owner evidence behind advisory totals"
+      - "Classifying clean unique commits as unsafe work"
+      - "Losing conflicting source observations or inventing provenance"
+      - "Adding owner actions that bypass the existing decision preview boundary"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 # Self-host runtime metadata observations (2026-10-01)
 
 ```yaml

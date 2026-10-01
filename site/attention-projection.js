@@ -192,5 +192,39 @@ function attentionGroups(snapshot) {
   return groups;
 }
 
-  global.TorchAttentionProjection = Object.freeze({ groups: attentionGroups });
+function attentionSummary(groups) {
+  const fleet = groups.fleet ?? [];
+  const owner = groups.owner ?? [];
+  const arbiter = groups.arbiter ?? [];
+  const advisory = groups.advisory ?? [];
+  const actionableFleet = fleet.filter((item) => item.tone !== 'info');
+  const advisoryReferences = advisory.reduce((count, item) => count
+    + (Array.isArray(item.taskReferences) ? item.taskReferences.length : item.observations?.length ?? 0), 0);
+  return {
+    ownerDecisions: owner.length,
+    urgentHazards: fleet.filter((item) => item.tone === 'urgent').length,
+    actionable: owner.length + actionableFleet.length + arbiter.filter((item) => item.tone !== 'info').length,
+    fleetTotal: fleet.length,
+    fleetInformational: fleet.length - actionableFleet.length,
+    advisoryCohorts: advisory.length,
+    advisoryReferences,
+  };
+}
+
+function fleetPreview(groups, additionalLimit = 3) {
+  const fleet = groups.fleet ?? [];
+  const urgent = fleet.filter((item) => item.tone === 'urgent');
+  const remaining = fleet.filter((item) => item.tone !== 'urgent')
+    .sort((left, right) => {
+      const rank = { decision: 0, review: 1, info: 2 };
+      return (rank[left.tone] ?? 3) - (rank[right.tone] ?? 3);
+    });
+  return [...urgent, ...remaining.slice(0, Math.max(0, additionalLimit))];
+}
+
+  global.TorchAttentionProjection = Object.freeze({
+    groups: attentionGroups,
+    summary: attentionSummary,
+    fleetPreview,
+  });
 })(globalThis);
