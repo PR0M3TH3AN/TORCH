@@ -1,5 +1,14 @@
 # TORCH remaining work
 
+## Priority UI cycle: compact cards and agent Chat
+
+Owner-approved [Console UI spec](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).
+Prioritize these after explicit owner resume, ahead of broad company expansion:
+`TASK-console-compact-details`, `TASK-console-agent-chat-ui` and
+`TASK-console-chat-cards-qualification`. Extend the existing high-priority
+`TASK-owner-agent-chat`; do not duplicate messaging or bypass paused wake policy.
+Proposals remain unassigned. Fleet startup is not authorized by this addition.
+
 ## Adaptive software company upgrade (owner-approved, 2026-10-01)
 
 The [integration plan](ADAPTIVE_COMPANY_INTEGRATION_PLAN.md) records scope,
