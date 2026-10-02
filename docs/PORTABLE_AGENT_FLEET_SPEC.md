@@ -2743,6 +2743,12 @@ and refuses to replace a launcher path not owned by that installation.
 
 ## 27. User interfaces
 
+The owner-approved [Adaptive software company integration plan](ADAPTIVE_COMPANY_INTEGRATION_PLAN.md)
+extends this architecture with scoped capabilities, durable events, bounded
+reconciliation, native-runtime awareness, evidence UX and project-fit onboarding.
+It preserves current invariants and requires staged migration and qualification;
+it is not a claim that the adaptive-company upgrade is implemented.
+
 Project reference documentation, domain handbooks and provisional working memory
 MUST follow [Project knowledge and domain institutional memory](PROJECT_KNOWLEDGE_SPEC.md).
 This owner-approved extension requires a Git-backed shared KB, durable domain

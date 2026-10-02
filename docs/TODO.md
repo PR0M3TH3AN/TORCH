@@ -1,5 +1,17 @@
 # TORCH remaining work
 
+## Adaptive software company upgrade (owner-approved, 2026-10-01)
+
+The [integration plan](ADAPTIVE_COMPANY_INTEGRATION_PLAN.md) records scope,
+existing-task reuse, phased contracts, exit gates and migration/rollback rules.
+The existing authoritative backlog contains eleven linked `TASK-company-`
+proposals, not a second queue. Runtime recovery gates unattended coordination;
+authority comes from scoped revocable grants, not reporting relationships.
+Existing grants, event-driven wakes, first-work intake, usage governance and
+hierarchy pilots are reused rather than replaced. All new items are proposed
+and unassigned. No automatic restart or implementation is authorized by this
+roadmap addition; the fleet remains manually paused pending owner resume.
+
 ## Owner-approved project knowledge requirement (2026-10-01)
 
 See [Project knowledge and domain institutional memory](PROJECT_KNOWLEDGE_SPEC.md).
