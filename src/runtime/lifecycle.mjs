@@ -160,11 +160,11 @@ function startupMessage(areaId, fresh, instructionDigest) {
   if (areaId === 'session-manager') {
     return fresh
       ? `Start the TORCH Fleet. Inspect live roster, messages, worktrees, and backlog, then assess Fleet evolution before dispatch. ${currentBrief}`
-      : `Resume the TORCH Fleet from durable state. Reconcile live status and assess Fleet evolution before dispatch. ${currentBrief}`;
+      : `Resume the TORCH Fleet from durable state. Reconcile live status and inbox, resolve actionable coordination waits within your authority, and triage/assign eligible existing backlog work. Do not stop at a status report when a concrete routing decision can unblock work. Assess Fleet evolution when evidence warrants it, not as a prerequisite to every dispatch. Preserve ownership, approvals and dependency gates. ${currentBrief}`;
   }
   return fresh
     ? `Start this TORCH domain. Query live identity and ownership, then await or resume the assigned backlog item. ${currentBrief}`
-    : `Resume this TORCH domain from durable state. Read the inbox, confirm ownership, and report current evidence. ${currentBrief}`;
+    : `Resume this TORCH domain from durable state. Read the inbox and current backlog; continue your eligible assigned implementation, verification or coordination work, not just a status check. Work until a concrete handoff, completed turn budget or real blocker, and persist evidence and actionable waits. Never bypass dependencies, ownership or approval gates. If no eligible work exists, idle is valid. ${currentBrief}`;
 }
 
 function atomicJson(path, value) {
@@ -571,8 +571,9 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   const runtimes = adapterMap({ adapters });
   for (const action of plan.actions) {
     controlPlane.assertIdentity(action.areaId);
-    withRuntimeTurnGuard(controlPlane, action.areaId, () => {
+    withRuntimeTurnGuard(controlPlane, action.areaId, setPhase => {
     writeCombinedPrompt(action);
+    setPhase('working');
     const result = executor({
       ...action.launch, areaId: action.areaId, runtime: action.runtime,
       runtimeSessionId: action.runtimeSessionId,

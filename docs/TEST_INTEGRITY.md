@@ -1,5 +1,75 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Rolling continuation and bounded no-progress escalation
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-refill
+      given: "A long manager turn and a short specialist turn occupy two slots; a third identity waits"
+      when: "Only the short turn completes"
+      then: "The third starts before manager completion and the daily attempt cap still holds"
+    - id: SCN-runtime-continuation-no-progress
+      given: "An unchanged unfinished eligible assignment"
+      when: "Two successful executor turns make no recorded task progress"
+      then: "Exactly two specialist turns occur, one durable coordination request is sent, unchanged-work repeats stop, new revisions may resume and unmet dependencies remain ineligible"
+    - id: SCN-runtime-continuation-capacity
+      given: "An owner-started executor already occupies the configured automatic capacity"
+      when: "The continuation controller runs"
+      then: "No additional automatic turn starts and no attempt is charged"
+    - id: SCN-runtime-continuation-fairness
+      given: "One specialist keeps advancing revisions while another eligible identity has not started"
+      when: "A slot becomes available"
+      then: "The least-recently-dispatched peer starts before the returning specialist"
+  observable_outcomes:
+    - "Actual launch ordering, daily charges, coordination messages and explicit held-work reason"
+  determinism_controls:
+    - "Hermetic installed Git projects, manually resolved provider promises and task fixtures; no sleep, network or live model"
+  anti_cheat_rationale:
+    prevents:
+      - "Replacing the batch barrier by raising concurrency"
+      - "Claiming refill only after all turns finish"
+      - "Spending unlimited turns on unchanged work or ignoring dependency gates"
+      - "Ignoring physical executors started outside the controller"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Process-verified runtime presence
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-live-presence
+      given: "A Linux executor holds a real identity guard while durable state is idle"
+      when: "The observation API reads starting, working, approval waiting and terminal phases"
+      then: "Live phases display accurately, semantic waits persist, terminal guards vanish and durable reports are not fabricated"
+    - id: SCN-runtime-live-presence-refusal
+      given: "A guarded identity with injected OS observations"
+      when: "PID is replaced, dead, foreign-user, unavailable or project binding is wrong"
+      then: "It never reports active execution"
+    - id: SCN-runtime-live-presence-legacy
+      given: "A pre-observation guard without a process-start token"
+      when: "The exact TORCH up identity and canonical cwd match or disagree"
+      then: "Only a verified matching live executor displays working"
+  observable_outcomes:
+    - "Observation API state, reportedState, executor source and unchanged durable identity"
+  determinism_controls:
+    - "Hermetic installed repository and injected PID observations for refusal cases"
+    - "Supplemental Linux /proc integration observes the test process itself, with no provider or timing sleeps"
+  anti_cheat_rationale:
+    prevents:
+      - "Painting all idle badges working without process evidence"
+      - "Treating a crashed guard or reused PID as an active agent"
+      - "Hiding approval waits or fabricating heartbeat/task progress"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Bounded routine coordination
 
 ```yaml

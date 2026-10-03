@@ -10,10 +10,11 @@ import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { issueStoppedExecutorEvidence } from '../../src/runtime/stopped-executor-evidence.mjs';
-import { withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
+import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
+import { observeProject } from '../../src/observability/snapshot.mjs';
 import { configureContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
-function fixture() {
+function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
   for (const args of [['init', '-b', 'main'], ['config', 'user.email', 'test@example.invalid'],
     ['config', 'user.name', 'Recovery Fixture']]) execFileSync('git', args, { cwd: root, stdio: 'pipe' });
@@ -22,13 +23,14 @@ function fixture() {
   execFileSync('git', ['commit', '-m', 'fixture'], { cwd: root, stdio: 'pipe' });
   const repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  if (extraWorker) proposal.domains.push({ ...proposal.domains[0], id: 'extra-worker', title: 'Extra worker', owned_paths: ['extra/**'] });
   proposal.review = { status: 'approved', reviewedAt: '2026-10-03T00:00:00Z', reviewedBy: 'owner', notes: [] };
   const env = { ...process.env, XDG_DATA_HOME: join(root, '.data') };
   installProject({ repository, proposal, env, projectId: 'recovery-fixture' });
   const actualPath = join(root, '.torch', 'install-manifest.json');
   const manifest = JSON.parse(readFileSync(actualPath, 'utf8'));
   const areaId = proposal.domains[0].id;
-  manifest.external.push({ type: 'worktree', area: areaId, path: join(root, 'worker') });
+  if (recoveryWorktree) manifest.external.push({ type: 'worktree', area: areaId, path: join(root, 'worker') });
   writeFileSync(actualPath, JSON.stringify(manifest));
   let time = Date.parse('2026-10-03T00:00:00Z');
   const control = openControlPlane({ repositoryRoot: root, env, clock: () => new Date(time) });
@@ -44,7 +46,7 @@ function fixture() {
     invocationId: 'a'.repeat(32), readUnit: () => ({ ...properties }), readProcesses: () => processes, now: () => time });
   const apply = issued => control.recoverOwnerStoppedUnknownIdentity({ actorId: 'owner', areaId,
     expectedIdentity: issued.plan.expectedIdentity, evidence: issued.evidence });
-  return { control, identity, areaId, properties, issue, apply,
+  return { root, env, control, identity, areaId, properties, issue, apply,
     advance: ms => { time += ms; }, processes: value => { processes = value; } };
 }
 
@@ -122,6 +124,75 @@ test('SCN-runtime-turn-guard: overlapping executors refuse even if an agent repo
   } finally { f.control.close(); }
 });
 
+test('SCN-runtime-live-presence: live guard phases override stale idle display without changing durable reports or waits', { skip: process.platform !== 'linux' }, () => {
+  const f = fixture({ recoveryWorktree: false });
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Previous turn completed' });
+    const observe = () => observeProject({ repositoryRoot: f.root, env: f.env }).agents.find(a => a.areaId === f.areaId);
+    withRuntimeTurnGuard(f.control, f.areaId, phase => {
+      let agent = observe();
+      assert.equal(agent.state, 'starting');
+      assert.equal(agent.reportedState, 'idle');
+      assert.equal(agent.executor.source, 'live-process-and-turn-guard');
+      phase('working');
+      agent = observe();
+      assert.equal(agent.state, 'working');
+      assert.equal(f.control.getAgent(f.areaId).state, 'idle', 'Observation is not an identity mutation');
+      f.control.reportStatus({ areaId: f.areaId, state: 'waiting', summary: 'Waiting for named approval' });
+      assert.equal(observe().state, 'waiting', 'Live execution must not conceal semantic approval waits');
+    });
+    assert.equal(observe().executor.state, 'inactive');
+    assert.equal(observe().state, 'waiting');
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Turn completed' });
+    assert.equal(observe().state, 'idle');
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-live-presence-refusal: dead, replaced, foreign-user and malformed guards never claim active execution', () => {
+  const f = fixture();
+  try {
+    withRuntimeTurnGuard(f.control, f.areaId, () => {
+      const path = join(f.control.stateRoot, 'sessions', 'turn-guards', f.areaId, 'owner.json');
+      const original = JSON.parse(readFileSync(path, 'utf8'));
+      writeFileSync(path, JSON.stringify({ ...original, startTicks: 'fixture-start' }));
+      const read = live => observeRuntimeTurn({ stateRoot: f.control.stateRoot, repositoryRoot: f.root,
+        projectId: f.control.projectId, areaId: f.areaId, uid: 1000, inspectProcess: () => live });
+      const live = { uid: 1000, startTicks: 'fixture-start', state: 'S' };
+      assert.equal(read(live).state, 'active');
+      for (const mismatch of [{ ...live, uid: 2000 }, { ...live, startTicks: 'reused-pid' }, { ...live, state: 'Z' }]) {
+        assert.equal(read(mismatch).state, 'unknown');
+      }
+      const absent = observeRuntimeTurn({ stateRoot: f.control.stateRoot, repositoryRoot: f.root,
+        projectId: f.control.projectId, areaId: f.areaId, inspectProcess: () => { throw new Error('Process gone'); } });
+      assert.equal(absent.state, 'unknown');
+      writeFileSync(path, JSON.stringify({ ...original, projectId: 'foreign' }));
+      assert.equal(read(live).reason, 'guard-invalid');
+      writeFileSync(path, JSON.stringify(original));
+    });
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-live-presence-legacy: pre-observation guards require exact TORCH identity and project cwd', () => {
+  const f = fixture();
+  try {
+    withRuntimeTurnGuard(f.control, f.areaId, () => {
+      const path = join(f.control.stateRoot, 'sessions', 'turn-guards', f.areaId, 'owner.json');
+      const original = JSON.parse(readFileSync(path, 'utf8'));
+      const legacy = { ...original };
+      delete legacy.startTicks;
+      delete legacy.phase;
+      writeFileSync(path, JSON.stringify(legacy));
+      const inspect = live => observeRuntimeTurn({ stateRoot: f.control.stateRoot, repositoryRoot: f.root,
+        projectId: f.control.projectId, areaId: f.areaId, uid: 1000, inspectProcess: () => live });
+      const live = { uid: 1000, state: 'S', cwd: f.root, argv: ['node', '/runtime/bin/torch.mjs', 'up', '--only', f.areaId] };
+      assert.equal(inspect(live).phase, 'working');
+      assert.equal(inspect({ ...live, cwd: '/foreign' }).state, 'unknown');
+      assert.equal(inspect({ ...live, argv: ['node', 'torch.mjs', 'up', '--only', 'someone-else'] }).state, 'unknown');
+      writeFileSync(path, JSON.stringify(original));
+    });
+  } finally { f.control.close(); }
+});
+
 test('SCN-runtime-continuation: explicit enable, event deduplication, daily cap and pause govern authorized turns', async () => {
   const f = fixture();
   const backlog = { list: () => [] };
@@ -180,6 +251,84 @@ test('SCN-runtime-continuation-pause: a pause during one turn prevents another q
       launch: async () => { configureContinuation(f.control, { actorId: 'owner', enabled: false, maxTurnsPerDay: 3 }); return 0; } });
     assert.equal(result.launched.length, 1);
     assert.equal(planContinuation(f.control, { list: () => [] }).reason, 'paused');
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-refill: a short turn frees capacity while the manager remains running', async () => {
+  const f = fixture({ extraWorker: true });
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    for (const recipient of ['session-manager', f.areaId, 'extra-worker']) {
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient, body: 'Eligible handoff' });
+    }
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 3 });
+    const starts = [];
+    const finishes = new Map();
+    let thirdStarted;
+    const third = new Promise(resolve => { thirdStarted = resolve; });
+    const run = runContinuation(f.control, { list: () => [] }, { actorId: 'owner', limit: 2,
+      launch: area => { starts.push(area); if (starts.length === 3) thirdStarted();
+        return new Promise(resolve => finishes.set(area, resolve)); } });
+    assert.deepEqual(starts, ['session-manager', f.areaId]);
+    finishes.get(f.areaId)(0);
+    await third;
+    assert.deepEqual(starts, ['session-manager', f.areaId, 'extra-worker']);
+    assert.equal(finishes.has('session-manager'), true, 'Manager completion was not required for refill');
+    finishes.get('extra-worker')(0);
+    finishes.get('session-manager')(0);
+    assert.equal((await run).launched.length, 3);
+    assert.equal(planContinuation(f.control, { list: () => [] }).reason, 'daily-turn-cap');
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-no-progress: unfinished assignment continues once then escalates rather than busy-looping', async () => {
+  const f = fixture();
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 8 });
+    const task = { id: 'TASK-continue', owner: f.areaId, state: 'assigned', revision: 1, dependencies: [] };
+    let specialistTurns = 0;
+    const result = await runContinuation(f.control, { list: () => [task] }, { actorId: 'owner', limit: 1,
+      launch: area => { if (area === f.areaId) specialistTurns++; return 0; } });
+    assert.equal(specialistTurns, 2);
+    assert.equal(result.launched.filter(t => t.areaId === f.areaId).length, 2);
+    const messages = f.control.readMessages({ recipient: 'session-manager', unacknowledgedOnly: true, limit: 1000 });
+    assert.equal(messages.filter(m => m.body.includes('two turns without advancing')).length, 1);
+    assert.equal(planContinuation(f.control, { list: () => [task] }).candidates.some(c => c.areaId === f.areaId), false);
+    task.revision++;
+    assert.equal(planContinuation(f.control, { list: () => [task] }).candidates.some(c => c.areaId === f.areaId), true);
+    task.dependencies = ['TASK-unfinished'];
+    assert.equal(planContinuation(f.control, { list: () => [task] }).candidates.some(c => c.areaId === f.areaId), false);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-capacity: a manually held executor counts against automatic fleet capacity', async () => {
+  const f = fixture();
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true });
+    let running;
+    withRuntimeTurnGuard(f.control, 'session-manager', () => {
+      running = runContinuation(f.control, { list: () => [] }, { actorId: 'owner', limit: 1,
+        launch: () => { throw new Error('Capacity must not be exceeded'); } });
+    });
+    assert.deepEqual((await running).launched, []);
+    assert.equal(planContinuation(f.control, { list: () => [] }).attempts, 0);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-fairness: a fresh task revision does not let one specialist starve an unstarted peer', async () => {
+  const f = fixture({ extraWorker: true });
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 3 });
+    const task = { id: 'TASK-changing', owner: f.areaId, state: 'assigned', revision: 1, dependencies: [] };
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: 'extra-worker', body: 'Peer work' });
+    const starts = [];
+    await runContinuation(f.control, { list: () => [task] }, { actorId: 'owner', limit: 1,
+      launch: area => { starts.push(area); if (area === f.areaId) task.revision++; return 0; } });
+    assert.deepEqual(starts.slice(0, 2), [f.areaId, 'extra-worker']);
   } finally { f.control.close(); }
 });
 

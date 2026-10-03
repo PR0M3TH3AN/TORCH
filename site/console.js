@@ -1087,7 +1087,7 @@ function render(snapshot) {
     return `<article class="agent-row">
       <span class="presence ${escapeHtml(agent.state)}" aria-label="${live ? 'Active' : 'Offline'}"></span>
       <div class="agent-copy"><strong>${escapeHtml(agent.title ?? agent.areaId)}</strong><span>${escapeHtml(agent.summary ?? profile)}</span><small>${escapeHtml(agent.areaId)} · ${escapeHtml(profile)}</small></div>
-      <div class="agent-state"><strong>${escapeHtml(agent.state ?? 'unknown')}</strong><small>${escapeHtml(ageLabel(agent.heartbeatAt))}</small></div>
+      <div class="agent-state"><strong>${escapeHtml(agent.state ?? 'unknown')}</strong><small>${escapeHtml(agent.executor?.state === 'active' ? 'executor verified live' : ageLabel(agent.heartbeatAt))}</small></div>
     </article>`;
   }).join('') : empty('Install an approved Fleet to see persistent identities.'));
 
