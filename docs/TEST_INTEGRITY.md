@@ -2811,3 +2811,27 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-mcp-runtime-dir
+      given: "A Codex adapter receives an injected Linux parent environment with a valid XDG runtime directory, or deterministic missing, malformed, or unsupported-platform context"
+      when: "It creates or resumes an identity-bound Codex session with a TORCH MCP server"
+      then: "Both launch records name only XDG_RUNTIME_DIR in MCP env_vars for valid context; invalid context emits no env_vars, and no runtime value, DBUS, home, path, token, or general environment is serialized"
+  observable_outcomes:
+    - "Create and resume plans expose the exact single-name MCP env_vars allowlist only for valid parent context"
+    - "Invalid or unsupported context omits the allowlist without synthesizing a runtime path"
+    - "The serialized invocation never exposes parent environment values"
+  determinism_controls:
+    - "Narrow injected adapter env and platform inputs; no process-wide environment mutation, host service, provider, or native check"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded runtime UID or directory values"
+      - "Forwarding DBUS, secrets, home, PATH, or the complete parent environment"
+      - "Treating a mocked launch record as native runtime qualification"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
