@@ -1,5 +1,16 @@
 # TORCH remaining work
 
+## Owner-approved self-healing priority (2026-10-03)
+
+Follow [bounded self-healing qualification](SELF_HEALING_QUALIFICATION_PLAN.md).
+Prioritize the existing runtime-recovery, persistent-operations, provider-failure
+governor, event/reconciler and queue-watchdog work without duplicating their
+backlog records or bypassing dependencies. Require installed failure-injection
+evidence and independent QA, not merely active executors. The owner subsequently
+enabled unlimited daily continuation in alpha.4.2; older cap/resume statements
+below are historical and do not override that specific authorization. Retry
+circuit breakers, concurrency and approval/ownership gates still apply.
+
 ## Current owner priority: reliability first (2026-10-03 UTC)
 
 End-to-end repair qualification is still open. Runtime reported exact converged
