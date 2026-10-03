@@ -67,8 +67,17 @@
           </div>
         </div>
         <aside class="attention-panel" aria-labelledby="attention-title">
-          <div class="panel-heading"><h2 id="attention-title">Needs your attention</h2><span id="attention-count">0 items</span></div>
+          <div class="panel-heading"><h2 id="attention-title">Decisions and risks</h2><span id="attention-count">0 actionable</span></div>
+          <div class="attention-counts" aria-label="Actionable and advisory counts">
+            <p><strong id="owner-decision-count">0 owner decisions</strong><span>Only decisions addressed to you</span></p>
+            <p><strong id="urgent-hazard-count">0 urgent hazards</strong><span>Unsafe or lost-work evidence</span></p>
+            <p><strong id="advisory-count">0 advisory cohorts</strong><span>Rechecks are not owner actions</span></p>
+          </div>
           <div id="attention-list" class="attention-list"></div>
+          <div class="attention-footer">
+            <span id="fleet-preview-count" role="status" aria-live="polite">Showing 0 of 0 Fleet findings; 0 remaining</span>
+            <a href="#fleet-attention-queue">View all Fleet</a>
+          </div>
         </aside>
       </section>
 
@@ -174,6 +183,7 @@
 
       <section id="fleet" class="console-section fleet-section" data-console-view="fleet" aria-labelledby="fleet-title">
         <div class="section-heading"><div><p class="section-kicker">Persistent identities</p><h2 id="fleet-title">Fleet and ownership</h2></div><span id="agent-health-note">Session state from latest observation</span></div>
+        <p id="continuation-status" class="surface-note" role="status">Reading automatic continuation policy…</p>
         <div class="fleet-columns">
           <article class="work-surface"><div class="panel-heading"><h3>Sessions</h3><span>One context per identity</span></div><div id="agent-list" class="agent-list"></div>
             <details class="runtime-profile-tools">
@@ -199,6 +209,14 @@
           </article>
           <article class="work-surface"><div class="panel-heading"><h3>Ownership</h3><span>Implementation stays with specialists</span></div><div id="ownership-list" class="console-list"></div></article>
         </div>
+        <section id="fleet-attention-queue" class="fleet-attention-queue" aria-labelledby="fleet-attention-title" tabindex="-1">
+          <div class="section-heading"><div><p class="section-kicker">Every finding remains inspectable</p><h3 id="fleet-attention-title">Fleet review queue</h3></div><span>Full evidence and provenance</span></div>
+          <label class="fleet-attention-filter" for="fleet-attention-filter">Filter Fleet findings
+            <input id="fleet-attention-filter" type="search" autocomplete="off" placeholder="Search owner, task, evidence, or reference">
+          </label>
+          <p id="fleet-attention-result-count" class="fleet-attention-result-count" role="status" aria-live="polite">Loading findings…</p>
+          <div id="fleet-attention-list" class="fleet-attention-list"></div>
+        </section>
       </section>
 
       <section id="organization" class="console-section organization-section" data-console-view="organization" aria-labelledby="organization-title">

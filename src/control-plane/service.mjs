@@ -7,6 +7,7 @@ import { readInstallManifest } from '../kernel/install.mjs';
 import { projectStatePath } from '../kernel/paths.mjs';
 import { loadProjectConfig } from '../kernel/config.mjs';
 import { organizationGraphFromConfig } from '../kernel/organization.mjs';
+import { consumeStoppedExecutorEvidence } from '../runtime/stopped-executor-evidence.mjs';
 
 export const PRESENCE_STATES = Object.freeze([
   'starting', 'working', 'waiting', 'idle', 'stale', 'stopping', 'offline',
@@ -459,6 +460,36 @@ export class ControlPlane {
     return { messageId: id, recipient: recipientId, acknowledgedAt };
   }
 
+  recoverOwnerStoppedUnknownIdentity({ actorId, areaId, expectedIdentity, evidence } = {}) {
+    const owner = this.assertOwnerActor(actorId);
+    const id = this.assertIdentity(areaId);
+    if (!expectedIdentity || ['state', 'runtime', 'runtimeSessionId', 'updatedAt'].some(key => !expectedIdentity[key])) {
+      throw new TorchError('Recovery requires the complete previewed identity snapshot.', { code: 'RUNTIME_RECOVERY_SNAPSHOT_REQUIRED' });
+    }
+    this.database.exec('BEGIN IMMEDIATE');
+    try {
+      const current = this.identity(id);
+      if (current.state !== 'working' || !current.summary?.includes('Runtime executor completion is unknown')
+        || ['state', 'runtime', 'runtimeSessionId', 'updatedAt'].some(key => current[key] !== expectedIdentity[key])) {
+        throw new TorchError('Identity changed since recovery was reviewed.', { code: 'RUNTIME_RECOVERY_SNAPSHOT_CONFLICT' });
+      }
+      const facts = consumeStoppedExecutorEvidence(evidence, { projectId: this.projectId, repositoryRoot: this.repositoryRoot, identity: current });
+      const now = this.clock().toISOString();
+      const result = this.database.prepare(`UPDATE identities SET state = 'offline', summary = ?, heartbeat_at = ?, updated_at = ?
+        WHERE area_id = ? AND state = ? AND runtime = ? AND runtime_session_id = ? AND updated_at = ?`)
+        .run('Owner verified stopped legacy executor; prior outcome remains unknown.', now, now,
+          id, current.state, current.runtime, current.runtimeSessionId, current.updatedAt);
+      if (result.changes !== 1) throw new TorchError('Recovery lost its identity snapshot.', { code: 'RUNTIME_RECOVERY_SNAPSHOT_CONFLICT' });
+      const audit = this.auditOwnerAction({ actorId: owner, operation: 'runtime.legacy-unknown.recover-stopped',
+        entityType: 'identity', entityId: id, details: { previousIdentity: expectedIdentity, ...facts } });
+      this.database.exec('COMMIT');
+      return { identity: this.identity(id), auditId: audit.id, priorOutcome: 'unknown', sessionsStarted: false, mutationPerformed: true };
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
   reportStatus({ areaId, state, summary, runtime, runtimeSessionId, task } = {}) {
     const id = this.assertIdentity(areaId);
     const normalizedState = requiredText(state, 'state');
@@ -751,7 +782,7 @@ export class ControlPlane {
 
   auditOwnerAction({ actorId, operation, entityType, entityId = null, details = null } = {}) {
     const actor = this.assertOwnerActor(actorId);
-    if (!['artifact.feedback', 'backlog.priority', 'backlog.create', 'agent.request', 'approval.decide', 'approval.notify', 'forge.sync', 'canonical.fetch', 'profile.change', 'schedule.launcher.install', 'schedule.launcher.reconcile', 'schedule.wake.recover', 'hierarchy.conclude-pilot', 'check.recover-prepared'].includes(operation)) {
+    if (!['artifact.feedback', 'backlog.priority', 'backlog.create', 'agent.request', 'approval.decide', 'approval.notify', 'forge.sync', 'canonical.fetch', 'profile.change', 'schedule.launcher.install', 'schedule.launcher.reconcile', 'schedule.wake.recover', 'hierarchy.conclude-pilot', 'check.recover-prepared', 'runtime.legacy-unknown.recover-stopped', 'runtime.continuation.configure'].includes(operation)) {
       throw new TorchError('This owner audit surface does not authorize the requested operation', {
         code: 'OWNER_OPERATION_UNSUPPORTED', details: { operation },
       });

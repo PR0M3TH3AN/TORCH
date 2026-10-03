@@ -1,5 +1,172 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Current unread inbox startup mitigation
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-fleet-startup-inbox
+      given: "Manager and specialist each have 102 unread handoffs, exceeding the legacy default history page"
+      when: "Fresh and resumed provider launch messages specify the current unread-inbox request and it is invoked through the registered identity-bound tool"
+      then: "Both launches name the correct identity and retrieve newer messages absent from default history, without acknowledging them or weakening authority; overflow coverage is explicitly uncertain"
+  observable_outcomes:
+    - "Actual provider launch arguments, registered MCP response, newest message identity and unchanged unread count"
+  determinism_controls:
+    - "Hermetic project/worktrees, increasing fixed clock and real local tool; no provider launches"
+  anti_cheat_rationale:
+    prevents:
+      - "Prompt-only proof that never exercises the actual inbox tool"
+      - "Claiming truncated history is complete or reading acknowledges a handoff"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Audited one-day additional allowance
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-day-override
+      given: "An exhausted owner-approved daily allowance and retained charged attempts"
+      when: "The owner approves a bounded current-UTC-day total and later pauses or the day rolls over"
+      then: "Extra work starts without resetting attempts; non-owner/invalid overrides refuse; pause persists; the following day uses the original daily cap"
+  observable_outcomes:
+    - "Actual launched count, charged attempts, remaining allowance, owner audit and next-day limit"
+  determinism_controls:
+    - "Hermetic project, fixed clock and controlled launch callback; no live provider or host scheduling"
+  anti_cheat_rationale:
+    prevents:
+      - "Erasing usage or permanently removing daily caps on an owner override"
+      - "Allowing a specialist to authorize extra budget or bypass pause"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Owner-configured concurrency
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-concurrency
+      given: "Seven eligible identities and an approved 48-turn daily cap"
+      when: "The owner raises concurrency to seven, starts a bounded controller, then pauses"
+      then: "Seven pending starts occur before completion; a tighter limit restricts candidates; invalid settings refuse; pause preserves cap, concurrency and charged attempts"
+  observable_outcomes:
+    - "Pending launch count, policy capacity, ledger attempts and refusal codes"
+  determinism_controls:
+    - "Hermetic Git repository, fixed clock, controlled promises and no provider calls"
+  anti_cheat_rationale:
+    prevents:
+      - "Treating sequential starts as concurrency or resetting usage on configuration"
+      - "Tick limits exceeding owner-approved policy"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Visible automatic-work stops
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-health
+      given: "An enabled pilot exhausts its daily attempt allowance"
+      when: "Observation reads the ledger, next UTC day, pause or malformed state"
+      then: "The exact stop and remaining allowance are visible without resetting or modifying state, and no timer/token qualification is fabricated"
+    - id: SCN-console-continuation-stop
+      given: "A daily cap stop and a specialist no-progress hold"
+      when: "Attention items are projected"
+      then: "The budget decision belongs to the owner, coordination belongs to the manager, and no fake approval action or automatic budget increase is offered"
+  observable_outcomes:
+    - "Live snapshot health, byte-identical ledger and owner/manager attention routing"
+  determinism_controls:
+    - "Hermetic repository, fixed UTC clock, injected executor and plain snapshot fixtures"
+  anti_cheat_rationale:
+    prevents:
+      - "Silent budget exhaustion disguised as healthy idle"
+      - "Resetting a ledger to make work appear available"
+      - "Treating declared policy as a verified running timer or measured usage"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Rolling continuation and bounded no-progress escalation
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-refill
+      given: "A long manager turn and a short specialist turn occupy two slots; a third identity waits"
+      when: "Only the short turn completes"
+      then: "The third starts before manager completion and the daily attempt cap still holds"
+    - id: SCN-runtime-continuation-no-progress
+      given: "An unchanged unfinished eligible assignment"
+      when: "Two successful executor turns make no recorded task progress"
+      then: "Exactly two specialist turns occur, one durable coordination request is sent, unchanged-work repeats stop, new revisions may resume and unmet dependencies remain ineligible"
+    - id: SCN-runtime-continuation-capacity
+      given: "An owner-started executor already occupies the configured automatic capacity"
+      when: "The continuation controller runs"
+      then: "No additional automatic turn starts and no attempt is charged"
+    - id: SCN-runtime-continuation-fairness
+      given: "One specialist keeps advancing revisions while another eligible identity has not started"
+      when: "A slot becomes available"
+      then: "The least-recently-dispatched peer starts before the returning specialist"
+  observable_outcomes:
+    - "Actual launch ordering, daily charges, coordination messages and explicit held-work reason"
+  determinism_controls:
+    - "Hermetic installed Git projects, manually resolved provider promises and task fixtures; no sleep, network or live model"
+  anti_cheat_rationale:
+    prevents:
+      - "Replacing the batch barrier by raising concurrency"
+      - "Claiming refill only after all turns finish"
+      - "Spending unlimited turns on unchanged work or ignoring dependency gates"
+      - "Ignoring physical executors started outside the controller"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Process-verified runtime presence
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-live-presence
+      given: "A Linux executor holds a real identity guard while durable state is idle"
+      when: "The observation API reads starting, working, approval waiting and terminal phases"
+      then: "Live phases display accurately, semantic waits persist, terminal guards vanish and durable reports are not fabricated"
+    - id: SCN-runtime-live-presence-refusal
+      given: "A guarded identity with injected OS observations"
+      when: "PID is replaced, dead, foreign-user, unavailable or project binding is wrong"
+      then: "It never reports active execution"
+    - id: SCN-runtime-live-presence-legacy
+      given: "A pre-observation guard without a process-start token"
+      when: "The exact TORCH up identity and canonical cwd match or disagree"
+      then: "Only a verified matching live executor displays working"
+  observable_outcomes:
+    - "Observation API state, reportedState, executor source and unchanged durable identity"
+  determinism_controls:
+    - "Hermetic installed repository and injected PID observations for refusal cases"
+    - "Supplemental Linux /proc integration observes the test process itself, with no provider or timing sleeps"
+  anti_cheat_rationale:
+    prevents:
+      - "Painting all idle badges working without process evidence"
+      - "Treating a crashed guard or reused PID as an active agent"
+      - "Hiding approval waits or fabricating heartbeat/task progress"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Bounded routine coordination
 
 ```yaml
@@ -2755,6 +2922,55 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
+# Console attention advisory cohorts (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-attention-advisory-cohort-cardinality-and-exact-references
+      given: "A fixed 49-task snapshot with equivalent stale or missing observed-commit findings in doctor and backlogHealth"
+      when: "The read-only attention projection groups those findings"
+      then: "Exactly one separately labelled advisory/recheck cohort contains the exact 49 task references and retains each owner, observedAt, current observed commit, and UNKNOWN reproduction status"
+    - id: SCN-attention-advisory-provenance-and-semantic-conflicts
+      given: "Doctor and backlogHealth findings that either match or differ in task, code, owner, observedAt, current observed commit, or reproduction status"
+      when: "The cohort uses the complete semantic fingerprint"
+      then: "Equal findings retain both provenance sources once; any differing fingerprint field remains a separate visible observation"
+    - id: SCN-attention-advisory-does-not-hide-owner-or-fleet-risks
+      given: "An advisory warning alongside an unsafe error, schema error, unknown wake, delivery operation, and owner-addressed pending decision"
+      when: "Attention is projected"
+      then: "Only the intended stale/missing warnings enter Advisory; the owner decision remains Owner action and all unsafe, schema, wake, and delivery findings remain Fleet action"
+    - id: SCN-attention-advisory-projection-is-read-only
+      given: "A frozen snapshot containing an advisory finding and a revisioned owner decision preview boundary"
+      when: "The attention projection runs"
+      then: "Snapshot, decision evidence, preview token, revision, and draft remain unchanged; projection invokes no acknowledgement, close, recovery, or decision action"
+    - id: SCN-attention-advisory-unknown-fields-stay-unknown
+      given: "A stale/missing observation whose owner, observedAt, and current commit provenance are absent"
+      when: "The advisory drilldown is formed"
+      then: "The task reference remains visible while missing owner and provenance remain null and reproduction is labelled UNKNOWN"
+  observable_outcomes:
+    - "One 49-reference advisory cohort replaces duplicated stale/missing attention cards while preserving exact drilldown references"
+    - "A populated advisory group remains enumerable and JSON-serializable; an empty projection preserves its original owner/fleet/arbiter object shape"
+    - "Each deduplicated observation retains doctor and backlogHealth provenance; conflicting records are never merged by code alone"
+    - "Owner decisions, unsafe recovery, schema errors, unknown wakes, delivery operations, and same-code errors remain in their existing action groups"
+    - "Observed source/revision displays the exact observedAt SHA without presenting it as a clock timestamp"
+    - "Projection does not mutate snapshot data or invoke state-changing actions, and existing owner quick-action preview/revision/draft assertions remain unchanged"
+    - "Source/scenario qualification is not actual live desktop/mobile visual acceptance"
+  determinism_controls:
+    - "Fixed hermetic task IDs, owner values, observedAt values, observed commit, finding codes, and provenance inputs"
+    - "Deep-frozen projection snapshots and an isolated demo serving one fixed in-memory snapshot; no existing fixture source, network, live project mutation, retries, or sleeps"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded cohort counts that omit or invent task references"
+      - "Deduplication by code alone that merges conflicting observations"
+      - "Discarding one source while presenting a deduplicated observation"
+      - "Hiding unsafe errors or owner decisions inside advisory summaries"
+      - "Changing preview, revision, draft, or acknowledgement behavior while rendering evidence"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 # Candidate source B2 authenticated-attempt spec correction (2026-10-01)
 
 ```yaml
@@ -2791,6 +3007,138 @@ test_integrity_note:
       - "Boolean caller observations minting terminal proof"
       - "Cloned or reused handles reopening an admission"
       - "Same-process snapshot reads impersonating child consumption"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Compact Console Overview density (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-console-overview-owner-decisions-and-urgent-hazards-lead-with-distinct-counts
+      given: "An owner-addressed pending decision, unsafe Fleet findings, a manager-wake reservation, and advisory evidence"
+      when: "The Console renders its Overview attention summary"
+      then: "Owner decisions and urgent hazards lead, exact owner/action/advisory counts stay distinct, and only the guarded owner decision shortcuts appear"
+    - id: SCN-console-overview-clean-unique-commits-stay-informational-and-unsafe-workstays-reviewable
+      given: "One clean branch-ahead worktree and a separate dirty worktree"
+      when: "The Overview projects worktree evidence"
+      then: "Unique commits remain informational and inspectable while dirty work remains a named review finding"
+    - id: SCN-console-overview-crowded-preview-preserves-every-fleet-and-advisory-record-at-desktop-and-mobile
+      given: "A fixed 49-reference advisory cohort with one conflicting observation and 17 Fleet findings including unknown ownership and long evidence"
+      when: "The Overview is measured at 1440x1000 and 390x844 and View all Fleet opens the full queue"
+      then: "Shown/total/remaining counts are exact, urgent findings stay visible, every Fleet record and all advisory provenance/conflicts/unknowns remain reachable, and no horizontal overflow or clipped record occurs"
+    - id: SCN-console-overview-refresh-and-navigation-preserve-owner-drafts-without-adding-unsafe-actions
+      given: "An unsent task draft and a pending owner decision in the isolated demo"
+      when: "The owner navigates away and refreshes the Console"
+      then: "The draft remains intact, the owner shortcut boundary remains explicit, and no acknowledgement, close, recovery, or non-owner decision action is introduced"
+    - id: SCN-console-overview-retains-ten-destinations-keyboard-routing-and-manager-wake-deep-links
+      given: "The ten existing Console view destinations and an urgent manager-wake finding on a mobile viewport"
+      when: "The owner uses keyboard navigation and opens the manager-wakes route directly and through browser history"
+      then: "Each route selects its owning view, nested targets receive focus, Back/Forward remain coherent, and the urgent manager-wakes target is reachable"
+  observable_outcomes:
+    - "Owner and urgent counts are separate from advisory counts and clean unique commits do not inflate hazards"
+    - "A bounded Fleet preview states exact shown, total, and remaining values and links to every original Fleet record"
+    - "The full queue retains long evidence, conflicting advisory observations, exact task references, source provenance, and unknown ownership"
+    - "The ten existing destinations, guarded owner action, drafts, mobile keyboard focus, and manager-wakes deep link remain observable"
+    - "Fixed crowded data has no horizontal overflow or clipped urgent/evidence content at 1440x1000 and 390x844"
+  determinism_controls:
+    - "Hermetic loopback Console server with the isolated in-memory demo snapshot replaced by fixed task, owner, finding, evidence, and commit values"
+    - "Fixed Playwright viewport dimensions and deterministic route/history actions; no live project mutation, external service, retry, or sleep"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded preview/count labels that omit original findings"
+      - "Hiding urgent or unknown-owner evidence behind advisory totals"
+      - "Classifying clean unique commits as unsafe work"
+      - "Losing conflicting source observations or inventing provenance"
+      - "Adding owner actions that bypass the existing decision preview boundary"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+# Owner-requested legacy recovery and bounded continuation (2026-10-03)
+
+Implementation and behavioral basis:
+[legacy runtime recovery](spec_changes/2026-10-03-legacy-runtime-recovery.md).
+Existing assertions are unchanged; the new scenarios are in
+`test/fleet/legacy-runtime-recovery.test.mjs`.
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-legacy-runtime-recovery
+      given: "A stopped exact invocation and retained unknown identity"
+      when: "The owner recovers presence"
+      then: "One owner audit, offline presence and preserved task/session/unknown"
+    - id: SCN-legacy-runtime-recovery-refusal
+      given: "Live or mismatched invocation/process evidence"
+      when: "Proof is requested"
+      then: "Recovery refuses without mutation"
+    - id: SCN-legacy-runtime-recovery-cas
+      given: "Stale, expired, forged or newly live evidence"
+      when: "Recovery applies"
+      then: "Transaction refuses without success audit"
+    - id: SCN-legacy-runtime-recovery-authority
+      given: "A specialist or incomplete expected snapshot"
+      when: "Owner recovery is attempted"
+      then: "Authority/snapshot validation refuses"
+    - id: SCN-runtime-turn-guard
+      given: "A physically live executor reporting idle"
+      when: "A second turn tries to start"
+      then: "The executor mutex refuses overlap until terminal release"
+    - id: SCN-runtime-continuation
+      given: "Owner-enabled roster and a new durable signal"
+      when: "Turns repeat, hit a cap or are paused"
+      then: "Only new eligible signals launch within the owner daily cap"
+    - id: SCN-runtime-continuation-signals
+      given: "Two eligible identities with multiple unread messages"
+      when: "A bounded batch starts and only acknowledgements change afterward"
+      then: "Both starts occur concurrently, a competing controller refuses, and acknowledgements alone cause no wake"
+    - id: SCN-runtime-continuation-pause
+      given: "Two eligible turns"
+      when: "The owner pauses during the first"
+      then: "The second does not start and pause is retained"
+    - id: SCN-legacy-runtime-recovery-project
+      given: "Cloned project/session metadata in distinct checkouts"
+      when: "Proof crosses checkout boundaries"
+      then: "Recovery refuses and leaves the other identity untouched"
+  observable_outcomes:
+    - "Persisted identity, task/session, owner audit, launch count and refusal codes"
+  determinism_controls:
+    - "Hermetic repositories, fixed clock and OS-boundary fixtures; no live provider"
+  anti_cheat_rationale:
+    prevents:
+      - "Boolean stopped proof or stop-as-PASS"
+      - "Stale/cross-project mutations and peer impersonation"
+      - "Duplicate physical turns or unchanged-signal busy loops"
+      - "Losing pause or refunding interrupted attempts"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-mcp-runtime-dir
+      given: "A Codex adapter receives an injected Linux parent environment with a valid XDG runtime directory, or deterministic missing, malformed, or unsupported-platform context"
+      when: "It creates or resumes an identity-bound Codex session with a TORCH MCP server"
+      then: "Both launch records name only XDG_RUNTIME_DIR in MCP env_vars for valid context; invalid context emits no env_vars, and no runtime value, DBUS, home, path, token, or general environment is serialized"
+  observable_outcomes:
+    - "Create and resume plans expose the exact single-name MCP env_vars allowlist only for valid parent context"
+    - "Invalid or unsupported context omits the allowlist without synthesizing a runtime path"
+    - "The serialized invocation never exposes parent environment values"
+  determinism_controls:
+    - "Narrow injected adapter env and platform inputs; no process-wide environment mutation, host service, provider, or native check"
+  anti_cheat_rationale:
+    prevents:
+      - "Hard-coded runtime UID or directory values"
+      - "Forwarding DBUS, secrets, home, PATH, or the complete parent environment"
+      - "Treating a mocked launch record as native runtime qualification"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

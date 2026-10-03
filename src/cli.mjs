@@ -14,7 +14,7 @@ import { startConsole } from './console/server.mjs';
 import { classifyRecoverability, createLocalCanonical, planLocalCanonical } from './canonical/local.mjs';
 import { openControlPlane } from './control-plane/service.mjs';
 import { fetchCanonicalObjects, planCanonicalFetch } from './canonical/fetch.mjs';
-import { spawnSync } from 'node:child_process';
+import { spawn as spawnProcess, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
   mkdirSync, mkdtempSync, renameSync, rmSync, statSync, writeFileSync,
@@ -70,6 +70,8 @@ import {
 } from './design/architect.mjs';
 import { FleetEvolutionService } from './evolution/service.mjs';
 import { HierarchyEvolutionService } from './evolution/hierarchy.mjs';
+import { issueStoppedExecutorEvidence } from './runtime/stopped-executor-evidence.mjs';
+import { configureContinuation, planContinuation, runContinuation } from './runtime/continuation.mjs';
 import { ConvergenceService } from './convergence/service.mjs';
 import {
   attachForge, detachForge, forgeStatus, planForgeAttach, planForgeDetach,
@@ -95,6 +97,8 @@ Usage:
   torch install --restore [--dry-run] [--yes] [--json]
   torch setup [--parent <path>] [--dry-run] [--yes] [--json]
   torch up [--fresh] [--only <id,id>] [--dry-run] [--yes] [--json]
+  torch recover-runtime --area <id> --unit <service> --invocation <id> [--expected-session <id> --expected-updated-at <time> --yes] [--json]
+  torch continuation <status|enable|pause|tick> [--max-turns-per-day <1-48>] [--today-max-turns <1-96>] [--concurrency <1-7>] [--limit <1-7>] [--yes] [--json]
   torch down [--dry-run] [--yes] [--json]
   torch capture [--json]
   torch detach [--dry-run] [--yes] [--json]
@@ -575,6 +579,56 @@ export async function runCli(argv = process.argv.slice(2), {
     if (command === 'help' || argv.includes('--help') || argv.includes('-h')) {
       process.stdout.write(HELP);
       return 0;
+    }
+    if (command === 'continuation') {
+      const control = openControlPlane({ repositoryRoot: optionValue(argv, '--repo') ?? cwd, env });
+      try {
+        const operation = argv[1] ?? 'status';
+        const backlog = new BacklogService({ repositoryRoot: control.repositoryRoot, controlPlane: control });
+        if (operation === 'status' || !argv.includes('--yes') || argv.includes('--dry-run')) {
+          print(planContinuation(control, backlog), { json }); return 0;
+        }
+        if (operation === 'enable' || operation === 'pause') {
+          print(configureContinuation(control, { actorId: 'owner', enabled: operation === 'enable',
+            maxTurnsPerDay: optionValue(argv, '--max-turns-per-day') === undefined ? undefined : Number(optionValue(argv, '--max-turns-per-day')),
+            todayMaxTurns: optionValue(argv, '--today-max-turns') === undefined ? undefined : Number(optionValue(argv, '--today-max-turns')),
+            maxConcurrency: optionValue(argv, '--concurrency') === undefined ? undefined : Number(optionValue(argv, '--concurrency')) }), { json }); return 0;
+        }
+        if (operation !== 'tick') throw new TorchError('Unknown continuation operation.', { code: 'UNKNOWN_COMMAND' });
+        print(await runContinuation(control, backlog, { actorId: 'owner', limit: optionValue(argv, '--limit') === undefined ? undefined : Number(optionValue(argv, '--limit')),
+          launch: areaId => new Promise(resolveTurn => {
+            const child = spawnProcess(process.execPath, [fileURLToPath(new URL('../bin/torch.mjs', import.meta.url)),
+              'up', '--only', areaId, '--yes', '--json'], { cwd: control.repositoryRoot, env,
+              stdio: ['ignore', 'pipe', 'pipe'] });
+            child.stdout.resume(); child.stderr.resume();
+            let failed = false;
+            child.on('error', () => { failed = true; });
+            child.on('close', (code, signal) => resolveTurn(failed || signal ? null : code));
+          }) }), { json });
+        return 0;
+      } finally { control.close(); }
+    }
+    if (command === 'recover-runtime') {
+      const control = openControlPlane({ repositoryRoot: optionValue(argv, '--repo') ?? cwd, env });
+      try {
+        const areaId = optionValue(argv, '--area');
+        const issued = issueStoppedExecutorEvidence({ controlPlane: control, actorId: 'owner', areaId,
+          unit: optionValue(argv, '--unit'), invocationId: optionValue(argv, '--invocation') });
+        if (!argv.includes('--yes') || argv.includes('--dry-run')) {
+          print({ ...issued.plan, requiresApproval: true }, { json });
+          return 0;
+        }
+        const expected = issued.plan.expectedIdentity;
+        if (optionValue(argv, '--expected-session') !== expected.runtimeSessionId
+          || optionValue(argv, '--expected-updated-at') !== expected.updatedAt) {
+          throw new TorchError('Apply requires the exact session and updated timestamp from the recovery preview.', {
+            code: 'RUNTIME_RECOVERY_SNAPSHOT_CONFLICT',
+          });
+        }
+        print(control.recoverOwnerStoppedUnknownIdentity({ actorId: 'owner', areaId,
+          expectedIdentity: expected, evidence: issued.evidence }), { json });
+        return 0;
+      } finally { control.close(); }
     }
     if (command === 'runtimes') {
       const operation = argv[1] ?? 'list';
