@@ -130,7 +130,8 @@ function prepare(context, adoptionId = 'fixture-adoption') {
 
 function lifecycleInput(context, action, adoptionId, extra = {}) {
   const { approvalId, approvalRevision, adapter } = authority(context, { action, adoptionId });
-  return { actorId: 'owner', adoptionId, approvalId, approvalRevision, adapter, ...extra };
+  const record = context.service.getPreparedAdoption(adoptionId);
+  return { actorId: 'owner', adoptionId, expectedRecordRevision: record.revision, approvalId, approvalRevision, adapter, ...extra };
 }
 
 function blockedCodes(error) {
@@ -167,6 +168,17 @@ test('SCN-integration-adoption-journal-and-binding: a duplicate preparation cann
     (error) => error.code === 'ADOPTION_RECORD_REVISION_STALE');
   assert.throws(() => context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId, { candidateSha: context.base })),
     (error) => error.code === 'ADOPTION_IMMUTABLE_BINDING_STALE');
+  assert.throws(() => context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId, {
+    expectedRecordRevision: prepared.revision + 1,
+  })), (error) => error.code === 'ADOPTION_RECORD_REVISION_STALE');
+  const refs = context.service.adoption.refAdapter.readRefs([
+    prepared.expectedOldRef, prepared.candidateRef, prepared.archiveRef,
+  ]);
+  assert.deepEqual(refs, {
+    [prepared.expectedOldRef]: context.base,
+    [prepared.candidateRef]: null,
+    [prepared.archiveRef]: null,
+  });
   const { mutationPerformed, ...durablePrepared } = prepared;
   assert.equal(mutationPerformed, true);
   assert.deepEqual(context.service.adoption.getPrepared(adoptionId), durablePrepared);
@@ -243,6 +255,10 @@ test('SCN-integration-adoption-private-ref-intake: finalized private refs enter 
   const adoptionId = 'fixture-adoption';
   prepare(context, adoptionId);
   const finalized = context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId));
+  assert.throws(() => context.service.requestAdoptedCandidate(lifecycleInput(context, 'request', adoptionId, {
+    expectedRecordRevision: finalized.revision + 1,
+  })), (error) => error.code === 'ADOPTION_RECORD_REVISION_STALE');
+  assert.deepEqual(context.service.list(), []);
   const requested = context.service.requestAdoptedCandidate(lifecycleInput(context, 'request', adoptionId));
   assert.equal(requested.state, 'requested');
   assert.equal(requested.integrationRequest.sourceBranch, finalized.candidateRef);
@@ -313,7 +329,7 @@ test('SCN-integration-adoption-request-replay: concurrent authenticated API call
     concurrentAdoptedRequest(context, requestInput),
   ]);
   assert.deepEqual(outcomes.map((entry) => entry.outcome).sort(), ['refused', 'requested']);
-  assert.equal(outcomes.find((entry) => entry.outcome === 'refused').code, 'ADOPTION_REQUEST_STATE_INVALID');
+  assert.equal(outcomes.find((entry) => entry.outcome === 'refused').code, 'ADOPTION_RECORD_REVISION_STALE');
   const requests = context.service.list();
   assert.equal(requests.length, 1);
   assert.equal(context.service.getPreparedAdoption(adoptionId).state, 'requested');

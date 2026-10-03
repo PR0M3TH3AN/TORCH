@@ -88,6 +88,12 @@ function exactInput(record, input) {
   if (mismatches.length) throw new TorchError('Lifecycle input cannot override immutable prepared adoption fields', {
     code: 'ADOPTION_IMMUTABLE_BINDING_STALE', details: { adoptionId: record.id, fields: mismatches },
   });
+  if (!Number.isInteger(input.expectedRecordRevision) || input.expectedRecordRevision !== record.revision) {
+    throw new TorchError('Lifecycle input must bind the current adoption record revision', {
+      code: 'ADOPTION_RECORD_REVISION_STALE',
+      details: { adoptionId: record.id, expectedRevision: input.expectedRecordRevision ?? null, actual: record.revision },
+    });
+  }
 }
 
 /**
@@ -334,6 +340,7 @@ export class AdoptionService {
     this.controlPlane.database.exec('BEGIN IMMEDIATE');
     try {
       const record = this.getPrepared(adoptionId);
+      exactInput(record, input);
       if (!['finalized', 'requesting'].includes(record.state)) {
         throw new TorchError('Only a finalized adoption can request native qualification', {
           code: 'ADOPTION_REQUEST_STATE_INVALID', details: { state: record.state },

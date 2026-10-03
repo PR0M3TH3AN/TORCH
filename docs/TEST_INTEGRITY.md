@@ -3199,3 +3199,47 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-integration-adoption-lifecycle-revision-cas
+      given: "A prepared or finalized owner-bound adoption record with a known journal revision"
+      when: "A caller supplies a stale expectedRecordRevision to finalize or request native qualification"
+      then: "The operation refuses before private-ref or queue effects; the original refs, journal state, and queue remain unchanged"
+  observable_outcomes:
+    - "ADOPTION_RECORD_REVISION_STALE is returned for stale lifecycle callers"
+    - "Private candidate/archive refs remain absent before stale finalize and no integration request is created by stale native request"
+  determinism_controls:
+    - "Disposable local Git repository and temporary SQLite-backed control-plane fixture; no network, provider, or live adoption"
+  anti_cheat_rationale:
+    prevents:
+      - "Issuing external ref or queue effects from a stale lifecycle read"
+      - "Treating journal revision as an internal-only implementation detail"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+```yaml
+test_integrity_note:
+  change_type: spec_correction
+  scenarios:
+    - id: SCN-integration-adoption-request-replay
+      given: "Two authenticated callers carry the same finalized adoption revision into the serialized native-request transition"
+      when: "One caller completes the transition and the other resumes with its now-stale expectedRecordRevision"
+      then: "The second caller strictly receives ADOPTION_RECORD_REVISION_STALE while exactly one requested journal record and one queue row remain"
+  observable_outcomes:
+    - "The replay loser reports the stale journal-revision boundary, not a generic post-state refusal"
+    - "Exactly one private-ref integration request and requested audit transition exist"
+  determinism_controls:
+    - "Two independently opened local API processes over disposable Git and SQLite fixture state"
+  anti_cheat_rationale:
+    prevents:
+      - "Accepting a stale lifecycle read after another caller has committed"
+      - "Relaxing the exactly-one-request invariant after adding revision binding"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
