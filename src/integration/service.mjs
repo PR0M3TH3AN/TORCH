@@ -125,6 +125,24 @@ export class IntegrationService {
     return this.adoption.getPrepared(adoptionId);
   }
 
+  finalizeAdoption(input = {}) {
+    return this.adoption.finalize(input);
+  }
+
+  reconcileAdoption(input = {}) {
+    return this.adoption.reconcile(input);
+  }
+
+  rollbackAdoption(input = {}) {
+    return this.adoption.rollback(input);
+  }
+
+  requestAdoptedCandidate(input = {}) {
+    return this.adoption.requestAdoptedCandidate(input, {
+      requestIntegration: ({ areaId, commit }) => this.request({ areaId, commit }),
+    });
+  }
+
   get(requestId) {
     const row = this.controlPlane.database.prepare('SELECT * FROM integration_requests WHERE id = ?').get(requestId);
     if (!row) throw new TorchError(`Unknown integration request: ${requestId}`, { code: 'INTEGRATION_NOT_FOUND' });
