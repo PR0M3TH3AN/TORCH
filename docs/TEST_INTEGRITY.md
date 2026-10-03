@@ -3114,3 +3114,29 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-provenance-lock
+      given: "An owner-authorized continuation with an isolated fixed process observation"
+      when: "The controller creates its lock before reserving an eligible launch"
+      then: "A 0600, versioned owner record binds project, PID, UID and start ticks; task/session stay unchanged and the lock is exact-live only"
+    - id: SCN-runtime-continuation-provenance-refusal
+      given: "A bare, malformed, foreign-project, PID-replaced, live-quiet, or observer-unavailable retained controller lock"
+      when: "Continuation runs across fixed UTC clocks"
+      then: "The lock remains held, zero launches occur, and only matching UID, PID and start ticks is observed as active; no stopped inference or cleanup occurs"
+  observable_outcomes:
+    - "Owner-record permissions and provenance fields, identity task/session, launch count, attempt ledger, retained lock path, and controller observation state"
+  determinism_controls:
+    - "Hermetic fixture repositories, fixed UTC clocks, and an injected process-observation boundary only; no live provider, timer, termination, retry, or nonce inspection"
+  anti_cheat_rationale:
+    prevents:
+      - "Treating quietness, lock age, malformed data, or observer failure as stopped-process proof"
+      - "Deleting retained locks or launching around an unresolved controller"
+      - "Forging active controller status without matching UID, PID, and start ticks"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
