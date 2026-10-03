@@ -1,5 +1,35 @@
 # TORCH remaining work
 
+## Current owner priority: reliability first (2026-10-03 UTC)
+
+This ordering supersedes the UI-first ordering below. The existing authoritative
+backlog, not this index, controls task state and assignment.
+
+1. Safe current-schema runtime recovery (`TASK-company-runtime-recovery`) and
+   combined CLI qualification (`TASK-pilot-cli-suite-timeout`).
+2. Truthful startup/session status (`TASK-pilot-starting-presence`) and its
+   existing Kernel reservation/Work candidate-safety prerequisites.
+3. Persistent operations and bounded event-driven continuation
+   (`TASK-conversation-persistent-operations`,
+   `TASK-conversation-event-driven-wakes`), followed by actual scheduler
+   qualification (`TASK-conversation-scheduler-qualification`).
+4. Specific actionable operational warnings (`TASK-console-attention-actions`).
+5. Compact cards/detail modals and coordinator-first Chat remain high priority.
+
+The first four groups and incomplete technical prerequisites are urgent;
+scheduler qualification is high. These priority-only changes preserve owners,
+states, dependencies and evidence. Blocked remains blocked; automatic wakes stay
+disabled until qualified and explicitly activated. Older pause/install/status
+statements below are historical snapshots, not current runtime evidence.
+
+Owner-requested recovery/continuation implementation is described in
+[the source pilot specification](spec_changes/2026-10-03-legacy-runtime-recovery.md).
+Do not close the runtime-recovery, persistent-operations or event-wake umbrellas
+from focused tests alone. Release/Fleet Operations still need installer-owned
+permanent timer provisioning/removal, installed artifact qualification and restart
+recovery of retained crashed turn/controller guards. The transient host pilot does
+not survive reboot, and its daily turn cap is not a token/dollar usage governor.
+
 ## Priority UI cycle: compact cards and agent Chat
 
 Owner-approved [Console UI spec](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).

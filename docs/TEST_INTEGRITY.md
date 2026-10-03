@@ -2811,6 +2811,67 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+# Owner-requested legacy recovery and bounded continuation (2026-10-03)
+
+Implementation and behavioral basis:
+[legacy runtime recovery](spec_changes/2026-10-03-legacy-runtime-recovery.md).
+Existing assertions are unchanged; the new scenarios are in
+`test/fleet/legacy-runtime-recovery.test.mjs`.
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-legacy-runtime-recovery
+      given: "A stopped exact invocation and retained unknown identity"
+      when: "The owner recovers presence"
+      then: "One owner audit, offline presence and preserved task/session/unknown"
+    - id: SCN-legacy-runtime-recovery-refusal
+      given: "Live or mismatched invocation/process evidence"
+      when: "Proof is requested"
+      then: "Recovery refuses without mutation"
+    - id: SCN-legacy-runtime-recovery-cas
+      given: "Stale, expired, forged or newly live evidence"
+      when: "Recovery applies"
+      then: "Transaction refuses without success audit"
+    - id: SCN-legacy-runtime-recovery-authority
+      given: "A specialist or incomplete expected snapshot"
+      when: "Owner recovery is attempted"
+      then: "Authority/snapshot validation refuses"
+    - id: SCN-runtime-turn-guard
+      given: "A physically live executor reporting idle"
+      when: "A second turn tries to start"
+      then: "The executor mutex refuses overlap until terminal release"
+    - id: SCN-runtime-continuation
+      given: "Owner-enabled roster and a new durable signal"
+      when: "Turns repeat, hit a cap or are paused"
+      then: "Only new eligible signals launch within the owner daily cap"
+    - id: SCN-runtime-continuation-signals
+      given: "Two eligible identities with multiple unread messages"
+      when: "A bounded batch starts and only acknowledgements change afterward"
+      then: "Both starts occur concurrently, a competing controller refuses, and acknowledgements alone cause no wake"
+    - id: SCN-runtime-continuation-pause
+      given: "Two eligible turns"
+      when: "The owner pauses during the first"
+      then: "The second does not start and pause is retained"
+    - id: SCN-legacy-runtime-recovery-project
+      given: "Cloned project/session metadata in distinct checkouts"
+      when: "Proof crosses checkout boundaries"
+      then: "Recovery refuses and leaves the other identity untouched"
+  observable_outcomes:
+    - "Persisted identity, task/session, owner audit, launch count and refusal codes"
+  determinism_controls:
+    - "Hermetic repositories, fixed clock and OS-boundary fixtures; no live provider"
+  anti_cheat_rationale:
+    prevents:
+      - "Boolean stopped proof or stop-as-PASS"
+      - "Stale/cross-project mutations and peer impersonation"
+      - "Duplicate physical turns or unchanged-signal busy loops"
+      - "Losing pause or refunding interrupted attempts"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
 
 ```yaml
 test_integrity_note:
