@@ -120,6 +120,13 @@ test('SCN-mcp-owner-reply-public-boundary: a bound MCP identity can reply only t
     await workerMcp.close();
   }
 
+  control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const beforeWrongActor = {
+    audit: control.readAudit().length,
+    replies: control.readOwnerConversation({ actorId: 'owner', requestId: request.id, limit: 10 }).replies.length,
+  };
+  control.close();
+
   const otherMcp = await connectMcp({ ...fixture, actorId: fixture.other });
   try {
     const wrongActor = await otherMcp.request('tools/call', {
@@ -132,6 +139,7 @@ test('SCN-mcp-owner-reply-public-boundary: a bound MCP identity can reply only t
   }
 
   control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
-  assert.equal(control.readOwnerConversation({ actorId: 'owner', requestId: request.id, limit: 10 }).replies.length, 1);
+  assert.equal(control.readAudit().length, beforeWrongActor.audit);
+  assert.equal(control.readOwnerConversation({ actorId: 'owner', requestId: request.id, limit: 10 }).replies.length, beforeWrongActor.replies);
   control.close();
 });
