@@ -2,6 +2,11 @@
 
 ## Owner-approved self-healing priority (2026-10-03)
 
+Owner also approved [operational flow and Ops pilot improvements](OPS_FLOW_IMPROVEMENT_SPEC.md):
+two focused incident-resolution/adoption-and-QA-handoff requests, additive Chat
+and evidence acceptance, and an existing-identity Ops responsibility pilot. No
+eighth standing agent or overlapping implementation ownership is implied.
+
 Follow [bounded self-healing qualification](SELF_HEALING_QUALIFICATION_PLAN.md).
 Prioritize the existing runtime-recovery, persistent-operations, provider-failure
 governor, event/reconciler and queue-watchdog work without duplicating their
