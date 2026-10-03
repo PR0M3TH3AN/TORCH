@@ -1,5 +1,28 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Current unread inbox startup mitigation
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-fleet-startup-inbox
+      given: "Manager and specialist each have 102 unread handoffs, exceeding the legacy default history page"
+      when: "Fresh and resumed provider launch messages specify the current unread-inbox request and it is invoked through the registered identity-bound tool"
+      then: "Both launches name the correct identity and retrieve newer messages absent from default history, without acknowledging them or weakening authority; overflow coverage is explicitly uncertain"
+  observable_outcomes:
+    - "Actual provider launch arguments, registered MCP response, newest message identity and unchanged unread count"
+  determinism_controls:
+    - "Hermetic project/worktrees, increasing fixed clock and real local tool; no provider launches"
+  anti_cheat_rationale:
+    prevents:
+      - "Prompt-only proof that never exercises the actual inbox tool"
+      - "Claiming truncated history is complete or reading acknowledges a handoff"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-03 — Audited one-day additional allowance
 
 ```yaml
