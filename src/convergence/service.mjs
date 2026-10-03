@@ -6,6 +6,10 @@ import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
 
 const GUARD_TYPES = Object.freeze(['check', 'measurement', 'pin']);
+const READ_ONLY_GUARD_COLUMNS = Object.freeze([
+  'id', 'project_id', 'area_id', 'guard_type', 'reason', 'created_at', 'released_at',
+]);
+const READ_ONLY_GUARD_INDEX = 'one_open_guard_per_type';
 
 function git(root, args, { allowFailure = false } = {}) {
   const result = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
@@ -31,6 +35,61 @@ export function initializeWorktreeGuards(database) {
     CREATE UNIQUE INDEX IF NOT EXISTS one_open_guard_per_type
       ON worktree_guards(area_id, guard_type) WHERE released_at IS NULL;
   `);
+}
+
+function unavailableGuardSchema(details = null) {
+  throw new TorchError('Convergence guard coverage cannot be established', {
+    code: 'CONVERGENCE_GUARDS_UNAVAILABLE', details,
+  });
+}
+
+function verifyReadableGuardSchema(database) {
+  let columns;
+  let indexes;
+  let indexColumns;
+  let indexSql;
+  try {
+    columns = database.prepare('PRAGMA table_info(worktree_guards)').all();
+    indexes = database.prepare('PRAGMA index_list(worktree_guards)').all();
+    indexColumns = database.prepare(`PRAGMA index_info(${READ_ONLY_GUARD_INDEX})`).all();
+    indexSql = database.prepare(`
+      SELECT sql FROM sqlite_master WHERE type = 'index' AND name = ?
+    `).get(READ_ONLY_GUARD_INDEX)?.sql ?? null;
+  } catch (error) {
+    unavailableGuardSchema({ cause: error.message });
+  }
+
+  const actualColumns = columns.map((column) => column.name);
+  const expectedColumns = [...READ_ONLY_GUARD_COLUMNS];
+  const index = indexes.find((candidate) => candidate.name === READ_ONLY_GUARD_INDEX);
+  const actualIndexColumns = indexColumns.map((column) => column.name);
+  const normalizedIndexSql = typeof indexSql === 'string'
+    ? indexSql.replaceAll(/\s+/g, ' ').trim().toLowerCase()
+    : null;
+  const requiredIndexSql = 'create unique index one_open_guard_per_type on worktree_guards(area_id, guard_type) where released_at is null';
+
+  if (
+    actualColumns.length !== expectedColumns.length
+    || actualColumns.some((column, index) => column !== expectedColumns[index])
+    || !index
+    || Number(index.unique) !== 1
+    || Number(index.partial) !== 1
+    || actualIndexColumns.length !== 2
+    || actualIndexColumns[0] !== 'area_id'
+    || actualIndexColumns[1] !== 'guard_type'
+    || normalizedIndexSql !== requiredIndexSql
+  ) {
+    unavailableGuardSchema({
+      expectedColumns,
+      actualColumns,
+      requiredIndex: READ_ONLY_GUARD_INDEX,
+      actualIndexes: indexes.map((candidate) => ({
+        name: candidate.name, unique: candidate.unique, partial: candidate.partial,
+      })),
+      actualIndexColumns,
+      indexSql,
+    });
+  }
 }
 
 export function beginWorktreeGuard(controlPlane, {
@@ -89,6 +148,7 @@ export class ConvergenceService {
     this.controlPlane = controlPlane;
     this.clock = clock;
     this.idFactory = idFactory;
+    this.readOnly = controlPlane?.readOnly === true;
     const { config } = loadFleetDefinition(repositoryRoot);
     this.targetBranch = config.project.main_branch;
     this.policy = config.synchronization ?? {};
@@ -96,11 +156,24 @@ export class ConvergenceService {
     this.worktrees = new Map((manifest.external ?? [])
       .filter((entry) => entry.type === 'worktree')
       .map((entry) => [entry.area, entry]));
-    initializeWorktreeGuards(controlPlane.database);
+    if (!this.readOnly) initializeWorktreeGuards(controlPlane.database);
+  }
+
+  assertWritable() {
+    if (this.readOnly) {
+      throw new TorchError('Read-only convergence instances cannot mutate guards or worktrees', {
+        code: 'CONVERGENCE_READ_ONLY',
+      });
+    }
+  }
+
+  verifyGuardSchema() {
+    verifyReadableGuardSchema(this.controlPlane.database);
   }
 
   guards(areaId) {
     const area = this.controlPlane.assertIdentity(areaId);
+    this.verifyGuardSchema();
     return this.controlPlane.database.prepare(`
       SELECT id, area_id AS areaId, guard_type AS type, reason, created_at AS createdAt
       FROM worktree_guards WHERE area_id = ? AND released_at IS NULL ORDER BY created_at, id
@@ -108,17 +181,20 @@ export class ConvergenceService {
   }
 
   hold({ areaId, type, reason } = {}) {
+    this.assertWritable();
     return beginWorktreeGuard(this.controlPlane, {
       areaId, type, reason, clock: this.clock, idFactory: this.idFactory,
     });
   }
 
   release({ areaId, type } = {}) {
+    this.assertWritable();
     return endWorktreeGuard(this.controlPlane, { areaId, type, clock: this.clock });
   }
 
   plan({ areaId } = {}) {
     const area = this.controlPlane.assertIdentity(areaId);
+    this.verifyGuardSchema();
     const worktree = this.worktrees.get(area);
     if (!worktree) throw new TorchError(`No managed worktree for ${area}`, { code: 'WORKTREE_MISSING' });
     const blockers = [];
@@ -145,6 +221,7 @@ export class ConvergenceService {
   }
 
   converge({ areaId } = {}) {
+    this.assertWritable();
     const plan = this.plan({ areaId });
     if (!plan.canProceed) throw new TorchError('Worktree convergence is blocked', { code: 'CONVERGENCE_BLOCKED', details: plan.blockers });
     if (plan.upToDate) return { ...plan, changed: false };
