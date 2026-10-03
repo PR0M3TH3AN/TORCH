@@ -2,6 +2,18 @@
 
 ## Current owner priority: reliability first (2026-10-03 UTC)
 
+Live all-fleet resume exposed a new urgent proposal:
+`TASK-d95e72d0-816d-4fc2-acaf-b73642fd4881` — refill continuation capacity
+when individual turns exit instead of waiting for the longest batch member.
+Manager remained running after Kernel/Runtime exited, leaving free slots unused
+and delaying the other four specialists. Preserve identity guards, pause, global
+capacity and attempt accounting when replacing the batch barrier.
+The same run reconfirmed the existing `TASK-pilot-starting-presence`: actual
+executors can display idle during startup. Do not duplicate that task or falsify
+presence to make the board look busy. Owner explicitly requested one simultaneous
+resume of all seven existing identities; that manual batch is separate from the
+automatic pilot's 12-turn daily ledger, not proof of a global usage governor.
+
 This ordering supersedes the UI-first ordering below. The existing authoritative
 backlog, not this index, controls task state and assignment.
 
