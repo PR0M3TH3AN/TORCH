@@ -3083,9 +3083,9 @@ test_integrity_note:
       when: "It sends a dedicated reply and state is reopened"
       then: "The reply linkage, bounded owner cursor, and actor audit persist"
     - id: SCN-owner-addressed-reply-refusal
-      given: "Spoofed senders, generic owner recipients, foreign/forged references, or a non-owner reader"
+      given: "Spoofed senders, a different valid registered agent, generic owner recipients, foreign/forged references, or a non-owner reader"
       when: "They invoke the owner-reply boundary"
-      then: "They refuse without message or audit writes; direct and broadcast delivery remain intact"
+      then: "They refuse without message or audit writes; the owner conversation remains unchanged; direct and broadcast delivery remain intact"
   observable_outcomes:
     - "Schema-v2 compatibility refusal, stable snapshot rows, byte/sidecar preservation, durable reply linkage, cursor page, and audit event"
   determinism_controls:
@@ -3095,7 +3095,7 @@ test_integrity_note:
       - "Migrating or initializing a read-only or unknown schema"
       - "Returning stale or mixed identity generations"
       - "Treating owner as a fleet identity or accepting generic recipient bypasses"
-      - "Accepting foreign or forged owner-reply linkage"
+      - "Accepting foreign, forged, or valid-identity wrong-addressee owner-reply linkage"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

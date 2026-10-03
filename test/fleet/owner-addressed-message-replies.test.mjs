@@ -75,6 +75,7 @@ test('SCN-owner-addressed-reply-refusal: forged owner recipients, senders, and r
 
   assert.throws(() => control.sendMessage({ sender: fixture.worker, recipient: 'owner', body: 'Bypass the reply boundary.' }), (error) => error.code === 'UNKNOWN_FLEET_IDENTITY');
   assert.throws(() => control.sendOwnerReply({ sender: 'owner', requestId: request.id, body: 'Spoofed sender.' }), (error) => error.code === 'UNKNOWN_FLEET_IDENTITY');
+  assert.throws(() => control.sendOwnerReply({ sender: 'session-manager', requestId: request.id, body: 'Valid identity, wrong addressee.' }), (error) => error.code === 'OWNER_REPLY_REFERENCE_INVALID');
   assert.throws(() => control.sendOwnerReply({ sender: fixture.worker, requestId: foreignRequest.id, body: 'Foreign reference.' }), (error) => error.code === 'OWNER_REPLY_REFERENCE_INVALID');
   assert.throws(() => control.sendOwnerReply({ sender: fixture.worker, requestId: 'forged-message-id', body: 'Forged reference.' }), (error) => error.code === 'OWNER_REPLY_REFERENCE_INVALID');
   assert.throws(() => control.readOwnerConversation({ actorId: fixture.worker, requestId: request.id, limit: 1 }), (error) => error.code === 'OWNER_AUTHORITY_REQUIRED');
