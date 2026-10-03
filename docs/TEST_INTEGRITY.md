@@ -2966,3 +2966,29 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-reservation-failure
+      given: "One eligible identity and a launch function that throws synchronously or rejects after the continuation ledger reserves its attempt"
+      when: "The controller is invoked again with the unchanged signal"
+      then: "Exactly one attempt remains charged, the failed launch is represented as unknown, and no silent replay occurs"
+    - id: SCN-runtime-continuation-retained-artifacts
+      given: "An eligible identity with either a retained continuation controller lock or a malformed retained physical guard"
+      when: "The controller runs on its original and a later UTC day"
+      then: "No launch occurs, no attempt ledger reset is used to bypass the artifact, and the retained artifact remains until explicit external reconciliation"
+  observable_outcomes:
+    - "Launch count, returned launch status, persisted daily attempt count, and retained lock/guard path"
+  determinism_controls:
+    - "Hermetic temporary repositories, fixed UTC clocks, injected throw/rejection outcomes, and local filesystem artifacts; no live provider, timer, or retry"
+  anti_cheat_rationale:
+    prevents:
+      - "Refunding or silently replaying an uncertain launch"
+      - "Treating a stale-looking controller lock or malformed guard as released"
+      - "Passing capacity tests while weakening post-reservation failure handling"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

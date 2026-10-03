@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -316,6 +316,62 @@ test('SCN-runtime-continuation-capacity: a manually held executor counts against
     assert.deepEqual((await running).launched, []);
     assert.equal(planContinuation(f.control, { list: () => [] }).attempts, 0);
   } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-reservation-failure: post-reservation launch failures are charged once and never replayed', async () => {
+  for (const launchFailure of [
+    () => { throw new Error('synchronous launch failure'); },
+    () => Promise.reject(new Error('rejected launch failure'))
+  ]) {
+    const f = fixture();
+    const at = new Date('2026-10-03T00:00:00Z');
+    try {
+      f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
+      configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 2 });
+      let launches = 0;
+      const launch = () => { launches++; return launchFailure(); };
+      const first = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at, launch });
+      assert.equal(first.launched.length, 1);
+      assert.equal(first.launched[0].status, null);
+      assert.equal(launches, 1);
+      assert.equal(planContinuation(f.control, { list: () => [] }, { at }).attempts, 1);
+      const replay = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at, launch });
+      assert.deepEqual(replay.launched, []);
+      assert.equal(launches, 1);
+      assert.equal(planContinuation(f.control, { list: () => [] }, { at }).attempts, 1);
+    } finally { f.control.close(); }
+  }
+});
+
+test('SCN-runtime-continuation-retained-artifacts: crash lock and unknown guard fail closed without expiry or ledger reset', async () => {
+  for (const retained of ['lock', 'unknown-guard']) {
+    const f = fixture();
+    const at = new Date('2026-10-03T00:00:00Z');
+    const path = retained === 'lock'
+      ? join(f.control.stateRoot, 'continuation.lock')
+      : join(f.control.stateRoot, 'sessions', 'turn-guards', f.areaId);
+    try {
+      f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
+      configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 2 });
+      mkdirSync(path, { recursive: true });
+      if (retained === 'unknown-guard') writeFileSync(join(path, 'owner.json'), 'not-json');
+      let launches = 0;
+      for (const clock of [at, new Date('2026-10-04T00:00:00Z')]) {
+        const result = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at: clock,
+          launch: () => { launches++; return 0; } });
+        assert.deepEqual(result.launched, []);
+        assert.equal(planContinuation(f.control, { list: () => [] }, { at: clock }).attempts, 0);
+        assert.equal(existsSync(path), true);
+      }
+      assert.equal(launches, 0);
+    } finally {
+      if (retained === 'unknown-guard' && existsSync(join(path, 'owner.json'))) unlinkSync(join(path, 'owner.json'));
+      if (existsSync(path)) rmdirSync(path);
+      f.control.close();
+    }
+  }
 });
 
 test('SCN-runtime-continuation-fairness: a fresh task revision does not let one specialist starve an unstarted peer', async () => {
