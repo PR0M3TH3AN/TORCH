@@ -318,6 +318,20 @@ test('SCN-runtime-continuation-capacity: a manually held executor counts against
   } finally { f.control.close(); }
 });
 
+test('SCN-runtime-continuation-fairness: a fresh task revision does not let one specialist starve an unstarted peer', async () => {
+  const f = fixture({ extraWorker: true });
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 3 });
+    const task = { id: 'TASK-changing', owner: f.areaId, state: 'assigned', revision: 1, dependencies: [] };
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: 'extra-worker', body: 'Peer work' });
+    const starts = [];
+    await runContinuation(f.control, { list: () => [task] }, { actorId: 'owner', limit: 1,
+      launch: area => { starts.push(area); if (area === f.areaId) task.revision++; return 0; } });
+    assert.deepEqual(starts.slice(0, 2), [f.areaId, 'extra-worker']);
+  } finally { f.control.close(); }
+});
+
 test('SCN-legacy-runtime-recovery-project: evidence cannot be applied to a different checkout with cloned project/session fields', () => {
   const first = fixture();
   const second = fixture();

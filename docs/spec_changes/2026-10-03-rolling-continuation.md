@@ -12,4 +12,6 @@ Resume instructions now request eligible implementation/verification/coordinatio
 
 Status exposes occupied guard identities and no-progress holds. Installed release and reboot persistence remain unqualified. Existing native pilot service executes this source candidate on its next activation; the daily limit remains 12 automatic attempts, not a token-cost governor.
 
+Eligible identities are ordered least-recently-dispatched within the current UTC day, with the Manager first only on ties. A repeatedly revised specialist task must not consume every freed slot while an eligible peer has never started.
+
 Deterministic acceptance scenarios and anti-cheat notes are in docs/TEST_INTEGRITY.md. Independent live qualification remains necessary; do not close broader event-driven or persistent-operations umbrellas based on this source fix alone.

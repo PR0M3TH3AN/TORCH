@@ -18,6 +18,10 @@ test_integrity_note:
       given: "An owner-started executor already occupies the configured automatic capacity"
       when: "The continuation controller runs"
       then: "No additional automatic turn starts and no attempt is charged"
+    - id: SCN-runtime-continuation-fairness
+      given: "One specialist keeps advancing revisions while another eligible identity has not started"
+      when: "A slot becomes available"
+      then: "The least-recently-dispatched peer starts before the returning specialist"
   observable_outcomes:
     - "Actual launch ordering, daily charges, coordination messages and explicit held-work reason"
   determinism_controls:

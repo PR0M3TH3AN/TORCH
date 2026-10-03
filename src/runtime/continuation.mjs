@@ -77,7 +77,9 @@ export function planContinuation(control, backlog, { at = new Date(), limit = 3 
     candidates.push({ areaId, fingerprint, signal, workKey: taskKey(active),
       messageCount: freshMessages.length, taskIds: active.map(t => t.id), continueWork });
   }
-  candidates.sort((a, b) => Number(b.areaId === 'session-manager') - Number(a.areaId === 'session-manager'));
+  const ordinal = area => state.handled[area]?.dispatchedDay === day ? state.handled[area].dispatchedOrdinal ?? 0 : 0;
+  candidates.sort((a, b) => ordinal(a.areaId) - ordinal(b.areaId)
+    || Number(b.areaId === 'session-manager') - Number(a.areaId === 'session-manager'));
   return { enabled: true, day, attempts, remainingTurns: state.maxTurnsPerDay - attempts,
     occupiedAreas: occupiedAreas(control), held,
     candidates: candidates.slice(0, Math.min(limit, state.maxTurnsPerDay - attempts)), mutationPerformed: false };
@@ -106,7 +108,8 @@ export async function runContinuation(control, backlog, { actorId, launch, at, c
         const state = read(control);
         if (state.day !== current.day) { state.day = current.day; state.attempts = 0; }
         state.attempts++;
-        state.handled[candidate.areaId] = candidate.signal;
+        state.handled[candidate.areaId] = { ...candidate.signal,
+          dispatchedDay: current.day, dispatchedOrdinal: state.attempts };
         save(control, state); // Reserve before launch; unknown attempts are never refunded.
         let result;
         try { result = launch(candidate.areaId); } catch { result = null; }
