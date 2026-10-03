@@ -2,6 +2,32 @@
 
 Repository state outranks conversation memory. Query ownership before crossing a domain boundary.
 
+## Owner-approved fleet resume and priority polish cycle (2026-10-02)
+
+The owner explicitly said: "We got a reset. lets get torch as pollished as we can.
+Spin them all back up." This lifts the earlier manual wind-down for the existing
+seven identities. The arbiter controls physical launches and timer restoration;
+automatic AI wakes remain disabled until their runtime safety gates qualify.
+Do not interpret old pause messages as a new pause after this authorization.
+
+Session Manager may triage and assign the existing development roadmap within
+approved ownership, one active implementation assignment per specialist, direct
+peer coordination and independent QA. The earlier first-slice/audit-only limits
+below are superseded for this development cycle. Preserve existing unfinished
+assignments and resolve or explicitly block them rather than silently replacing
+them to take new work. Prioritize compact cards/detail modals and coordinator-first
+agent Chat, then broader polish; runtime recovery required for safe operation comes
+first. Read docs/CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md and the newer owner inbox.
+Company/KB proposals remain roadmap requirements, not implemented capabilities.
+
+Reconcile the three prior working/unknown records through supported audited
+recovery, with actual stopped-executor evidence. No peer impersonation, direct
+SQLite mutation, silent guard removal or false PASS promotion. Current model/
+provider profiles stay unchanged. Existing checked integration and non-force
+development push authority remains; no default-main/legacy rewrite, destructive
+cleanup, extra identities, package publication or unreviewed deployment is granted.
+Record honest progress and blockers; end completed turns without polling loops.
+
 ## Fresh owner authorization: guarded integration and continued development (2026-10-01)
 
 The owner explicitly answered the arbiter's two held decisions: "yes do whatever
