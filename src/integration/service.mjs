@@ -80,6 +80,8 @@ export class IntegrationService {
       );
       CREATE INDEX IF NOT EXISTS integration_state_created
         ON integration_requests(state, created_at, id);
+      CREATE UNIQUE INDEX IF NOT EXISTS integration_request_exact_source
+        ON integration_requests(project_id, source_branch, source_commit);
     `);
   }
 

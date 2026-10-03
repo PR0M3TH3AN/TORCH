@@ -97,6 +97,11 @@ function lifecycleInput(context, action, adoptionId, extra = {}) {
   return { actorId: 'owner', adoptionId, approvalId, approvalRevision, adapter, ...extra };
 }
 
+function blockedCodes(error) {
+  assert.equal(error.code.endsWith('_BLOCKED'), true, `expected a blocked adoption transition, got ${error.code}`);
+  return error.details.map((blocker) => blocker.code);
+}
+
 test('SCN-integration-adoption-private-ref-cas: a real temporary Git transaction atomically creates private archive and candidate refs, and stale expected refs refuse', () => {
   const context = fixture('torch-adoption-cas');
   const adoptionId = 'fixture-adoption';
@@ -208,5 +213,75 @@ test('SCN-integration-adoption-private-ref-intake: finalized private refs enter 
   assert.equal(requested.integrationRequest.sourceCommit, context.candidate);
   assert.equal(requested.integrationRequest.state, 'testing');
   assert.equal(requested.integrationRequest.targetBranch, 'main');
+  context.control.close();
+});
+
+test('SCN-integration-adoption-approval-boundaries: unrelated or source-only approval records cannot authorize an owner adoption, and actor, action, revision, and provenance mismatches each refuse', () => {
+  const unrelated = fixture('torch-adoption-unrelated-approval');
+  const unrelatedId = 'fixture-adoption';
+  const unrelatedApproval = unrelated.control.requestApproval({
+    requester: unrelated.contributor, approver: 'owner', task: 'TASK-unrelated',
+    title: 'Ordinary source branch review', summary: 'Not an integration-adoption authority.',
+  });
+  const unrelatedApproved = unrelated.control.decideApproval({
+    approvalId: unrelatedApproval.id, decidedBy: 'owner', decision: 'approved', expectedRevision: unrelatedApproval.revision,
+    note: JSON.stringify({ schema: 'torch.dev/ordinary-source-review/v1alpha1', sourceArea: unrelated.contributor }),
+  });
+  const unrelatedInput = {
+    actorId: 'owner', adoptionId: unrelatedId, candidateSha: unrelated.candidate, baseTargetSha: unrelated.base,
+    contributorArea: unrelated.contributor, destinationArea: unrelated.destination, targetBranch: 'main',
+    candidateRef: `refs/torch/integration-candidates/${unrelatedId}`, expectedOldRef: 'refs/heads/main',
+    approvalId: unrelatedApproved.id, approvalRevision: unrelatedApproved.revision,
+    provenance: ['fixture:owner-approved', `candidate:${unrelated.candidate}`],
+    provenanceManifestDigest: digest(['fixture:owner-approved', `candidate:${unrelated.candidate}`]),
+    adapter: { name: unrelated.service.adoption.refAdapter.name, id: unrelated.service.adoption.refAdapter.id },
+  };
+  assert.throws(() => unrelated.service.prepareAdoption(unrelatedInput), (error) => blockedCodes(error).includes('ADOPTION_APPROVAL_BINDING_INVALID'));
+  assert.deepEqual(unrelated.service.list(), []);
+  unrelated.control.close();
+
+  const wrongActor = fixture('torch-adoption-wrong-actor');
+  assert.throws(() => wrongActor.service.prepareAdoption({
+    ...input(wrongActor, 'prepare', 'fixture-adoption'), actorId: wrongActor.contributor,
+  }), (error) => blockedCodes(error).includes('OWNER_ACTOR_REQUIRED'));
+  wrongActor.control.close();
+
+  const wrongAction = fixture('torch-adoption-wrong-action');
+  prepare(wrongAction, 'fixture-adoption');
+  assert.throws(() => wrongAction.service.finalizeAdoption(lifecycleInput(wrongAction, 'rollback', 'fixture-adoption')),
+    (error) => blockedCodes(error).includes('ADOPTION_APPROVAL_BINDING_INVALID'));
+  wrongAction.control.close();
+
+  const staleRevision = fixture('torch-adoption-stale-revision');
+  prepare(staleRevision, 'fixture-adoption');
+  const staleInput = lifecycleInput(staleRevision, 'finalize', 'fixture-adoption');
+  assert.throws(() => staleRevision.service.finalizeAdoption({ ...staleInput, approvalRevision: staleInput.approvalRevision - 1 }),
+    (error) => blockedCodes(error).includes('ADOPTION_APPROVAL_REVISION_STALE'));
+  staleRevision.control.close();
+
+  const wrongProvenance = fixture('torch-adoption-wrong-provenance');
+  assert.throws(() => wrongProvenance.service.prepareAdoption({
+    ...input(wrongProvenance, 'prepare', 'fixture-adoption'), provenance: ['fixture:owner-approved', 'unapproved:alternate-provenance'],
+  }), (error) => blockedCodes(error).includes('ADOPTION_PROVENANCE_DIGEST_MISMATCH'));
+  wrongProvenance.control.close();
+});
+
+test('SCN-integration-adoption-request-replay: real SQLite rejects a duplicate exact private-ref queue row, and a completed adoption request cannot replay into a second row', () => {
+  const context = fixture('torch-adoption-request-replay');
+  const adoptionId = 'fixture-adoption';
+  prepare(context, adoptionId);
+  const finalized = context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId));
+  const requested = context.service.requestAdoptedCandidate(lifecycleInput(context, 'request', adoptionId));
+  const duplicate = context.control.database.prepare(`INSERT INTO integration_requests (
+    id, project_id, source_area, source_branch, source_commit, target_branch,
+    base_target_commit, state, reason, required_checks, created_at, updated_at
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+  assert.throws(() => duplicate.run(
+    'duplicate-race-row', context.control.projectId, context.contributor, finalized.candidateRef, context.candidate,
+    'main', context.base, 'testing', null, '[]', requested.requestedAt, requested.requestedAt,
+  ), /UNIQUE constraint failed: integration_requests.project_id, integration_requests.source_branch, integration_requests.source_commit/);
+  assert.throws(() => context.service.requestAdoptedCandidate(lifecycleInput(context, 'request', adoptionId)),
+    (error) => error.code === 'ADOPTION_REQUEST_STATE_INVALID');
+  assert.deepEqual(context.service.list().map((record) => record.id), [requested.integrationRequest.id]);
   context.control.close();
 });

@@ -3170,6 +3170,14 @@ test_integrity_note:
       given: "An existing unfinalized private candidate ref and a separate finalized owner-bound private candidate ref"
       when: "Direct private-ref intake and authenticated native qualification are requested"
       then: "Direct intake refuses without a queue record, while the authenticated path records the exact private ref and commit in ordinary testing state"
+    - id: SCN-integration-adoption-approval-boundaries
+      given: "An ordinary source-only approval, or an adoption whose actor, action, approval revision, or provenance differs from the approved immutable binding"
+      when: "Preparation or a lifecycle transition is attempted"
+      then: "The transition refuses with its structured boundary code and no integration queue record"
+    - id: SCN-integration-adoption-request-replay
+      given: "A finalized adoption that has created its one ordinary private-ref integration request"
+      when: "A concurrent exact-row insert or later request replay is attempted"
+      then: "Real SQLite rejects the duplicate exact source row, the journal replay refuses, and exactly one queue row remains"
   observable_outcomes:
     - "Git ref values, structured refusal codes, durable journal state, and native integration-request fields"
   determinism_controls:
@@ -3180,6 +3188,8 @@ test_integrity_note:
       - "Mutable lifecycle bindings or overwriteable adoption journal records"
       - "Claiming crash recovery without preserving actual ref effects"
       - "Treating a private candidate as an ordinary specialist branch"
+      - "Using an unrelated, source-only, stale, or mismatched approval as adoption authority"
+      - "Duplicating a private-ref queue record through a concurrent row or replay"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
