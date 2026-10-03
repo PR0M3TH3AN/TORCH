@@ -259,7 +259,7 @@ test('SCN-codex-mcp-runtime-dir: only a valid Linux parent runtime directory is 
     areaId: context.worker, runtimeSessionId: 'thread-runtime-dir', worktree: '/tmp/codex-runtime-dir',
     message: 'Resume.', mcp,
   });
-  const expected = `mcp_servers.${mcp.name}.env_vars=[\"XDG_RUNTIME_DIR\"]`;
+  const expected = `mcp_servers.${mcp.name}.env_vars=["XDG_RUNTIME_DIR"]`;
   for (const launch of [create, resume]) {
     assert.equal(launch.launch.args.includes(expected), true);
     assert.equal(launch.launch.args.some((arg) => /env_vars=/.test(arg) && arg !== expected), false);

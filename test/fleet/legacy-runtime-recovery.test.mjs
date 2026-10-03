@@ -147,6 +147,29 @@ test('SCN-runtime-continuation: explicit enable, event deduplication, daily cap 
   } finally { f.control.close(); }
 });
 
+test('SCN-runtime-continuation-signals: acknowledgements do not wake; eligible turns start concurrently within the limit', async () => {
+  const f = fixture();
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    const messages = [];
+    for (const recipient of [f.areaId, 'session-manager']) {
+      messages.push(f.control.sendOwnerRequest({ actorId: 'owner', recipient, body: 'Review current work' }));
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient, body: 'Second handoff' });
+    }
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 4 });
+    const completions = [];
+    const running = runContinuation(f.control, { list: () => [] }, { actorId: 'owner', limit: 2,
+      launch: () => new Promise(resolve => completions.push(resolve)) });
+    assert.equal(completions.length, 2, 'Both starts occur without waiting for the first provider to finish');
+    assert.equal((await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', launch: () => 0 })).reason,
+      'controller-active-or-unreconciled');
+    completions.forEach(resolve => resolve(0));
+    assert.equal((await running).launched.length, 2);
+    for (const message of messages) f.control.ackMessage({ recipient: message.recipient, messageId: message.id });
+    assert.equal(planContinuation(f.control, { list: () => [] }).candidates.length, 0);
+  } finally { f.control.close(); }
+});
+
 test('SCN-runtime-continuation-pause: a pause during one turn prevents another queued turn', async () => {
   const f = fixture();
   try {

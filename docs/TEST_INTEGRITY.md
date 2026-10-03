@@ -2846,6 +2846,10 @@ test_integrity_note:
       given: "Owner-enabled roster and a new durable signal"
       when: "Turns repeat, hit a cap or are paused"
       then: "Only new eligible signals launch within the owner daily cap"
+    - id: SCN-runtime-continuation-signals
+      given: "Two eligible identities with multiple unread messages"
+      when: "A bounded batch starts and only acknowledgements change afterward"
+      then: "Both starts occur concurrently, a competing controller refuses, and acknowledgements alone cause no wake"
     - id: SCN-runtime-continuation-pause
       given: "Two eligible turns"
       when: "The owner pauses during the first"

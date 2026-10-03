@@ -54,10 +54,13 @@ export function planContinuation(control, backlog, { at = new Date(), limit = 3 
       || existsSync(join(control.stateRoot, 'sessions', 'turn-guards', areaId))) continue;
     const messages = control.readMessages({ recipient: areaId, unacknowledgedOnly: true, limit: 1000 });
     const active = tasks.filter(t => t.owner === areaId && ['assigned', 'in_progress'].includes(t.state));
-    if (!messages.length && !active.length) continue;
-    const fingerprint = createHash('sha256').update(JSON.stringify({ messages: messages.map(m => m.id), tasks: active.map(t => [t.id, t.revision]) })).digest('hex');
-    if (state.handled[areaId] === fingerprint) continue;
-    candidates.push({ areaId, fingerprint, messageCount: messages.length, taskIds: active.map(t => t.id) });
+    const previous = state.handled[areaId] ?? {};
+    const freshMessages = messages.filter(m => !previous.messageIds?.includes(m.id));
+    const freshTasks = active.filter(t => previous.taskRevisions?.[t.id] !== t.revision);
+    if (!freshMessages.length && !freshTasks.length) continue;
+    const signal = { messageIds: messages.map(m => m.id), taskRevisions: Object.fromEntries(active.map(t => [t.id, t.revision])) };
+    const fingerprint = createHash('sha256').update(JSON.stringify(signal)).digest('hex');
+    candidates.push({ areaId, fingerprint, signal, messageCount: freshMessages.length, taskIds: freshTasks.map(t => t.id) });
   }
   candidates.sort((a, b) => Number(b.areaId === 'session-manager') - Number(a.areaId === 'session-manager'));
   return { enabled: true, day, attempts, remainingTurns: state.maxTurnsPerDay - attempts,
@@ -74,7 +77,7 @@ export async function runContinuation(control, backlog, { actorId, launch, at, c
   }
   try {
     const plan = planContinuation(control, backlog, { at: clock(), limit });
-    const launched = [];
+    const pending = [];
     for (const candidate of plan.candidates) {
       // Fresh plan and policy check before each launch; a concurrent pause wins.
       const current = planContinuation(control, backlog, { at: clock(), limit: 3 });
@@ -82,11 +85,12 @@ export async function runContinuation(control, backlog, { actorId, launch, at, c
       const state = read(control);
       if (state.day !== current.day) { state.day = current.day; state.attempts = 0; }
       state.attempts++;
-      state.handled[candidate.areaId] = candidate.fingerprint;
+      state.handled[candidate.areaId] = candidate.signal;
       save(control, state); // Charge/reserve before launch; interrupted attempts are never refunded/retried silently.
-      const status = await launch(candidate.areaId);
-      launched.push({ areaId: candidate.areaId, status });
+      let result;
+      try { result = launch(candidate.areaId); } catch { result = null; }
+      pending.push(Promise.resolve(result).catch(() => null).then(status => ({ areaId: candidate.areaId, status })));
     }
-    return { launched, reason: plan.reason ?? null };
+    return { launched: await Promise.all(pending), reason: plan.reason ?? null };
   } finally { rmdirSync(lock); }
 }

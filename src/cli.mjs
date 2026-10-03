@@ -14,7 +14,7 @@ import { startConsole } from './console/server.mjs';
 import { classifyRecoverability, createLocalCanonical, planLocalCanonical } from './canonical/local.mjs';
 import { openControlPlane } from './control-plane/service.mjs';
 import { fetchCanonicalObjects, planCanonicalFetch } from './canonical/fetch.mjs';
-import { spawnSync } from 'node:child_process';
+import { spawn as spawnProcess, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import {
   mkdirSync, mkdtempSync, renameSync, rmSync, statSync, writeFileSync,
@@ -594,12 +594,15 @@ export async function runCli(argv = process.argv.slice(2), {
         }
         if (operation !== 'tick') throw new TorchError('Unknown continuation operation.', { code: 'UNKNOWN_COMMAND' });
         print(await runContinuation(control, backlog, { actorId: 'owner', limit: Number(optionValue(argv, '--limit') ?? 3),
-          launch: areaId => {
-            const result = spawn(process.execPath, [fileURLToPath(new URL('../bin/torch.mjs', import.meta.url)),
+          launch: areaId => new Promise(resolveTurn => {
+            const child = spawnProcess(process.execPath, [fileURLToPath(new URL('../bin/torch.mjs', import.meta.url)),
               'up', '--only', areaId, '--yes', '--json'], { cwd: control.repositoryRoot, env,
-              encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 });
-            return result.error || result.signal ? null : result.status;
-          } }), { json });
+              stdio: ['ignore', 'pipe', 'pipe'] });
+            child.stdout.resume(); child.stderr.resume();
+            let failed = false;
+            child.on('error', () => { failed = true; });
+            child.on('close', (code, signal) => resolveTurn(failed || signal ? null : code));
+          }) }), { json });
         return 0;
       } finally { control.close(); }
     }
