@@ -101,6 +101,15 @@ function claimedIdentity(controlPlane, actorId, claim, field) {
   });
 }
 
+function boundActorIdentity(controlPlane, actorId) {
+  if (typeof actorId !== 'string' || actorId.trim().length === 0) {
+    throw new TorchError('torch_reply_to_owner requires an actual bound Fleet identity', {
+      code: 'FLEET_IDENTITY_REQUIRED', details: { field: 'bound_actor' },
+    });
+  }
+  return controlPlane.assertIdentity(actorId);
+}
+
 function inputSchema(tool) {
   return typeof tool.schema?.safeParse === 'function' ? tool.schema : z.object(tool.schema);
 }
@@ -180,7 +189,7 @@ export function createTorchToolset(controlPlane, {
         request_id: z.string().min(1), body: z.string().min(1),
       }).strict(),
       invoke: ({ request_id: requestId, body }) => controlPlane.sendOwnerReply({
-        sender: claimedIdentity(controlPlane, actorId, undefined, 'sender'), requestId, body,
+        sender: boundActorIdentity(controlPlane, actorId), requestId, body,
       }),
     }],
     ['torch_read_messages', {
