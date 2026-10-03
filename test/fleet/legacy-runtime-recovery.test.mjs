@@ -10,10 +10,11 @@ import { proposeDomains } from '../../src/kernel/domains.mjs';
 import { installProject } from '../../src/kernel/install.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { issueStoppedExecutorEvidence } from '../../src/runtime/stopped-executor-evidence.mjs';
-import { withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
+import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
+import { observeProject } from '../../src/observability/snapshot.mjs';
 import { configureContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
-function fixture() {
+function fixture({ recoveryWorktree = true } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
   for (const args of [['init', '-b', 'main'], ['config', 'user.email', 'test@example.invalid'],
     ['config', 'user.name', 'Recovery Fixture']]) execFileSync('git', args, { cwd: root, stdio: 'pipe' });
@@ -28,7 +29,7 @@ function fixture() {
   const actualPath = join(root, '.torch', 'install-manifest.json');
   const manifest = JSON.parse(readFileSync(actualPath, 'utf8'));
   const areaId = proposal.domains[0].id;
-  manifest.external.push({ type: 'worktree', area: areaId, path: join(root, 'worker') });
+  if (recoveryWorktree) manifest.external.push({ type: 'worktree', area: areaId, path: join(root, 'worker') });
   writeFileSync(actualPath, JSON.stringify(manifest));
   let time = Date.parse('2026-10-03T00:00:00Z');
   const control = openControlPlane({ repositoryRoot: root, env, clock: () => new Date(time) });
@@ -44,7 +45,7 @@ function fixture() {
     invocationId: 'a'.repeat(32), readUnit: () => ({ ...properties }), readProcesses: () => processes, now: () => time });
   const apply = issued => control.recoverOwnerStoppedUnknownIdentity({ actorId: 'owner', areaId,
     expectedIdentity: issued.plan.expectedIdentity, evidence: issued.evidence });
-  return { control, identity, areaId, properties, issue, apply,
+  return { root, env, control, identity, areaId, properties, issue, apply,
     advance: ms => { time += ms; }, processes: value => { processes = value; } };
 }
 
@@ -119,6 +120,75 @@ test('SCN-runtime-turn-guard: overlapping executors refuse even if an agent repo
     });
     withRuntimeTurnGuard(f.control, f.areaId, () => { launches++; });
     assert.equal(launches, 2);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-live-presence: live guard phases override stale idle display without changing durable reports or waits', { skip: process.platform !== 'linux' }, () => {
+  const f = fixture({ recoveryWorktree: false });
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Previous turn completed' });
+    const observe = () => observeProject({ repositoryRoot: f.root, env: f.env }).agents.find(a => a.areaId === f.areaId);
+    withRuntimeTurnGuard(f.control, f.areaId, phase => {
+      let agent = observe();
+      assert.equal(agent.state, 'starting');
+      assert.equal(agent.reportedState, 'idle');
+      assert.equal(agent.executor.source, 'live-process-and-turn-guard');
+      phase('working');
+      agent = observe();
+      assert.equal(agent.state, 'working');
+      assert.equal(f.control.getAgent(f.areaId).state, 'idle', 'Observation is not an identity mutation');
+      f.control.reportStatus({ areaId: f.areaId, state: 'waiting', summary: 'Waiting for named approval' });
+      assert.equal(observe().state, 'waiting', 'Live execution must not conceal semantic approval waits');
+    });
+    assert.equal(observe().executor.state, 'inactive');
+    assert.equal(observe().state, 'waiting');
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Turn completed' });
+    assert.equal(observe().state, 'idle');
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-live-presence-refusal: dead, replaced, foreign-user and malformed guards never claim active execution', () => {
+  const f = fixture();
+  try {
+    withRuntimeTurnGuard(f.control, f.areaId, () => {
+      const path = join(f.control.stateRoot, 'sessions', 'turn-guards', f.areaId, 'owner.json');
+      const original = JSON.parse(readFileSync(path, 'utf8'));
+      writeFileSync(path, JSON.stringify({ ...original, startTicks: 'fixture-start' }));
+      const read = live => observeRuntimeTurn({ stateRoot: f.control.stateRoot, repositoryRoot: f.root,
+        projectId: f.control.projectId, areaId: f.areaId, uid: 1000, inspectProcess: () => live });
+      const live = { uid: 1000, startTicks: 'fixture-start', state: 'S' };
+      assert.equal(read(live).state, 'active');
+      for (const mismatch of [{ ...live, uid: 2000 }, { ...live, startTicks: 'reused-pid' }, { ...live, state: 'Z' }]) {
+        assert.equal(read(mismatch).state, 'unknown');
+      }
+      const absent = observeRuntimeTurn({ stateRoot: f.control.stateRoot, repositoryRoot: f.root,
+        projectId: f.control.projectId, areaId: f.areaId, inspectProcess: () => { throw new Error('Process gone'); } });
+      assert.equal(absent.state, 'unknown');
+      writeFileSync(path, JSON.stringify({ ...original, projectId: 'foreign' }));
+      assert.equal(read(live).reason, 'guard-invalid');
+      writeFileSync(path, JSON.stringify(original));
+    });
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-live-presence-legacy: pre-observation guards require exact TORCH identity and project cwd', () => {
+  const f = fixture();
+  try {
+    withRuntimeTurnGuard(f.control, f.areaId, () => {
+      const path = join(f.control.stateRoot, 'sessions', 'turn-guards', f.areaId, 'owner.json');
+      const original = JSON.parse(readFileSync(path, 'utf8'));
+      const legacy = { ...original };
+      delete legacy.startTicks;
+      delete legacy.phase;
+      writeFileSync(path, JSON.stringify(legacy));
+      const inspect = live => observeRuntimeTurn({ stateRoot: f.control.stateRoot, repositoryRoot: f.root,
+        projectId: f.control.projectId, areaId: f.areaId, uid: 1000, inspectProcess: () => live });
+      const live = { uid: 1000, state: 'S', cwd: f.root, argv: ['node', '/runtime/bin/torch.mjs', 'up', '--only', f.areaId] };
+      assert.equal(inspect(live).phase, 'working');
+      assert.equal(inspect({ ...live, cwd: '/foreign' }).state, 'unknown');
+      assert.equal(inspect({ ...live, argv: ['node', 'torch.mjs', 'up', '--only', 'someone-else'] }).state, 'unknown');
+      writeFileSync(path, JSON.stringify(original));
+    });
   } finally { f.control.close(); }
 });
 

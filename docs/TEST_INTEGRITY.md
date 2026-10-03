@@ -1,5 +1,38 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Process-verified runtime presence
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-live-presence
+      given: "A Linux executor holds a real identity guard while durable state is idle"
+      when: "The observation API reads starting, working, approval waiting and terminal phases"
+      then: "Live phases display accurately, semantic waits persist, terminal guards vanish and durable reports are not fabricated"
+    - id: SCN-runtime-live-presence-refusal
+      given: "A guarded identity with injected OS observations"
+      when: "PID is replaced, dead, foreign-user, unavailable or project binding is wrong"
+      then: "It never reports active execution"
+    - id: SCN-runtime-live-presence-legacy
+      given: "A pre-observation guard without a process-start token"
+      when: "The exact TORCH up identity and canonical cwd match or disagree"
+      then: "Only a verified matching live executor displays working"
+  observable_outcomes:
+    - "Observation API state, reportedState, executor source and unchanged durable identity"
+  determinism_controls:
+    - "Hermetic installed repository and injected PID observations for refusal cases"
+    - "Supplemental Linux /proc integration observes the test process itself, with no provider or timing sleeps"
+  anti_cheat_rationale:
+    prevents:
+      - "Painting all idle badges working without process evidence"
+      - "Treating a crashed guard or reused PID as an active agent"
+      - "Hiding approval waits or fabricating heartbeat/task progress"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-09-30 — Bounded routine coordination
 
 ```yaml

@@ -571,8 +571,9 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   const runtimes = adapterMap({ adapters });
   for (const action of plan.actions) {
     controlPlane.assertIdentity(action.areaId);
-    withRuntimeTurnGuard(controlPlane, action.areaId, () => {
+    withRuntimeTurnGuard(controlPlane, action.areaId, setPhase => {
     writeCombinedPrompt(action);
+    setPhase('working');
     const result = executor({
       ...action.launch, areaId: action.areaId, runtime: action.runtime,
       runtimeSessionId: action.runtimeSessionId,
