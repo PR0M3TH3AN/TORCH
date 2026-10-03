@@ -139,6 +139,24 @@ function blockedCodes(error) {
   return error.details.map((blocker) => blocker.code);
 }
 
+function lifecycleBoundary(context, adoptionId) {
+  const record = context.service.getPreparedAdoption(adoptionId);
+  return {
+    record,
+    refs: context.service.adoption.refAdapter.readRefs([
+      record.expectedOldRef, record.candidateRef, record.archiveRef,
+    ]),
+    queue: context.service.list(),
+    auditCount: context.control.database.prepare(`SELECT COUNT(*) AS count FROM audit_events
+      WHERE project_id = ? AND entity_type = 'integration-adoption' AND entity_id = ?`)
+      .get(context.control.projectId, adoptionId).count,
+  };
+}
+
+function assertLifecycleBoundaryUnchanged(context, adoptionId, before) {
+  assert.deepEqual(lifecycleBoundary(context, adoptionId), before);
+}
+
 test('SCN-integration-adoption-private-ref-cas: a real temporary Git transaction atomically creates private archive and candidate refs, and stale expected refs refuse', () => {
   const context = fixture('torch-adoption-cas');
   const adoptionId = 'fixture-adoption';
@@ -183,6 +201,54 @@ test('SCN-integration-adoption-journal-and-binding: a duplicate preparation cann
   assert.equal(mutationPerformed, true);
   assert.deepEqual(context.service.adoption.getPrepared(adoptionId), durablePrepared);
   context.control.close();
+});
+
+test('SCN-integration-adoption-lifecycle-revision-cas: stale or omitted revisions for every lifecycle action refuse before refs, journal, queue, or audit effects', () => {
+  const cases = [
+    {
+      action: 'finalize',
+      setup: (context, adoptionId) => prepare(context, adoptionId),
+      invoke: (context, input) => context.service.finalizeAdoption(input),
+    },
+    {
+      action: 'reconcile',
+      setup: (context, adoptionId) => prepare(context, adoptionId),
+      invoke: (context, input) => context.service.reconcileAdoption(input),
+    },
+    {
+      action: 'rollback',
+      setup: (context, adoptionId) => {
+        prepare(context, adoptionId);
+        return context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId));
+      },
+      invoke: (context, input) => context.service.rollbackAdoption(input),
+    },
+    {
+      action: 'request',
+      setup: (context, adoptionId) => {
+        prepare(context, adoptionId);
+        return context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId));
+      },
+      invoke: (context, input) => context.service.requestAdoptedCandidate(input),
+    },
+  ];
+
+  for (const { action, setup, invoke } of cases) {
+    const context = fixture(`torch-adoption-${action}-revision-boundary`);
+    const adoptionId = 'fixture-adoption';
+    setup(context, adoptionId);
+    for (const variant of ['omitted', 'stale']) {
+      const current = lifecycleInput(context, action, adoptionId);
+      const input = variant === 'omitted'
+        ? (({ expectedRecordRevision: _expectedRecordRevision, ...withoutRevision }) => withoutRevision)(current)
+        : { ...current, expectedRecordRevision: current.expectedRecordRevision + 1 };
+      const before = lifecycleBoundary(context, adoptionId);
+      assert.throws(() => invoke(context, input), (error) => error.code === 'ADOPTION_RECORD_REVISION_STALE',
+        `${action} must reject a ${variant} lifecycle revision`);
+      assertLifecycleBoundaryUnchanged(context, adoptionId, before);
+    }
+    context.control.close();
+  }
 });
 
 test('SCN-integration-adoption-finalize-recovery: a crash after real ref CAS but before the journal transition reconciles once and never duplicates refs', () => {

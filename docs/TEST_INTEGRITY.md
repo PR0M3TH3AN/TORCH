@@ -3206,11 +3206,11 @@ test_integrity_note:
   scenarios:
     - id: SCN-integration-adoption-lifecycle-revision-cas
       given: "A prepared or finalized owner-bound adoption record with a known journal revision"
-      when: "A caller supplies a stale expectedRecordRevision to finalize or request native qualification"
-      then: "The operation refuses before private-ref or queue effects; the original refs, journal state, and queue remain unchanged"
+      when: "A caller supplies a stale or omitted expectedRecordRevision to finalize, reconcile, rollback, or request native qualification"
+      then: "The operation refuses before private-ref, journal, queue, or audit effects; the original record and refs remain unchanged"
   observable_outcomes:
-    - "ADOPTION_RECORD_REVISION_STALE is returned for stale lifecycle callers"
-    - "Private candidate/archive refs remain absent before stale finalize and no integration request is created by stale native request"
+    - "ADOPTION_RECORD_REVISION_STALE is returned for stale or omitted lifecycle callers"
+    - "Private candidate/archive refs, durable journal record, audit count, and integration queue remain unchanged for every rejected lifecycle call"
   determinism_controls:
     - "Disposable local Git repository and temporary SQLite-backed control-plane fixture; no network, provider, or live adoption"
   anti_cheat_rationale:
@@ -3233,6 +3233,8 @@ test_integrity_note:
   observable_outcomes:
     - "The replay loser reports the stale journal-revision boundary, not a generic post-state refusal"
     - "Exactly one private-ref integration request and requested audit transition exist"
+  spec_correction_basis:
+    - "The former ADOPTION_REQUEST_STATE_INVALID replay expectation was wrong: after the serialized winner commits, the loser carries an obsolete journal revision, so revision CAS is the first observable refusal boundary under SCN-integration-adoption-request-replay."
   determinism_controls:
     - "Two independently opened local API processes over disposable Git and SQLite fixture state"
   anti_cheat_rationale:
