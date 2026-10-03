@@ -12,7 +12,7 @@ import {
 import { CheckService } from './checks/service.mjs';
 import { startConsole } from './console/server.mjs';
 import { classifyRecoverability, createLocalCanonical, planLocalCanonical } from './canonical/local.mjs';
-import { openControlPlane } from './control-plane/service.mjs';
+import { openControlPlane, openControlPlaneReadOnly } from './control-plane/service.mjs';
 import { fetchCanonicalObjects, planCanonicalFetch } from './canonical/fetch.mjs';
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -368,6 +368,15 @@ function persistProfileConfig(repositoryRoot, config) {
 
 function withControlPlane(repository, env, callback) {
   const controlPlane = openControlPlane({ repositoryRoot: repository.root, env });
+  try {
+    return callback(controlPlane);
+  } finally {
+    controlPlane.close();
+  }
+}
+
+function withReadOnlyControlPlane(repository, env, callback) {
+  const controlPlane = openControlPlaneReadOnly({ repositoryRoot: repository.root, env });
   try {
     return callback(controlPlane);
   } finally {
@@ -1200,7 +1209,7 @@ export async function runCli(argv = process.argv.slice(2), {
       return 0;
     }
     if (command === 'brief') {
-      print(withControlPlane(repository, env, (control) => createFleetBrief({
+      print(withReadOnlyControlPlane(repository, env, (control) => createFleetBrief({
         repositoryRoot: repository.root, controlPlane: control, areaId: optionValue(argv, '--area'),
       })), { json });
       return 0;
@@ -1713,7 +1722,13 @@ export async function runCli(argv = process.argv.slice(2), {
     }
     if (command === 'converge') {
       const operation = argv[1] ?? 'plan';
-      const control = openControlPlane({ repositoryRoot: repository.root, env });
+      if (!['plan', 'guards', 'hold', 'release', 'run'].includes(operation)) {
+        throw new TorchError(`Unknown converge operation: ${operation}`, { code: 'UNKNOWN_COMMAND' });
+      }
+      const readOnlyOperation = operation === 'plan' || operation === 'guards';
+      const control = readOnlyOperation
+        ? openControlPlaneReadOnly({ repositoryRoot: repository.root, env })
+        : openControlPlane({ repositoryRoot: repository.root, env });
       try {
         const convergence = new ConvergenceService({ repositoryRoot: repository.root, controlPlane: control });
         const areaId = optionValue(argv, '--area');
