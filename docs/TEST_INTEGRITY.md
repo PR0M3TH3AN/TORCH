@@ -3233,6 +3233,8 @@ test_integrity_note:
   observable_outcomes:
     - "The replay loser reports the stale journal-revision boundary, not a generic post-state refusal"
     - "Exactly one private-ref integration request and requested audit transition exist"
+  spec_correction_basis:
+    - "The former ADOPTION_REQUEST_STATE_INVALID replay expectation was wrong: after the serialized winner commits, the loser carries an obsolete journal revision, so revision CAS is the first observable refusal boundary under SCN-integration-adoption-request-replay."
   determinism_controls:
     - "Two independently opened local API processes over disposable Git and SQLite fixture state"
   anti_cheat_rationale:
