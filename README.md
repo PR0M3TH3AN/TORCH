@@ -17,12 +17,13 @@ The repository declares version `0.1.0-alpha.3`. This remains experimental:
 the current owner-managed TORCH-on-TORCH development pilot is Codex-run, and
 does not qualify production use or a live switch among providers.
 
-The active pilot uses a previously accepted, immutable `0.1.0-alpha.3`
-installation artifact. Its installed source snapshot is separate from this
-development branch: later source commits do not become installed features
-automatically. Existing processes may also keep code loaded from the version
-they started with; changing the active installation pointer does not hot-reload
-them.
+The accepted `0.1.0-alpha.3` installation remains an immutable artifact; it has
+not been upgraded to the current [`rewrite/portable-agent-fleet` source](https://github.com/PR0M3TH3AN/TORCH/tree/rewrite/portable-agent-fleet).
+The owner-approved fleet-continuation pilot instead invokes that source CLI for
+the existing seven-identity roster. These are separate execution paths, and a
+source commit does not silently replace the installed artifact. Existing
+processes may also keep code loaded from the version they started with; changing
+the active installation pointer does not hot-reload them.
 
 The current source provides portable-kernel, project-bootstrap, and local
 coordination foundations:
@@ -116,14 +117,22 @@ security of every candidate-engine boundary. The current Codex pilot is real
 TORCH-on-TORCH development evidence, not proof that Claude and Pi were switched
 live in the same workflow.
 
-For this machine's pilot, the owner-approved per-user system-schedule timer is
-installed and running. This is distinct from defining a schedule or reviewing
-the generic launcher commands below. Automatic AI wakes remain paused. General
-first-install/init automation is not yet qualified. Deeper candidate engine,
-execution-fence, and private-admission assurance; pipeline execution and
-dashboard/served-provenance work; live UX review; stable self-host bootstrapping;
-COMBATRIG cutover; live mixed-provider qualification; and release/deployment
-qualification remain open.
+The source continuation pilot uses a transient per-user systemd timer/service;
+it is not permanent installer-owned provisioning and is not the older
+system-schedule framework. That framework's automatic manager wakes remain
+disabled. Continuation is explicitly enabled for the existing roster, dedupes
+unchanged signals, holds a physical turn guard per identity, and caps attempts at
+12 turns per UTC day. This is a turn cap, not dollar or token governance, and
+failed or interrupted attempts count. The transient timer does not survive a
+host reboot. Permanent timer installation/removal, upgrade and reboot
+qualification remain open, as do general first-install/init automation, deeper
+candidate-engine, execution-fence and private-admission assurance; pipeline
+execution and dashboard/served-provenance work; live UX review; stable
+self-host bootstrapping; COMBATRIG cutover; live mixed-provider qualification;
+and release/deployment qualification. These source changes still need
+independent QA and installed-release acceptance. The [owner-only recovery and
+continuation contract](https://github.com/PR0M3TH3AN/TORCH/blob/rewrite/portable-agent-fleet/docs/spec_changes/2026-10-03-legacy-runtime-recovery.md)
+records the manual recovery limits and pilot behavior.
 
 The canonical architecture and delivery plan is
 [docs/PORTABLE_AGENT_FLEET_SPEC.md](https://github.com/PR0M3TH3AN/TORCH/blob/rewrite/portable-agent-fleet/docs/PORTABLE_AGENT_FLEET_SPEC.md).
