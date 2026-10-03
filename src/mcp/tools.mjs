@@ -19,6 +19,7 @@ export const TORCH_CORE_MCP_TOOL_NAMES = Object.freeze([
   'torch_who_owns',
   'torch_neighbours',
   'torch_send_message',
+  'torch_reply_to_owner',
   'torch_read_messages',
   'torch_ack_message',
   'torch_report_status',
@@ -100,6 +101,19 @@ function claimedIdentity(controlPlane, actorId, claim, field) {
   });
 }
 
+function boundActorIdentity(controlPlane, actorId) {
+  if (typeof actorId !== 'string' || actorId.trim().length === 0) {
+    throw new TorchError('torch_reply_to_owner requires an actual bound Fleet identity', {
+      code: 'FLEET_IDENTITY_REQUIRED', details: { field: 'bound_actor' },
+    });
+  }
+  return controlPlane.assertIdentity(actorId);
+}
+
+function inputSchema(tool) {
+  return typeof tool.schema?.safeParse === 'function' ? tool.schema : z.object(tool.schema);
+}
+
 export function createTorchToolset(controlPlane, {
   actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
   evolutionService, hierarchyService, repositoryRoot,
@@ -167,6 +181,15 @@ export function createTorchToolset(controlPlane, {
       },
       invoke: ({ sender, recipient, body, ...references }) => controlPlane.sendMessage({
         sender: claimedIdentity(controlPlane, actorId, sender, 'sender'), recipient, body, references,
+      }),
+    }],
+    ['torch_reply_to_owner', {
+      description: 'Reply to one owner-originated request as the bound Fleet identity. This tool cannot select a sender, recipient, owner, or conversation history.',
+      schema: z.object({
+        request_id: z.string().min(1), body: z.string().min(1),
+      }).strict(),
+      invoke: ({ request_id: requestId, body }) => controlPlane.sendOwnerReply({
+        sender: boundActorIdentity(controlPlane, actorId), requestId, body,
       }),
     }],
     ['torch_read_messages', {
@@ -736,14 +759,14 @@ export function describeTorchTools() {
   }).entries()].map(([name, tool]) => ({
     name,
     description: tool.description,
-    inputSchema: z.toJSONSchema(z.object(tool.schema)),
+    inputSchema: z.toJSONSchema(inputSchema(tool)),
   }));
 }
 
 export function callTorchTool(controlPlane, name, input = {}, options = {}) {
   const tool = createTorchToolset(controlPlane, options).get(name);
   if (!tool) throw new Error(`Unknown TORCH MCP tool: ${name}`);
-  const parsed = z.object(tool.schema).parse(input);
+  const parsed = inputSchema(tool).parse(input);
   return tool.invoke(parsed);
 }
 
@@ -762,7 +785,7 @@ export function createTorchMcpServer(controlPlane, {
     actorId, backlogService, checkService, resourceService, integrationService, contextTelemetryService, scheduleService,
     evolutionService, hierarchyService, repositoryRoot, artifactService,
   })) {
-    server.registerTool(name, { description: tool.description, inputSchema: tool.schema }, async (input) => {
+    server.registerTool(name, { description: tool.description, inputSchema: inputSchema(tool) }, async (input) => {
       try {
         const result = await tool.invoke(input);
         return {

@@ -3100,3 +3100,30 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+## 2026-10-03 — Public MCP owner-reply wrapper
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-mcp-owner-reply-public-boundary
+      given: "A registered agent has an owner-originated request addressed to it and a second registered identity exists"
+      when: "Each identity invokes the public stdio MCP owner-reply tool"
+      then: "Only the bound addressee can persist a reply with replyTo and audit attribution; selector fields and another valid identity refuse before a write"
+  observable_outcomes:
+    - "The MCP schema exposes only request_id and body with no additional properties or owner-history tool"
+    - "The persisted reply is linked to the owner request and audited as the bound actor"
+    - "Selector-field and wrong-addressee refusals leave owner conversation and audit counts unchanged"
+  determinism_controls:
+    - "Hermetic Git/SQLite fixture, fixed topology, local stdio MCP process, no network, provider, sleep, or retry"
+  anti_cheat_rationale:
+    prevents:
+      - "Selecting a sender, recipient, owner, or history through MCP input"
+      - "Replying from a different valid Fleet identity"
+      - "Exposing an agent-facing owner-history reader"
+      - "Claiming an in-process helper as public MCP qualification"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
