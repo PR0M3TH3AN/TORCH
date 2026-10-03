@@ -2,6 +2,24 @@
 
 Repository state outranks conversation memory. Query ownership before crossing a domain boundary.
 
+## Owner priority update: reliability before visual polish (2026-10-03 UTC)
+
+The owner requested that TORCH's operating defects be fixed first so the fleet
+benefits from improved operation. This supersedes the UI-first ordering below,
+not the existing resume authorization or safety boundaries. The authoritative
+backlog priorities were changed through the revision-checked owner API.
+
+Sequence the smallest safe current-schema stopped-unknown recovery and CLI
+qualification first; then truthful lifecycle/status and their source-safety
+prerequisites; then qualified bounded continuation/event-driven wakes under
+pause, budget and authority policy; then actionable operational attention.
+Compact cards/detail modals and coordinator Chat remain high-priority work after
+these reliability gates. Do not require the entire future company architecture
+to deliver a safe minimal recovery. Reprioritization does not resolve blockers,
+grant test consent, enable automatic wakes or launch agents. Preserve task owners,
+dependencies and evidence; explicitly block/resequence existing assignments when
+needed rather than replacing them silently or creating concurrent assignments.
+
 ## Owner-approved fleet resume and priority polish cycle (2026-10-02)
 
 The owner explicitly said: "We got a reset. lets get torch as pollished as we can.

@@ -1,5 +1,27 @@
 # TORCH remaining work
 
+## Current owner priority: reliability first (2026-10-03 UTC)
+
+This ordering supersedes the UI-first ordering below. The existing authoritative
+backlog, not this index, controls task state and assignment.
+
+1. Safe current-schema runtime recovery (`TASK-company-runtime-recovery`) and
+   combined CLI qualification (`TASK-pilot-cli-suite-timeout`).
+2. Truthful startup/session status (`TASK-pilot-starting-presence`) and its
+   existing Kernel reservation/Work candidate-safety prerequisites.
+3. Persistent operations and bounded event-driven continuation
+   (`TASK-conversation-persistent-operations`,
+   `TASK-conversation-event-driven-wakes`), followed by actual scheduler
+   qualification (`TASK-conversation-scheduler-qualification`).
+4. Specific actionable operational warnings (`TASK-console-attention-actions`).
+5. Compact cards/detail modals and coordinator-first Chat remain high priority.
+
+The first four groups and incomplete technical prerequisites are urgent;
+scheduler qualification is high. These priority-only changes preserve owners,
+states, dependencies and evidence. Blocked remains blocked; automatic wakes stay
+disabled until qualified and explicitly activated. Older pause/install/status
+statements below are historical snapshots, not current runtime evidence.
+
 ## Priority UI cycle: compact cards and agent Chat
 
 Owner-approved [Console UI spec](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).
