@@ -16,6 +16,21 @@ function git(root, args, { allowFailure = false } = {}) {
   return { status: result.status, stdout: result.stdout?.trim() ?? '', stderr: result.stderr?.trim() ?? '' };
 }
 
+function text(value, name) {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new TorchError(`${name} is required`, { code: 'INTEGRATION_INPUT_INVALID', details: { name } });
+  }
+  return value.trim();
+}
+
+function sha(value, name) {
+  const normalized = text(value, name);
+  if (!/^[0-9a-f]{40,64}$/.test(normalized)) {
+    throw new TorchError(`${name} must be a full Git object id`, { code: 'INTEGRATION_INPUT_INVALID', details: { name } });
+  }
+  return normalized;
+}
+
 function integrationRow(row) {
   if (!row) return null;
   return {
@@ -87,12 +102,43 @@ export class IntegrationService {
         code: 'INTEGRATION_SOURCE_MOVED', details: { branchTip, sourceCommit },
       });
     }
+    return this.#registerRequest({ area, sourceBranch: worktree.branch, sourceCommit });
+  }
+
+  requestCandidate({ areaId, commit, candidateRef } = {}) {
+    const area = this.controlPlane.assertIdentity(areaId);
+    if (area === 'session-manager') {
+      throw new TorchError('Session Manager does not own a feature worktree by default', {
+        code: 'INTEGRATION_SOURCE_INVALID',
+      });
+    }
+    const ref = text(candidateRef, 'candidateRef');
+    if (!/^refs\/torch\/integration-candidates\/[A-Za-z0-9._-]+$/.test(ref)) {
+      throw new TorchError('Adopted candidates must use a private integration candidate ref', {
+        code: 'INTEGRATION_ADOPTED_REF_INVALID', details: { candidateRef: ref },
+      });
+    }
+    const sourceCommit = sha(commit, 'commit');
+    const refTip = git(this.repositoryRoot, ['rev-parse', '--verify', ref], { allowFailure: true });
+    if (refTip.status !== 0 || refTip.stdout !== sourceCommit) {
+      throw new TorchError('Adopted candidate ref no longer names the exact requested commit', {
+        code: 'INTEGRATION_ADOPTED_REF_STALE', details: { candidateRef: ref, sourceCommit, actual: refTip.stdout || null },
+      });
+    }
+    const existing = this.controlPlane.database.prepare(`SELECT id FROM integration_requests
+      WHERE project_id = ? AND source_branch = ? AND source_commit = ? ORDER BY rowid LIMIT 1`)
+      .get(this.controlPlane.projectId, ref, sourceCommit);
+    if (existing) return this.get(existing.id);
+    return this.#registerRequest({ area, sourceBranch: ref, sourceCommit });
+  }
+
+  #registerRequest({ area, sourceBranch, sourceCommit }) {
     const targetBranch = this.policy.target;
     const baseTargetCommit = git(this.repositoryRoot, ['rev-parse', targetBranch]).stdout;
     const now = this.clock().toISOString();
     const record = {
       id: this.idFactory(), projectId: this.controlPlane.projectId, sourceArea: area,
-      sourceBranch: worktree.branch, sourceCommit, targetBranch, baseTargetCommit,
+      sourceBranch, sourceCommit, targetBranch, baseTargetCommit,
       state: 'testing', reason: null, requiredChecks: this.policy.required_checks ?? [],
       authorizedBy: null, authorizedAt: null, createdAt: now, updatedAt: now, landedAt: null,
     };
@@ -139,8 +185,16 @@ export class IntegrationService {
 
   requestAdoptedCandidate(input = {}) {
     return this.adoption.requestAdoptedCandidate(input, {
-      requestIntegration: ({ areaId, commit }) => this.request({ areaId, commit }),
+      requestIntegration: ({ areaId, commit, candidateRef }) => this.requestCandidate({ areaId, commit, candidateRef }),
+      findIntegrationRequest: ({ candidateRef, commit }) => this.findCandidateRequest({ candidateRef, commit }),
     });
+  }
+
+  findCandidateRequest({ candidateRef, commit } = {}) {
+    const row = this.controlPlane.database.prepare(`SELECT id FROM integration_requests
+      WHERE project_id = ? AND source_branch = ? AND source_commit = ? ORDER BY rowid LIMIT 1`)
+      .get(this.controlPlane.projectId, candidateRef, commit);
+    return row ? this.get(row.id) : null;
   }
 
   get(requestId) {
