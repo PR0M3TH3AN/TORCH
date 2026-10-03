@@ -122,9 +122,12 @@ it is not permanent installer-owned provisioning and is not the older
 system-schedule framework. That framework's automatic manager wakes remain
 disabled. Continuation is explicitly enabled for the existing roster, dedupes
 unchanged signals, holds a physical turn guard per identity, and caps attempts at
-12 turns per UTC day. This is a turn cap, not dollar or token governance, and
-failed or interrupted attempts count. The transient timer does not survive a
-host reboot. Permanent timer installation/removal, upgrade and reboot
+48 turns per UTC day, with concurrency configured for up to seven turns. Twelve
+earlier attempts remained charged when the daily cap was raised. These are
+configured limits, not evidence that seven identities are currently active or
+running. This is a turn cap, not dollar or token governance, and failed or
+interrupted attempts count. The transient timer does not survive a host reboot.
+Permanent timer installation/removal, upgrade and reboot
 qualification remain open, as do general first-install/init automation, deeper
 candidate-engine, execution-fence and private-admission assurance; pipeline
 execution and dashboard/served-provenance work; live UX review; stable
