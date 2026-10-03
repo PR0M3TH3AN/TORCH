@@ -3063,3 +3063,40 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+## 2026-10-03 — Schema-v2 read-only owner-reply boundary
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-read-only-v2-control-plane
+      given: "A canonical schema-v2 fixture, including a write-refusing state directory"
+      when: "A reader opens a normal SQLite read transaction and a mutation is attempted"
+      then: "It returns one coherent snapshot or a typed refusal; no database or sidecar bytes change"
+    - id: SCN-read-only-pinned-correlated-snapshot
+      given: "Two v2 identities in one observable generation"
+      when: "A writer atomically commits their next generation while the reader remains open"
+      then: "The reader observes one generation or refuses, never a mixed pair"
+    - id: SCN-owner-addressed-reply-durability
+      given: "A registered agent has an owner-originated request addressed to it"
+      when: "It sends a dedicated reply and state is reopened"
+      then: "The reply linkage, bounded owner cursor, and actor audit persist"
+    - id: SCN-owner-addressed-reply-refusal
+      given: "Spoofed senders, generic owner recipients, foreign/forged references, or a non-owner reader"
+      when: "They invoke the owner-reply boundary"
+      then: "They refuse without message or audit writes; direct and broadcast delivery remain intact"
+  observable_outcomes:
+    - "Schema-v2 compatibility refusal, stable snapshot rows, byte/sidecar preservation, durable reply linkage, cursor page, and audit event"
+  determinism_controls:
+    - "Hermetic Git/SQLite fixtures, fixed clocks and IDs, explicit transactions, no network, provider, sleep, or retry"
+  anti_cheat_rationale:
+    prevents:
+      - "Migrating or initializing a read-only or unknown schema"
+      - "Returning stale or mixed identity generations"
+      - "Treating owner as a fleet identity or accepting generic recipient bypasses"
+      - "Accepting foreign or forged owner-reply linkage"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
