@@ -1,5 +1,28 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Audited one-day additional allowance
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-day-override
+      given: "An exhausted owner-approved daily allowance and retained charged attempts"
+      when: "The owner approves a bounded current-UTC-day total and later pauses or the day rolls over"
+      then: "Extra work starts without resetting attempts; non-owner/invalid overrides refuse; pause persists; the following day uses the original daily cap"
+  observable_outcomes:
+    - "Actual launched count, charged attempts, remaining allowance, owner audit and next-day limit"
+  determinism_controls:
+    - "Hermetic project, fixed clock and controlled launch callback; no live provider or host scheduling"
+  anti_cheat_rationale:
+    prevents:
+      - "Erasing usage or permanently removing daily caps on an owner override"
+      - "Allowing a specialist to authorize extra budget or bypass pause"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-03 — Owner-configured concurrency
 
 ```yaml

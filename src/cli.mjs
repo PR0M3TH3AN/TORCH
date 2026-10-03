@@ -98,7 +98,7 @@ Usage:
   torch setup [--parent <path>] [--dry-run] [--yes] [--json]
   torch up [--fresh] [--only <id,id>] [--dry-run] [--yes] [--json]
   torch recover-runtime --area <id> --unit <service> --invocation <id> [--expected-session <id> --expected-updated-at <time> --yes] [--json]
-  torch continuation <status|enable|pause|tick> [--max-turns-per-day <1-48>] [--concurrency <1-7>] [--limit <1-7>] [--yes] [--json]
+  torch continuation <status|enable|pause|tick> [--max-turns-per-day <1-48>] [--today-max-turns <1-96>] [--concurrency <1-7>] [--limit <1-7>] [--yes] [--json]
   torch down [--dry-run] [--yes] [--json]
   torch capture [--json]
   torch detach [--dry-run] [--yes] [--json]
@@ -591,6 +591,7 @@ export async function runCli(argv = process.argv.slice(2), {
         if (operation === 'enable' || operation === 'pause') {
           print(configureContinuation(control, { actorId: 'owner', enabled: operation === 'enable',
             maxTurnsPerDay: optionValue(argv, '--max-turns-per-day') === undefined ? undefined : Number(optionValue(argv, '--max-turns-per-day')),
+            todayMaxTurns: optionValue(argv, '--today-max-turns') === undefined ? undefined : Number(optionValue(argv, '--today-max-turns')),
             maxConcurrency: optionValue(argv, '--concurrency') === undefined ? undefined : Number(optionValue(argv, '--concurrency')) }), { json }); return 0;
         }
         if (operation !== 'tick') throw new TorchError('Unknown continuation operation.', { code: 'UNKNOWN_COMMAND' });

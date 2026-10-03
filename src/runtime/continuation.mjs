@@ -9,6 +9,9 @@ function occupiedAreas(control) {
   return existsSync(path) ? readdirSync(path, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name) : [];
 }
 function taskKey(tasks) { return JSON.stringify(tasks.map(t => [t.id, t.revision]).sort((a, b) => a[0].localeCompare(b[0]))); }
+function dailyCap(state, day) {
+  return state.dailyOverride?.day === day ? Math.max(state.maxTurnsPerDay, state.dailyOverride.maxTurns) : state.maxTurnsPerDay;
+}
 function read(control) {
   const policyPath = join(control.stateRoot, 'continuation-policy.json');
   const state = { enabled: false, maxTurnsPerDay: 12, maxConcurrency: 3, areas: [], day: null, attempts: 0, handled: {}, progress: {},
@@ -18,7 +21,9 @@ function read(control) {
     || state.maxTurnsPerDay < 1 || state.maxTurnsPerDay > 48 || !Array.isArray(state.areas)
     || !Number.isInteger(state.maxConcurrency) || state.maxConcurrency < 1 || state.maxConcurrency > 7
     || !Number.isInteger(state.attempts) || state.attempts < 0 || !state.handled || typeof state.handled !== 'object'
-    || !state.progress || typeof state.progress !== 'object') {
+    || !state.progress || typeof state.progress !== 'object'
+    || (state.dailyOverride != null && (!/^\d{4}-\d{2}-\d{2}$/.test(state.dailyOverride.day)
+      || !Number.isInteger(state.dailyOverride.maxTurns) || state.dailyOverride.maxTurns < 1 || state.dailyOverride.maxTurns > 96))) {
     throw new TorchError('Continuation policy or attempt ledger is invalid; launch refused.', { code: 'CONTINUATION_POLICY_INVALID' });
   }
   return state;
@@ -26,26 +31,28 @@ function read(control) {
 function save(control, state, policy = false) {
   const path = policy ? join(control.stateRoot, 'continuation-policy.json') : statePath(control);
   const temporary = `${path}.${randomUUID()}.tmp`;
-  const value = policy ? { enabled: state.enabled, maxTurnsPerDay: state.maxTurnsPerDay, maxConcurrency: state.maxConcurrency, areas: state.areas }
+  const value = policy ? { enabled: state.enabled, maxTurnsPerDay: state.maxTurnsPerDay, maxConcurrency: state.maxConcurrency, areas: state.areas, dailyOverride: state.dailyOverride ?? null }
     : { day: state.day, attempts: state.attempts, handled: state.handled, progress: state.progress };
   writeFileSync(temporary, JSON.stringify(value), { flag: 'wx', mode: 0o600 });
   renameSync(temporary, path);
 }
 
-export function configureContinuation(control, { actorId, enabled, maxTurnsPerDay, maxConcurrency } = {}) {
+export function configureContinuation(control, { actorId, enabled, maxTurnsPerDay, maxConcurrency, todayMaxTurns } = {}) {
   control.assertOwnerActor(actorId);
   const previous = read(control);
   maxTurnsPerDay ??= previous.maxTurnsPerDay;
   maxConcurrency ??= previous.maxConcurrency;
   if (typeof enabled !== 'boolean' || !Number.isInteger(maxTurnsPerDay) || maxTurnsPerDay < 1 || maxTurnsPerDay > 48
-    || !Number.isInteger(maxConcurrency) || maxConcurrency < 1 || maxConcurrency > 7) {
-    throw new TorchError('Continuation requires explicit enable/pause, 1–48 daily turns and 1–7 concurrent turns.', { code: 'CONTINUATION_POLICY_INVALID' });
+    || !Number.isInteger(maxConcurrency) || maxConcurrency < 1 || maxConcurrency > 7
+    || (todayMaxTurns !== undefined && (!Number.isInteger(todayMaxTurns) || todayMaxTurns < maxTurnsPerDay || todayMaxTurns > 96))) {
+    throw new TorchError('Continuation requires explicit enable/pause, 1–48 daily turns, 1–7 concurrent turns and an optional same-day total between the daily cap and 96.', { code: 'CONTINUATION_POLICY_INVALID' });
   }
   const state = { ...previous, enabled, maxTurnsPerDay, maxConcurrency, areas: control.listAgents().map(a => a.areaId) };
+  if (todayMaxTurns !== undefined) state.dailyOverride = { day: control.clock().toISOString().slice(0, 10), maxTurns: todayMaxTurns };
   save(control, state, true);
   control.auditOwnerAction({ actorId, operation: 'runtime.continuation.configure', entityType: 'project', entityId: control.projectId,
-    details: { enabled, maxTurnsPerDay, maxConcurrency, areas: state.areas } });
-  return { enabled, maxTurnsPerDay, maxConcurrency, areas: state.areas, sessionsStarted: false };
+    details: { enabled, maxTurnsPerDay, maxConcurrency, dailyOverride: state.dailyOverride ?? null, areas: state.areas } });
+  return { enabled, maxTurnsPerDay, maxConcurrency, dailyOverride: state.dailyOverride ?? null, areas: state.areas, sessionsStarted: false };
 }
 
 export function observeContinuation({ stateRoot, tasks = [], now = () => new Date() } = {}) {
@@ -53,13 +60,15 @@ export function observeContinuation({ stateRoot, tasks = [], now = () => new Dat
     const state = read({ stateRoot });
     const day = now().toISOString().slice(0, 10);
     const attempts = state.day === day ? state.attempts : 0;
-    const remainingTurns = Math.max(0, state.maxTurnsPerDay - attempts);
+    const cap = dailyCap(state, day);
+    const remainingTurns = Math.max(0, cap - attempts);
     const held = Object.entries(state.progress).filter(([area, progress]) => {
       const active = tasks.filter(t => t.owner === area && ['assigned', 'in_progress'].includes(t.state));
       return active.length && progress?.status === 0 && progress.noProgress >= 2 && progress.taskKey === taskKey(active);
     }).map(([areaId]) => ({ areaId, reason: 'no-progress-needs-coordination' }));
     return { available: existsSync(join(stateRoot, 'continuation-policy.json')), enabled: state.enabled,
-      day, dayTimezone: 'UTC', attempts, maxTurnsPerDay: state.maxTurnsPerDay, maxConcurrency: state.maxConcurrency, remainingTurns,
+      day, dayTimezone: 'UTC', attempts, maxTurnsPerDay: cap, configuredMaxTurnsPerDay: state.maxTurnsPerDay,
+      dailyOverride: state.dailyOverride ?? null, maxConcurrency: state.maxConcurrency, remainingTurns,
       stopReason: !state.enabled ? 'paused' : remainingTurns === 0 ? 'daily-turn-cap' : null,
       capacityHeldBy: occupiedAreas({ stateRoot }), held,
       budgetKind: 'automatic-turn-cap', manualTurnsIncluded: false, tokenOrCostGovernance: 'unknown',
@@ -73,10 +82,11 @@ export function planContinuation(control, backlog, { at = new Date(), limit } = 
   const state = read(control);
   const day = at.toISOString().slice(0, 10);
   const attempts = state.day === day ? state.attempts : 0;
+  const cap = dailyCap(state, day);
   if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 7)) throw new TorchError('Continuation limit must be 1–7.', { code: 'CONTINUATION_POLICY_INVALID' });
   const capacity = Math.min(limit ?? state.maxConcurrency, state.maxConcurrency);
   const metadata = JSON.parse(readFileSync(join(control.stateRoot, 'project.json'), 'utf8'));
-  if (!state.enabled || metadata.detachedAt || attempts >= state.maxTurnsPerDay) {
+  if (!state.enabled || metadata.detachedAt || attempts >= cap) {
     return { enabled: state.enabled, maxConcurrency: capacity, reason: metadata.detachedAt ? 'detached' : !state.enabled ? 'paused' : 'daily-turn-cap', candidates: [], attempts };
   }
   const tasks = backlog.list();
@@ -107,9 +117,9 @@ export function planContinuation(control, backlog, { at = new Date(), limit } = 
   const ordinal = area => state.handled[area]?.dispatchedDay === day ? state.handled[area].dispatchedOrdinal ?? 0 : 0;
   candidates.sort((a, b) => ordinal(a.areaId) - ordinal(b.areaId)
     || Number(b.areaId === 'session-manager') - Number(a.areaId === 'session-manager'));
-  return { enabled: true, maxConcurrency: capacity, day, attempts, remainingTurns: state.maxTurnsPerDay - attempts,
+  return { enabled: true, maxConcurrency: capacity, day, attempts, remainingTurns: cap - attempts,
     occupiedAreas: occupiedAreas(control), held,
-    candidates: candidates.slice(0, Math.min(capacity, state.maxTurnsPerDay - attempts)), mutationPerformed: false };
+    candidates: candidates.slice(0, Math.min(capacity, cap - attempts)), mutationPerformed: false };
 }
 
 export async function runContinuation(control, backlog, { actorId, launch, at, clock = () => at ?? new Date(), limit } = {}) {

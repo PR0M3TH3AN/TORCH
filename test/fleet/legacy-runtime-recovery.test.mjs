@@ -219,6 +219,38 @@ test('SCN-runtime-continuation: explicit enable, event deduplication, daily cap 
   } finally { f.control.close(); }
 });
 
+test('SCN-runtime-continuation-day-override: owner extra allowance preserves charges and expires at UTC reset', async () => {
+  const f = fixture();
+  const backlog = { list: () => [] };
+  const at = new Date('2026-10-03T00:00:00Z');
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Ready' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 1 });
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'First work' });
+    const run = () => runContinuation(f.control, backlog, { actorId: 'owner', at, launch: async () => 0 });
+    assert.equal((await run()).launched.length, 1);
+    assert.equal(planContinuation(f.control, backlog, { at }).reason, 'daily-turn-cap');
+    assert.throws(() => configureContinuation(f.control, { actorId: f.areaId, enabled: true, todayMaxTurns: 3 }), { code: 'OWNER_AUTHORITY_REQUIRED' });
+    for (const todayMaxTurns of [0, 97, 1.5]) assert.throws(() => configureContinuation(f.control,
+      { actorId: 'owner', enabled: true, todayMaxTurns }), { code: 'CONTINUATION_POLICY_INVALID' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, todayMaxTurns: 3 });
+    assert.equal(planContinuation(f.control, backlog, { at }).attempts, 1, 'Previously charged turn is retained');
+    assert.equal(planContinuation(f.control, backlog, { at }).remainingTurns, 2);
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Additional work' });
+    assert.equal((await run()).launched.length, 1);
+    configureContinuation(f.control, { actorId: 'owner', enabled: false });
+    const sameDay = observeContinuation({ stateRoot: f.control.stateRoot, now: () => at });
+    assert.equal(sameDay.attempts, 2);
+    assert.equal(sameDay.maxTurnsPerDay, 3);
+    assert.equal(sameDay.stopReason, 'paused');
+    const nextDay = observeContinuation({ stateRoot: f.control.stateRoot, now: () => new Date('2026-10-04T00:00:00Z') });
+    assert.equal(nextDay.maxTurnsPerDay, 1, 'Override cannot widen future daily allowances');
+    assert.equal(nextDay.attempts, 0);
+    assert.ok(f.control.readAudit({ limit: 100 }).some(a => a.operation === 'runtime.continuation.configure'
+      && a.details?.dailyOverride?.maxTurns === 3));
+  } finally { f.control.close(); }
+});
+
 test('SCN-runtime-continuation-concurrency: seven authorized starts preserve budget and obey tighter limits', async () => {
   const f = fixture({ workerCount: 5 });
   const backlog = { list: () => [] };
