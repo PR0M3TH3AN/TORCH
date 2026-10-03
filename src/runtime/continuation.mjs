@@ -1,74 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { TorchError } from '../kernel/errors.mjs';
 
 function statePath(control) { return join(control.stateRoot, 'continuation.json'); }
-function controllerLockPath(stateRoot) { return join(stateRoot, 'continuation.lock'); }
-function controllerOwnerPath(stateRoot) { return join(controllerLockPath(stateRoot), 'owner.json'); }
-
-function nativeControllerProcess(pid) {
-  if (process.platform !== 'linux') throw new Error('Controller process observation unavailable');
-  const directory = `/proc/${pid}`;
-  const stat = readFileSync(join(directory, 'stat'), 'utf8');
-  const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
-  return { uid: statSync(directory).uid, state: fields[0], startTicks: fields[19] };
-}
-
-// Observational only. A retained controller lock is never a recovery authority:
-// only an exact live process match is active, while every other state remains
-// held and requires an owner-controlled reconciliation path outside this module.
-export function observeContinuationController({ stateRoot, projectId,
-  inspectProcess = nativeControllerProcess, uid = process.getuid?.(), now = () => new Date() } = {}) {
-  let record;
-  try { record = JSON.parse(readFileSync(controllerOwnerPath(stateRoot), 'utf8')); }
-  catch (error) {
-    return { state: 'unknown', reason: error.code === 'ENOENT' ? 'controller-lock-unprovenanced' : 'controller-lock-unavailable' };
-  }
-  if (record.version !== 1 || record.projectId !== projectId || !Number.isSafeInteger(record.pid) || record.pid < 1
-    || !Number.isSafeInteger(record.uid) || record.uid < 0 || typeof record.startTicks !== 'string' || !record.startTicks
-    || typeof record.nonce !== 'string' || !record.nonce) {
-    return { state: 'unknown', reason: 'controller-lock-invalid' };
-  }
-  if (record.uid !== uid) return { state: 'unknown', reason: 'controller-lock-foreign-user' };
-  try {
-    const live = inspectProcess(record.pid);
-    if (live.uid !== record.uid || ['Z', 'X'].includes(live.state)) return { state: 'unknown', reason: 'controller-not-live' };
-    if (live.startTicks !== record.startTicks) return { state: 'unknown', reason: 'controller-replaced' };
-    return { state: 'active', source: 'live-process-and-controller-lock', observedAt: now().toISOString() };
-  } catch { return { state: 'unknown', reason: 'controller-unobservable' }; }
-}
-
-function createContinuationControllerLock(control, { inspectProcess = nativeControllerProcess, uid = process.getuid?.() } = {}) {
-  let live;
-  try { live = inspectProcess(process.pid); } catch { return null; }
-  if (live.uid !== uid || ['Z', 'X'].includes(live.state) || typeof live.startTicks !== 'string' || !live.startTicks) return null;
-  const lock = controllerLockPath(control.stateRoot);
-  try { mkdirSync(lock); } catch (error) {
-    if (error.code === 'EEXIST') return { lock, record: null };
-    throw error;
-  }
-  const record = { version: 1, projectId: control.projectId, pid: process.pid, uid: live.uid,
-    startTicks: live.startTicks, nonce: randomUUID() };
-  try { writeFileSync(controllerOwnerPath(control.stateRoot), JSON.stringify(record), { flag: 'wx', mode: 0o600 }); }
-  catch (error) {
-    try { rmdirSync(lock); } catch { /* A changed artifact must remain fail-closed. */ }
-    throw error;
-  }
-  return { lock, record };
-}
-
-function releaseContinuationControllerLock(control, record) {
-  if (!record) return;
-  const path = controllerOwnerPath(control.stateRoot);
-  try {
-    const current = JSON.parse(readFileSync(path, 'utf8'));
-    if (current.version !== record.version || current.projectId !== record.projectId || current.pid !== record.pid
-      || current.uid !== record.uid || current.startTicks !== record.startTicks || current.nonce !== record.nonce) return;
-    unlinkSync(path);
-    rmdirSync(controllerLockPath(control.stateRoot));
-  } catch { /* Preserve malformed, foreign, or replaced lock artifacts. */ }
-}
 function occupiedAreas(control) {
   const path = join(control.stateRoot, 'sessions', 'turn-guards');
   return existsSync(path) ? readdirSync(path, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name) : [];
@@ -187,18 +122,14 @@ export function planContinuation(control, backlog, { at = new Date(), limit } = 
     candidates: candidates.slice(0, Math.min(capacity, cap - attempts)), mutationPerformed: false };
 }
 
-export async function runContinuation(control, backlog, { actorId, launch, at, clock = () => at ?? new Date(), limit,
-  inspectProcess = nativeControllerProcess, uid = process.getuid?.() } = {}) {
+export async function runContinuation(control, backlog, { actorId, launch, at, clock = () => at ?? new Date(), limit } = {}) {
   control.assertOwnerActor(actorId);
   if (typeof launch !== 'function') throw new TorchError('Continuation needs an authorized launcher.', { code: 'RUNTIME_EXECUTION_NOT_AUTHORIZED' });
-  if (existsSync(controllerLockPath(control.stateRoot))) {
-    return { reason: 'controller-active-or-unreconciled',
-      controller: observeContinuationController({ stateRoot: control.stateRoot, projectId: control.projectId, inspectProcess, uid }), launched: [] };
+  const lock = join(control.stateRoot, 'continuation.lock');
+  try { mkdirSync(lock); } catch (error) {
+    if (error.code === 'EEXIST') return { reason: 'controller-active-or-unreconciled', launched: [] };
+    throw error;
   }
-  const controller = createContinuationControllerLock(control, { inspectProcess, uid });
-  if (controller === null) return { reason: 'controller-observation-unavailable', launched: [] };
-  if (controller.record === null) return { reason: 'controller-active-or-unreconciled',
-    controller: observeContinuationController({ stateRoot: control.stateRoot, projectId: control.projectId, inspectProcess, uid }), launched: [] };
   try {
     const pending = new Map();
     const launched = [];
@@ -243,5 +174,5 @@ export async function runContinuation(control, backlog, { actorId, launch, at, c
       }
     }
     return { launched, reason };
-  } finally { releaseContinuationControllerLock(control, controller.record); }
+  } finally { rmdirSync(lock); }
 }

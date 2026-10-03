@@ -2883,6 +2883,45 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
+# Candidate source B2 frozen-input and fence boundaries (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-candidate-bootstrap-one-shot
+      given: "An issued, nonce-bound native admission"
+      when: "It is opened, replayed, expired, foreign, or malformed"
+      then: "Only one bounded private bootstrap opens; every invalid case refuses before child start and exposes no authority handle"
+    - id: SCN-candidate-input-consumption
+      given: "A frozen project-local source snapshot"
+      when: "The original source changes before the fixed Node child reads its cwd"
+      then: "The child observes the captured bytes; snapshot drift refuses"
+    - id: SCN-candidate-execution-boundary
+      given: "A fixed command and explicit bounded environment"
+      when: "Ambient PATH/HOME/cache fallback or output overflow is attempted"
+      then: "Execution refuses or remains non-success"
+    - id: SCN-candidate-fence-closure
+      given: "A private PID1 namespace observation"
+      when: "Descendant closure is absent or uncertain"
+      then: "The outcome is UNKNOWN/INCOMPLETE, never terminal PASS"
+  observable_outcomes:
+    - "No DB, ControlPlane, writer, receipt adapter, or authority FD reaches the child"
+    - "Product input links and special nodes refuse; frozen product S stays under 64MiB/file and 512MiB total"
+    - "Artifact output remains M/artifactManifest; receipt-adapter A is absent and unclaimed"
+  determinism_controls:
+    - "Temporary source trees, fixed Node executable, explicit empty ambient environment, bounded streams, and injected observations"
+    - "No live policy registration, installation, network, cache, or provider process"
+  anti_cheat_rationale:
+    prevents:
+      - "Reading mutated live source instead of captured bytes"
+      - "Replaying a private admission or relabeling fixture output as a receipt"
+      - "Treating PGID emptiness, zero exit, or Chromium metadata as descendant/binary proof"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 # Console attention advisory cohorts (2026-10-01)
 
 ```yaml
@@ -2927,6 +2966,47 @@ test_integrity_note:
       - "Discarding one source while presenting a deduplicated observation"
       - "Hiding unsafe errors or owner decisions inside advisory summaries"
       - "Changing preview, revision, draft, or acknowledgement behavior while rendering evidence"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+# Candidate source B2 authenticated-attempt spec correction (2026-10-01)
+
+```yaml
+test_integrity_note:
+  change_type: spec_correction
+  scenarios:
+    - id: SCN-candidate-bootstrap-one-shot
+      given: "A CheckService-issued opaque registered-plan handle"
+      when: "A foreign, cloned, expired, replayed, or already-closed handle is used"
+      then: "No FD3 admission opens; the only accepted acknowledgement is the exact FD4 binding frame and it closes the original linear handle"
+    - id: SCN-candidate-input-consumption
+      given: "A frozen, bounded product snapshot and a fixed Node E binding"
+      when: "The original product bytes change before execution"
+      then: "An actual spawned child reads the frozen bytes; post-capture drift refuses before spawn"
+    - id: SCN-candidate-execution-boundary
+      given: "An opaque attempt with fixed command, arguments, explicit environment, and output cap"
+      when: "The child exits zero after exceeding the cap"
+      then: "The parent records overflow as non-success without accepting an injected executor or caller-selected limit"
+    - id: SCN-candidate-fence-closure
+      given: "A closed opaque attempt"
+      when: "The backend has not recorded namespace identity, FD closure, and descendant reaping"
+      then: "Terminal proof is UNKNOWN; fabricated observations and cloned handles cannot create proof"
+  observable_outcomes:
+    - "Only the exact FD4 acknowledgement closes a one-shot opaque admission"
+    - "Child stdout proves frozen-byte consumption, not same-process test reads"
+    - "Zero exit plus output overflow is never success"
+    - "Missing backend fence evidence is never TerminalProof"
+  determinism_controls:
+    - "Temporary source trees, fixed absolute Node runtime, explicit empty child environment, bounded streams"
+    - "No injected executor, caller-provided command, root, environment, limit, or terminal observation"
+  anti_cheat_rationale:
+    prevents:
+      - "Arbitrary tuple issuance or a fabricated bootstrap literal"
+      - "Boolean caller observations minting terminal proof"
+      - "Cloned or reused handles reopening an admission"
+      - "Same-process snapshot reads impersonating child consumption"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
@@ -3064,27 +3144,57 @@ test_integrity_note:
     if_true_explain_spec_basis: ""
 ```
 
+# Exact-source adoption (2026-10-03)
+
 ```yaml
 test_integrity_note:
   change_type: new_tests
   scenarios:
-    - id: SCN-runtime-continuation-reservation-failure
-      given: "One eligible identity and a launch function that throws synchronously or rejects after the continuation ledger reserves its attempt"
-      when: "The controller is invoked again with the unchanged signal"
-      then: "Exactly one attempt remains charged, the failed launch is represented as unknown, and no silent replay occurs"
-    - id: SCN-runtime-continuation-retained-artifacts
-      given: "An eligible identity with either a retained continuation controller lock or a malformed retained physical guard"
-      when: "The controller runs on its original and a later UTC day"
-      then: "No launch occurs, no attempt ledger reset is used to bypass the artifact, and the retained artifact remains until explicit external reconciliation"
+    - id: SCN-integration-adoption-private-ref-cas
+      given: "A clean disposable Git repository, a base commit, and an owner-bound private-ref adoption"
+      when: "The adoption finalizes and a stale compare-and-swap attempts to alter its candidate ref"
+      then: "Real Git private archive and candidate refs are created atomically, while the stale write refuses"
+    - id: SCN-integration-adoption-journal-and-binding
+      given: "A prepared adoption journal record"
+      when: "A second preparation or lifecycle request supplies a different candidate binding"
+      then: "The journal revision compare-and-swap and immutable binding checks refuse without changing the prepared record"
+    - id: SCN-integration-adoption-finalize-recovery
+      given: "A real private-ref transaction completed before its journal write"
+      when: "Reconciliation is run and then replayed"
+      then: "One durable finalized recovery is recorded and the replay is consistent without another mutation"
+    - id: SCN-integration-adoption-rollback-recovery
+      given: "A finalized candidate whose private ref was removed before its rollback journal write, or whose candidate ref diverged"
+      when: "Rollback is requested"
+      then: "The completed rollback is recovered once and divergent candidate bytes refuse"
+    - id: SCN-integration-adoption-private-ref-intake
+      given: "An existing unfinalized private candidate ref and a separate finalized owner-bound private candidate ref"
+      when: "Direct private-ref intake and authenticated native qualification are requested"
+      then: "Direct intake refuses without a queue record, while the authenticated path records the exact private ref and commit in ordinary testing state"
+    - id: SCN-integration-adoption-approval-boundaries
+      given: "An ordinary source-only approval, or an adoption whose actor, action, approval revision, or provenance differs from the approved immutable binding"
+      when: "Preparation or a lifecycle transition is attempted"
+      then: "The transition refuses with its structured boundary code and no integration queue record"
+    - id: SCN-integration-adoption-request-replay
+      given: "A finalized adoption that has created its one ordinary private-ref integration request"
+      when: "Two independently opened authenticated API callers request it concurrently"
+      then: "The existing transactional adoption journal serializes them, one caller refuses after the completed transition, and exactly one queue row remains"
+    - id: SCN-integration-adoption-legacy-retries
+      given: "An existing project database containing two historical ordinary-request retry rows with the same source branch and commit"
+      when: "IntegrationService starts"
+      then: "Both records remain readable; startup adds no global uniqueness constraint and does not reject historical evidence"
   observable_outcomes:
-    - "Launch count, returned launch status, persisted daily attempt count, and retained lock/guard path"
+    - "Git ref values, structured refusal codes, durable journal state, and native integration-request fields"
   determinism_controls:
-    - "Hermetic temporary repositories, fixed UTC clocks, injected throw/rejection outcomes, and local filesystem artifacts; no live provider, timer, or retry"
+    - "Disposable local Git repositories, temporary SQLite-backed control-plane state, fixed fixture bytes, and no network or provider"
   anti_cheat_rationale:
     prevents:
-      - "Refunding or silently replaying an uncertain launch"
-      - "Treating a stale-looking controller lock or malformed guard as released"
-      - "Passing capacity tests while weakening post-reservation failure handling"
+      - "Fixture-only CAS implementations that do not exercise Git update-ref"
+      - "Mutable lifecycle bindings or overwriteable adoption journal records"
+      - "Claiming crash recovery without preserving actual ref effects"
+      - "Treating a private candidate as an ordinary specialist branch"
+      - "Using an unrelated, source-only, stale, or mismatched approval as adoption authority"
+      - "Duplicating a private-ref queue record through concurrent authenticated API requests or replay"
+      - "Rejecting historical ordinary-request retry evidence with an unqualified schema constraint"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
@@ -3094,22 +3204,19 @@ test_integrity_note:
 test_integrity_note:
   change_type: new_tests
   scenarios:
-    - id: SCN-codex-registered-mcp-runtime-dir
-      given: "The registered Codex adapter receives a Linux parent environment with a valid runtime directory, then the same environment with that variable removed"
-      when: "It produces create and resume plans for an identity-bound TORCH MCP server under an explicit model, reasoning, sandbox, and approval profile"
-      then: "Both valid plans name exactly XDG_RUNTIME_DIR; both removed-context plans omit env_vars while preserving the MCP identity, profile tokens, create/resume mode, and resume session token"
+    - id: SCN-integration-adoption-lifecycle-revision-cas
+      given: "A prepared or finalized owner-bound adoption record with a known journal revision"
+      when: "A caller supplies a stale or omitted expectedRecordRevision to finalize, reconcile, rollback, or request native qualification"
+      then: "The operation refuses before private-ref, journal, queue, or audit effects; the original record and refs remain unchanged"
   observable_outcomes:
-    - "The registry-backed Codex launch records contain only the one-name runtime allowlist when the real parent context has a valid value"
-    - "Removing XDG_RUNTIME_DIR removes only that allowlist, not the model, reasoning, approval, sandbox, MCP identity, or session token"
-    - "No runtime directory, DBUS address, home, PATH, token, or general parent environment value is serialized"
+    - "ADOPTION_RECORD_REVISION_STALE is returned for stale or omitted lifecycle callers"
+    - "Private candidate/archive refs, durable journal record, audit count, and integration queue remain unchanged for every rejected lifecycle call"
   determinism_controls:
-    - "Hermetic fixture repository and explicit process-like parent environments passed to the registered adapter; no provider execution, host service, native runtime, retry, or process-wide environment mutation"
+    - "Disposable local Git repository and temporary SQLite-backed control-plane fixture; no network, provider, or live adoption"
   anti_cheat_rationale:
     prevents:
-      - "Bypassing the registered Codex adapter to preserve launch profile or identity fields"
-      - "Hard-coding a runtime directory or forwarding DBUS, secrets, home, PATH, or the full environment"
-      - "Retaining env_vars after the parent runtime context is removed"
-      - "Claiming plan-only evidence as installed or native qualification"
+      - "Issuing external ref or queue effects from a stale lifecycle read"
+      - "Treating journal revision as an internal-only implementation detail"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
@@ -3117,25 +3224,87 @@ test_integrity_note:
 
 ```yaml
 test_integrity_note:
-  change_type: new_tests
+  change_type: spec_correction
   scenarios:
-    - id: SCN-runtime-continuation-provenance-lock
-      given: "An owner-authorized continuation with an isolated fixed process observation"
-      when: "The controller creates its lock before reserving an eligible launch"
-      then: "A 0600, versioned owner record binds project, PID, UID and start ticks; task/session stay unchanged and the lock is exact-live only"
-    - id: SCN-runtime-continuation-provenance-refusal
-      given: "A bare, malformed, foreign-project, PID-replaced, live-quiet, or observer-unavailable retained controller lock"
-      when: "Continuation runs across fixed UTC clocks"
-      then: "The lock remains held, zero launches occur, and only matching UID, PID and start ticks is observed as active; no stopped inference or cleanup occurs"
+    - id: SCN-integration-adoption-request-replay
+      given: "Two authenticated callers carry the same finalized adoption revision into the serialized native-request transition"
+      when: "One caller completes the transition and the other resumes with its now-stale expectedRecordRevision"
+      then: "The second caller strictly receives ADOPTION_RECORD_REVISION_STALE while exactly one requested journal record and one queue row remain"
   observable_outcomes:
-    - "Owner-record permissions and provenance fields, identity task/session, launch count, attempt ledger, retained lock path, and controller observation state"
+    - "The replay loser reports the stale journal-revision boundary, not a generic post-state refusal"
+    - "Exactly one private-ref integration request and requested audit transition exist"
+  spec_correction_basis:
+    - "The former ADOPTION_REQUEST_STATE_INVALID replay expectation was wrong: after the serialized winner commits, the loser carries an obsolete journal revision, so revision CAS is the first observable refusal boundary under SCN-integration-adoption-request-replay."
   determinism_controls:
-    - "Hermetic fixture repositories, fixed UTC clocks, and an injected process-observation boundary only; no live provider, timer, termination, retry, or nonce inspection"
+    - "Two independently opened local API processes over disposable Git and SQLite fixture state"
   anti_cheat_rationale:
     prevents:
-      - "Treating quietness, lock age, malformed data, or observer failure as stopped-process proof"
-      - "Deleting retained locks or launching around an unresolved controller"
-      - "Forging active controller status without matching UID, PID, and start ticks"
+      - "Accepting a stale lifecycle read after another caller has committed"
+      - "Relaxing the exactly-one-request invariant after adding revision binding"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Schema-v2 read-only owner-reply boundary
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-read-only-v2-control-plane
+      given: "A canonical schema-v2 fixture, including a write-refusing state directory"
+      when: "A reader opens a normal SQLite read transaction and a mutation is attempted"
+      then: "It returns one coherent snapshot or a typed refusal; no database or sidecar bytes change"
+    - id: SCN-read-only-pinned-correlated-snapshot
+      given: "Two v2 identities in one observable generation"
+      when: "A writer atomically commits their next generation while the reader remains open"
+      then: "The reader observes one generation or refuses, never a mixed pair"
+    - id: SCN-owner-addressed-reply-durability
+      given: "A registered agent has an owner-originated request addressed to it"
+      when: "It sends a dedicated reply and state is reopened"
+      then: "The reply linkage, bounded owner cursor, and actor audit persist"
+    - id: SCN-owner-addressed-reply-refusal
+      given: "Spoofed senders, a different valid registered agent, generic owner recipients, foreign/forged references, or a non-owner reader"
+      when: "They invoke the owner-reply boundary"
+      then: "They refuse without message or audit writes; the owner conversation remains unchanged; direct and broadcast delivery remain intact"
+  observable_outcomes:
+    - "Schema-v2 compatibility refusal, stable snapshot rows, byte/sidecar preservation, durable reply linkage, cursor page, and audit event"
+  determinism_controls:
+    - "Hermetic Git/SQLite fixtures, fixed clocks and IDs, explicit transactions, no network, provider, sleep, or retry"
+  anti_cheat_rationale:
+    prevents:
+      - "Migrating or initializing a read-only or unknown schema"
+      - "Returning stale or mixed identity generations"
+      - "Treating owner as a fleet identity or accepting generic recipient bypasses"
+      - "Accepting foreign, forged, or valid-identity wrong-addressee owner-reply linkage"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Public MCP owner-reply wrapper
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-mcp-owner-reply-public-boundary
+      given: "A registered agent has an owner-originated request addressed to it and a second registered identity exists"
+      when: "Each identity invokes the public stdio MCP owner-reply tool"
+      then: "Only the bound addressee can persist a reply with replyTo and audit attribution; selector fields and another valid identity refuse before a write"
+  observable_outcomes:
+    - "The MCP schema exposes only request_id and body with no additional properties or owner-history tool"
+    - "The persisted reply is linked to the owner request and audited as the bound actor"
+    - "Selector-field and wrong-addressee refusals leave owner conversation and audit counts unchanged"
+  determinism_controls:
+    - "Hermetic Git/SQLite fixture, fixed topology, local stdio MCP process, no network, provider, sleep, or retry"
+  anti_cheat_rationale:
+    prevents:
+      - "Selecting a sender, recipient, owner, or history through MCP input"
+      - "Replying from a different valid Fleet identity"
+      - "Exposing an agent-facing owner-history reader"
+      - "Claiming an in-process helper as public MCP qualification"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

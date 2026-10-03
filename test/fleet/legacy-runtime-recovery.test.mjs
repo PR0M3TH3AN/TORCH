@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -12,7 +12,7 @@ import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { issueStoppedExecutorEvidence } from '../../src/runtime/stopped-executor-evidence.mjs';
 import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
 import { observeProject } from '../../src/observability/snapshot.mjs';
-import { configureContinuation, observeContinuation, observeContinuationController, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
+import { configureContinuation, observeContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
 function fixture({ recoveryWorktree = true, extraWorker = false, workerCount = 0 } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
@@ -381,62 +381,6 @@ test('SCN-runtime-continuation-capacity: a manually held executor counts against
   } finally { f.control.close(); }
 });
 
-test('SCN-runtime-continuation-reservation-failure: post-reservation launch failures are charged once and never replayed', async () => {
-  for (const launchFailure of [
-    () => { throw new Error('synchronous launch failure'); },
-    () => Promise.reject(new Error('rejected launch failure'))
-  ]) {
-    const f = fixture();
-    const at = new Date('2026-10-03T00:00:00Z');
-    try {
-      f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
-      f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
-      configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 2 });
-      let launches = 0;
-      const launch = () => { launches++; return launchFailure(); };
-      const first = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at, launch });
-      assert.equal(first.launched.length, 1);
-      assert.equal(first.launched[0].status, null);
-      assert.equal(launches, 1);
-      assert.equal(planContinuation(f.control, { list: () => [] }, { at }).attempts, 1);
-      const replay = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at, launch });
-      assert.deepEqual(replay.launched, []);
-      assert.equal(launches, 1);
-      assert.equal(planContinuation(f.control, { list: () => [] }, { at }).attempts, 1);
-    } finally { f.control.close(); }
-  }
-});
-
-test('SCN-runtime-continuation-retained-artifacts: crash lock and unknown guard fail closed without expiry or ledger reset', async () => {
-  for (const retained of ['lock', 'unknown-guard']) {
-    const f = fixture();
-    const at = new Date('2026-10-03T00:00:00Z');
-    const path = retained === 'lock'
-      ? join(f.control.stateRoot, 'continuation.lock')
-      : join(f.control.stateRoot, 'sessions', 'turn-guards', f.areaId);
-    try {
-      f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
-      f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
-      configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 2 });
-      mkdirSync(path, { recursive: true });
-      if (retained === 'unknown-guard') writeFileSync(join(path, 'owner.json'), 'not-json');
-      let launches = 0;
-      for (const clock of [at, new Date('2026-10-04T00:00:00Z')]) {
-        const result = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at: clock,
-          launch: () => { launches++; return 0; } });
-        assert.deepEqual(result.launched, []);
-        assert.equal(planContinuation(f.control, { list: () => [] }, { at: clock }).attempts, 0);
-        assert.equal(existsSync(path), true);
-      }
-      assert.equal(launches, 0);
-    } finally {
-      if (retained === 'unknown-guard' && existsSync(join(path, 'owner.json'))) unlinkSync(join(path, 'owner.json'));
-      if (existsSync(path)) rmdirSync(path);
-      f.control.close();
-    }
-  }
-});
-
 test('SCN-runtime-continuation-fairness: a fresh task revision does not let one specialist starve an unstarted peer', async () => {
   const f = fixture({ extraWorker: true });
   try {
@@ -486,83 +430,4 @@ test('SCN-legacy-runtime-recovery-project: evidence cannot be applied to a diffe
       expectedIdentity: second.identity, evidence: first.issue().evidence }), { code: 'RUNTIME_RECOVERY_UNVERIFIED' });
     assert.equal(second.control.getAgent(second.areaId).state, 'working');
   } finally { first.control.close(); second.control.close(); }
-});
-
-test('SCN-runtime-continuation-provenance-lock: a controller lock binds exact live process provenance without changing identity state', async () => {
-  const f = fixture();
-  try {
-    const uid = process.getuid?.();
-    const processRecord = { uid, state: 'S', startTicks: 'fixed-controller-start' };
-    const inspectProcess = () => processRecord;
-    f.control.reportStatus({ areaId: f.areaId, state: 'idle', task: 'TASK-preserved', runtimeSessionId: 'fixture-session',
-      summary: 'Ready for an authorized continuation' });
-    const before = f.control.getAgent(f.areaId);
-    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
-    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 2 });
-    let inspected = false;
-    let inspectionFailure;
-    const result = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', inspectProcess,
-      launch: () => {
-        try {
-          const path = join(f.control.stateRoot, 'continuation.lock', 'owner.json');
-          const record = JSON.parse(readFileSync(path, 'utf8'));
-          assert.equal(record.version, 1);
-          assert.equal(record.projectId, f.control.projectId);
-          assert.equal(record.pid, process.pid);
-          assert.equal(record.startTicks, 'fixed-controller-start');
-          assert.equal(statSync(path).mode & 0o777, 0o600);
-          assert.equal(f.control.getAgent(f.areaId).currentTask, before.currentTask);
-          assert.equal(f.control.getAgent(f.areaId).runtimeSessionId, before.runtimeSessionId);
-          assert.equal(observeContinuation({ stateRoot: f.control.stateRoot }).attempts, 1,
-            'Only the subsequent launch reservation charges the attempt ledger');
-          assert.equal(observeContinuationController({ stateRoot: f.control.stateRoot, projectId: f.control.projectId,
-            inspectProcess }).state, 'active');
-        } catch (error) { inspectionFailure = error; }
-        inspected = true;
-        return 0;
-      } });
-    assert.equal(inspected, true, JSON.stringify(result));
-    assert.ifError(inspectionFailure);
-    assert.equal(result.launched.length, 1);
-    assert.equal(existsSync(join(f.control.stateRoot, 'continuation.lock')), false);
-  } finally { f.control.close(); }
-});
-
-test('SCN-runtime-continuation-provenance-refusal: retained controller locks never infer stopped or launch', async () => {
-  const cases = [
-    { id: 'bare', write: () => {}, inspect: () => { throw new Error('must not inspect bare lock'); }, state: 'unknown' },
-    { id: 'malformed', write: path => writeFileSync(path, 'not-json'), inspect: () => { throw new Error('unavailable'); }, state: 'unknown' },
-    { id: 'foreign-project', write: (path, record) => writeFileSync(path, JSON.stringify({ ...record, projectId: 'foreign' })), inspect: () => ({ uid: process.getuid?.(), state: 'S', startTicks: 'fixed' }), state: 'unknown' },
-    { id: 'pid-replaced', write: (path, record) => writeFileSync(path, JSON.stringify(record)), inspect: () => ({ uid: process.getuid?.(), state: 'S', startTicks: 'reused' }), state: 'unknown' },
-    { id: 'live-quiet', write: (path, record) => writeFileSync(path, JSON.stringify(record)), inspect: () => ({ uid: process.getuid?.(), state: 'S', startTicks: 'fixed' }), state: 'active' },
-    { id: 'observer-unavailable', write: (path, record) => writeFileSync(path, JSON.stringify(record)), inspect: () => { throw new Error('process boundary unavailable'); }, state: 'unknown' },
-  ];
-  for (const scenario of cases) {
-    const f = fixture();
-    const at = new Date('2026-10-03T00:00:00Z');
-    const lock = join(f.control.stateRoot, 'continuation.lock');
-    const owner = join(lock, 'owner.json');
-    try {
-      f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Quiet status is not stopped-process proof' });
-      f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
-      configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 2 });
-      mkdirSync(lock);
-      const record = { version: 1, projectId: f.control.projectId, pid: 999, uid: process.getuid?.(), startTicks: 'fixed', nonce: 'opaque' };
-      scenario.write(owner, record);
-      let launches = 0;
-      for (const clock of [at, new Date('2026-10-04T00:00:00Z')]) {
-        const result = await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at: clock,
-          inspectProcess: scenario.inspect, launch: () => { launches++; return 0; } });
-        assert.equal(result.reason, 'controller-active-or-unreconciled', scenario.id);
-        assert.equal(result.controller.state, scenario.state, scenario.id);
-        assert.equal(existsSync(lock), true, scenario.id);
-      }
-      assert.equal(launches, 0, scenario.id);
-      assert.equal(planContinuation(f.control, { list: () => [] }, { at }).attempts, 0, scenario.id);
-    } finally {
-      if (existsSync(owner)) unlinkSync(owner);
-      if (existsSync(lock)) rmdirSync(lock);
-      f.control.close();
-    }
-  }
 });

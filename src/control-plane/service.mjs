@@ -5,7 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { projectStatePath } from '../kernel/paths.mjs';
-import { loadProjectConfig } from '../kernel/config.mjs';
+import { loadProjectConfig, validateProjectConfig } from '../kernel/config.mjs';
 import { organizationGraphFromConfig } from '../kernel/organization.mjs';
 import { consumeStoppedExecutorEvidence } from '../runtime/stopped-executor-evidence.mjs';
 
@@ -15,14 +15,62 @@ export const PRESENCE_STATES = Object.freeze([
 
 const MESSAGE_KINDS = new Set([
   'message', 'coordination-request', 'handoff-request', 'completion', 'blocker', 'manager-check-in', 'manager-stale-work-review',
-  'approval-request', 'approval-decision',
+  'approval-request', 'approval-decision', 'owner-reply',
 ]);
+
+const CONTROL_PLANE_V2_SCHEMA_VERSION = 2;
+
+// This reader intentionally recognizes only the canonical v2 state shape. A
+// newer state must be rejected rather than interpreted with a partial guess.
+const CONTROL_PLANE_V2_COLUMNS = Object.freeze({
+  identities: ['area_id', 'runtime', 'runtime_session_id', 'state', 'summary', 'current_task', 'heartbeat_at', 'updated_at'],
+  messages: ['id', 'project_id', 'sender_id', 'recipient_id', 'kind', 'created_at', 'body', 'task_ref', 'path_ref', 'commit_ref', 'handoff_ref', 'delivered_at'],
+  message_acks: ['message_id', 'area_id', 'acknowledged_at'],
+  reports: ['id', 'project_id', 'area_id', 'kind', 'summary', 'task_ref', 'evidence', 'created_at'],
+  handoffs: ['id', 'project_id', 'sender_id', 'recipient_id', 'path_ref', 'task_ref', 'reason', 'status', 'created_at'],
+  audit_events: ['id', 'project_id', 'actor_id', 'operation', 'entity_type', 'entity_id', 'details', 'created_at'],
+  approval_requests: ['id', 'project_id', 'requester_id', 'approver_id', 'task_ref', 'title', 'summary', 'evidence', 'status', 'revision', 'created_at', 'decided_at', 'decided_by', 'decision_note'],
+});
 
 function readJson(path, code) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
   } catch (error) {
     throw new TorchError(`Cannot read TORCH state at ${path}`, { code, details: error.message });
+  }
+}
+
+function readJsonBytes(bytes, path, code) {
+  try {
+    return JSON.parse(bytes.toString('utf8'));
+  } catch (error) {
+    throw new TorchError(`Cannot read TORCH state at ${path}`, { code, details: error.message });
+  }
+}
+
+function readOnlyUnavailable(message, details = null) {
+  return new TorchError(message, { code: 'CONTROL_PLANE_READ_ONLY_UNAVAILABLE', details });
+}
+
+function exactColumns(database, table) {
+  return database.prepare(`PRAGMA table_info(${table})`).all().map((column) => column.name);
+}
+
+function validateV2ReadOnlySchema(database) {
+  const version = database.prepare('PRAGMA user_version').get()?.user_version;
+  if (version !== CONTROL_PLANE_V2_SCHEMA_VERSION) {
+    throw readOnlyUnavailable('The control-plane state is not the supported schema-v2 snapshot.', {
+      expected: CONTROL_PLANE_V2_SCHEMA_VERSION, actual: version ?? null,
+    });
+  }
+  for (const [table, expected] of Object.entries(CONTROL_PLANE_V2_COLUMNS)) {
+    const present = database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
+    const actual = present ? exactColumns(database, table) : null;
+    if (!actual || actual.length !== expected.length || actual.some((name, index) => name !== expected[index])) {
+      throw readOnlyUnavailable('The control-plane state does not match the required schema-v2 tables.', {
+        table, expected, actual,
+      });
+    }
   }
 }
 
@@ -38,6 +86,35 @@ function requiredText(value, name) {
 function optionalText(value, name) {
   if (value === undefined || value === null || value === '') return null;
   return requiredText(value, name);
+}
+
+function messageObservationSelection(value) {
+  if (value !== 'unread' && value !== 'history') {
+    throw new TorchError('Message observation selection must be unread or history', {
+      code: 'INVALID_MESSAGE_SELECTION', details: { selection: value, allowed: ['unread', 'history'] },
+    });
+  }
+  return value;
+}
+
+function messageObservationLimit(value) {
+  if (!Number.isInteger(value) || value < 1 || value > 1000) {
+    throw new TorchError('Message observation limit must be an integer from 1 through 1000', {
+      code: 'INVALID_MESSAGE_LIMIT', details: { limit: value, minimum: 1, maximum: 1000 },
+    });
+  }
+  return value;
+}
+
+function ownerConversationCursor(value) {
+  if (value === undefined || value === null) return null;
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || Object.keys(value).length !== 2 || !Object.hasOwn(value, 'createdAt') || !Object.hasOwn(value, 'id')) {
+    throw new TorchError('Owner conversation cursor must contain only createdAt and id', {
+      code: 'INVALID_OWNER_CONVERSATION_CURSOR',
+    });
+  }
+  return { createdAt: requiredText(value.createdAt, 'cursor.createdAt'), id: requiredText(value.id, 'cursor.id') };
 }
 
 function normalizeReferences(references = {}) {
@@ -113,6 +190,13 @@ function effectiveRoster(roster, config) {
 }
 
 function rowToMessage(row) {
+  const references = {
+    task: row.task_ref ?? null,
+    path: row.path_ref ?? null,
+    commit: row.commit_ref ?? null,
+    handoff: row.handoff_ref ?? null,
+  };
+  if (row.kind === 'owner-reply') references.replyTo = row.handoff_ref ?? null;
   return {
     id: row.id,
     projectId: row.project_id,
@@ -123,12 +207,7 @@ function rowToMessage(row) {
     body: row.body,
     acknowledgedAt: row.acknowledged_at ?? null,
     deliveredAt: row.delivered_at ?? null,
-    references: {
-      task: row.task_ref ?? null,
-      path: row.path_ref ?? null,
-      commit: row.commit_ref ?? null,
-      handoff: row.handoff_ref ?? null,
-    },
+    references,
   };
 }
 
@@ -225,10 +304,15 @@ function initializeSchema(database) {
 }
 
 export class ControlPlane {
-  constructor({ repositoryRoot, env = process.env, clock = () => new Date(), idFactory = randomUUID } = {}) {
+  constructor({ repositoryRoot, env = process.env, clock = () => new Date(), idFactory = randomUUID, readOnly = false } = {}) {
     this.repositoryRoot = resolve(repositoryRoot ?? process.cwd());
     this.clock = clock;
     this.idFactory = idFactory;
+    this.readOnly = readOnly === true;
+    if (this.readOnly) {
+      this.initializeReadOnly(env);
+      return;
+    }
     this.manifest = readInstallManifest(this.repositoryRoot);
     this.config = loadProjectConfig(this.repositoryRoot);
     this.roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'INVALID_TORCH_ROSTER');
@@ -268,7 +352,104 @@ export class ControlPlane {
     for (const areaId of this.agents.keys()) insert.run(areaId, 'offline');
   }
 
+  initializeReadOnly(env) {
+    const trackedRoot = join(this.repositoryRoot, '.torch');
+    const manifestPath = join(trackedRoot, 'install-manifest.json');
+    const configPath = join(trackedRoot, 'torch.yaml');
+    const rosterPath = join(trackedRoot, 'roster.yaml');
+    try {
+      this.readOnlyInputs = [
+        { path: manifestPath, bytes: readFileSync(manifestPath) },
+        { path: configPath, bytes: readFileSync(configPath) },
+        { path: rosterPath, bytes: readFileSync(rosterPath) },
+      ];
+      this.manifest = readJsonBytes(this.readOnlyInputs[0].bytes, manifestPath, 'INVALID_INSTALL_MANIFEST');
+      this.config = validateProjectConfig(readJsonBytes(this.readOnlyInputs[1].bytes, configPath, 'CONFIG_INVALID'));
+      this.roster = readJsonBytes(this.readOnlyInputs[2].bytes, rosterPath, 'INVALID_TORCH_ROSTER');
+    } catch (error) {
+      if (error instanceof TorchError) throw error;
+      throw readOnlyUnavailable('The tracked control-plane inputs could not be read atomically.', { cause: error.message });
+    }
+    if (this.config.project?.id !== this.manifest.projectId) {
+      throw new TorchError('Tracked configuration and installation manifest disagree on project identity', {
+        code: 'PROJECT_ID_MISMATCH',
+      });
+    }
+    const localState = (this.manifest.external ?? []).find((entry) => entry.type === 'local-state');
+    if (!localState?.path || !existsSync(localState.path)) {
+      throw new TorchError('TORCH local project state is unavailable', { code: 'LOCAL_STATE_MISSING' });
+    }
+    const expectedStateRoot = projectStatePath(this.manifest.projectId, env);
+    if (resolve(localState.path) !== resolve(expectedStateRoot)) {
+      throw new TorchError('Installation manifest local state path does not match this environment', {
+        code: 'LOCAL_STATE_PATH_MISMATCH',
+        details: { manifest: localState.path, expected: expectedStateRoot },
+      });
+    }
+    const metadataPath = join(expectedStateRoot, 'project.json');
+    try {
+      this.readOnlyInputs.push({ path: metadataPath, bytes: readFileSync(metadataPath) });
+    } catch (error) {
+      throw readOnlyUnavailable('The local control-plane metadata could not be read.', { cause: error.message });
+    }
+    const metadata = readJsonBytes(this.readOnlyInputs[3].bytes, metadataPath, 'LOCAL_STATE_METADATA_INVALID');
+    if (metadata.projectId !== this.manifest.projectId || resolve(metadata.root) !== this.repositoryRoot) {
+      throw new TorchError('Local state metadata does not belong to this installation root', {
+        code: 'LOCAL_STATE_METADATA_MISMATCH',
+      });
+    }
+    this.stateRoot = expectedStateRoot;
+    this.projectId = this.manifest.projectId;
+    this.agents = new Map(effectiveRoster(this.roster, this.config).map((area) => [area.id, area]));
+    if (!this.agents.has('session-manager')) {
+      throw new TorchError('Roster does not contain the required session-manager identity', {
+        code: 'INVALID_TORCH_ROSTER',
+      });
+    }
+    try {
+      this.database = new DatabaseSync(join(this.stateRoot, 'state.db'), { readOnly: true });
+      // A normal read transaction preserves SQLite's locking and WAL semantics.
+      this.database.exec('BEGIN');
+      this.readTransactionOpen = true;
+      validateV2ReadOnlySchema(this.database);
+      for (const areaId of this.agents.keys()) {
+        if (!this.database.prepare('SELECT area_id FROM identities WHERE area_id = ?').get(areaId)) {
+          throw readOnlyUnavailable('The schema-v2 snapshot does not contain every registered identity.', { areaId });
+        }
+      }
+      this.assertReadOnlyInputsStable();
+    } catch (error) {
+      try { if (this.readTransactionOpen) this.database.exec('ROLLBACK'); } catch { /* close only */ }
+      try { this.database?.close(); } catch { /* close only */ }
+      if (error instanceof TorchError) throw error;
+      throw readOnlyUnavailable('A coherent read-only control-plane snapshot is unavailable.', { cause: error.message });
+    }
+  }
+
+  assertReadOnlyInputsStable() {
+    if (!this.readOnly) return;
+    for (const input of this.readOnlyInputs) {
+      let current;
+      try { current = readFileSync(input.path); } catch (error) {
+        throw readOnlyUnavailable('A control-plane input disappeared while it was being read.', { path: input.path, cause: error.message });
+      }
+      if (!current.equals(input.bytes)) {
+        throw readOnlyUnavailable('A control-plane input changed while the read-only snapshot was open.', { path: input.path });
+      }
+    }
+  }
+
+  assertWritable() {
+    if (this.readOnly) {
+      throw new TorchError('This control-plane handle is read-only.', { code: 'CONTROL_PLANE_READ_ONLY' });
+    }
+  }
+
   refreshRoster() {
+    if (this.readOnly) {
+      this.assertReadOnlyInputsStable();
+      return { schema: this.roster.schema, areaIds: [...this.agents.keys()] };
+    }
     const roster = readJson(join(this.repositoryRoot, '.torch', 'roster.yaml'), 'INVALID_TORCH_ROSTER');
     const config = loadProjectConfig(this.repositoryRoot);
     const agents = new Map(effectiveRoster(roster, config).map((area) => [area.id, area]));
@@ -285,11 +466,18 @@ export class ControlPlane {
   }
 
   close() {
+    if (this.readTransactionOpen) {
+      try { this.database.exec('COMMIT'); } finally { this.readTransactionOpen = false; }
+    }
     this.database.close();
   }
 
   assertIdentity(areaId) {
     this.refreshRoster();
+    return this.assertLoadedIdentity(areaId);
+  }
+
+  assertLoadedIdentity(areaId) {
     const normalized = requiredText(areaId, 'areaId');
     if (!this.agents.has(normalized)) {
       throw new TorchError(`Unknown Fleet identity: ${normalized}`, {
@@ -308,6 +496,9 @@ export class ControlPlane {
   identity(areaId) {
     const id = this.assertIdentity(areaId);
     const row = this.database.prepare('SELECT * FROM identities WHERE area_id = ?').get(id);
+    if (this.readOnly && !row) {
+      throw readOnlyUnavailable('The read-only snapshot is missing a registered identity.', { areaId: id });
+    }
     return rowToAgent(row, this.agents.get(id));
   }
 
@@ -367,6 +558,7 @@ export class ControlPlane {
   }
 
   sendMessage({ sender, recipient, body, kind = 'message', references = {} } = {}) {
+    this.assertWritable();
     const senderId = this.assertIdentity(sender);
     const recipientId = this.assertRecipient(recipient);
     const normalizedKind = requiredText(kind, 'kind');
@@ -396,6 +588,7 @@ export class ControlPlane {
   }
 
   sendOwnerRequest({ actorId, recipient, body, references = {} } = {}) {
+    this.assertWritable();
     const ownerId = this.assertOwnerActor(actorId);
     const recipientId = this.assertIdentity(recipient);
     const normalizedBody = requiredText(body, 'body');
@@ -426,9 +619,43 @@ export class ControlPlane {
     return record;
   }
 
+  sendOwnerReply({ sender, requestId, body } = {}) {
+    this.assertWritable();
+    const senderId = this.assertIdentity(sender);
+    const parentId = requiredText(requestId, 'requestId');
+    const parent = this.database.prepare(`
+      SELECT * FROM messages
+      WHERE id = ? AND project_id = ? AND sender_id = 'owner' AND recipient_id = ? AND kind = 'message'
+    `).get(parentId, this.projectId, senderId);
+    if (!parent) {
+      throw new TorchError('Owner reply must reference an owner request addressed to the sender', {
+        code: 'OWNER_REPLY_REFERENCE_INVALID', details: { requestId: parentId, sender: senderId },
+      });
+    }
+    const normalizedBody = requiredText(body, 'body');
+    const record = {
+      id: this.idFactory(), projectId: this.projectId, sender: senderId, recipient: 'owner',
+      kind: 'owner-reply', createdAt: this.clock().toISOString(), body: normalizedBody,
+      acknowledgedAt: null, deliveredAt: null,
+      references: { task: null, path: null, commit: null, handoff: parentId, replyTo: parentId },
+    };
+    this.database.prepare(`
+      INSERT INTO messages (
+        id, project_id, sender_id, recipient_id, kind, created_at, body,
+        task_ref, path_ref, commit_ref, handoff_ref
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      record.id, record.projectId, record.sender, record.recipient, record.kind,
+      record.createdAt, record.body, null, null, null, parentId,
+    );
+    this.audit({ actorId: senderId, operation: 'message.reply-owner', entityType: 'message', entityId: record.id,
+      details: { requestId: parentId } });
+    return record;
+  }
+
   readMessages({ recipient, unacknowledgedOnly = false, limit = 100 } = {}) {
     const recipientId = this.assertIdentity(recipient);
-    const normalizedLimit = Number.isInteger(limit) && limit > 0 && limit <= 1000 ? limit : 100;
+    const normalizedLimit = messageObservationLimit(limit);
     const query = `
       SELECT m.*, a.acknowledged_at
       FROM messages m
@@ -441,7 +668,96 @@ export class ControlPlane {
     return this.database.prepare(query).all(recipientId, recipientId, normalizedLimit).map(rowToMessage);
   }
 
+  observeMessages({ recipient, selection, limit } = {}) {
+    // Unlike legacy readMessages, this observation must not refresh the roster:
+    // refreshRoster maintains identity rows and is not a read-only observation.
+    const recipientId = this.assertLoadedIdentity(recipient);
+    const normalizedSelection = messageObservationSelection(selection);
+    const normalizedLimit = messageObservationLimit(limit);
+    const rows = this.database.prepare(`
+      WITH visible_messages AS MATERIALIZED (
+        SELECT m.*, a.acknowledged_at
+        FROM messages m
+        LEFT JOIN message_acks a ON a.message_id = m.id AND a.area_id = ?
+        WHERE m.recipient_id = ? OR m.recipient_id = 'all'
+      ),
+      selected_messages AS MATERIALIZED (
+        SELECT * FROM visible_messages
+        WHERE ? = 'history' OR acknowledged_at IS NULL
+      ),
+      page AS MATERIALIZED (
+        SELECT * FROM selected_messages
+        ORDER BY created_at ASC, id ASC
+        LIMIT ?
+      ),
+      metadata AS (
+        SELECT
+          (SELECT COUNT(*) FROM selected_messages) AS selected_count,
+          (SELECT COUNT(*) FROM visible_messages WHERE acknowledged_at IS NULL) AS pending_unread_count
+      )
+      SELECT page.*, metadata.selected_count, metadata.pending_unread_count
+      FROM metadata
+      LEFT JOIN page ON TRUE
+      ORDER BY page.created_at ASC, page.id ASC
+    `).all(recipientId, recipientId, normalizedSelection, normalizedLimit);
+    const messages = rows.filter((row) => row.id !== null).map(rowToMessage);
+    const selectedCount = Number(rows[0]?.selected_count ?? 0);
+    const complete = selectedCount <= normalizedLimit;
+    return {
+      recipient: recipientId,
+      messages,
+      observation: {
+        selection: normalizedSelection,
+        requestedLimit: normalizedLimit,
+        returnedCount: messages.length,
+        complete,
+        truncated: !complete,
+        pendingUnreadCount: Number(rows[0]?.pending_unread_count ?? 0),
+      },
+    };
+  }
+
+  readOwnerConversation({ actorId, requestId, cursor, limit = 100 } = {}) {
+    this.assertOwnerActor(actorId);
+    const parentId = requiredText(requestId, 'requestId');
+    const pageCursor = ownerConversationCursor(cursor);
+    const normalizedLimit = messageObservationLimit(limit);
+    const request = this.database.prepare(`
+      SELECT * FROM messages
+      WHERE id = ? AND project_id = ? AND sender_id = 'owner' AND kind = 'message'
+    `).get(parentId, this.projectId);
+    if (!request) {
+      throw new TorchError('Owner conversation request is unavailable in this project', {
+        code: 'OWNER_CONVERSATION_NOT_FOUND', details: { requestId: parentId },
+      });
+    }
+    const rows = this.database.prepare(`
+      SELECT * FROM messages
+      WHERE project_id = ? AND recipient_id = 'owner' AND kind = 'owner-reply' AND handoff_ref = ?
+        AND (? IS NULL OR created_at > ? OR (created_at = ? AND id > ?))
+      ORDER BY created_at ASC, id ASC
+      LIMIT ?
+    `).all(
+      this.projectId, parentId,
+      pageCursor?.createdAt ?? null, pageCursor?.createdAt ?? null,
+      pageCursor?.createdAt ?? null, pageCursor?.id ?? null,
+      normalizedLimit + 1,
+    );
+    const hasMore = rows.length > normalizedLimit;
+    const replies = rows.slice(0, normalizedLimit).map(rowToMessage);
+    const last = replies.at(-1);
+    return {
+      request: rowToMessage(request), replies,
+      page: {
+        requestedLimit: normalizedLimit, returnedCount: replies.length,
+        complete: !hasMore, truncated: hasMore,
+        nextCursor: hasMore && last ? { createdAt: last.createdAt, id: last.id } : null,
+      },
+    };
+  }
+
   ackMessage({ recipient, messageId } = {}) {
+    this.assertWritable();
     const recipientId = this.assertIdentity(recipient);
     const id = requiredText(messageId, 'messageId');
     const message = this.database.prepare('SELECT * FROM messages WHERE id = ?').get(id);
@@ -461,6 +777,7 @@ export class ControlPlane {
   }
 
   recoverOwnerStoppedUnknownIdentity({ actorId, areaId, expectedIdentity, evidence } = {}) {
+    this.assertWritable();
     const owner = this.assertOwnerActor(actorId);
     const id = this.assertIdentity(areaId);
     if (!expectedIdentity || ['state', 'runtime', 'runtimeSessionId', 'updatedAt'].some(key => !expectedIdentity[key])) {
@@ -491,6 +808,7 @@ export class ControlPlane {
   }
 
   reportStatus({ areaId, state, summary, runtime, runtimeSessionId, task } = {}) {
+    this.assertWritable();
     const id = this.assertIdentity(areaId);
     const normalizedState = requiredText(state, 'state');
     if (!PRESENCE_STATES.includes(normalizedState)) {
@@ -517,6 +835,7 @@ export class ControlPlane {
   }
 
   writeReport({ areaId, kind, summary, task, evidence } = {}) {
+    this.assertWritable();
     const id = this.assertIdentity(areaId);
     const createdAt = this.clock().toISOString();
     const report = {
@@ -566,6 +885,7 @@ export class ControlPlane {
   }
 
   requestHandoff({ sender, recipient = 'session-manager', path, task, reason } = {}) {
+    this.assertWritable();
     const senderId = this.assertIdentity(sender);
     const recipientId = this.assertIdentity(recipient);
     const pathRef = path ? normalizedProjectPath(path) : null;
@@ -607,6 +927,7 @@ export class ControlPlane {
   }
 
   requestApproval({ requester, approver, task, title, summary, evidence } = {}) {
+    this.assertWritable();
     const requesterId = this.assertIdentity(requester);
     const approverId = requiredText(approver, 'approver');
     if (approverId === 'owner') this.assertOwnerActor(approverId);
@@ -682,6 +1003,7 @@ export class ControlPlane {
   }
 
   decideApproval({ approvalId, decidedBy, decision, note, expectedRevision } = {}) {
+    this.assertWritable();
     const id = requiredText(approvalId, 'approvalId');
     const actor = requiredText(decidedBy, 'decidedBy');
     const owner = actor === 'owner';
@@ -739,6 +1061,7 @@ export class ControlPlane {
   }
 
   insertOwnerApprovalDecisionMessage({ sender, recipient, approvalId, task, decision, note }) {
+    this.assertWritable();
     const id = this.idFactory();
     const createdAt = this.clock().toISOString();
     const body = `Approval ${decision}: ${note ?? 'No additional note.'}`;
@@ -763,6 +1086,7 @@ export class ControlPlane {
   }
 
   audit({ actorId, operation, entityType, entityId = null, details = null } = {}) {
+    this.assertWritable();
     const actor = this.assertIdentity(actorId);
     const event = {
       id: this.idFactory(), projectId: this.projectId, actorId: actor,
@@ -781,6 +1105,7 @@ export class ControlPlane {
   }
 
   auditOwnerAction({ actorId, operation, entityType, entityId = null, details = null } = {}) {
+    this.assertWritable();
     const actor = this.assertOwnerActor(actorId);
     if (!['artifact.feedback', 'backlog.priority', 'backlog.create', 'agent.request', 'approval.decide', 'approval.notify', 'forge.sync', 'canonical.fetch', 'profile.change', 'schedule.launcher.install', 'schedule.launcher.reconcile', 'schedule.wake.recover', 'hierarchy.conclude-pilot', 'check.recover-prepared', 'runtime.legacy-unknown.recover-stopped', 'runtime.continuation.configure'].includes(operation)) {
       throw new TorchError('This owner audit surface does not authorize the requested operation', {
@@ -833,4 +1158,8 @@ export class ControlPlane {
 
 export function openControlPlane(options) {
   return new ControlPlane(options);
+}
+
+export function openControlPlaneReadOnly(options) {
+  return new ControlPlane({ ...options, readOnly: true });
 }

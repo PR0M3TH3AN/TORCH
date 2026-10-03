@@ -1,5 +1,41 @@
 # TORCH remaining work
 
+## Immediate owner-facing milestone: agent Chat (2026-10-03)
+
+Owner promoted `TASK-owner-agent-chat`, `TASK-console-agent-chat-ui` and
+`TASK-console-chat-cards-qualification` to urgent. Deliver default coordinator
+chat, activated-agent switching, durable history and a safe composer first,
+following [the Chat specification](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).
+Manager must triage eligible slices; priority does not remove runtime-wake
+dependencies or preempt active work. Recovery unblockers continue alongside it.
+
+## Owner-approved self-healing priority (2026-10-03)
+
+Owner also approved [operational flow and Ops pilot improvements](OPS_FLOW_IMPROVEMENT_SPEC.md):
+two focused incident-resolution/adoption-and-QA-handoff requests, additive Chat
+and evidence acceptance, and an existing-identity Ops responsibility pilot. No
+eighth standing agent or overlapping implementation ownership is implied.
+
+Authoritative urgent proposals (assignment remains with Session Manager):
+
+- [ ] `TASK-fe86062d-847f-46ab-9ad9-d721113e5dcd`: operational incident ownership
+  and overdue wait resolution, extending current messages/events/approvals.
+- [ ] `TASK-f40126ee-2485-45c8-a67b-4279e4e8704a`: supported exact-source
+  adoption and named QA/test handoffs through native qualification/integration.
+
+The linked spec supplies additive acceptance for existing Chat/evidence tasks
+and the Ops responsibility pilot; task-file criteria have not been rewritten by
+the owner because the installed API has no supported amendment operation.
+
+Follow [bounded self-healing qualification](SELF_HEALING_QUALIFICATION_PLAN.md).
+Prioritize the existing runtime-recovery, persistent-operations, provider-failure
+governor, event/reconciler and queue-watchdog work without duplicating their
+backlog records or bypassing dependencies. Require installed failure-injection
+evidence and independent QA, not merely active executors. The owner subsequently
+enabled unlimited daily continuation in alpha.4.2; older cap/resume statements
+below are historical and do not override that specific authorization. Retry
+circuit breakers, concurrency and approval/ownership gates still apply.
+
 ## Current owner priority: reliability first (2026-10-03 UTC)
 
 End-to-end repair qualification is still open. Runtime reported exact converged
