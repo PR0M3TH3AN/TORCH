@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { createClaudeAdapter } from '../../src/adapters/claude.mjs';
 import { createCodexAdapter } from '../../src/adapters/codex.mjs';
+import { createRuntimeAdapterRegistry } from '../../src/adapters/registry.mjs';
 import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
@@ -290,6 +291,74 @@ test('SCN-codex-mcp-runtime-dir: only a valid Linux parent runtime directory is 
       assert.equal(plan.launch.args.some((arg) => /env_vars=/.test(arg)), false);
     }
   }
+});
+
+test('SCN-codex-registered-mcp-runtime-dir: registered create and resume keep identity and profile tokens while an inherited runtime name is removed safely', () => {
+  const context = fixture();
+  const parent = {
+    ...context.env,
+    XDG_RUNTIME_DIR: '/run/user/1000',
+    DBUS_SESSION_BUS_ADDRESS: 'unix:path=/run/user/1000/bus',
+    HOME: '/home/fixture', PATH: '/usr/bin', TOKEN: 'not-forwarded',
+  };
+  const profile = {
+    model: 'gpt-registered', reasoning: 'high',
+    launchPolicy: { sandbox: 'workspace-write', approval: 'on-request' },
+  };
+  const plansFor = (env) => {
+    const adapter = createRuntimeAdapterRegistry({ env }).get('codex');
+    const mcp = adapter.configure({
+      repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER,
+    }).mcp;
+    return {
+      mcp,
+      create: adapter.createSession({
+        areaId: context.worker, worktree: '/tmp/codex-registered-runtime-dir', promptFile: '/tmp/prompt.md',
+        firstMessage: 'Start registered.', mcp, ...profile,
+      }),
+      resume: adapter.resumeSession({
+        areaId: context.worker, runtimeSessionId: 'thread-registered-runtime-dir',
+        worktree: '/tmp/codex-registered-runtime-dir', message: 'Resume registered.', mcp, ...profile,
+      }),
+    };
+  };
+  const expectedEnvVars = `mcp_servers.torch-${context.worker}.env_vars=["XDG_RUNTIME_DIR"]`;
+  const expectedMcpIdentity = `mcp_servers.torch-${context.worker}.command=${JSON.stringify(process.execPath)}`;
+  const assertPreservedLaunchTokens = (plan, { expectsRuntimeName }) => {
+    const args = plan.launch.args;
+    assert.equal(args.includes('--cd'), true);
+    assert.equal(args.includes('/tmp/codex-registered-runtime-dir'), true);
+    assert.equal(args.includes('--sandbox'), true);
+    assert.equal(args.includes('workspace-write'), true);
+    assert.equal(args.includes('--ask-for-approval'), true);
+    assert.equal(args.includes('on-request'), true);
+    assert.equal(args.includes('--model'), true);
+    assert.equal(args.includes('gpt-registered'), true);
+    assert.equal(args.includes('model_reasoning_effort="high"'), true);
+    assert.equal(args.includes(expectedMcpIdentity), true);
+    assert.equal(args.includes(expectedEnvVars), expectsRuntimeName);
+    assert.equal(args.some((arg) => /env_vars=/.test(arg) && arg !== expectedEnvVars), false);
+    assert.equal(args.some((arg) => arg.includes(parent.XDG_RUNTIME_DIR)
+      || arg.includes(parent.DBUS_SESSION_BUS_ADDRESS) || arg.includes(parent.HOME)
+      || arg.includes(parent.PATH) || arg.includes(parent.TOKEN)), false);
+  };
+
+  const inherited = plansFor(parent);
+  assertPreservedLaunchTokens(inherited.create, { expectsRuntimeName: true });
+  assertPreservedLaunchTokens(inherited.resume, { expectsRuntimeName: true });
+  assert.equal(inherited.create.launch.args.includes('exec'), true);
+  assert.equal(inherited.create.launch.args.includes('resume'), false);
+  assert.equal(inherited.resume.launch.args.includes('exec'), true);
+  assert.equal(inherited.resume.launch.args.includes('resume'), true);
+  assert.equal(inherited.resume.launch.args.includes('thread-registered-runtime-dir'), true);
+
+  const withoutRuntime = { ...parent };
+  delete withoutRuntime.XDG_RUNTIME_DIR;
+  const removed = plansFor(withoutRuntime);
+  assertPreservedLaunchTokens(removed.create, { expectsRuntimeName: false });
+  assertPreservedLaunchTokens(removed.resume, { expectsRuntimeName: false });
+  assert.equal(removed.mcp.name, inherited.mcp.name);
+  assert.equal(removed.resume.launch.args.includes('thread-registered-runtime-dir'), true);
 });
 
 test('SCN-mcp-stdio: an MCP host can initialize and list the TORCH tool surface over stdio', async () => {

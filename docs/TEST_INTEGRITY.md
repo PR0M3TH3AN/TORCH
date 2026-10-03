@@ -2992,3 +2992,28 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-codex-registered-mcp-runtime-dir
+      given: "The registered Codex adapter receives a Linux parent environment with a valid runtime directory, then the same environment with that variable removed"
+      when: "It produces create and resume plans for an identity-bound TORCH MCP server under an explicit model, reasoning, sandbox, and approval profile"
+      then: "Both valid plans name exactly XDG_RUNTIME_DIR; both removed-context plans omit env_vars while preserving the MCP identity, profile tokens, create/resume mode, and resume session token"
+  observable_outcomes:
+    - "The registry-backed Codex launch records contain only the one-name runtime allowlist when the real parent context has a valid value"
+    - "Removing XDG_RUNTIME_DIR removes only that allowlist, not the model, reasoning, approval, sandbox, MCP identity, or session token"
+    - "No runtime directory, DBUS address, home, PATH, token, or general parent environment value is serialized"
+  determinism_controls:
+    - "Hermetic fixture repository and explicit process-like parent environments passed to the registered adapter; no provider execution, host service, native runtime, retry, or process-wide environment mutation"
+  anti_cheat_rationale:
+    prevents:
+      - "Bypassing the registered Codex adapter to preserve launch profile or identity fields"
+      - "Hard-coding a runtime directory or forwarding DBUS, secrets, home, PATH, or the full environment"
+      - "Retaining env_vars after the parent runtime context is removed"
+      - "Claiming plan-only evidence as installed or native qualification"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
