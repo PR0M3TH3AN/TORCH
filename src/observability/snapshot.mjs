@@ -17,6 +17,7 @@ import { observeTaskActivity } from '../backlog/activity.mjs';
 import { ScheduleLauncherService } from '../schedules/launcher.mjs';
 import { hierarchyOrder } from '../runtime/hierarchy-order.mjs';
 import { observeRuntimeTurn } from '../runtime/turn-guard.mjs';
+import { observeContinuation } from '../runtime/continuation.mjs';
 
 function json(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -404,6 +405,7 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       metrics: ['cachedInput', 'uncachedInput', 'cacheCreation', 'cacheRead', 'compactions', 'resumedPromptBytes', 'costPerVerifiedItem'],
     },
   };
+  result.continuation = observeContinuation({ stateRoot, tasks: result.backlog, now });
   result.backlogHealth = backlogHealth(repository.root, result.backlog, result.agents, now);
   result.backlogActivity = observeBacklogActivity({ repositoryRoot: repository.root,
     tasks: result.backlog, config, manifest, now: now() });

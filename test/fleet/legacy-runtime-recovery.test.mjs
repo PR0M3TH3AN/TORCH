@@ -12,7 +12,7 @@ import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { issueStoppedExecutorEvidence } from '../../src/runtime/stopped-executor-evidence.mjs';
 import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
 import { observeProject } from '../../src/observability/snapshot.mjs';
-import { configureContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
+import { configureContinuation, observeContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
 function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
@@ -329,6 +329,33 @@ test('SCN-runtime-continuation-fairness: a fresh task revision does not let one 
     await runContinuation(f.control, { list: () => [task] }, { actorId: 'owner', limit: 1,
       launch: area => { starts.push(area); if (area === f.areaId) task.revision++; return 0; } });
     assert.deepEqual(starts.slice(0, 2), [f.areaId, 'extra-worker']);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-health: budget stops, day reset, pause and unreadable ledgers are visible without mutation', async () => {
+  const f = fixture({ recoveryWorktree: false });
+  const at = new Date('2026-10-03T00:00:00Z');
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Work' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 1 });
+    await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at, launch: () => 0 });
+    const path = join(f.control.stateRoot, 'continuation.json');
+    const before = readFileSync(path, 'utf8');
+    const health = observeContinuation({ stateRoot: f.control.stateRoot, now: () => at });
+    assert.equal(health.stopReason, 'daily-turn-cap');
+    assert.equal(health.remainingTurns, 0);
+    assert.equal(health.manualTurnsIncluded, false);
+    assert.equal(health.timerInstallationVerified, false);
+    const snapshot = observeProject({ repositoryRoot: f.root, env: f.env, now: () => at });
+    assert.equal(snapshot.continuation.stopReason, 'daily-turn-cap');
+    assert.equal(readFileSync(path, 'utf8'), before);
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => new Date('2026-10-04T00:00:00Z') }).remainingTurns, 1);
+    configureContinuation(f.control, { actorId: 'owner', enabled: false, maxTurnsPerDay: 1 });
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => at }).stopReason, 'paused');
+    writeFileSync(path, 'not-json');
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => at }).stopReason, 'policy-or-ledger-unreadable');
+    assert.equal(readFileSync(path, 'utf8'), 'not-json', 'Observation must not repair or reset the attempt ledger');
   } finally { f.control.close(); }
 });
 

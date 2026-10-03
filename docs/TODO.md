@@ -2,6 +2,17 @@
 
 ## Current owner priority: reliability first (2026-10-03 UTC)
 
+End-to-end repair qualification is still open. Runtime reported exact converged
+candidate `d2d9845` with four fresh native check PASS receipts; QA independent
+acceptance is not yet recorded. Owner source fixes cover guarded presence,
+rolling/fair dispatch, no-progress escalation and visible daily-cap stops. The
+first automatic allowance of 12 turns was exhausted; any increase needs an
+explicit owner choice, not a manual-start bypass. Next dispatch should prioritize
+QA's exact verdict/support decisions, Release's declared-inventory consumer
+decision, safe Kernel/Work composition and actual Console implementation.
+Require evidence of specialist work, independent review/checks, serialized
+integration and next-work continuation before calling the autonomous loop ready.
+
 Live all-fleet resume exposed a new urgent proposal:
 `TASK-d95e72d0-816d-4fc2-acaf-b73642fd4881` — refill continuation capacity
 when individual turns exit instead of waiting for the longest batch member.

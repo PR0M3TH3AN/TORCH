@@ -43,6 +43,27 @@ export function configureContinuation(control, { actorId, enabled, maxTurnsPerDa
   return { enabled, maxTurnsPerDay, areas: state.areas, sessionsStarted: false };
 }
 
+export function observeContinuation({ stateRoot, tasks = [], now = () => new Date() } = {}) {
+  try {
+    const state = read({ stateRoot });
+    const day = now().toISOString().slice(0, 10);
+    const attempts = state.day === day ? state.attempts : 0;
+    const remainingTurns = Math.max(0, state.maxTurnsPerDay - attempts);
+    const held = Object.entries(state.progress).filter(([area, progress]) => {
+      const active = tasks.filter(t => t.owner === area && ['assigned', 'in_progress'].includes(t.state));
+      return active.length && progress?.status === 0 && progress.noProgress >= 2 && progress.taskKey === taskKey(active);
+    }).map(([areaId]) => ({ areaId, reason: 'no-progress-needs-coordination' }));
+    return { available: existsSync(join(stateRoot, 'continuation-policy.json')), enabled: state.enabled,
+      day, dayTimezone: 'UTC', attempts, maxTurnsPerDay: state.maxTurnsPerDay, remainingTurns,
+      stopReason: !state.enabled ? 'paused' : remainingTurns === 0 ? 'daily-turn-cap' : null,
+      capacityHeldBy: occupiedAreas({ stateRoot }), held,
+      budgetKind: 'automatic-turn-cap', manualTurnsIncluded: false, tokenOrCostGovernance: 'unknown',
+      timerInstallationVerified: false, mutationPerformed: false };
+  } catch {
+    return { available: false, stopReason: 'policy-or-ledger-unreadable', mutationPerformed: false };
+  }
+}
+
 export function planContinuation(control, backlog, { at = new Date(), limit = 3 } = {}) {
   const state = read(control);
   const day = at.toISOString().slice(0, 10);

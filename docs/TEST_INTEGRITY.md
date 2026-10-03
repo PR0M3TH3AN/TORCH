@@ -1,5 +1,33 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Visible automatic-work stops
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-health
+      given: "An enabled pilot exhausts its daily attempt allowance"
+      when: "Observation reads the ledger, next UTC day, pause or malformed state"
+      then: "The exact stop and remaining allowance are visible without resetting or modifying state, and no timer/token qualification is fabricated"
+    - id: SCN-console-continuation-stop
+      given: "A daily cap stop and a specialist no-progress hold"
+      when: "Attention items are projected"
+      then: "The budget decision belongs to the owner, coordination belongs to the manager, and no fake approval action or automatic budget increase is offered"
+  observable_outcomes:
+    - "Live snapshot health, byte-identical ledger and owner/manager attention routing"
+  determinism_controls:
+    - "Hermetic repository, fixed UTC clock, injected executor and plain snapshot fixtures"
+  anti_cheat_rationale:
+    prevents:
+      - "Silent budget exhaustion disguised as healthy idle"
+      - "Resetting a ledger to make work appear available"
+      - "Treating declared policy as a verified running timer or measured usage"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-03 — Rolling continuation and bounded no-progress escalation
 
 ```yaml

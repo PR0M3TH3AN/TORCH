@@ -16,6 +16,18 @@ function attentionGroups(snapshot) {
   const agentName = (id) => agents.get(id)?.title ?? id ?? 'Owner not recorded';
   const add = (group, item) => groups[group].push(item);
   const approvals = (snapshot.approvalRequests?.items ?? []).filter((approval) => approval.status === 'pending');
+  const continuation = snapshot.continuation;
+  if (continuation?.available && continuation.stopReason === 'daily-turn-cap') add('owner', {
+    tone: 'decision', title: 'Automatic fleet work stopped at its daily limit', owner: 'Project owner',
+    detail: 'No additional automatic agent turns can start today unless you explicitly change the limit. Existing turns may finish; idle does not mean all work is done.',
+    evidence: `${continuation.attempts}/${continuation.maxTurnsPerDay} automatic attempts · UTC day ${continuation.day} · not measured token/cost usage`,
+    href: '#fleet', action: 'Review continuation policy', decisionApprovalId: null,
+  });
+  for (const hold of continuation?.held ?? []) add('fleet', {
+    tone: 'review', title: `${agentName(hold.areaId)} needs a concrete coordination decision`, owner: agentName('session-manager'),
+    detail: 'Two completed turns left the assigned task state unchanged. Unchanged-work retries are held; inspect evidence and resolve the actual blocker rather than restarting blindly.',
+    evidence: hold.areaId, href: '#communications', action: 'Open coordination messages', requestOwner: 'session-manager',
+  });
 
   const advisory = [];
   const recheckCodes = new Set(['BACKLOG_OBSERVED_COMMIT_STALE', 'BACKLOG_OBSERVED_COMMIT_MISSING']);
