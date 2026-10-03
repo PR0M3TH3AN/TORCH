@@ -1,5 +1,14 @@
 # TORCH remaining work
 
+## Immediate owner-facing milestone: agent Chat (2026-10-03)
+
+Owner promoted `TASK-owner-agent-chat`, `TASK-console-agent-chat-ui` and
+`TASK-console-chat-cards-qualification` to urgent. Deliver default coordinator
+chat, activated-agent switching, durable history and a safe composer first,
+following [the Chat specification](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).
+Manager must triage eligible slices; priority does not remove runtime-wake
+dependencies or preempt active work. Recovery unblockers continue alongside it.
+
 ## Owner-approved self-healing priority (2026-10-03)
 
 Owner also approved [operational flow and Ops pilot improvements](OPS_FLOW_IMPROVEMENT_SPEC.md):

@@ -1,8 +1,22 @@
 # Priority Console upgrade: compact cards and agent Chat
 
-Status: owner-approved, high-priority development requirement. Not implemented.
-These UI slices should lead the next development cycle after explicit owner resume.
-They do not override runtime safety gates or the current manual fleet pause.
+Status: owner-approved development requirement; completion is determined by the
+authoritative backlog and exact installed/browser evidence, not this document.
+On 2026-10-03 the owner promoted TASK-owner-agent-chat,
+TASK-console-agent-chat-ui and TASK-console-chat-cards-qualification to urgent.
+The fleet is explicitly resumed. Existing runtime safety gates and any subsequent
+owner pause still apply.
+
+## Immediate owner-facing milestone
+
+Prioritize a minimal usable Chat: approved coordinator selected by default,
+activated-agent selector, durable per-agent history and message composer with
+explicit destination and truthful queued/handled status. Session Manager should
+assign eligible Console/Runtime/QA contributions without stealing active work.
+Keep recovery prerequisites progressing alongside this owner-facing milestone.
+If history/composer can safely ship before automatic wake qualification, propose
+a named, scoped slice through normal triage; do not silently remove dependencies.
+Paused or unqualified messaging may persist but must not trigger provider starts.
 
 ## Compact cards and detail modal
 
