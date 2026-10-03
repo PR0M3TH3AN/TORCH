@@ -112,11 +112,17 @@ export class GitPrivateRefAdapter {
 
   compareAndSwapRefs({ expected = [], writes = [] } = {}) {
     const commands = ['start'];
+    const writtenRefs = new Set(writes.map((entry) => entry.ref));
     for (const { ref, sha: expectedSha } of expected) {
+      if (writtenRefs.has(ref)) continue;
       commands.push(`verify ${text(ref, 'ref')} ${expectedSha ?? ZERO_SHA}`);
     }
     for (const { ref, sha: nextSha } of writes) {
-      const current = expected.find((entry) => entry.ref === ref)?.sha ?? null;
+      const expectedEntry = expected.find((entry) => entry.ref === ref);
+      if (!expectedEntry) throw new TorchError('Every private-ref write requires an exact expected value', {
+        code: 'ADOPTION_REF_CAS_EXPECTED_REQUIRED', details: { ref },
+      });
+      const current = expectedEntry.sha ?? null;
       if (nextSha === null) commands.push(`delete ${text(ref, 'ref')} ${current ?? ZERO_SHA}`);
       else commands.push(`update ${text(ref, 'ref')} ${sha(nextSha, 'next ref sha')} ${current ?? ZERO_SHA}`);
     }
