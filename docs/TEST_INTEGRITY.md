@@ -3143,3 +3143,44 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Exact-source adoption (2026-10-03)
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-integration-adoption-private-ref-cas
+      given: "A clean disposable Git repository, a base commit, and an owner-bound private-ref adoption"
+      when: "The adoption finalizes and a stale compare-and-swap attempts to alter its candidate ref"
+      then: "Real Git private archive and candidate refs are created atomically, while the stale write refuses"
+    - id: SCN-integration-adoption-journal-and-binding
+      given: "A prepared adoption journal record"
+      when: "A second preparation or lifecycle request supplies a different candidate binding"
+      then: "The journal revision compare-and-swap and immutable binding checks refuse without changing the prepared record"
+    - id: SCN-integration-adoption-finalize-recovery
+      given: "A real private-ref transaction completed before its journal write"
+      when: "Reconciliation is run and then replayed"
+      then: "One durable finalized recovery is recorded and the replay is consistent without another mutation"
+    - id: SCN-integration-adoption-rollback-recovery
+      given: "A finalized candidate whose private ref was removed before its rollback journal write, or whose candidate ref diverged"
+      when: "Rollback is requested"
+      then: "The completed rollback is recovered once and divergent candidate bytes refuse"
+    - id: SCN-integration-adoption-private-ref-intake
+      given: "A finalized owner-bound private candidate ref"
+      when: "Native qualification is requested"
+      then: "The normal integration queue records the exact private ref and commit in ordinary testing state"
+  observable_outcomes:
+    - "Git ref values, structured refusal codes, durable journal state, and native integration-request fields"
+  determinism_controls:
+    - "Disposable local Git repositories, temporary SQLite-backed control-plane state, fixed fixture bytes, and no network or provider"
+  anti_cheat_rationale:
+    prevents:
+      - "Fixture-only CAS implementations that do not exercise Git update-ref"
+      - "Mutable lifecycle bindings or overwriteable adoption journal records"
+      - "Claiming crash recovery without preserving actual ref effects"
+      - "Treating a private candidate as an ordinary specialist branch"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

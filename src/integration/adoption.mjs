@@ -82,7 +82,8 @@ function exactAuthority(authority, binding) {
 function exactInput(record, input) {
   const fields = ['adoptionId', 'candidateSha', 'baseTargetSha', 'provenanceManifestDigest',
     'contributorArea', 'destinationArea', 'targetBranch', 'candidateRef', 'expectedOldRef'];
-  const mismatches = fields.filter((field) => input[field] !== undefined && input[field] !== record[field]);
+  const mismatches = fields.filter((field) => input[field] !== undefined
+    && input[field] !== (field === 'adoptionId' ? record.id : record[field]));
   if (input.provenance !== undefined && JSON.stringify(input.provenance) !== JSON.stringify(record.provenance)) mismatches.push('provenance');
   if (mismatches.length) throw new TorchError('Lifecycle input cannot override immutable prepared adoption fields', {
     code: 'ADOPTION_IMMUTABLE_BINDING_STALE', details: { adoptionId: record.id, fields: mismatches },
