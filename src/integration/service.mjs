@@ -4,6 +4,7 @@ import { TorchError } from '../kernel/errors.mjs';
 import { readInstallManifest } from '../kernel/install.mjs';
 import { loadFleetDefinition } from '../kernel/worktrees.mjs';
 import { BacklogService } from '../backlog/service.mjs';
+import { AdoptionService } from './adoption.mjs';
 
 function git(root, args, { allowFailure = false } = {}) {
   const result = spawnSync('git', ['-C', root, ...args], { encoding: 'utf8' });
@@ -42,6 +43,8 @@ export class IntegrationService {
     this.worktrees = new Map((manifest.external ?? [])
       .filter((entry) => entry.type === 'worktree')
       .map((entry) => [entry.area, entry]));
+    this.adoption = new AdoptionService({ repositoryRoot, controlPlane, clock, idFactory,
+      policy: { target: this.policy.target } });
     this.controlPlane.database.exec(`
       CREATE TABLE IF NOT EXISTS integration_requests (
         id TEXT PRIMARY KEY,
@@ -108,6 +111,18 @@ export class IntegrationService {
       details: { sourceCommit, targetBranch },
     });
     return this.evaluate(record.id);
+  }
+
+  planAdoption(input = {}) {
+    return this.adoption.plan(input);
+  }
+
+  prepareAdoption(input = {}) {
+    return this.adoption.prepare(input);
+  }
+
+  getPreparedAdoption(adoptionId) {
+    return this.adoption.getPrepared(adoptionId);
   }
 
   get(requestId) {
