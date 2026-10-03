@@ -22,6 +22,14 @@ states, dependencies and evidence. Blocked remains blocked; automatic wakes stay
 disabled until qualified and explicitly activated. Older pause/install/status
 statements below are historical snapshots, not current runtime evidence.
 
+Owner-requested recovery/continuation implementation is described in
+[the source pilot specification](spec_changes/2026-10-03-legacy-runtime-recovery.md).
+Do not close the runtime-recovery, persistent-operations or event-wake umbrellas
+from focused tests alone. Release/Fleet Operations still need installer-owned
+permanent timer provisioning/removal, installed artifact qualification and restart
+recovery of retained crashed turn/controller guards. The transient host pilot does
+not survive reboot, and its daily turn cap is not a token/dollar usage governor.
+
 ## Priority UI cycle: compact cards and agent Chat
 
 Owner-approved [Console UI spec](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).

@@ -70,6 +70,8 @@ import {
 } from './design/architect.mjs';
 import { FleetEvolutionService } from './evolution/service.mjs';
 import { HierarchyEvolutionService } from './evolution/hierarchy.mjs';
+import { issueStoppedExecutorEvidence } from './runtime/stopped-executor-evidence.mjs';
+import { configureContinuation, planContinuation, runContinuation } from './runtime/continuation.mjs';
 import { ConvergenceService } from './convergence/service.mjs';
 import {
   attachForge, detachForge, forgeStatus, planForgeAttach, planForgeDetach,
@@ -95,6 +97,8 @@ Usage:
   torch install --restore [--dry-run] [--yes] [--json]
   torch setup [--parent <path>] [--dry-run] [--yes] [--json]
   torch up [--fresh] [--only <id,id>] [--dry-run] [--yes] [--json]
+  torch recover-runtime --area <id> --unit <service> --invocation <id> [--expected-session <id> --expected-updated-at <time> --yes] [--json]
+  torch continuation <status|enable|pause|tick> [--max-turns-per-day <1-48>] [--limit <1-3>] [--yes] [--json]
   torch down [--dry-run] [--yes] [--json]
   torch capture [--json]
   torch detach [--dry-run] [--yes] [--json]
@@ -575,6 +579,51 @@ export async function runCli(argv = process.argv.slice(2), {
     if (command === 'help' || argv.includes('--help') || argv.includes('-h')) {
       process.stdout.write(HELP);
       return 0;
+    }
+    if (command === 'continuation') {
+      const control = openControlPlane({ repositoryRoot: optionValue(argv, '--repo') ?? cwd, env });
+      try {
+        const operation = argv[1] ?? 'status';
+        const backlog = new BacklogService({ repositoryRoot: control.repositoryRoot, controlPlane: control });
+        if (operation === 'status' || !argv.includes('--yes') || argv.includes('--dry-run')) {
+          print(planContinuation(control, backlog), { json }); return 0;
+        }
+        if (operation === 'enable' || operation === 'pause') {
+          print(configureContinuation(control, { actorId: 'owner', enabled: operation === 'enable',
+            maxTurnsPerDay: Number(optionValue(argv, '--max-turns-per-day') ?? 12) }), { json }); return 0;
+        }
+        if (operation !== 'tick') throw new TorchError('Unknown continuation operation.', { code: 'UNKNOWN_COMMAND' });
+        print(await runContinuation(control, backlog, { actorId: 'owner', limit: Number(optionValue(argv, '--limit') ?? 3),
+          launch: areaId => {
+            const result = spawn(process.execPath, [fileURLToPath(new URL('../bin/torch.mjs', import.meta.url)),
+              'up', '--only', areaId, '--yes', '--json'], { cwd: control.repositoryRoot, env,
+              encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 });
+            return result.error || result.signal ? null : result.status;
+          } }), { json });
+        return 0;
+      } finally { control.close(); }
+    }
+    if (command === 'recover-runtime') {
+      const control = openControlPlane({ repositoryRoot: optionValue(argv, '--repo') ?? cwd, env });
+      try {
+        const areaId = optionValue(argv, '--area');
+        const issued = issueStoppedExecutorEvidence({ controlPlane: control, actorId: 'owner', areaId,
+          unit: optionValue(argv, '--unit'), invocationId: optionValue(argv, '--invocation') });
+        if (!argv.includes('--yes') || argv.includes('--dry-run')) {
+          print({ ...issued.plan, requiresApproval: true }, { json });
+          return 0;
+        }
+        const expected = issued.plan.expectedIdentity;
+        if (optionValue(argv, '--expected-session') !== expected.runtimeSessionId
+          || optionValue(argv, '--expected-updated-at') !== expected.updatedAt) {
+          throw new TorchError('Apply requires the exact session and updated timestamp from the recovery preview.', {
+            code: 'RUNTIME_RECOVERY_SNAPSHOT_CONFLICT',
+          });
+        }
+        print(control.recoverOwnerStoppedUnknownIdentity({ actorId: 'owner', areaId,
+          expectedIdentity: expected, evidence: issued.evidence }), { json });
+        return 0;
+      } finally { control.close(); }
     }
     if (command === 'runtimes') {
       const operation = argv[1] ?? 'list';

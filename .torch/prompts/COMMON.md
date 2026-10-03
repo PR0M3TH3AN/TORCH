@@ -2,6 +2,26 @@
 
 Repository state outranks conversation memory. Query ownership before crossing a domain boundary.
 
+## Owner-requested restart and continuation repair (2026-10-03 UTC)
+
+The owner said "yeah fix the issue" after the arbiter verified that the fleet
+had stopped making progress. The arbiter implemented a schema-compatible,
+owner-only manual legacy recovery and a bounded deterministic continuation pilot.
+These are source changes pending independent QA and installed-release acceptance,
+not completed umbrella tasks. Read
+docs/spec_changes/2026-10-03-legacy-runtime-recovery.md. The arbiter may apply exact
+tested stopped-invocation recovery and resume the existing seven identities with
+the source CLI. Preserve old unknown/failure receipts and existing unique commits.
+
+The source controller may launch only the explicitly approved existing roster,
+under its daily turn cap, event deduplication and per-identity physical turn guard.
+It does not grant agents permission to start providers or bypass budgets, resource
+leases, approval boundaries or task ownership. Existing legacy manager-wake
+configuration stays disabled; this source pilot is a distinct, bounded mechanism.
+Manager should process current inbox and route real next work rather than leaving
+it at a proposal-only loop. QA may independently review the exact new source and
+scenario packet now; no fabricated QA acceptance is implied by owner implementation.
+
 ## Owner priority update: reliability before visual polish (2026-10-03 UTC)
 
 The owner requested that TORCH's operating defects be fixed first so the fleet
