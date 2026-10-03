@@ -3167,9 +3167,9 @@ test_integrity_note:
       when: "Rollback is requested"
       then: "The completed rollback is recovered once and divergent candidate bytes refuse"
     - id: SCN-integration-adoption-private-ref-intake
-      given: "A finalized owner-bound private candidate ref"
-      when: "Native qualification is requested"
-      then: "The normal integration queue records the exact private ref and commit in ordinary testing state"
+      given: "An existing unfinalized private candidate ref and a separate finalized owner-bound private candidate ref"
+      when: "Direct private-ref intake and authenticated native qualification are requested"
+      then: "Direct intake refuses without a queue record, while the authenticated path records the exact private ref and commit in ordinary testing state"
   observable_outcomes:
     - "Git ref values, structured refusal codes, durable journal state, and native integration-request fields"
   determinism_controls:

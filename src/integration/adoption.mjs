@@ -335,7 +335,8 @@ export class AdoptionService {
       requestApprovalId: text(input.approvalId, 'approvalId'), requestApprovalRevision: input.approvalRevision, requestStartedAt: this.clock().toISOString() };
     if (record.state !== 'requesting') this.#append(record.id, record.revision, requesting, 'integration.adoption.request-started');
     const request = findIntegrationRequest?.({ candidateRef: requesting.candidateRef, commit: requesting.candidateSha })
-      ?? requestIntegration({ areaId: requesting.contributorArea, commit: requesting.candidateSha, candidateRef: requesting.candidateRef });
+      ?? requestIntegration({ adoptionId: requesting.id, areaId: requesting.contributorArea,
+        commit: requesting.candidateSha, candidateRef: requesting.candidateRef });
     const requested = { ...requesting, revision: requesting.revision + 1, state: 'requested', integrationRequestId: request.id, requestedAt: this.clock().toISOString() };
     this.#append(requesting.id, requesting.revision, requested, 'integration.adoption.request');
     return { ...requested, integrationRequest: request, mutationPerformed: true };

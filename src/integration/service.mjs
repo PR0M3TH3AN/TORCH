@@ -106,10 +106,23 @@ export class IntegrationService {
   }
 
   requestCandidate({ areaId, commit, candidateRef } = {}) {
+    throw new TorchError('Private candidate intake requires an authenticated finalized adoption', {
+      code: 'INTEGRATION_ADOPTED_INTAKE_INTERNAL_ONLY', details: { areaId, commit, candidateRef },
+    });
+  }
+
+  #requestFinalizedCandidate({ adoptionId, areaId, commit, candidateRef } = {}) {
     const area = this.controlPlane.assertIdentity(areaId);
     if (area === 'session-manager') {
       throw new TorchError('Session Manager does not own a feature worktree by default', {
         code: 'INTEGRATION_SOURCE_INVALID',
+      });
+    }
+    const adoption = this.adoption.getPrepared(text(adoptionId, 'adoptionId'));
+    if (adoption.state !== 'requesting' || adoption.contributorArea !== area
+      || adoption.candidateSha !== commit || adoption.candidateRef !== candidateRef) {
+      throw new TorchError('Private candidate does not match an authenticated finalized adoption', {
+        code: 'INTEGRATION_ADOPTED_BINDING_INVALID', details: { adoptionId, state: adoption.state },
       });
     }
     const ref = text(candidateRef, 'candidateRef');
@@ -185,7 +198,7 @@ export class IntegrationService {
 
   requestAdoptedCandidate(input = {}) {
     return this.adoption.requestAdoptedCandidate(input, {
-      requestIntegration: ({ areaId, commit, candidateRef }) => this.requestCandidate({ areaId, commit, candidateRef }),
+      requestIntegration: ({ adoptionId, areaId, commit, candidateRef }) => this.#requestFinalizedCandidate({ adoptionId, areaId, commit, candidateRef }),
       findIntegrationRequest: ({ candidateRef, commit }) => this.findCandidateRequest({ candidateRef, commit }),
     });
   }

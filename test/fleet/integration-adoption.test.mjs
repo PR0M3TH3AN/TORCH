@@ -185,6 +185,19 @@ test('SCN-integration-adoption-rollback-recovery: a journal-missing rollback com
 });
 
 test('SCN-integration-adoption-private-ref-intake: finalized private refs enter the ordinary native integration queue, not a specialist branch shortcut', () => {
+  const unfinalized = fixture('torch-adoption-unfinalized-intake');
+  const unfinalizedId = 'fixture-adoption';
+  const unfinalizedRef = `refs/torch/integration-candidates/${unfinalizedId}`;
+  unfinalized.service.adoption.refAdapter.compareAndSwapRefs({
+    expected: [{ ref: unfinalizedRef, sha: null }],
+    writes: [{ ref: unfinalizedRef, sha: unfinalized.candidate }],
+  });
+  assert.throws(() => unfinalized.service.requestCandidate({
+    areaId: unfinalized.contributor, commit: unfinalized.candidate, candidateRef: unfinalizedRef,
+  }), (error) => error.code === 'INTEGRATION_ADOPTED_INTAKE_INTERNAL_ONLY');
+  assert.deepEqual(unfinalized.service.list(), []);
+  unfinalized.control.close();
+
   const context = fixture('torch-adoption-native-intake');
   const adoptionId = 'fixture-adoption';
   prepare(context, adoptionId);
