@@ -53,7 +53,9 @@
         "type": "package-script",
         "command": "node --test --test-timeout=60000 test/fleet/*.test.mjs"
       },
-      "resources": []
+      "resources": [
+        "browser"
+      ]
     },
     {
       "id": "check",
@@ -81,7 +83,9 @@
         "type": "package-script",
         "command": "node scripts/test-dashboard-demo.mjs"
       },
-      "resources": []
+      "resources": [
+        "browser"
+      ]
     },
     {
       "id": "lint",
