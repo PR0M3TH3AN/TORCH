@@ -1,5 +1,28 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Owner-configured concurrency
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-concurrency
+      given: "Seven eligible identities and an approved 48-turn daily cap"
+      when: "The owner raises concurrency to seven, starts a bounded controller, then pauses"
+      then: "Seven pending starts occur before completion; a tighter limit restricts candidates; invalid settings refuse; pause preserves cap, concurrency and charged attempts"
+  observable_outcomes:
+    - "Pending launch count, policy capacity, ledger attempts and refusal codes"
+  determinism_controls:
+    - "Hermetic Git repository, fixed clock, controlled promises and no provider calls"
+  anti_cheat_rationale:
+    prevents:
+      - "Treating sequential starts as concurrency or resetting usage on configuration"
+      - "Tick limits exceeding owner-approved policy"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-03 — Visible automatic-work stops
 
 ```yaml

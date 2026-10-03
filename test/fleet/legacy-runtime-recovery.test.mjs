@@ -14,7 +14,7 @@ import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn
 import { observeProject } from '../../src/observability/snapshot.mjs';
 import { configureContinuation, observeContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
-function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
+function fixture({ recoveryWorktree = true, extraWorker = false, workerCount = 0 } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
   for (const args of [['init', '-b', 'main'], ['config', 'user.email', 'test@example.invalid'],
     ['config', 'user.name', 'Recovery Fixture']]) execFileSync('git', args, { cwd: root, stdio: 'pipe' });
@@ -24,6 +24,7 @@ function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
   const repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
   if (extraWorker) proposal.domains.push({ ...proposal.domains[0], id: 'extra-worker', title: 'Extra worker', owned_paths: ['extra/**'] });
+  for (let i = 0; i < workerCount; i++) proposal.domains.push({ ...proposal.domains[0], id: `worker-${i}`, title: `Worker ${i}`, owned_paths: [`worker-${i}/**`] });
   proposal.review = { status: 'approved', reviewedAt: '2026-10-03T00:00:00Z', reviewedBy: 'owner', notes: [] };
   const env = { ...process.env, XDG_DATA_HOME: join(root, '.data') };
   installProject({ repository, proposal, env, projectId: 'recovery-fixture' });
@@ -215,6 +216,36 @@ test('SCN-runtime-continuation: explicit enable, event deduplication, daily cap 
     configureContinuation(f.control, { actorId: 'owner', enabled: false, maxTurnsPerDay: 2 });
     assert.equal((await run()).launched.length, 0);
     assert.equal(calls, 1);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-concurrency: seven authorized starts preserve budget and obey tighter limits', async () => {
+  const f = fixture({ workerCount: 5 });
+  const backlog = { list: () => [] };
+  const at = new Date('2026-10-03T00:00:00Z');
+  try {
+    for (const agent of f.control.listAgents()) {
+      f.control.reportStatus({ areaId: agent.areaId, state: 'idle', summary: 'Ready' });
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient: agent.areaId, body: 'Review work' });
+    }
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 48 });
+    assert.equal(planContinuation(f.control, backlog, { at }).maxConcurrency, 3);
+    assert.equal(planContinuation(f.control, backlog, { at, limit: 7 }).candidates.length, 3, 'Tick cannot exceed approved capacity');
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxConcurrency: 7 });
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot }).maxTurnsPerDay, 48);
+    assert.equal(planContinuation(f.control, backlog, { at, limit: 2 }).candidates.length, 2);
+    for (const value of [0, 8, 1.5]) assert.throws(() => configureContinuation(f.control,
+      { actorId: 'owner', enabled: true, maxConcurrency: value }), { code: 'CONTINUATION_POLICY_INVALID' });
+    const completions = [];
+    const running = runContinuation(f.control, backlog, { actorId: 'owner', at,
+      launch: () => new Promise(resolve => completions.push(resolve)) });
+    assert.equal(completions.length, 7, 'All seven start before any finishes');
+    assert.equal(planContinuation(f.control, backlog, { at }).attempts, 7);
+    configureContinuation(f.control, { actorId: 'owner', enabled: false });
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => at }).attempts, 7);
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot }).maxConcurrency, 7);
+    completions.forEach(resolve => resolve(0));
+    assert.equal((await running).launched.length, 7);
   } finally { f.control.close(); }
 });
 

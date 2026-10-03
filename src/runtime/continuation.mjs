@@ -11,11 +11,12 @@ function occupiedAreas(control) {
 function taskKey(tasks) { return JSON.stringify(tasks.map(t => [t.id, t.revision]).sort((a, b) => a[0].localeCompare(b[0]))); }
 function read(control) {
   const policyPath = join(control.stateRoot, 'continuation-policy.json');
-  const state = { enabled: false, maxTurnsPerDay: 12, areas: [], day: null, attempts: 0, handled: {}, progress: {},
+  const state = { enabled: false, maxTurnsPerDay: 12, maxConcurrency: 3, areas: [], day: null, attempts: 0, handled: {}, progress: {},
     ...(existsSync(statePath(control)) ? JSON.parse(readFileSync(statePath(control), 'utf8')) : {}),
     ...(existsSync(policyPath) ? JSON.parse(readFileSync(policyPath, 'utf8')) : {}) };
   if (typeof state.enabled !== 'boolean' || !Number.isInteger(state.maxTurnsPerDay)
     || state.maxTurnsPerDay < 1 || state.maxTurnsPerDay > 48 || !Array.isArray(state.areas)
+    || !Number.isInteger(state.maxConcurrency) || state.maxConcurrency < 1 || state.maxConcurrency > 7
     || !Number.isInteger(state.attempts) || state.attempts < 0 || !state.handled || typeof state.handled !== 'object'
     || !state.progress || typeof state.progress !== 'object') {
     throw new TorchError('Continuation policy or attempt ledger is invalid; launch refused.', { code: 'CONTINUATION_POLICY_INVALID' });
@@ -25,22 +26,26 @@ function read(control) {
 function save(control, state, policy = false) {
   const path = policy ? join(control.stateRoot, 'continuation-policy.json') : statePath(control);
   const temporary = `${path}.${randomUUID()}.tmp`;
-  const value = policy ? { enabled: state.enabled, maxTurnsPerDay: state.maxTurnsPerDay, areas: state.areas }
+  const value = policy ? { enabled: state.enabled, maxTurnsPerDay: state.maxTurnsPerDay, maxConcurrency: state.maxConcurrency, areas: state.areas }
     : { day: state.day, attempts: state.attempts, handled: state.handled, progress: state.progress };
   writeFileSync(temporary, JSON.stringify(value), { flag: 'wx', mode: 0o600 });
   renameSync(temporary, path);
 }
 
-export function configureContinuation(control, { actorId, enabled, maxTurnsPerDay = 12 } = {}) {
+export function configureContinuation(control, { actorId, enabled, maxTurnsPerDay, maxConcurrency } = {}) {
   control.assertOwnerActor(actorId);
-  if (typeof enabled !== 'boolean' || !Number.isInteger(maxTurnsPerDay) || maxTurnsPerDay < 1 || maxTurnsPerDay > 48) {
-    throw new TorchError('Continuation requires an explicit enable/pause and 1–48 daily turns.', { code: 'CONTINUATION_POLICY_INVALID' });
+  const previous = read(control);
+  maxTurnsPerDay ??= previous.maxTurnsPerDay;
+  maxConcurrency ??= previous.maxConcurrency;
+  if (typeof enabled !== 'boolean' || !Number.isInteger(maxTurnsPerDay) || maxTurnsPerDay < 1 || maxTurnsPerDay > 48
+    || !Number.isInteger(maxConcurrency) || maxConcurrency < 1 || maxConcurrency > 7) {
+    throw new TorchError('Continuation requires explicit enable/pause, 1–48 daily turns and 1–7 concurrent turns.', { code: 'CONTINUATION_POLICY_INVALID' });
   }
-  const state = { ...read(control), enabled, maxTurnsPerDay, areas: control.listAgents().map(a => a.areaId) };
+  const state = { ...previous, enabled, maxTurnsPerDay, maxConcurrency, areas: control.listAgents().map(a => a.areaId) };
   save(control, state, true);
   control.auditOwnerAction({ actorId, operation: 'runtime.continuation.configure', entityType: 'project', entityId: control.projectId,
-    details: { enabled, maxTurnsPerDay, areas: state.areas } });
-  return { enabled, maxTurnsPerDay, areas: state.areas, sessionsStarted: false };
+    details: { enabled, maxTurnsPerDay, maxConcurrency, areas: state.areas } });
+  return { enabled, maxTurnsPerDay, maxConcurrency, areas: state.areas, sessionsStarted: false };
 }
 
 export function observeContinuation({ stateRoot, tasks = [], now = () => new Date() } = {}) {
@@ -54,7 +59,7 @@ export function observeContinuation({ stateRoot, tasks = [], now = () => new Dat
       return active.length && progress?.status === 0 && progress.noProgress >= 2 && progress.taskKey === taskKey(active);
     }).map(([areaId]) => ({ areaId, reason: 'no-progress-needs-coordination' }));
     return { available: existsSync(join(stateRoot, 'continuation-policy.json')), enabled: state.enabled,
-      day, dayTimezone: 'UTC', attempts, maxTurnsPerDay: state.maxTurnsPerDay, remainingTurns,
+      day, dayTimezone: 'UTC', attempts, maxTurnsPerDay: state.maxTurnsPerDay, maxConcurrency: state.maxConcurrency, remainingTurns,
       stopReason: !state.enabled ? 'paused' : remainingTurns === 0 ? 'daily-turn-cap' : null,
       capacityHeldBy: occupiedAreas({ stateRoot }), held,
       budgetKind: 'automatic-turn-cap', manualTurnsIncluded: false, tokenOrCostGovernance: 'unknown',
@@ -64,14 +69,15 @@ export function observeContinuation({ stateRoot, tasks = [], now = () => new Dat
   }
 }
 
-export function planContinuation(control, backlog, { at = new Date(), limit = 3 } = {}) {
+export function planContinuation(control, backlog, { at = new Date(), limit } = {}) {
   const state = read(control);
   const day = at.toISOString().slice(0, 10);
   const attempts = state.day === day ? state.attempts : 0;
-  if (!Number.isInteger(limit) || limit < 1 || limit > 3) throw new TorchError('Continuation limit must be 1–3.', { code: 'CONTINUATION_POLICY_INVALID' });
+  if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 7)) throw new TorchError('Continuation limit must be 1–7.', { code: 'CONTINUATION_POLICY_INVALID' });
+  const capacity = Math.min(limit ?? state.maxConcurrency, state.maxConcurrency);
   const metadata = JSON.parse(readFileSync(join(control.stateRoot, 'project.json'), 'utf8'));
   if (!state.enabled || metadata.detachedAt || attempts >= state.maxTurnsPerDay) {
-    return { enabled: state.enabled, reason: metadata.detachedAt ? 'detached' : !state.enabled ? 'paused' : 'daily-turn-cap', candidates: [], attempts };
+    return { enabled: state.enabled, maxConcurrency: capacity, reason: metadata.detachedAt ? 'detached' : !state.enabled ? 'paused' : 'daily-turn-cap', candidates: [], attempts };
   }
   const tasks = backlog.list();
   const candidates = [];
@@ -101,12 +107,12 @@ export function planContinuation(control, backlog, { at = new Date(), limit = 3 
   const ordinal = area => state.handled[area]?.dispatchedDay === day ? state.handled[area].dispatchedOrdinal ?? 0 : 0;
   candidates.sort((a, b) => ordinal(a.areaId) - ordinal(b.areaId)
     || Number(b.areaId === 'session-manager') - Number(a.areaId === 'session-manager'));
-  return { enabled: true, day, attempts, remainingTurns: state.maxTurnsPerDay - attempts,
+  return { enabled: true, maxConcurrency: capacity, day, attempts, remainingTurns: state.maxTurnsPerDay - attempts,
     occupiedAreas: occupiedAreas(control), held,
-    candidates: candidates.slice(0, Math.min(limit, state.maxTurnsPerDay - attempts)), mutationPerformed: false };
+    candidates: candidates.slice(0, Math.min(capacity, state.maxTurnsPerDay - attempts)), mutationPerformed: false };
 }
 
-export async function runContinuation(control, backlog, { actorId, launch, at, clock = () => at ?? new Date(), limit = 3 } = {}) {
+export async function runContinuation(control, backlog, { actorId, launch, at, clock = () => at ?? new Date(), limit } = {}) {
   control.assertOwnerActor(actorId);
   if (typeof launch !== 'function') throw new TorchError('Continuation needs an authorized launcher.', { code: 'RUNTIME_EXECUTION_NOT_AUTHORIZED' });
   const lock = join(control.stateRoot, 'continuation.lock');
@@ -121,9 +127,9 @@ export async function runContinuation(control, backlog, { actorId, launch, at, c
     while (true) {
       // Refill immediately after EACH completion. Pending promises and physical
       // guards both count, including manual executors outside this controller.
-      let current = planContinuation(control, backlog, { at: clock(), limit: 3 });
+      let current = planContinuation(control, backlog, { at: clock(), limit });
       let occupied = new Set([...occupiedAreas(control), ...pending.keys()]);
-      while (occupied.size < limit && current.enabled && !current.reason) {
+      while (occupied.size < current.maxConcurrency && current.enabled && !current.reason) {
         const candidate = current.candidates.find(c => !occupied.has(c.areaId));
         if (!candidate) break;
         const state = read(control);
@@ -136,10 +142,10 @@ export async function runContinuation(control, backlog, { actorId, launch, at, c
         try { result = launch(candidate.areaId); } catch { result = null; }
         pending.set(candidate.areaId, Promise.resolve(result).catch(() => null)
           .then(status => ({ areaId: candidate.areaId, status, candidate })));
-        current = planContinuation(control, backlog, { at: clock(), limit: 3 });
+        current = planContinuation(control, backlog, { at: clock(), limit });
         occupied = new Set([...occupiedAreas(control), ...pending.keys()]);
       }
-      reason = current.reason ?? (occupied.size >= limit ? 'capacity-full' : null);
+      reason = current.reason ?? (occupied.size >= current.maxConcurrency ? 'capacity-full' : null);
       if (!pending.size) break;
       const completed = await Promise.race(pending.values());
       pending.delete(completed.areaId);
