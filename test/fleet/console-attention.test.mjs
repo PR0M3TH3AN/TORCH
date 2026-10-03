@@ -6,6 +6,18 @@ import '../../site/live-refresh.js';
 
 const project = (snapshot) => globalThis.TorchAttentionProjection.groups(snapshot);
 
+test('SCN-console-continuation-stop: exhausted budget is an owner policy decision; no-progress remains manager-owned', () => {
+  const groups = project({ continuation: { available: true, stopReason: 'daily-turn-cap', attempts: 12,
+    maxTurnsPerDay: 12, day: '2026-10-03', held: [{ areaId: 'owner-console' }] } });
+  assert.equal(groups.owner.length, 1);
+  assert.match(groups.owner[0].detail, /explicitly change the limit/);
+  assert.equal(groups.owner[0].decisionApprovalId, null, 'No fake approval or automatic budget expansion');
+  assert.equal(groups.fleet.length, 1);
+  assert.equal(groups.fleet[0].owner, 'session-manager');
+  assert.equal(groups.fleet[0].requestOwner, 'session-manager');
+  assert.equal(project({ continuation: { available: true, stopReason: 'paused', held: [] } }).owner.length, 0);
+});
+
 test('SCN-console-attention-ownership: only owner-addressed pending decisions enter Waiting on you', () => {
   const groups = project({
     agents: [

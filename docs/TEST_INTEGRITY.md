@@ -1,5 +1,102 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Current unread inbox startup mitigation
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-fleet-startup-inbox
+      given: "Manager and specialist each have 102 unread handoffs, exceeding the legacy default history page"
+      when: "Fresh and resumed provider launch messages specify the current unread-inbox request and it is invoked through the registered identity-bound tool"
+      then: "Both launches name the correct identity and retrieve newer messages absent from default history, without acknowledging them or weakening authority; overflow coverage is explicitly uncertain"
+  observable_outcomes:
+    - "Actual provider launch arguments, registered MCP response, newest message identity and unchanged unread count"
+  determinism_controls:
+    - "Hermetic project/worktrees, increasing fixed clock and real local tool; no provider launches"
+  anti_cheat_rationale:
+    prevents:
+      - "Prompt-only proof that never exercises the actual inbox tool"
+      - "Claiming truncated history is complete or reading acknowledges a handoff"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Audited one-day additional allowance
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-day-override
+      given: "An exhausted owner-approved daily allowance and retained charged attempts"
+      when: "The owner approves a bounded current-UTC-day total and later pauses or the day rolls over"
+      then: "Extra work starts without resetting attempts; non-owner/invalid overrides refuse; pause persists; the following day uses the original daily cap"
+  observable_outcomes:
+    - "Actual launched count, charged attempts, remaining allowance, owner audit and next-day limit"
+  determinism_controls:
+    - "Hermetic project, fixed clock and controlled launch callback; no live provider or host scheduling"
+  anti_cheat_rationale:
+    prevents:
+      - "Erasing usage or permanently removing daily caps on an owner override"
+      - "Allowing a specialist to authorize extra budget or bypass pause"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Owner-configured concurrency
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-concurrency
+      given: "Seven eligible identities and an approved 48-turn daily cap"
+      when: "The owner raises concurrency to seven, starts a bounded controller, then pauses"
+      then: "Seven pending starts occur before completion; a tighter limit restricts candidates; invalid settings refuse; pause preserves cap, concurrency and charged attempts"
+  observable_outcomes:
+    - "Pending launch count, policy capacity, ledger attempts and refusal codes"
+  determinism_controls:
+    - "Hermetic Git repository, fixed clock, controlled promises and no provider calls"
+  anti_cheat_rationale:
+    prevents:
+      - "Treating sequential starts as concurrency or resetting usage on configuration"
+      - "Tick limits exceeding owner-approved policy"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
+## 2026-10-03 — Visible automatic-work stops
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-health
+      given: "An enabled pilot exhausts its daily attempt allowance"
+      when: "Observation reads the ledger, next UTC day, pause or malformed state"
+      then: "The exact stop and remaining allowance are visible without resetting or modifying state, and no timer/token qualification is fabricated"
+    - id: SCN-console-continuation-stop
+      given: "A daily cap stop and a specialist no-progress hold"
+      when: "Attention items are projected"
+      then: "The budget decision belongs to the owner, coordination belongs to the manager, and no fake approval action or automatic budget increase is offered"
+  observable_outcomes:
+    - "Live snapshot health, byte-identical ledger and owner/manager attention routing"
+  determinism_controls:
+    - "Hermetic repository, fixed UTC clock, injected executor and plain snapshot fixtures"
+  anti_cheat_rationale:
+    prevents:
+      - "Silent budget exhaustion disguised as healthy idle"
+      - "Resetting a ledger to make work appear available"
+      - "Treating declared policy as a verified running timer or measured usage"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-03 — Rolling continuation and bounded no-progress escalation
 
 ```yaml

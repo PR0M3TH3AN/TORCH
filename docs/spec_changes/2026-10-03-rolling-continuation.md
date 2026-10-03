@@ -14,4 +14,10 @@ Status exposes occupied guard identities and no-progress holds. Installed releas
 
 Eligible identities are ordered least-recently-dispatched within the current UTC day, with the Manager first only on ties. A repeatedly revised specialist task must not consume every freed slot while an eligible peer has never started.
 
+## Visible operating stops
+
+The read-only project observation includes the automatic-turn budget, remaining attempts, exact pause/cap stop, retained capacity guards and current no-progress holds. It never resets the ledger, changes authority or treats declared policy as verified timer installation. No-progress holds are displayed only while the same active task IDs/revisions remain; resolved or revised tasks do not retain stale alerts.
+
+An exhausted automatic allowance appears as an owner policy decision in Overview and as an explicit Fleet status line. Manager-owned no-progress waits remain with the Manager, rather than being falsely routed to the owner. There is no fabricated approval button or silent allowance increase. Manual owner turns are not included in this ledger; token/cost governance remains unknown.
+
 Deterministic acceptance scenarios and anti-cheat notes are in docs/TEST_INTEGRITY.md. Independent live qualification remains necessary; do not close broader event-driven or persistent-operations umbrellas based on this source fix alone.

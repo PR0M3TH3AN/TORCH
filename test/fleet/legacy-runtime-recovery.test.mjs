@@ -12,9 +12,9 @@ import { openControlPlane } from '../../src/control-plane/service.mjs';
 import { issueStoppedExecutorEvidence } from '../../src/runtime/stopped-executor-evidence.mjs';
 import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn-guard.mjs';
 import { observeProject } from '../../src/observability/snapshot.mjs';
-import { configureContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
+import { configureContinuation, observeContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
-function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
+function fixture({ recoveryWorktree = true, extraWorker = false, workerCount = 0 } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
   for (const args of [['init', '-b', 'main'], ['config', 'user.email', 'test@example.invalid'],
     ['config', 'user.name', 'Recovery Fixture']]) execFileSync('git', args, { cwd: root, stdio: 'pipe' });
@@ -24,6 +24,7 @@ function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
   const repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
   if (extraWorker) proposal.domains.push({ ...proposal.domains[0], id: 'extra-worker', title: 'Extra worker', owned_paths: ['extra/**'] });
+  for (let i = 0; i < workerCount; i++) proposal.domains.push({ ...proposal.domains[0], id: `worker-${i}`, title: `Worker ${i}`, owned_paths: [`worker-${i}/**`] });
   proposal.review = { status: 'approved', reviewedAt: '2026-10-03T00:00:00Z', reviewedBy: 'owner', notes: [] };
   const env = { ...process.env, XDG_DATA_HOME: join(root, '.data') };
   installProject({ repository, proposal, env, projectId: 'recovery-fixture' });
@@ -218,6 +219,68 @@ test('SCN-runtime-continuation: explicit enable, event deduplication, daily cap 
   } finally { f.control.close(); }
 });
 
+test('SCN-runtime-continuation-day-override: owner extra allowance preserves charges and expires at UTC reset', async () => {
+  const f = fixture();
+  const backlog = { list: () => [] };
+  const at = new Date('2026-10-03T00:00:00Z');
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Ready' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 1 });
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'First work' });
+    const run = () => runContinuation(f.control, backlog, { actorId: 'owner', at, launch: async () => 0 });
+    assert.equal((await run()).launched.length, 1);
+    assert.equal(planContinuation(f.control, backlog, { at }).reason, 'daily-turn-cap');
+    assert.throws(() => configureContinuation(f.control, { actorId: f.areaId, enabled: true, todayMaxTurns: 3 }), { code: 'OWNER_AUTHORITY_REQUIRED' });
+    for (const todayMaxTurns of [0, 97, 1.5]) assert.throws(() => configureContinuation(f.control,
+      { actorId: 'owner', enabled: true, todayMaxTurns }), { code: 'CONTINUATION_POLICY_INVALID' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, todayMaxTurns: 3 });
+    assert.equal(planContinuation(f.control, backlog, { at }).attempts, 1, 'Previously charged turn is retained');
+    assert.equal(planContinuation(f.control, backlog, { at }).remainingTurns, 2);
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Additional work' });
+    assert.equal((await run()).launched.length, 1);
+    configureContinuation(f.control, { actorId: 'owner', enabled: false });
+    const sameDay = observeContinuation({ stateRoot: f.control.stateRoot, now: () => at });
+    assert.equal(sameDay.attempts, 2);
+    assert.equal(sameDay.maxTurnsPerDay, 3);
+    assert.equal(sameDay.stopReason, 'paused');
+    const nextDay = observeContinuation({ stateRoot: f.control.stateRoot, now: () => new Date('2026-10-04T00:00:00Z') });
+    assert.equal(nextDay.maxTurnsPerDay, 1, 'Override cannot widen future daily allowances');
+    assert.equal(nextDay.attempts, 0);
+    assert.ok(f.control.readAudit({ limit: 100 }).some(a => a.operation === 'runtime.continuation.configure'
+      && a.details?.dailyOverride?.maxTurns === 3));
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-concurrency: seven authorized starts preserve budget and obey tighter limits', async () => {
+  const f = fixture({ workerCount: 5 });
+  const backlog = { list: () => [] };
+  const at = new Date('2026-10-03T00:00:00Z');
+  try {
+    for (const agent of f.control.listAgents()) {
+      f.control.reportStatus({ areaId: agent.areaId, state: 'idle', summary: 'Ready' });
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient: agent.areaId, body: 'Review work' });
+    }
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 48 });
+    assert.equal(planContinuation(f.control, backlog, { at }).maxConcurrency, 3);
+    assert.equal(planContinuation(f.control, backlog, { at, limit: 7 }).candidates.length, 3, 'Tick cannot exceed approved capacity');
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxConcurrency: 7 });
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot }).maxTurnsPerDay, 48);
+    assert.equal(planContinuation(f.control, backlog, { at, limit: 2 }).candidates.length, 2);
+    for (const value of [0, 8, 1.5]) assert.throws(() => configureContinuation(f.control,
+      { actorId: 'owner', enabled: true, maxConcurrency: value }), { code: 'CONTINUATION_POLICY_INVALID' });
+    const completions = [];
+    const running = runContinuation(f.control, backlog, { actorId: 'owner', at,
+      launch: () => new Promise(resolve => completions.push(resolve)) });
+    assert.equal(completions.length, 7, 'All seven start before any finishes');
+    assert.equal(planContinuation(f.control, backlog, { at }).attempts, 7);
+    configureContinuation(f.control, { actorId: 'owner', enabled: false });
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => at }).attempts, 7);
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot }).maxConcurrency, 7);
+    completions.forEach(resolve => resolve(0));
+    assert.equal((await running).launched.length, 7);
+  } finally { f.control.close(); }
+});
+
 test('SCN-runtime-continuation-signals: acknowledgements do not wake; eligible turns start concurrently within the limit', async () => {
   const f = fixture();
   try {
@@ -385,6 +448,33 @@ test('SCN-runtime-continuation-fairness: a fresh task revision does not let one 
     await runContinuation(f.control, { list: () => [task] }, { actorId: 'owner', limit: 1,
       launch: area => { starts.push(area); if (area === f.areaId) task.revision++; return 0; } });
     assert.deepEqual(starts.slice(0, 2), [f.areaId, 'extra-worker']);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-health: budget stops, day reset, pause and unreadable ledgers are visible without mutation', async () => {
+  const f = fixture({ recoveryWorktree: false });
+  const at = new Date('2026-10-03T00:00:00Z');
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Work' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 1 });
+    await runContinuation(f.control, { list: () => [] }, { actorId: 'owner', at, launch: () => 0 });
+    const path = join(f.control.stateRoot, 'continuation.json');
+    const before = readFileSync(path, 'utf8');
+    const health = observeContinuation({ stateRoot: f.control.stateRoot, now: () => at });
+    assert.equal(health.stopReason, 'daily-turn-cap');
+    assert.equal(health.remainingTurns, 0);
+    assert.equal(health.manualTurnsIncluded, false);
+    assert.equal(health.timerInstallationVerified, false);
+    const snapshot = observeProject({ repositoryRoot: f.root, env: f.env, now: () => at });
+    assert.equal(snapshot.continuation.stopReason, 'daily-turn-cap');
+    assert.equal(readFileSync(path, 'utf8'), before);
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => new Date('2026-10-04T00:00:00Z') }).remainingTurns, 1);
+    configureContinuation(f.control, { actorId: 'owner', enabled: false, maxTurnsPerDay: 1 });
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => at }).stopReason, 'paused');
+    writeFileSync(path, 'not-json');
+    assert.equal(observeContinuation({ stateRoot: f.control.stateRoot, now: () => at }).stopReason, 'policy-or-ledger-unreadable');
+    assert.equal(readFileSync(path, 'utf8'), 'not-json', 'Observation must not repair or reset the attempt ledger');
   } finally { f.control.close(); }
 });
 
