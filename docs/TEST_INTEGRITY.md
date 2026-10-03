@@ -1,5 +1,38 @@
 # Test Integrity Notes
 
+## 2026-10-03 — Rolling continuation and bounded no-progress escalation
+
+```yaml
+test_integrity_note:
+  change_type: new_tests
+  scenarios:
+    - id: SCN-runtime-continuation-refill
+      given: "A long manager turn and a short specialist turn occupy two slots; a third identity waits"
+      when: "Only the short turn completes"
+      then: "The third starts before manager completion and the daily attempt cap still holds"
+    - id: SCN-runtime-continuation-no-progress
+      given: "An unchanged unfinished eligible assignment"
+      when: "Two successful executor turns make no recorded task progress"
+      then: "Exactly two specialist turns occur, one durable coordination request is sent, unchanged-work repeats stop, new revisions may resume and unmet dependencies remain ineligible"
+    - id: SCN-runtime-continuation-capacity
+      given: "An owner-started executor already occupies the configured automatic capacity"
+      when: "The continuation controller runs"
+      then: "No additional automatic turn starts and no attempt is charged"
+  observable_outcomes:
+    - "Actual launch ordering, daily charges, coordination messages and explicit held-work reason"
+  determinism_controls:
+    - "Hermetic installed Git projects, manually resolved provider promises and task fixtures; no sleep, network or live model"
+  anti_cheat_rationale:
+    prevents:
+      - "Replacing the batch barrier by raising concurrency"
+      - "Claiming refill only after all turns finish"
+      - "Spending unlimited turns on unchanged work or ignoring dependency gates"
+      - "Ignoring physical executors started outside the controller"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
+
 ## 2026-10-03 — Process-verified runtime presence
 
 ```yaml

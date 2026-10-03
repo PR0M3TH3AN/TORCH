@@ -14,7 +14,7 @@ import { observeRuntimeTurn, withRuntimeTurnGuard } from '../../src/runtime/turn
 import { observeProject } from '../../src/observability/snapshot.mjs';
 import { configureContinuation, planContinuation, runContinuation } from '../../src/runtime/continuation.mjs';
 
-function fixture({ recoveryWorktree = true } = {}) {
+function fixture({ recoveryWorktree = true, extraWorker = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'torch-legacy-recovery-'));
   for (const args of [['init', '-b', 'main'], ['config', 'user.email', 'test@example.invalid'],
     ['config', 'user.name', 'Recovery Fixture']]) execFileSync('git', args, { cwd: root, stdio: 'pipe' });
@@ -23,6 +23,7 @@ function fixture({ recoveryWorktree = true } = {}) {
   execFileSync('git', ['commit', '-m', 'fixture'], { cwd: root, stdio: 'pipe' });
   const repository = inspectRepository(root);
   const proposal = proposeDomains({ repository, analysis: analyzeRepository(repository) });
+  if (extraWorker) proposal.domains.push({ ...proposal.domains[0], id: 'extra-worker', title: 'Extra worker', owned_paths: ['extra/**'] });
   proposal.review = { status: 'approved', reviewedAt: '2026-10-03T00:00:00Z', reviewedBy: 'owner', notes: [] };
   const env = { ...process.env, XDG_DATA_HOME: join(root, '.data') };
   installProject({ repository, proposal, env, projectId: 'recovery-fixture' });
@@ -250,6 +251,70 @@ test('SCN-runtime-continuation-pause: a pause during one turn prevents another q
       launch: async () => { configureContinuation(f.control, { actorId: 'owner', enabled: false, maxTurnsPerDay: 3 }); return 0; } });
     assert.equal(result.launched.length, 1);
     assert.equal(planContinuation(f.control, { list: () => [] }).reason, 'paused');
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-refill: a short turn frees capacity while the manager remains running', async () => {
+  const f = fixture({ extraWorker: true });
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    for (const recipient of ['session-manager', f.areaId, 'extra-worker']) {
+      f.control.sendOwnerRequest({ actorId: 'owner', recipient, body: 'Eligible handoff' });
+    }
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 3 });
+    const starts = [];
+    const finishes = new Map();
+    let thirdStarted;
+    const third = new Promise(resolve => { thirdStarted = resolve; });
+    const run = runContinuation(f.control, { list: () => [] }, { actorId: 'owner', limit: 2,
+      launch: area => { starts.push(area); if (starts.length === 3) thirdStarted();
+        return new Promise(resolve => finishes.set(area, resolve)); } });
+    assert.deepEqual(starts, ['session-manager', f.areaId]);
+    finishes.get(f.areaId)(0);
+    await third;
+    assert.deepEqual(starts, ['session-manager', f.areaId, 'extra-worker']);
+    assert.equal(finishes.has('session-manager'), true, 'Manager completion was not required for refill');
+    finishes.get('extra-worker')(0);
+    finishes.get('session-manager')(0);
+    assert.equal((await run).launched.length, 3);
+    assert.equal(planContinuation(f.control, { list: () => [] }).reason, 'daily-turn-cap');
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-no-progress: unfinished assignment continues once then escalates rather than busy-looping', async () => {
+  const f = fixture();
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true, maxTurnsPerDay: 8 });
+    const task = { id: 'TASK-continue', owner: f.areaId, state: 'assigned', revision: 1, dependencies: [] };
+    let specialistTurns = 0;
+    const result = await runContinuation(f.control, { list: () => [task] }, { actorId: 'owner', limit: 1,
+      launch: area => { if (area === f.areaId) specialistTurns++; return 0; } });
+    assert.equal(specialistTurns, 2);
+    assert.equal(result.launched.filter(t => t.areaId === f.areaId).length, 2);
+    const messages = f.control.readMessages({ recipient: 'session-manager', unacknowledgedOnly: true, limit: 1000 });
+    assert.equal(messages.filter(m => m.body.includes('two turns without advancing')).length, 1);
+    assert.equal(planContinuation(f.control, { list: () => [task] }).candidates.some(c => c.areaId === f.areaId), false);
+    task.revision++;
+    assert.equal(planContinuation(f.control, { list: () => [task] }).candidates.some(c => c.areaId === f.areaId), true);
+    task.dependencies = ['TASK-unfinished'];
+    assert.equal(planContinuation(f.control, { list: () => [task] }).candidates.some(c => c.areaId === f.areaId), false);
+  } finally { f.control.close(); }
+});
+
+test('SCN-runtime-continuation-capacity: a manually held executor counts against automatic fleet capacity', async () => {
+  const f = fixture();
+  try {
+    f.control.reportStatus({ areaId: f.areaId, state: 'idle', summary: 'Idle' });
+    f.control.sendOwnerRequest({ actorId: 'owner', recipient: f.areaId, body: 'Eligible handoff' });
+    configureContinuation(f.control, { actorId: 'owner', enabled: true });
+    let running;
+    withRuntimeTurnGuard(f.control, 'session-manager', () => {
+      running = runContinuation(f.control, { list: () => [] }, { actorId: 'owner', limit: 1,
+        launch: () => { throw new Error('Capacity must not be exceeded'); } });
+    });
+    assert.deepEqual((await running).launched, []);
+    assert.equal(planContinuation(f.control, { list: () => [] }).attempts, 0);
   } finally { f.control.close(); }
 });
 
