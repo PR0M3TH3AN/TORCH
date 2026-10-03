@@ -236,21 +236,24 @@ export class AdoptionService {
   }
 
   #append(adoptionId, expectedRevision, record, operation) {
-    const now = this.clock().toISOString();
     this.controlPlane.database.exec('BEGIN IMMEDIATE');
     try {
-      const current = this.#find(adoptionId);
-      if (expectedRevision === null ? current : !current || current.revision !== expectedRevision) {
-        throw new TorchError('Adoption journal changed before this transition could be recorded', {
-          code: 'ADOPTION_RECORD_REVISION_STALE', details: { adoptionId, expectedRevision, actual: current?.revision ?? null },
-        });
-      }
-      this.controlPlane.database.prepare(`INSERT INTO audit_events
-        (id, project_id, actor_id, operation, entity_type, entity_id, details, created_at)
-        VALUES (?, ?, 'owner', ?, 'integration-adoption', ?, ?, ?)`)
-        .run(this.idFactory(), this.controlPlane.projectId, operation, adoptionId, JSON.stringify(record), now);
+      this.#appendInTransaction(adoptionId, expectedRevision, record, operation);
       this.controlPlane.database.exec('COMMIT');
     } catch (error) { this.controlPlane.database.exec('ROLLBACK'); throw error; }
+  }
+
+  #appendInTransaction(adoptionId, expectedRevision, record, operation) {
+    const current = this.#find(adoptionId);
+    if (expectedRevision === null ? current : !current || current.revision !== expectedRevision) {
+      throw new TorchError('Adoption journal changed before this transition could be recorded', {
+        code: 'ADOPTION_RECORD_REVISION_STALE', details: { adoptionId, expectedRevision, actual: current?.revision ?? null },
+      });
+    }
+    this.controlPlane.database.prepare(`INSERT INTO audit_events
+      (id, project_id, actor_id, operation, entity_type, entity_id, details, created_at)
+      VALUES (?, ?, 'owner', ?, 'integration-adoption', ?, ?, ?)`)
+      .run(this.idFactory(), this.controlPlane.projectId, operation, adoptionId, JSON.stringify(record), this.clock().toISOString());
   }
 
   #fromRecord(record, input, action) {
@@ -326,20 +329,37 @@ export class AdoptionService {
   }
 
   requestAdoptedCandidate(input = {}, { requestIntegration, findIntegrationRequest } = {}) {
-    const record = this.getPrepared(text(input.adoptionId, 'adoptionId'));
-    if (!['finalized', 'requesting'].includes(record.state)) throw new TorchError('Only a finalized adoption can request native qualification', { code: 'ADOPTION_REQUEST_STATE_INVALID', details: { state: record.state } });
-    const plan = this.#fromRecord(record, input, 'request');
-    if (!plan.canProceed) throw new TorchError('Adopted candidate request is blocked', { code: 'ADOPTION_REQUEST_BLOCKED', details: plan.blockers });
     if (typeof requestIntegration !== 'function') throw new TorchError('Native integration request adapter is unavailable', { code: 'ADOPTION_NATIVE_REQUEST_UNAVAILABLE' });
-    const requesting = record.state === 'requesting' ? record : { ...record, revision: record.revision + 1, state: 'requesting',
-      requestApprovalId: text(input.approvalId, 'approvalId'), requestApprovalRevision: input.approvalRevision, requestStartedAt: this.clock().toISOString() };
-    if (record.state !== 'requesting') this.#append(record.id, record.revision, requesting, 'integration.adoption.request-started');
-    const request = findIntegrationRequest?.({ candidateRef: requesting.candidateRef, commit: requesting.candidateSha })
-      ?? requestIntegration({ adoptionId: requesting.id, areaId: requesting.contributorArea,
+    const adoptionId = text(input.adoptionId, 'adoptionId');
+    this.controlPlane.database.exec('BEGIN IMMEDIATE');
+    try {
+      const record = this.getPrepared(adoptionId);
+      if (!['finalized', 'requesting'].includes(record.state)) {
+        throw new TorchError('Only a finalized adoption can request native qualification', {
+          code: 'ADOPTION_REQUEST_STATE_INVALID', details: { state: record.state },
+        });
+      }
+      const plan = this.#fromRecord(record, input, 'request');
+      if (!plan.canProceed) throw new TorchError('Adopted candidate request is blocked', { code: 'ADOPTION_REQUEST_BLOCKED', details: plan.blockers });
+      const requesting = record.state === 'requesting' ? record : { ...record, revision: record.revision + 1, state: 'requesting',
+        requestApprovalId: text(input.approvalId, 'approvalId'), requestApprovalRevision: input.approvalRevision, requestStartedAt: this.clock().toISOString() };
+      if (record.state !== 'requesting') this.#appendInTransaction(record.id, record.revision, requesting, 'integration.adoption.request-started');
+      const existing = findIntegrationRequest?.({ candidateRef: requesting.candidateRef, commit: requesting.candidateSha });
+      if (existing && (existing.sourceArea !== requesting.contributorArea || existing.targetBranch !== requesting.targetBranch)) {
+        throw new TorchError('Existing private-ref integration request does not match this adoption', {
+          code: 'ADOPTION_INTEGRATION_REQUEST_CONFLICT', details: { adoptionId: requesting.id, integrationRequestId: existing.id },
+        });
+      }
+      const request = existing ?? requestIntegration({ adoptionId: requesting.id, areaId: requesting.contributorArea,
         commit: requesting.candidateSha, candidateRef: requesting.candidateRef });
-    const requested = { ...requesting, revision: requesting.revision + 1, state: 'requested', integrationRequestId: request.id, requestedAt: this.clock().toISOString() };
-    this.#append(requesting.id, requesting.revision, requested, 'integration.adoption.request');
-    return { ...requested, integrationRequest: request, mutationPerformed: true };
+      const requested = { ...requesting, revision: requesting.revision + 1, state: 'requested', integrationRequestId: request.id, requestedAt: this.clock().toISOString() };
+      this.#appendInTransaction(requesting.id, requesting.revision, requested, 'integration.adoption.request');
+      this.controlPlane.database.exec('COMMIT');
+      return { ...requested, integrationRequest: request, mutationPerformed: true };
+    } catch (error) {
+      this.controlPlane.database.exec('ROLLBACK');
+      throw error;
+    }
   }
 
   #find(adoptionId) {

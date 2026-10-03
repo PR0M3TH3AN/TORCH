@@ -3176,8 +3176,12 @@ test_integrity_note:
       then: "The transition refuses with its structured boundary code and no integration queue record"
     - id: SCN-integration-adoption-request-replay
       given: "A finalized adoption that has created its one ordinary private-ref integration request"
-      when: "A concurrent exact-row insert or later request replay is attempted"
-      then: "Real SQLite rejects the duplicate exact source row, the journal replay refuses, and exactly one queue row remains"
+      when: "Two independently opened authenticated API callers request it concurrently"
+      then: "The existing transactional adoption journal serializes them, one caller refuses after the completed transition, and exactly one queue row remains"
+    - id: SCN-integration-adoption-legacy-retries
+      given: "An existing project database containing two historical ordinary-request retry rows with the same source branch and commit"
+      when: "IntegrationService starts"
+      then: "Both records remain readable; startup adds no global uniqueness constraint and does not reject historical evidence"
   observable_outcomes:
     - "Git ref values, structured refusal codes, durable journal state, and native integration-request fields"
   determinism_controls:
@@ -3189,7 +3193,8 @@ test_integrity_note:
       - "Claiming crash recovery without preserving actual ref effects"
       - "Treating a private candidate as an ordinary specialist branch"
       - "Using an unrelated, source-only, stale, or mismatched approval as adoption authority"
-      - "Duplicating a private-ref queue record through a concurrent row or replay"
+      - "Duplicating a private-ref queue record through concurrent authenticated API requests or replay"
+      - "Rejecting historical ordinary-request retry evidence with an unqualified schema constraint"
   relaxation:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""

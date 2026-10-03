@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join } from 'node:path';
@@ -47,7 +47,43 @@ function fixture(name) {
   const control = openControlPlane({ repositoryRoot: root, env });
   const service = new IntegrationService({ repositoryRoot: root, controlPlane: control, checkService: { exactPasses: () => false } });
   const contributor = proposal.domains[0].id;
-  return { root, control, service, contributor, destination: 'review-area', base, candidate };
+  return { root, env, control, service, contributor, destination: 'review-area', base, candidate };
+}
+
+function concurrentAdoptedRequest(context, requestInput) {
+  const childSource = `
+    import { pathToFileURL } from 'node:url';
+    import { resolve } from 'node:path';
+    const { repositoryRoot, stateRoot, requestInput } = JSON.parse(process.argv[1]);
+    const sourceRoot = process.cwd();
+    const { openControlPlane } = await import(pathToFileURL(resolve(sourceRoot, 'src/control-plane/service.mjs')).href);
+    const { IntegrationService } = await import(pathToFileURL(resolve(sourceRoot, 'src/integration/service.mjs')).href);
+    const control = openControlPlane({ repositoryRoot, env: { ...process.env, XDG_DATA_HOME: stateRoot } });
+    const service = new IntegrationService({ repositoryRoot, controlPlane: control, checkService: { exactPasses: () => false } });
+    try {
+      const result = service.requestAdoptedCandidate(requestInput);
+      console.log(JSON.stringify({ outcome: 'requested', integrationRequestId: result.integrationRequest.id }));
+    } catch (error) {
+      console.log(JSON.stringify({ outcome: 'refused', code: error.code ?? null }));
+    } finally {
+      control.close();
+    }
+  `;
+  const encoded = JSON.stringify({ repositoryRoot: context.root, stateRoot: context.env.XDG_DATA_HOME, requestInput });
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ['--input-type=module', '-e', childSource, encoded], {
+      cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = ''; let stderr = '';
+    child.stdout.on('data', chunk => { stdout += chunk; });
+    child.stderr.on('data', chunk => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) return reject(new Error(`concurrent adopted request child failed: ${stderr}`));
+      try { resolve(JSON.parse(stdout.trim().split('\n').at(-1))); }
+      catch (error) { reject(new Error(`invalid concurrent adopted request output: ${stdout}\n${stderr}\n${error.message}`)); }
+    });
+  });
 }
 
 function authority(context, { action, adoptionId }) {
@@ -266,22 +302,37 @@ test('SCN-integration-adoption-approval-boundaries: unrelated or source-only app
   wrongProvenance.control.close();
 });
 
-test('SCN-integration-adoption-request-replay: real SQLite rejects a duplicate exact private-ref queue row, and a completed adoption request cannot replay into a second row', () => {
+test('SCN-integration-adoption-request-replay: concurrent authenticated API callers serialize on the adoption journal and create exactly one private-ref queue request', async () => {
   const context = fixture('torch-adoption-request-replay');
   const adoptionId = 'fixture-adoption';
   prepare(context, adoptionId);
-  const finalized = context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId));
-  const requested = context.service.requestAdoptedCandidate(lifecycleInput(context, 'request', adoptionId));
-  const duplicate = context.control.database.prepare(`INSERT INTO integration_requests (
+  context.service.finalizeAdoption(lifecycleInput(context, 'finalize', adoptionId));
+  const requestInput = lifecycleInput(context, 'request', adoptionId);
+  const outcomes = await Promise.all([
+    concurrentAdoptedRequest(context, requestInput),
+    concurrentAdoptedRequest(context, requestInput),
+  ]);
+  assert.deepEqual(outcomes.map((entry) => entry.outcome).sort(), ['refused', 'requested']);
+  assert.equal(outcomes.find((entry) => entry.outcome === 'refused').code, 'ADOPTION_REQUEST_STATE_INVALID');
+  const requests = context.service.list();
+  assert.equal(requests.length, 1);
+  assert.equal(context.service.getPreparedAdoption(adoptionId).state, 'requested');
+  context.control.close();
+});
+
+test('SCN-integration-adoption-legacy-retries: historical ordinary-request retries remain readable when integration service starts', () => {
+  const context = fixture('torch-adoption-legacy-retries');
+  const insert = context.control.database.prepare(`INSERT INTO integration_requests (
     id, project_id, source_area, source_branch, source_commit, target_branch,
     base_target_commit, state, reason, required_checks, created_at, updated_at
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-  assert.throws(() => duplicate.run(
-    'duplicate-race-row', context.control.projectId, context.contributor, finalized.candidateRef, context.candidate,
-    'main', context.base, 'testing', null, '[]', requested.requestedAt, requested.requestedAt,
-  ), /UNIQUE constraint failed: integration_requests.project_id, integration_requests.source_branch, integration_requests.source_commit/);
-  assert.throws(() => context.service.requestAdoptedCandidate(lifecycleInput(context, 'request', adoptionId)),
-    (error) => error.code === 'ADOPTION_REQUEST_STATE_INVALID');
-  assert.deepEqual(context.service.list().map((record) => record.id), [requested.integrationRequest.id]);
+  for (const [id, state] of [['historical-failed', 'blocked'], ['historical-retry', 'superseded']]) {
+    insert.run(id, context.control.projectId, context.contributor, 'refs/heads/candidate', context.candidate,
+      'main', context.base, state, 'historical-retry', '[]', '2026-10-03T00:00:00.000Z', '2026-10-03T00:00:00.000Z');
+  }
+  assert.doesNotThrow(() => new IntegrationService({
+    repositoryRoot: context.root, controlPlane: context.control, checkService: { exactPasses: () => false },
+  }));
+  assert.equal(context.service.list().length, 2);
   context.control.close();
 });
