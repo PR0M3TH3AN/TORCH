@@ -3289,3 +3289,24 @@ and detach it without damaging the repository.
 
 That lifecycle MUST pass with no Nostr relay, no GitHub account, no hosted CI,
 no hosted database, and no project-local copy of the TORCH engine.
+
+## 33. Post-launch support and overall product completion
+
+The first usable release in §32 is an earlier milestone, not the definition of
+overall product completion. TORCH MUST also support the ongoing maintenance and
+development of products built by its fleet, following
+[Product Feedback and Continuous Improvement](PRODUCT_FEEDBACK_AND_CONTINUOUS_IMPROVEMENT_SPEC.md).
+
+Overall completion requires the existing fleet requirements AND qualified
+post-launch signal intake, privacy/isolation, replay-safe issue/task routing,
+evidence-backed investigation, independent exact-candidate review, approved release
+measurement/recovery, curated regression knowledge and an owner-facing Support
+inspector. The linked specification defines fourteen required feature records,
+eleven behavioral qualification scenarios and an approved end-to-end product pilot.
+
+Reuse the same organization, authority, backlog, integration and knowledge
+boundaries; do not create another agent orchestration system. Manual release
+approval remains sufficient. Autonomous production changes, model training and
+customer-data collection are not implicitly authorized by these requirements.
+These requirements are recorded for future implementation, not advertised as
+shipped functionality or a change to current fleet priorities.

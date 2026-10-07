@@ -1,5 +1,27 @@
 # TORCH remaining work
 
+## Required post-launch support lifecycle (2026-10-07)
+
+Owner requires TORCH to support and improve the applications it builds after
+launch. Follow [the required feature specification](PRODUCT_FEEDBACK_AND_CONTINUOUS_IMPROVEMENT_SPEC.md)
+and its [preserved source proposal](proposals/2026-10-07-product-feedback-and-continuous-improvement.md).
+This is an overall product-completion requirement, not a claim of implemented
+capabilities or authorization to collect customer data or change production.
+
+Fourteen proposed, unassigned feature records in the existing backlog:
+
+- `TASK-feedback-contract`, `TASK-feedback-signals`, `TASK-feedback-privacy`
+- `TASK-feedback-retention`, `TASK-feedback-intake`, `TASK-feedback-evidence`
+- `TASK-feedback-dispatch`, `TASK-feedback-investigation`, `TASK-feedback-review`
+- `TASK-feedback-governor`, `TASK-feedback-outcomes`, `TASK-feedback-knowledge`
+- `TASK-feedback-console`, `TASK-feedback-qualification`
+
+Implementation is deferred pending future owner authorization and approved pilot
+policy. Current reliability and Chat priorities remain unchanged. The spec records
+dependencies, staged integration and eleven behavioral qualification scenarios;
+the authoritative backlog controls actual state. Manual release approval is
+sufficient; automatic deployment and model training are not completion requirements.
+
 ## Immediate owner-facing milestone: agent Chat (2026-10-03)
 
 Owner promoted `TASK-owner-agent-chat`, `TASK-console-agent-chat-ui` and
