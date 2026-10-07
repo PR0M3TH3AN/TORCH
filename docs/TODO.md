@@ -1,5 +1,18 @@
 # TORCH remaining work
 
+## Qualified release cadence milestone (owner-approved, 2026-10-07)
+
+Extend `TASK-conversation-project-services` through the existing scheduler,
+delivery, integration and version services, following
+[the release cadence milestone](RELEASE_CADENCE_MILESTONE.md). TORCH's reviewed
+initial target is 08:00/16:00 `America/New_York`; other projects choose their own.
+Include a dashboard-editable cron/timezone, presets, next-run preview, safe
+enable/pause and truthful scheduler/release outcomes. Required checks and exact
+package QA gate every window. Separate release preparation from destination-bound
+deployment and checkpointed self-host upgrade/rollback authority. Existing
+persistent-operations dependency and active primary assignments remain intact.
+This is a required development milestone, not a live schedule or upgrade approval.
+
 ## Required post-launch support lifecycle (2026-10-07)
 
 Owner requires TORCH to support and improve the applications it builds after
