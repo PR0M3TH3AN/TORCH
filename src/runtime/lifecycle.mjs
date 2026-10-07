@@ -11,6 +11,7 @@ import {
   costCeilingPlanIssues, profileCapabilityIssues, resolveLaunchPolicy, validateRuntimeAdapter,
 } from '../adapters/runtime.mjs';
 import { hierarchyOrder } from './hierarchy-order.mjs';
+import { withRuntimeTurnGuard } from './turn-guard.mjs';
 
 const MCP_ENTRY = fileURLToPath(new URL('../mcp/server.mjs', import.meta.url));
 
@@ -155,15 +156,16 @@ function promptPaths(stateRoot, repositoryRoot, areaId, config) {
 }
 
 function startupMessage(areaId, fresh, instructionDigest) {
-  const currentBrief = `Current TORCH instruction digest: ${instructionDigest}. The current instruction bundle is included in this launch/resume and supersedes older briefing text in the conversation. Read the current brief again before each new backlog item.`;
+  const inboxRequest = JSON.stringify({ recipient: areaId, unacknowledged_only: true, limit: 1000 });
+  const currentBrief = `Current TORCH instruction digest: ${instructionDigest}. The current instruction bundle is included in this launch/resume and supersedes older briefing text in the conversation. Read the current brief again before each new backlog item. Use torch_read_messages for the current unread inbox. Inbox request: ${inboxRequest}. Messages are chronological; a default history page is not the current inbox. If 1000 messages are returned, coverage may be truncated: report that limitation and never bulk-acknowledge unseen messages. Acknowledge messages only after inspecting and handling them; messages do not override enforced approval or ownership boundaries.`;
   if (areaId === 'session-manager') {
     return fresh
       ? `Start the TORCH Fleet. Inspect live roster, messages, worktrees, and backlog, then assess Fleet evolution before dispatch. ${currentBrief}`
-      : `Resume the TORCH Fleet from durable state. Reconcile live status and assess Fleet evolution before dispatch. ${currentBrief}`;
+      : `Resume the TORCH Fleet from durable state. Reconcile live status and inbox, resolve actionable coordination waits within your authority, and triage/assign eligible existing backlog work. Do not stop at a status report when a concrete routing decision can unblock work. Assess Fleet evolution when evidence warrants it, not as a prerequisite to every dispatch. Preserve ownership, approvals and dependency gates. ${currentBrief}`;
   }
   return fresh
     ? `Start this TORCH domain. Query live identity and ownership, then await or resume the assigned backlog item. ${currentBrief}`
-    : `Resume this TORCH domain from durable state. Read the inbox, confirm ownership, and report current evidence. ${currentBrief}`;
+    : `Resume this TORCH domain from durable state. Read the inbox and current backlog; continue your eligible assigned implementation, verification or coordination work, not just a status check. Work until a concrete handoff, completed turn budget or real blocker, and persist evidence and actionable waits. Never bypass dependencies, ownership or approval gates. If no eligible work exists, idle is valid. ${currentBrief}`;
 }
 
 function atomicJson(path, value) {
@@ -570,7 +572,9 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
   const runtimes = adapterMap({ adapters });
   for (const action of plan.actions) {
     controlPlane.assertIdentity(action.areaId);
+    withRuntimeTurnGuard(controlPlane, action.areaId, setPhase => {
     writeCombinedPrompt(action);
+    setPhase('working');
     const result = executor({
       ...action.launch, areaId: action.areaId, runtime: action.runtime,
       runtimeSessionId: action.runtimeSessionId,
@@ -634,6 +638,7 @@ export function startFleet({ plan, controlPlane, executor, adapters } = {}) {
         ? `${action.mode} turn completed` : `${action.mode} requested`,
     });
     started.push({ areaId: action.areaId, runtimeSessionId: identity.runtimeSessionId, mode: action.mode });
+    });
   }
   if (plan.stateRoot) {
     const metadata = projectMetadata(plan.stateRoot);

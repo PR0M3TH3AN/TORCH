@@ -14,6 +14,7 @@ import { installProject } from '../../src/kernel/install.mjs';
 import { defaultManagerCheckInSchedule, organizationGraphFromConfig } from '../../src/kernel/organization.mjs';
 import { createWorktrees } from '../../src/kernel/worktrees.mjs';
 import { ResourceService } from '../../src/resources/service.mjs';
+import { createTorchToolset } from '../../src/mcp/tools.mjs';
 import {
   createFleetBrief, detachFleet, planAreaUp, planFleetDetach, planFleetDown, planFleetUp, startFleet, stopFleet,
 } from '../../src/runtime/lifecycle.mjs';
@@ -82,6 +83,43 @@ function fleetFixture({ workerRuntime = 'claude', hierarchy = false } = {}) {
   createWorktrees({ repository, parentOverride: worktreeParent });
   return { root, env, worker: proposal.domains[0].id, middleManager: hierarchy ? 'runtime-lead' : null };
 }
+
+test('SCN-fleet-startup-inbox: fresh and resumed launch instructions retrieve newer unread handoffs beyond the default history page', () => {
+  const fixture = fleetFixture();
+  const control = openControlPlane({ repositoryRoot: fixture.root, env: fixture.env });
+  const adapters = new Map([['claude', createClaudeAdapter({ executable: 'claude' })]]);
+  let tick = 0;
+  control.clock = () => new Date(Date.parse('2026-10-03T00:00:00Z') + tick++);
+  try {
+    const newest = new Map();
+    for (const areaId of ['session-manager', fixture.worker]) {
+      for (let i = 0; i < 102; i++) newest.set(areaId, control.sendOwnerRequest({ actorId: 'owner', recipient: areaId, body: `Current handoff ${i}` }));
+      const history = control.readMessages({ recipient: areaId });
+      assert.equal(history.length, 100);
+      assert.ok(!history.some(m => m.id === newest.get(areaId).id), 'Default historical page misses the latest handoff');
+    }
+    for (const fresh of [true, false]) {
+      if (!fresh) for (const areaId of newest.keys()) control.reportStatus({ areaId, state: 'idle', runtime: 'claude', runtimeSessionId: `fixture-${areaId}` });
+      const plan = planFleetUp({ repositoryRoot: fixture.root, controlPlane: control, adapters, fresh });
+      assert.equal(plan.canProceed, true);
+      for (const action of plan.actions) {
+        assert.equal(action.mode, fresh ? 'create' : 'resume');
+        const launchText = action.launch.args.join(' ');
+        const match = launchText.match(/Inbox request: (\{[^}]+\})\./);
+        assert.ok(match, 'Actual provider launch carries the explicit current-inbox request');
+        const request = JSON.parse(match[1]);
+        assert.deepEqual(request, { recipient: action.areaId, unacknowledged_only: true, limit: 1000 });
+        const tool = createTorchToolset(control, { actorId: action.areaId }).get('torch_read_messages');
+        const result = tool.invoke(request);
+        assert.equal(result.messages.length, 102);
+        assert.equal(result.messages.at(-1).id, newest.get(action.areaId).id);
+        assert.equal(control.readMessages({ recipient: action.areaId, unacknowledgedOnly: true, limit: 1000 }).length, 102, 'Reading never acknowledges work');
+        assert.match(launchText, /coverage may be truncated/);
+        assert.match(launchText, /messages do not override enforced approval or ownership boundaries/i);
+      }
+    }
+  } finally { control.close(); }
+});
 
 test('SCN-fleet-fresh-resume: identities resume captured runtime sessions and wind down safely', () => {
   const fixture = fleetFixture();

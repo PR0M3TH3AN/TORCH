@@ -16,6 +16,8 @@ import { assessBacklogHealth, backlogObservedCommitDistance } from '../backlog/s
 import { observeTaskActivity } from '../backlog/activity.mjs';
 import { ScheduleLauncherService } from '../schedules/launcher.mjs';
 import { hierarchyOrder } from '../runtime/hierarchy-order.mjs';
+import { observeRuntimeTurn } from '../runtime/turn-guard.mjs';
+import { observeContinuation } from '../runtime/continuation.mjs';
 
 function json(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -403,6 +405,7 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       metrics: ['cachedInput', 'uncachedInput', 'cacheCreation', 'cacheRead', 'compactions', 'resumedPromptBytes', 'costPerVerifiedItem'],
     },
   };
+  result.continuation = observeContinuation({ stateRoot, tasks: result.backlog, now });
   result.backlogHealth = backlogHealth(repository.root, result.backlog, result.agents, now);
   result.backlogActivity = observeBacklogActivity({ repositoryRoot: repository.root,
     tasks: result.backlog, config, manifest, now: now() });
@@ -417,11 +420,21 @@ export function observeProject({ repositoryRoot, env = process.env, now = () => 
       `).all().map((row) => [row.area_id, row]));
       result.agents = result.agents.map((agent) => {
         const row = live.get(agent.areaId);
-        return row ? {
+        const reported = row ? {
           ...agent, state: row.state, runtime: row.runtime ?? agent.runtime,
           runtimeSessionId: row.runtime_session_id, summary: row.summary,
           task: row.task, heartbeatAt: row.heartbeat_at,
         } : agent;
+        const executor = observeRuntimeTurn({ stateRoot, repositoryRoot: repository.root,
+          projectId: manifest.projectId, areaId: agent.areaId, now });
+        const staleIdle = ['idle', 'offline'].includes(reported.state);
+        return { ...reported, reportedState: reported.state, reportedSummary: reported.summary, executor,
+          ...(executor.state === 'active' && staleIdle ? {
+            state: executor.phase,
+            summary: `Live runtime executor is ${executor.phase} (last reported state: ${reported.state}).`,
+          } : executor.state === 'unknown' && staleIdle ? {
+            state: 'unknown', summary: 'Runtime turn guard exists, but its executor could not be verified.',
+          } : {}) };
       });
     }
     if (hasTable(database, 'schedule_wake_reservations')) {

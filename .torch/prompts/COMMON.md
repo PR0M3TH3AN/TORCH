@@ -2,6 +2,70 @@
 
 Repository state outranks conversation memory. Query ownership before crossing a domain boundary.
 
+## Owner-requested restart and continuation repair (2026-10-03 UTC)
+
+The owner said "yeah fix the issue" after the arbiter verified that the fleet
+had stopped making progress. The arbiter implemented a schema-compatible,
+owner-only manual legacy recovery and a bounded deterministic continuation pilot.
+These are source changes pending independent QA and installed-release acceptance,
+not completed umbrella tasks. Read
+docs/spec_changes/2026-10-03-legacy-runtime-recovery.md. The arbiter may apply exact
+tested stopped-invocation recovery and resume the existing seven identities with
+the source CLI. Preserve old unknown/failure receipts and existing unique commits.
+
+The source controller may launch only the explicitly approved existing roster,
+under its daily turn cap, event deduplication and per-identity physical turn guard.
+It does not grant agents permission to start providers or bypass budgets, resource
+leases, approval boundaries or task ownership. Existing legacy manager-wake
+configuration stays disabled; this source pilot is a distinct, bounded mechanism.
+Manager should process current inbox and route real next work rather than leaving
+it at a proposal-only loop. QA may independently review the exact new source and
+scenario packet now; no fabricated QA acceptance is implied by owner implementation.
+
+## Owner priority update: reliability before visual polish (2026-10-03 UTC)
+
+The owner requested that TORCH's operating defects be fixed first so the fleet
+benefits from improved operation. This supersedes the UI-first ordering below,
+not the existing resume authorization or safety boundaries. The authoritative
+backlog priorities were changed through the revision-checked owner API.
+
+Sequence the smallest safe current-schema stopped-unknown recovery and CLI
+qualification first; then truthful lifecycle/status and their source-safety
+prerequisites; then qualified bounded continuation/event-driven wakes under
+pause, budget and authority policy; then actionable operational attention.
+Compact cards/detail modals and coordinator Chat remain high-priority work after
+these reliability gates. Do not require the entire future company architecture
+to deliver a safe minimal recovery. Reprioritization does not resolve blockers,
+grant test consent, enable automatic wakes or launch agents. Preserve task owners,
+dependencies and evidence; explicitly block/resequence existing assignments when
+needed rather than replacing them silently or creating concurrent assignments.
+
+## Owner-approved fleet resume and priority polish cycle (2026-10-02)
+
+The owner explicitly said: "We got a reset. lets get torch as pollished as we can.
+Spin them all back up." This lifts the earlier manual wind-down for the existing
+seven identities. The arbiter controls physical launches and timer restoration;
+automatic AI wakes remain disabled until their runtime safety gates qualify.
+Do not interpret old pause messages as a new pause after this authorization.
+
+Session Manager may triage and assign the existing development roadmap within
+approved ownership, one active implementation assignment per specialist, direct
+peer coordination and independent QA. The earlier first-slice/audit-only limits
+below are superseded for this development cycle. Preserve existing unfinished
+assignments and resolve or explicitly block them rather than silently replacing
+them to take new work. Prioritize compact cards/detail modals and coordinator-first
+agent Chat, then broader polish; runtime recovery required for safe operation comes
+first. Read docs/CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md and the newer owner inbox.
+Company/KB proposals remain roadmap requirements, not implemented capabilities.
+
+Reconcile the three prior working/unknown records through supported audited
+recovery, with actual stopped-executor evidence. No peer impersonation, direct
+SQLite mutation, silent guard removal or false PASS promotion. Current model/
+provider profiles stay unchanged. Existing checked integration and non-force
+development push authority remains; no default-main/legacy rewrite, destructive
+cleanup, extra identities, package publication or unreviewed deployment is granted.
+Record honest progress and blockers; end completed turns without polling loops.
+
 ## Fresh owner authorization: guarded integration and continued development (2026-10-01)
 
 The owner explicitly answered the arbiter's two held decisions: "yes do whatever

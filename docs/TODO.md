@@ -1,5 +1,133 @@
 # TORCH remaining work
 
+## Immediate owner-facing milestone: agent Chat (2026-10-03)
+
+Owner promoted `TASK-owner-agent-chat`, `TASK-console-agent-chat-ui` and
+`TASK-console-chat-cards-qualification` to urgent. Deliver default coordinator
+chat, activated-agent switching, durable history and a safe composer first,
+following [the Chat specification](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).
+Manager must triage eligible slices; priority does not remove runtime-wake
+dependencies or preempt active work. Recovery unblockers continue alongside it.
+
+## Owner-approved self-healing priority (2026-10-03)
+
+Owner also approved [operational flow and Ops pilot improvements](OPS_FLOW_IMPROVEMENT_SPEC.md):
+two focused incident-resolution/adoption-and-QA-handoff requests, additive Chat
+and evidence acceptance, and an existing-identity Ops responsibility pilot. No
+eighth standing agent or overlapping implementation ownership is implied.
+
+Authoritative urgent proposals (assignment remains with Session Manager):
+
+- [ ] `TASK-fe86062d-847f-46ab-9ad9-d721113e5dcd`: operational incident ownership
+  and overdue wait resolution, extending current messages/events/approvals.
+- [ ] `TASK-f40126ee-2485-45c8-a67b-4279e4e8704a`: supported exact-source
+  adoption and named QA/test handoffs through native qualification/integration.
+
+The linked spec supplies additive acceptance for existing Chat/evidence tasks
+and the Ops responsibility pilot; task-file criteria have not been rewritten by
+the owner because the installed API has no supported amendment operation.
+
+Follow [bounded self-healing qualification](SELF_HEALING_QUALIFICATION_PLAN.md).
+Prioritize the existing runtime-recovery, persistent-operations, provider-failure
+governor, event/reconciler and queue-watchdog work without duplicating their
+backlog records or bypassing dependencies. Require installed failure-injection
+evidence and independent QA, not merely active executors. The owner subsequently
+enabled unlimited daily continuation in alpha.4.2; older cap/resume statements
+below are historical and do not override that specific authorization. Retry
+circuit breakers, concurrency and approval/ownership gates still apply.
+
+## Current owner priority: reliability first (2026-10-03 UTC)
+
+End-to-end repair qualification is still open. Runtime reported exact converged
+candidate `d2d9845` with four fresh native check PASS receipts; QA independent
+acceptance is not yet recorded. Owner source fixes cover guarded presence,
+rolling/fair dispatch, no-progress escalation and visible daily-cap stops. The
+first automatic allowance of 12 turns was exhausted; any increase needs an
+explicit owner choice, not a manual-start bypass. Next dispatch should prioritize
+QA's exact verdict/support decisions, Release's declared-inventory consumer
+decision, safe Kernel/Work composition and actual Console implementation.
+Require evidence of specialist work, independent review/checks, serialized
+integration and next-work continuation before calling the autonomous loop ready.
+
+Live all-fleet resume exposed a new urgent proposal:
+`TASK-d95e72d0-816d-4fc2-acaf-b73642fd4881` — refill continuation capacity
+when individual turns exit instead of waiting for the longest batch member.
+Manager remained running after Kernel/Runtime exited, leaving free slots unused
+and delaying the other four specialists. Preserve identity guards, pause, global
+capacity and attempt accounting when replacing the batch barrier.
+The same run reconfirmed the existing `TASK-pilot-starting-presence`: actual
+executors can display idle during startup. Do not duplicate that task or falsify
+presence to make the board look busy. Owner explicitly requested one simultaneous
+resume of all seven existing identities; that manual batch is separate from the
+automatic pilot's 12-turn daily ledger, not proof of a global usage governor.
+
+This ordering supersedes the UI-first ordering below. The existing authoritative
+backlog, not this index, controls task state and assignment.
+
+1. Safe current-schema runtime recovery (`TASK-company-runtime-recovery`) and
+   combined CLI qualification (`TASK-pilot-cli-suite-timeout`).
+2. Truthful startup/session status (`TASK-pilot-starting-presence`) and its
+   existing Kernel reservation/Work candidate-safety prerequisites.
+3. Persistent operations and bounded event-driven continuation
+   (`TASK-conversation-persistent-operations`,
+   `TASK-conversation-event-driven-wakes`), followed by actual scheduler
+   qualification (`TASK-conversation-scheduler-qualification`).
+4. Specific actionable operational warnings (`TASK-console-attention-actions`).
+5. Compact cards/detail modals and coordinator-first Chat remain high priority.
+
+The first four groups and incomplete technical prerequisites are urgent;
+scheduler qualification is high. These priority-only changes preserve owners,
+states, dependencies and evidence. Blocked remains blocked; automatic wakes stay
+disabled until qualified and explicitly activated. Older pause/install/status
+statements below are historical snapshots, not current runtime evidence.
+
+Owner-requested recovery/continuation implementation is described in
+[the source pilot specification](spec_changes/2026-10-03-legacy-runtime-recovery.md).
+Do not close the runtime-recovery, persistent-operations or event-wake umbrellas
+from focused tests alone. Release/Fleet Operations still need installer-owned
+permanent timer provisioning/removal, installed artifact qualification and restart
+recovery of retained crashed turn/controller guards. The transient host pilot does
+not survive reboot, and its daily turn cap is not a token/dollar usage governor.
+
+## Priority UI cycle: compact cards and agent Chat
+
+Owner-approved [Console UI spec](CONSOLE_CHAT_AND_COMPACT_CARDS_SPEC.md).
+Prioritize these after explicit owner resume, ahead of broad company expansion:
+`TASK-console-compact-details`, `TASK-console-agent-chat-ui` and
+`TASK-console-chat-cards-qualification`. Extend the existing high-priority
+`TASK-owner-agent-chat`; do not duplicate messaging or bypass paused wake policy.
+Proposals remain unassigned. Fleet startup is not authorized by this addition.
+
+## Adaptive software company upgrade (owner-approved, 2026-10-01)
+
+The [integration plan](ADAPTIVE_COMPANY_INTEGRATION_PLAN.md) records scope,
+existing-task reuse, phased contracts, exit gates and migration/rollback rules.
+The existing authoritative backlog contains eleven linked `TASK-company-`
+proposals, not a second queue. Runtime recovery gates unattended coordination;
+authority comes from scoped revocable grants, not reporting relationships.
+Existing grants, event-driven wakes, first-work intake, usage governance and
+hierarchy pilots are reused rather than replaced. All new items are proposed
+and unassigned. No automatic restart or implementation is authorized by this
+roadmap addition; the fleet remains manually paused pending owner resume.
+
+## Owner-approved project knowledge requirement (2026-10-01)
+
+See [Project knowledge and domain institutional memory](PROJECT_KNOWLEDGE_SPEC.md).
+The existing authoritative backlog holds the implementation slices below; this
+section is an index, not a second queue. All are proposed/unassigned, and the
+fleet remains manually paused until the owner explicitly requests resume.
+
+- `TASK-knowledge-contract`: project-fit Git-backed KB, domain handbooks and
+  provisional memory; metadata, visibility, evidence and ownership contract.
+- `TASK-knowledge-agent-context`: documentation discovery, compact domain brief
+  references and provider-independent retrieval/inheritance without context bloat.
+- `TASK-knowledge-maintenance`: documentation-impact workflow, verification
+  evidence, cross-domain notifications and ownership transfer without duplicate truth.
+- `TASK-knowledge-console`: dedicated accessible Knowledge view, safe rendering,
+  search, history and durable ask-domain/report-outdated actions.
+- `TASK-knowledge-qualification`: end-to-end inheritance/freshness/privacy/pause
+  scenarios and realistic browser acceptance, including isolated demo fixtures.
+
 ## Authoritative current handoff (2026-09-30, after alpha.2 reinstall)
 
 TORCH is installed and healthy at `0.1.0-alpha.2`. Setup/restore and all seven

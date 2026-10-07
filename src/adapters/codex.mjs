@@ -31,15 +31,28 @@ function commandRecord(command, args, cwd) {
   return { command, args, cwd, mutatesRuntime: true };
 }
 
-function mcpArgs(mcp) {
+function mcpRuntimeEnvironmentNames(env, platform) {
+  const runtimeDirectory = env?.XDG_RUNTIME_DIR;
+  if (platform !== 'linux' || typeof runtimeDirectory !== 'string'
+    || !/^\/run\/user\/[1-9]\d*$/.test(runtimeDirectory)) {
+    return [];
+  }
+  return ['XDG_RUNTIME_DIR'];
+}
+
+function mcpArgs(mcp, { env, platform } = {}) {
   if (!mcp) return [];
   if (typeof mcp.name !== 'string' || !/^[a-z0-9_-]+$/.test(mcp.name)
     || typeof mcp.command !== 'string' || !Array.isArray(mcp.args)) {
     throw new TorchError('Codex MCP launch configuration is invalid', { code: 'INVALID_RUNTIME_INPUT' });
   }
+  const environmentNames = mcpRuntimeEnvironmentNames(env, platform);
   return [
     '-c', `mcp_servers.${mcp.name}.command=${JSON.stringify(mcp.command)}`,
     '-c', `mcp_servers.${mcp.name}.args=${JSON.stringify(mcp.args)}`,
+    ...(environmentNames.length
+      ? ['-c', `mcp_servers.${mcp.name}.env_vars=${JSON.stringify(environmentNames)}`]
+      : []),
   ];
 }
 
@@ -169,12 +182,14 @@ export function diagnoseCodexStartupFailure({ stdout, stderr } = {}) {
 export class CodexRuntimeAdapter {
   constructor({
     env = process.env,
+    platform = process.platform,
     runner = null,
     executable = 'codex',
     nodeExecutable = process.execPath,
   } = {}) {
     this.name = 'codex';
     this.env = env;
+    this.platform = platform;
     this.runner = runner;
     this.executable = executable;
     this.nodeExecutable = nodeExecutable;
@@ -241,7 +256,7 @@ export class CodexRuntimeAdapter {
     const cwd = text(worktree, 'worktree');
     const args = [
       '--cd', cwd, ...launchPolicyArgs(launchPolicy ?? this.configuration.launchPolicy),
-      ...mcpArgs(mcp),
+      ...mcpArgs(mcp, { env: this.env, platform: this.platform }),
       ...((reasoning ?? this.configuration.reasoning) ? ['-c', `model_reasoning_effort=${JSON.stringify(text(reasoning ?? this.configuration.reasoning, 'reasoning'))}`] : []),
       'exec', '--json',
       ...optionalModelArgs(model ?? this.configuration.model),
@@ -266,7 +281,7 @@ export class CodexRuntimeAdapter {
       : '';
     const args = [
       '--cd', cwd, ...launchPolicyArgs(launchPolicy ?? this.configuration.launchPolicy),
-      ...mcpArgs(mcp),
+      ...mcpArgs(mcp, { env: this.env, platform: this.platform }),
       ...((reasoning ?? this.configuration.reasoning) ? ['-c', `model_reasoning_effort=${JSON.stringify(text(reasoning ?? this.configuration.reasoning, 'reasoning'))}`] : []),
       'exec', 'resume', '--json',
       ...optionalModelArgs(model ?? this.configuration.model), sessionId, `${text(message, 'message')}${currentInstructions}`,

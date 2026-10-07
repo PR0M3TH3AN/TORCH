@@ -1039,6 +1039,12 @@ function renderAttention(groups) {
 }
 
 function render(snapshot) {
+  const continuation = snapshot.continuation;
+  setText('#continuation-status', continuation?.available
+    ? `Automatic turns: ${continuation.attempts}/${continuation.maxTurnsPerDay} used today (UTC); ${continuation.remainingTurns} left. ${continuation.dailyOverride?.day === continuation.day ? `Owner-approved extra allowance expires at UTC midnight; normal daily cap ${continuation.configuredMaxTurnsPerDay}. ` : ''}Concurrency policy: up to ${continuation.maxConcurrency ?? 3}. ${continuation.stopReason === 'daily-turn-cap'
+      ? 'No further automatic starts: the owner-controlled daily cap is reached. Running turns may finish.'
+      : continuation.stopReason === 'paused' ? 'Owner policy is paused; no new automatic starts.' : 'Policy permits new eligible turns; this does not verify timer installation.'} ${continuation.held?.length ?? 0} unchanged-work hold(s) need Manager coordination. This is not measured token or cost usage.`
+    : 'Automatic continuation policy is unavailable; do not assume the fleet can start more work.');
   const project = snapshot.project ?? snapshot.repository;
   const agents = snapshot.agents ?? [];
   const tasks = snapshot.backlog ?? [];
@@ -1087,7 +1093,7 @@ function render(snapshot) {
     return `<article class="agent-row">
       <span class="presence ${escapeHtml(agent.state)}" aria-label="${live ? 'Active' : 'Offline'}"></span>
       <div class="agent-copy"><strong>${escapeHtml(agent.title ?? agent.areaId)}</strong><span>${escapeHtml(agent.summary ?? profile)}</span><small>${escapeHtml(agent.areaId)} · ${escapeHtml(profile)}</small></div>
-      <div class="agent-state"><strong>${escapeHtml(agent.state ?? 'unknown')}</strong><small>${escapeHtml(ageLabel(agent.heartbeatAt))}</small></div>
+      <div class="agent-state"><strong>${escapeHtml(agent.state ?? 'unknown')}</strong><small>${escapeHtml(agent.executor?.state === 'active' ? 'executor verified live' : ageLabel(agent.heartbeatAt))}</small></div>
     </article>`;
   }).join('') : empty('Install an approved Fleet to see persistent identities.'));
 

@@ -242,6 +242,56 @@ test('SCN-codex-adapter: turns are resumable, identity-bound, durable, and capab
   control.close();
 });
 
+test('SCN-codex-mcp-runtime-dir: only a valid Linux parent runtime directory is named for MCP inheritance', () => {
+  const context = fixture();
+  const validParent = {
+    XDG_RUNTIME_DIR: '/run/user/1000',
+    DBUS_SESSION_BUS_ADDRESS: 'unix:path=/run/user/1000/bus',
+    HOME: '/home/fixture', PATH: '/usr/bin', TOKEN: 'not-forwarded',
+  };
+  const adapter = createCodexAdapter({ env: validParent, platform: 'linux' });
+  const mcp = adapter.configure({ repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER }).mcp;
+  const create = adapter.createSession({
+    areaId: context.worker, worktree: '/tmp/codex-runtime-dir', promptFile: '/tmp/prompt.md',
+    firstMessage: 'Start.', mcp,
+  });
+  const resume = adapter.resumeSession({
+    areaId: context.worker, runtimeSessionId: 'thread-runtime-dir', worktree: '/tmp/codex-runtime-dir',
+    message: 'Resume.', mcp,
+  });
+  const expected = `mcp_servers.${mcp.name}.env_vars=["XDG_RUNTIME_DIR"]`;
+  for (const launch of [create, resume]) {
+    assert.equal(launch.launch.args.includes(expected), true);
+    assert.equal(launch.launch.args.some((arg) => /env_vars=/.test(arg) && arg !== expected), false);
+    assert.equal(launch.launch.args.some((arg) => arg.includes(validParent.XDG_RUNTIME_DIR)
+      || arg.includes(validParent.DBUS_SESSION_BUS_ADDRESS) || arg.includes(validParent.HOME)
+      || arg.includes(validParent.PATH) || arg.includes(validParent.TOKEN)), false);
+  }
+
+  for (const invalid of [
+    { env: {}, platform: 'linux' },
+    { env: { XDG_RUNTIME_DIR: '' }, platform: 'linux' },
+    { env: { XDG_RUNTIME_DIR: 'relative/runtime' }, platform: 'linux' },
+    { env: validParent, platform: 'darwin' },
+  ]) {
+    const unsupported = createCodexAdapter(invalid);
+    const unsupportedMcp = unsupported.configure({
+      repositoryRoot: context.root, areaId: context.worker, mcpEntry: MCP_SERVER,
+    }).mcp;
+    const createPlan = unsupported.createSession({
+      areaId: context.worker, worktree: '/tmp/codex-runtime-dir', promptFile: '/tmp/prompt.md',
+      firstMessage: 'Start.', mcp: unsupportedMcp,
+    });
+    const resumePlan = unsupported.resumeSession({
+      areaId: context.worker, runtimeSessionId: 'thread-runtime-dir', worktree: '/tmp/codex-runtime-dir',
+      message: 'Resume.', mcp: unsupportedMcp,
+    });
+    for (const plan of [createPlan, resumePlan]) {
+      assert.equal(plan.launch.args.some((arg) => /env_vars=/.test(arg)), false);
+    }
+  }
+});
+
 test('SCN-mcp-stdio: an MCP host can initialize and list the TORCH tool surface over stdio', async () => {
   const context = fixture();
   const child = spawn(process.execPath, [MCP_SERVER, '--root', context.root, '--area', context.worker], {
