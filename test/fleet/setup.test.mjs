@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync, cpSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, renameSync, writeFileSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { analyzeRepository } from '../../src/kernel/analyze.mjs';
 import { proposeDomains } from '../../src/kernel/domains.mjs';
@@ -29,6 +30,33 @@ function fixture() {
   proposal.review = { status: 'approved', reviewedAt: '2026-09-30T00:00:00Z', reviewedBy: 'owner', notes: [] };
   installProject({ repository, proposal, env });
   return { root, env, parentOverride: join(root, 'worktrees') };
+}
+function snapshotTree(root) {
+  const records = [];
+  const visit = (path, relativePath) => {
+    const stat = lstatSync(path);
+    const record = { path: relativePath || '.', mode: stat.mode & 0o7777 };
+    if (stat.isDirectory()) {
+      record.type = 'directory';
+      records.push(record);
+      for (const name of readdirSync(path).sort()) visit(join(path, name), relativePath ? join(relativePath, name) : name);
+    } else if (stat.isSymbolicLink()) {
+      record.type = 'symlink';
+      record.target = readlinkSync(path);
+      records.push(record);
+    } else if (stat.isFile()) {
+      const bytes = readFileSync(path);
+      record.type = 'file';
+      record.size = bytes.length;
+      record.sha256 = createHash('sha256').update(bytes).digest('hex');
+      records.push(record);
+    } else {
+      record.type = 'other';
+      records.push(record);
+    }
+  };
+  visit(root, '');
+  return records;
 }
 
 test('SCN-guided-setup: approved setup checkpoints owned files and provisions without agents', () => {
@@ -76,6 +104,69 @@ test('SCN-worktree-canonical-brief: current instructions win and unregistered or
   const localManifest = JSON.parse(readFileSync(join(entry.path, '.torch/install-manifest.json')));
   localManifest.installationId = 'stale-installation';
   writeFileSync(join(entry.path, '.torch/install-manifest.json'), JSON.stringify(localManifest));
+  assert.throws(() => resolveInstalledProjectRoot(entry.path, f.env), { code: 'UNREGISTERED_PROJECT_WORKTREE' });
+});
+
+test('SCN-setup-unrelated-vanished-sibling-tolerated: registered checkout resolves while an absent Git sibling remains registered', () => {
+  const f = fixture();
+  setupProject({ ...f, repository: inspectRepository(f.root), authorized: true });
+  const entry = readInstallManifest(f.root).external.find(item => item.type === 'worktree');
+  const missingSibling = join(f.parentOverride, 'vanished-sibling');
+  const movedSibling = join(f.parentOverride, 'moved-sibling-fixture');
+  git(f.root, ['worktree', 'add', '-b', 'vanished-sibling', missingSibling]);
+  const siblingAdminPath = resolve(missingSibling, git(missingSibling, ['rev-parse', '--git-dir']));
+  renameSync(missingSibling, movedSibling);
+  assert.equal(existsSync(missingSibling), false);
+
+  const manifestPath = join(f.root, '.torch/install-manifest.json');
+  const stateRoot = readInstallManifest(f.root).external.find(item => item.type === 'local-state').path;
+  const manifestBefore = readFileSync(manifestPath, 'utf8');
+  const stateBefore = snapshotTree(stateRoot);
+  const siblingAdminBefore = snapshotTree(siblingAdminPath);
+  const movedSiblingBefore = snapshotTree(movedSibling);
+  const worktreesBefore = git(f.root, ['worktree', 'list', '--porcelain']);
+  const refsBefore = git(f.root, ['for-each-ref', '--format=%(refname) %(objectname)']);
+  assert.ok(worktreesBefore.includes(`worktree ${missingSibling}`));
+  assert.ok(refsBefore.split('\n').includes(`refs/heads/vanished-sibling ${git(f.root, ['rev-parse', 'refs/heads/vanished-sibling'])}`));
+
+  assert.equal(resolveInstalledProjectRoot(entry.path, f.env), f.root);
+
+  assert.equal(existsSync(missingSibling), false);
+  assert.equal(readFileSync(manifestPath, 'utf8'), manifestBefore);
+  assert.deepEqual(snapshotTree(stateRoot), stateBefore);
+  assert.deepEqual(snapshotTree(siblingAdminPath), siblingAdminBefore);
+  assert.deepEqual(snapshotTree(movedSibling), movedSiblingBefore);
+  assert.equal(git(f.root, ['worktree', 'list', '--porcelain']), worktreesBefore);
+  assert.equal(git(f.root, ['for-each-ref', '--format=%(refname) %(objectname)']), refsBefore);
+
+  assert.throws(() => resolveInstalledProjectRoot(join(f.parentOverride, 'missing-selected-root'), f.env), { code: 'ENOENT' });
+
+  const foreignRoot = mkdtempSync(join(tmpdir(), 'torch-foreign-worktree-'));
+  cpSync(join(entry.path, '.torch'), join(foreignRoot, '.torch'), { recursive: true });
+  git(foreignRoot, ['init', '-b', entry.branch]);
+  const foreignManifestPath = join(foreignRoot, '.torch/install-manifest.json');
+  const canonicalManifest = JSON.parse(manifestBefore);
+  const foreignManifest = JSON.parse(readFileSync(foreignManifestPath, 'utf8'));
+  foreignManifest.installationId = 'stale-installation';
+  writeFileSync(foreignManifestPath, JSON.stringify(foreignManifest));
+  assert.throws(() => resolveInstalledProjectRoot(foreignRoot, f.env), { code: 'UNREGISTERED_PROJECT_WORKTREE' });
+  delete foreignManifest.installationId;
+  writeFileSync(foreignManifestPath, JSON.stringify(foreignManifest));
+  assert.throws(() => resolveInstalledProjectRoot(foreignRoot, f.env), { code: 'UNREGISTERED_PROJECT_WORKTREE' });
+  foreignManifest.installationId = canonicalManifest.installationId;
+  writeFileSync(foreignManifestPath, JSON.stringify(foreignManifest));
+  assert.throws(() => resolveInstalledProjectRoot(foreignRoot, f.env), { code: 'UNREGISTERED_PROJECT_WORKTREE' });
+
+  const foreignRegistration = { ...entry, path: foreignRoot };
+  canonicalManifest.external.push(foreignRegistration);
+  writeFileSync(manifestPath, JSON.stringify(canonicalManifest));
+  try {
+    assert.throws(() => resolveInstalledProjectRoot(foreignRoot, f.env), { code: 'UNREGISTERED_PROJECT_WORKTREE' });
+  } finally {
+    writeFileSync(manifestPath, manifestBefore);
+  }
+
+  git(entry.path, ['switch', '-c', 'registered-branch-mismatch']);
   assert.throws(() => resolveInstalledProjectRoot(entry.path, f.env), { code: 'UNREGISTERED_PROJECT_WORKTREE' });
 });
 

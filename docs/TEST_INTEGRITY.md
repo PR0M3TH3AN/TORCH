@@ -3454,3 +3454,34 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# Release brief resolver tolerates unrelated vanished Git sibling
+
+```yaml
+test_integrity_note:
+  change_type: ["new_tests"]
+  scenarios:
+    - id: SCN-setup-unrelated-vanished-sibling-tolerated
+      given: "A real installed Git fixture has a selected registered worktree and a separate Git-registered sibling whose directory is renamed away but whose fixture data and registration remain"
+      when: "The installed-project resolver reads the selected worktree, and strict refusal cases exercise missing selected root, foreign/unregistered checkout, stale or absent installation identity, registered common-Git mismatch, and registered branch mismatch"
+      then: "The resolver returns the canonical root while local-state inputs, Git worktree-admin bytes and refs, install manifest, and moved sibling bytes remain unchanged; every strict refusal retains its existing error code"
+  observable_outcomes:
+    - "The selected same-installation registered branch resolves to its canonical project root despite an unrelated missing Git sibling"
+    - "The sibling remains absent; the full relevant Git worktree-admin entry and exact ref listing remain present and byte-identical"
+    - "Every file, directory inventory, and mode under declared local project state remains identical, including state.db and WAL/SHM files when present"
+    - "The moved sibling fixture, including its .git administration file, remains byte-identical"
+    - "The install manifest remains byte-identical; the resolver performs no prune, unregister, or fixture cleanup"
+    - "A missing selected root retains ENOENT; foreign/unregistered, stale or absent install identity, registered common-Git mismatch, and registered branch mismatch retain UNREGISTERED_PROJECT_WORKTREE"
+  determinism_controls:
+    - "Fixed fixture inputs and branch names, real local Git worktrees, temporary project and state roots, and no network or provider calls"
+    - "A filesystem rename makes one registered sibling path absent without pruning or changing Git's registration; deterministic recursive SHA-256/mode/inventory snapshots cover local state, Git worktree administration, and moved fixture data"
+  anti_cheat_rationale:
+    prevents:
+      - "Treating an unregistered or copied checkout as canonical after a lookup error"
+      - "Swallowing current-root or non-absence filesystem failures"
+      - "Pruning, unregistering, or rewriting the missing sibling to make resolution pass"
+      - "Relying only on porcelain output while silently changing SQLite, Git admin/ref, or moved-sibling bytes"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```

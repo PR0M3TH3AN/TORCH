@@ -28,7 +28,17 @@ export function resolveInstalledProjectRoot(root, env = process.env) {
   const current = read(join(canonical, '.torch', 'install-manifest.json'));
   const registered = current.external?.find(entry => entry.type === 'worktree' && existsSync(entry.path) && realpathSync(entry.path) === root);
   const common = directory => realpathSync(resolve(directory, git(directory, ['rev-parse', '--git-common-dir'])));
-  const members = git(canonical, ['worktree', 'list', '--porcelain']).split('\n').filter(line => line.startsWith('worktree ')).map(line => realpathSync(line.slice(9)));
+  const members = [];
+  for (const line of git(canonical, ['worktree', 'list', '--porcelain']).split('\n').filter(value => value.startsWith('worktree '))) {
+    const memberPath = line.slice(9);
+    try {
+      members.push(realpathSync(memberPath));
+    } catch (error) {
+      // A vanished unrelated worktree must not block this checkout's lookup.
+      // Keep errors for the selected root and non-absence failures fail-closed.
+      if (resolve(memberPath) === root || !['ENOENT', 'ENOTDIR'].includes(error.code)) throw error;
+    }
+  }
   if (current.projectId !== manifest.projectId || current.installationId !== manifest.installationId
       || !registered || common(root) !== common(canonical) || !members.includes(root)
       || git(root, ['branch', '--show-current']) !== registered.branch) {
