@@ -96,7 +96,7 @@
     "schemas/"
   ],
   "scripts": {
-    "test": "node --test --test-timeout=60000 test/fleet/*.test.mjs",
+    "test": "node --test --test-timeout=60000 --test-concurrency=1 test/fleet/*.test.mjs",
     "torch": "node bin/torch.mjs",
     "check": "node --check bin/torch.mjs && node --check src/cli.mjs && node --check src/mcp/server.mjs && node --check src/console/server.mjs && node --check src/artifacts/service.mjs && node --check src/adapters/plugins.mjs && node --check src/adapters/pi.mjs && node --check src/adapters/pi/extension.mjs && node --check site/app.js && node --check site/demo.js && node --check site/console.js && node --check site/work-views.js && node --check site/work-progress.js",
     "site:serve": "node bin/torch.mjs console serve",

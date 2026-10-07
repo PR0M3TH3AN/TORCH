@@ -2931,3 +2931,28 @@ test_integrity_note:
     did_relax_any_assertion: false
     if_true_explain_spec_basis: ""
 ```
+
+# CLI test-file resource isolation
+
+```yaml
+test_integrity_note:
+  change_type: ["flake_fix"]
+  scenarios:
+    - id: SCN-test-file-resource-isolation
+      given: "Exact clean candidate with locked local dependencies; original full portfolio and60s per-file deadline on shared8CPU machine"
+      when: "The configured npm test executes the same complete file glob with explicit file concurrency1"
+      then: "Every original test is executed unchanged; within-scenario concurrency stays intact; configured native result and exact candidate/recipe receipts determine acceptance"
+  observable_outcomes:
+    - "Unchanged scenario inventory/assertions/skips/timeout and original failure provenance"
+    - "Actual configured npm test result, trace lifecycle, and source/recipe binding"
+  determinism_controls:
+    - "Explicit test-file concurrency1, exact locked dependencies, existing resource lease, unchanged per-file deadline"
+  anti_cheat_rationale:
+    prevents:
+      - "Extending deadlines or using retries to hide contention"
+      - "Skipping scenarios or removing within-scenario race tests"
+      - "Presenting diagnostic serial PASS as configured/native qualification"
+  relaxation:
+    did_relax_any_assertion: false
+    if_true_explain_spec_basis: ""
+```
